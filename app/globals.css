@@ -1,0 +1,187 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+}
+
+:root {
+  color-scheme: dark;
+  --bg-primary: #04080d;
+  --bg-surface: rgba(8, 16, 24, 0.85);
+  --bg-card: rgba(13, 24, 33, 0.84);
+  --border-soft: rgba(148, 163, 184, 0.14);
+  --border-strong: rgba(0, 201, 177, 0.22);
+  --text-primary: #f6fbff;
+  --text-muted: #8fa7b9;
+  --text-soft: #bdd0de;
+  --accent-teal: #00c9b1;
+  --accent-green: #61f29f;
+  --accent-cyan: #63d8ff;
+  --accent-amber: #f7b955;
+  --accent-danger: #ff7070;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: #04070a;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(0, 201, 177, 0.24);
+}
+
+.surface-panel {
+  border: 1px solid var(--border-soft);
+  background:
+    linear-gradient(180deg, rgba(17, 31, 44, 0.92) 0%, rgba(7, 14, 22, 0.94) 100%),
+    rgba(10, 18, 27, 0.82);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.02),
+    0 18px 60px rgba(3, 7, 12, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(22px);
+}
+
+.yb-card {
+  border: 1px solid #1a232c;
+  background:
+    linear-gradient(180deg, rgba(11, 17, 23, 0.98) 0%, rgba(7, 11, 16, 0.98) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 16px 40px rgba(1, 4, 8, 0.42);
+}
+
+.yb-soft-card {
+  border: 1px solid #182028;
+  background: linear-gradient(180deg, rgba(9, 14, 20, 0.98) 0%, rgba(6, 10, 15, 0.98) 100%);
+}
+
+.yb-pill {
+  border: 1px solid #163c3a;
+  background: rgba(6, 19, 20, 0.9);
+}
+
+.yb-divider {
+  border-color: #182028;
+}
+
+.yb-teal-button {
+  background: linear-gradient(180deg, #22d7cf 0%, #15bcc4 100%);
+  box-shadow: 0 8px 24px rgba(21, 188, 196, 0.18);
+}
+
+.yb-glow-text {
+  text-shadow: 0 0 18px rgba(34, 215, 207, 0.18);
+}
+
+.yb-glow-border {
+  box-shadow:
+    inset 0 0 0 1px rgba(33, 216, 198, 0.18),
+    0 0 0 1px rgba(33, 216, 198, 0.12),
+    0 0 22px rgba(33, 216, 198, 0.08);
+}
+
+.yb-check {
+  color: #51e278;
+}
+
+.surface-inset {
+  border: 1px solid rgba(148, 163, 184, 0.11);
+  background: linear-gradient(180deg, rgba(6, 12, 19, 0.92), rgba(4, 9, 14, 0.82));
+}
+
+.teal-ring {
+  border-color: var(--border-strong);
+  box-shadow: 0 0 0 1px rgba(0, 201, 177, 0.04), 0 0 28px rgba(0, 201, 177, 0.12);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #f8ffff 15%, #9ef7e8 55%, #00c9b1 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::after {
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.06) 50%,
+    transparent 100%
+  );
+  animation: shimmer 2s infinite;
+  content: "";
+}
+
+.chat-grid {
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+  background-position: -1px -1px;
+  background-size: 24px 24px;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes float-pulse {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.animate-float-pulse {
+  animation: float-pulse 3.6s ease-in-out infinite;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background: rgba(79, 104, 122, 0.7);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(7, 12, 18, 0.72);
+}
