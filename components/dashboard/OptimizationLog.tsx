@@ -147,7 +147,7 @@ function FeedCard({
   return (
     <article
       data-testid="optimization-card"
-      className="rounded-[22px] border border-white/8 bg-[rgba(255,255,255,0.02)] p-4 transition hover:border-[var(--border-strong)]"
+      className="yb-soft-card rounded-[22px] p-4 transition hover:border-[rgba(0,201,177,0.28)]"
     >
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -172,7 +172,7 @@ function FeedCard({
           <p className="text-xs uppercase tracking-[0.2em] text-[var(--text-muted)]">Confidence</p>
           <p className="mt-2 text-lg font-semibold text-white">{item.confidence}%</p>
         </div>
-        <div className="flex items-center gap-2 rounded-full border border-[var(--border-strong)] px-3 py-2 text-xs text-[var(--accent-teal)]">
+        <div className="glass-accent flex items-center gap-2 rounded-full px-3 py-2 text-xs text-[var(--accent-teal)]">
           <ShieldCheck className="h-4 w-4" />
           {item.proofBadge}
         </div>
@@ -238,8 +238,8 @@ export default function OptimizationLog() {
               onClick={() => setActiveTab(tab.key)}
               className={`rounded-full border px-4 py-2 text-xs font-semibold tracking-[0.18em] transition ${
                 activeTab === tab.key
-                  ? "border-[var(--border-strong)] bg-[rgba(0,201,177,0.12)] text-[var(--accent-teal)]"
-                  : "border-white/8 text-[var(--text-muted)] hover:border-white/14 hover:text-white"
+                  ? "glass-accent border-[rgba(0,201,177,0.28)] text-[var(--accent-teal)]"
+                  : "glass-inset border-[rgba(255,255,255,0.07)] text-[var(--text-muted)] hover:border-[rgba(255,255,255,0.14)] hover:text-white"
               }`}
             >
               {tab.label}

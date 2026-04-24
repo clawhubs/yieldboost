@@ -248,6 +248,10 @@ export interface StoredProofRecord {
   timestamp: string;
   explorerUrl: string;
   decision: StoredDecisionPayload;
+  proofRegistryAddress?: string;
+  proofRegistryTxHash?: string;
+  proofRegistryProofId?: string;
+  proofRegistryExplorerUrl?: string;
   note?: string;
 }
 
@@ -556,28 +560,28 @@ export function getMockHistory(): HistoryResponse {
         timestamp: "10:32 AM",
         action: "Optimization settled",
         cid: "bafy...e321",
-        explorer: "0G Newton",
+        explorer: "0G Galileo",
         state: "verified",
       },
       {
         timestamp: "10:31 AM",
         action: "Liquidity added",
         cid: "bafy...d182",
-        explorer: "0G Newton",
+        explorer: "0G Galileo",
         state: "stored",
       },
       {
         timestamp: "10:30 AM",
         action: "Portfolio analyzed",
         cid: "bafy...ab04",
-        explorer: "0G Newton",
+        explorer: "0G Galileo",
         state: "indexed",
       },
       {
         timestamp: "10:29 AM",
         action: "Wallet snapshot",
         cid: "bafy...901c",
-        explorer: "0G Newton",
+        explorer: "0G Galileo",
         state: "anchored",
       },
     ],
@@ -587,7 +591,7 @@ export function getMockHistory(): HistoryResponse {
       executionTime: "8.42 seconds",
     },
     verification: {
-      explorerSource: "0G Newton reference path",
+      explorerSource: "0G Galileo reference path",
       storageAnchor: "CID reserved for every mock run",
       reviewStatus: "Ready for judge walkthrough",
     },
@@ -647,7 +651,7 @@ export function buildHistoryFromProofs(
               ? "Portfolio analyzed"
               : "Wallet snapshot",
       cid: shortenCid(proof.cid),
-      explorer: "0G Newton",
+      explorer: "0G Galileo",
       state: index === 0 ? "verified" : index === 1 ? "stored" : "indexed",
     })),
     latestOutcome: {
@@ -813,7 +817,7 @@ export function getDefaultSettingsState(): SettingsState {
   return {
     riskProfile: "Moderate",
     notificationRules: 8,
-    explorerDefault: "0G Newton",
+    explorerDefault: "0G Galileo",
     agentMode: "Autonomous",
     maxSlippage: "0.8%",
     proofRetention: "30 days",

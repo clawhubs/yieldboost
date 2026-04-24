@@ -32,7 +32,7 @@ export default function OptimizationProgress({
             YieldBoost execution pipeline
           </h2>
         </div>
-        <div className="rounded-[10px] border border-[#174642] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#22ddd0]">
+        <div className="glass-accent rounded-[10px] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#22ddd0]">
           Live
         </div>
       </div>
@@ -43,14 +43,14 @@ export default function OptimizationProgress({
           const active = index === activeIndex && progress !== "done";
 
           return (
-            <div key={step} className="relative flex items-center gap-3 rounded-[14px] border border-[#182028] bg-[#091117] px-4 py-4">
+            <div key={step} className="glass-inset relative flex items-center gap-3 rounded-[14px] px-4 py-4 transition hover:border-[rgba(0,201,177,0.2)]">
               <div
                 className={`flex h-11 w-11 items-center justify-center rounded-full border text-sm font-semibold transition ${
                   completed
-                    ? "border-[#2ed86a] bg-[#12321c] text-[#2ed86a]"
+                    ? "border-[#2ed86a] bg-[rgba(46,216,106,0.1)] text-[#2ed86a]"
                     : active
-                      ? "animate-float-pulse border-[#25d6c6] bg-[#0d2523] text-[#25d6c6]"
-                      : "border-[#2b3640] bg-[#0b1218] text-[#9faab6]"
+                      ? "animate-float-pulse border-[#25d6c6] bg-[rgba(37,214,198,0.1)] text-[#25d6c6]"
+                      : "border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-[#9faab6]"
                 }`}
               >
                 {completed ? <CheckCheck className="h-4 w-4" /> : index + 1}

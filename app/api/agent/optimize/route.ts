@@ -24,18 +24,6 @@ function createProviderFetch(timeoutMs = 12_000) {
 }
 
 function getLanguageModel() {
-  if (process.env.ALIBABA_API_KEY) {
-    const provider = createOpenAI({
-      apiKey: process.env.ALIBABA_API_KEY,
-      baseURL: process.env.ALIBABA_BASE_URL,
-      compatibility: "compatible",
-      fetch: createProviderFetch(),
-      name: "alibaba",
-    });
-
-    return provider(process.env.ALIBABA_MODEL || "qwen3.6-plus-2026-04-02");
-  }
-
   if (process.env.OPENAI_API_KEY) {
     const provider = createOpenAI({
       apiKey: process.env.OPENAI_API_KEY,
@@ -47,6 +35,63 @@ function getLanguageModel() {
   }
 
   return null;
+}
+
+function getAlibabaChatUrl() {
+  const baseUrl =
+    process.env.ALIBABA_BASE_URL ?? "https://dashscope-intl.aliyuncs.com/compatible-mode/v1";
+
+  return `${baseUrl.replace(/\/$/, "")}/chat/completions`;
+}
+
+function sanitizeNarrative(text: string) {
+  return text.replace(/\s+/g, " ").trim();
+}
+
+async function getAlibabaNarrative(prompt: string) {
+  if (!process.env.ALIBABA_API_KEY) {
+    return null;
+  }
+
+  const response = await createProviderFetch(20_000)(getAlibabaChatUrl(), {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.ALIBABA_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: process.env.ALIBABA_MODEL || "qwen3.6-plus-2026-04-02",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are YieldBoost AI. Reply in under 60 words. Be concise. Mention 0G Compute Network and 0G Storage. Do not include chain-of-thought.",
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+      // Official DashScope OpenAI-compatible docs expose this as a non-standard flag.
+      enable_thinking: false,
+      temperature: 0.2,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`alibaba_http_${response.status}`);
+  }
+
+  const data = (await response.json()) as {
+    choices?: Array<{
+      message?: {
+        content?: string;
+      };
+    }>;
+  };
+
+  const content = data.choices?.[0]?.message?.content;
+  return content ? sanitizeNarrative(content) : null;
 }
 
 function createMockStream(text: string) {
@@ -144,31 +189,53 @@ export async function POST(req: NextRequest) {
     "Access-Control-Expose-Headers": "X-Optimization-Result",
   };
 
-  const model = getLanguageModel();
-
   let narrative = buildNarrative(result, prompt);
+  let provider = "fallback";
+  const providerPrompt = `Portfolio total: $${result.totalPortfolio}. Current APY ${result.current_apy}%. Optimized APY ${result.optimized_apy}%. Recommended protocol: ${result.recommended}. User request: ${prompt ?? "Optimize for best yield with low risk."}`;
 
-  if (model) {
+  if (process.env.ALIBABA_API_KEY) {
     try {
-      const generated = await Promise.race([
-        generateText({
-          model,
-          system:
-            "You are YieldBoost AI. Give a concise optimization recommendation in under 60 words. Mention that the result is verified on 0G Compute Network and anchored to 0G Storage.",
-          prompt: `Portfolio total: $${result.totalPortfolio}. Current APY ${result.current_apy}%. Optimized APY ${result.optimized_apy}%. Recommended protocol: ${result.recommended}. User request: ${prompt ?? "Optimize for best yield with low risk."}`,
-        }),
-        new Promise<never>((_, reject) => {
-          setTimeout(() => reject(new Error("llm_timeout")), 12_500);
-        }),
-      ]);
-
-      if (generated.text.trim()) {
-        narrative = generated.text.trim();
+      const generated = await getAlibabaNarrative(providerPrompt);
+      if (generated) {
+        narrative = generated;
+        provider = "alibaba";
       }
     } catch {
       narrative = buildNarrative(result, prompt);
     }
+  } else {
+    const model = getLanguageModel();
+
+    if (model) {
+      try {
+        const generated = await Promise.race([
+          generateText({
+            model,
+            system:
+              "You are YieldBoost AI. Give a concise optimization recommendation in under 60 words. Mention that the result is verified on 0G Compute Network and anchored to 0G Storage.",
+            prompt: providerPrompt,
+          }),
+          new Promise<never>((_, reject) => {
+            setTimeout(() => reject(new Error("llm_timeout")), 12_500);
+          }),
+        ]);
+
+        if (generated.text.trim()) {
+          narrative = generated.text.trim();
+          provider = "openai";
+        }
+      } catch {
+        narrative = buildNarrative(result, prompt);
+      }
+    }
   }
 
-  return new Response(createMockStream(narrative), { headers });
+  return new Response(createMockStream(narrative), {
+    headers: {
+      ...headers,
+      "X-LLM-Provider": provider,
+      "Access-Control-Expose-Headers":
+        "X-Optimization-Result, X-LLM-Provider",
+    },
+  });
 }

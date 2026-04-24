@@ -88,9 +88,9 @@ function accentValueClass(tone: AccentTone = "white") {
 }
 
 function accentIconShellClass(tone: AccentTone = "teal") {
-  if (tone === "green") return "border-[#17351c] bg-[#0c1711] text-[#2fe06d]";
-  if (tone === "white") return "border-[#24303a] bg-[#0c1218] text-white";
-  return "border-[#173832] bg-[#081313] text-[#22ddd0]";
+  if (tone === "green") return "border-[rgba(47,224,109,0.18)] bg-[rgba(47,224,109,0.07)] text-[#2fe06d]";
+  if (tone === "white") return "border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] text-white";
+  return "border-[rgba(0,201,177,0.18)] bg-[rgba(0,201,177,0.07)] text-[#22ddd0]";
 }
 
 function renderVisual(kind: VisualKind) {
@@ -113,7 +113,7 @@ function renderVisual(kind: VisualKind) {
   if (kind === "ring") {
     return (
       <div className="flex h-[112px] items-center justify-center">
-        <div className="relative flex h-28 w-28 items-center justify-center rounded-full border border-[#1d2a33] bg-[#0a1117]">
+        <div className="glass-inset relative flex h-28 w-28 items-center justify-center rounded-full">
           <div className="absolute inset-2 rounded-full border-4 border-[#13231f]" />
           <div
             className="absolute inset-2 rounded-full border-4 border-[#22ddd0]"
@@ -138,8 +138,8 @@ function renderVisual(kind: VisualKind) {
             key={index}
             className={`rounded-[10px] border ${
               index % 4 === 0 || index === 9
-                ? "border-[#174642] bg-[rgba(34,221,208,0.12)]"
-                : "border-[#1b242d] bg-[#0b1117]"
+                ? "border-[rgba(0,201,177,0.2)] bg-[rgba(34,221,208,0.08)]"
+                : "glass-inset"
             }`}
           />
         ))}
@@ -189,7 +189,7 @@ export default function FeaturePageView({
       <header className="yb-card rounded-[18px] px-5 py-5">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#153632] px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-[#22ddd0]">
+            <div className="glass-accent inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-[#22ddd0]">
               {badge}
             </div>
             <h1 className="mt-3 font-[family-name:var(--font-display)] text-[30px] font-semibold leading-[1.08] text-white md:text-[40px]">
@@ -215,7 +215,7 @@ export default function FeaturePageView({
                 <Link
                   key={action.label}
                   href={action.href}
-                  className="inline-flex items-center gap-2 rounded-[12px] border border-[#24303a] px-4 py-3 text-[13px] font-medium text-[#d8e1e8]"
+                  className="glass-inset inline-flex items-center gap-2 rounded-[12px] px-4 py-3 text-[13px] font-medium text-[#d8e1e8] transition hover:border-[rgba(0,201,177,0.25)]"
                 >
                   {action.label}
                   <ArrowUpRight className="h-4 w-4" />
@@ -255,7 +255,7 @@ export default function FeaturePageView({
 
                 <div className="mt-5 grid gap-3 md:grid-cols-2">
                   {highlight.rows.map((row) => (
-                    <div key={row.label} className="rounded-[12px] border border-[#182028] bg-[#091117] px-4 py-3">
+                    <div key={row.label} className="glass-inset rounded-[12px] px-4 py-3">
                       <div className="text-[11px] uppercase tracking-[0.06em] text-[#9faab6]">{row.label}</div>
                       <div className={`mt-2 text-[19px] font-semibold ${accentValueClass(row.tone)}`}>{row.value}</div>
                       <div className="mt-1 text-[12px] text-[#d6dee6]">{row.helper}</div>
@@ -266,7 +266,7 @@ export default function FeaturePageView({
                 <div className="mt-4 text-[12px] text-[#22ddd0]">{highlight.footer}</div>
               </div>
 
-              <div className="rounded-[14px] border border-[#17212a] bg-[radial-gradient(circle_at_top_right,rgba(34,221,208,0.14),transparent_30%),linear-gradient(180deg,#081017_0%,#070c11_100%)] px-4 py-4">
+              <div className="glass-inset rounded-[14px] border-[rgba(0,201,177,0.1)] bg-[radial-gradient(circle_at_top_right,rgba(34,221,208,0.10),transparent_40%)] px-4 py-4">
                 {renderVisual(highlight.visual)}
               </div>
             </div>
@@ -278,13 +278,13 @@ export default function FeaturePageView({
                 <div className="text-[13px] font-medium text-white">{table.title}</div>
                 <div className="mt-1 text-[12px] text-[#9faab6]">{table.subtitle}</div>
               </div>
-              <div className="rounded-[10px] border border-[#174642] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#22ddd0]">
-                mock data
+              <div className="glass-accent rounded-[10px] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#22ddd0]">
+                live data
               </div>
             </div>
 
-            <div className="mt-4 overflow-hidden rounded-[12px] border border-[#182028]">
-              <div className="grid grid-cols-[1.25fr_1fr_1fr_0.9fr_auto] gap-3 bg-[#091117] px-4 py-3 text-[10px] uppercase tracking-[0.08em] text-[#9faab6]">
+            <div className="mt-4 overflow-hidden rounded-[12px] border border-[rgba(255,255,255,0.07)]">
+              <div className="grid grid-cols-[1.25fr_1fr_1fr_0.9fr_auto] gap-3 bg-[rgba(255,255,255,0.03)] px-4 py-3 text-[10px] uppercase tracking-[0.08em] text-[#9faab6]">
                 {table.columns.map((column) => (
                   <div key={column}>{column}</div>
                 ))}
@@ -328,7 +328,7 @@ export default function FeaturePageView({
                     <div className="text-[14px] font-medium text-white">{card.title}</div>
                     <div className="mt-4 space-y-3">
                       {card.items.map((item) => (
-                        <div key={item.label} className="rounded-[12px] border border-[#182028] bg-[#091117] px-4 py-3">
+                        <div key={item.label} className="glass-inset rounded-[12px] px-4 py-3">
                           <div className="text-[11px] uppercase tracking-[0.06em] text-[#9faab6]">{item.label}</div>
                           <div className={`mt-1 text-[15px] font-medium ${accentValueClass(item.tone)}`}>{item.value}</div>
                         </div>
@@ -338,7 +338,7 @@ export default function FeaturePageView({
                     {card.cta ? (
                       <Link
                         href={card.cta.href}
-                        className="mt-4 inline-flex items-center gap-2 rounded-[10px] border border-[#24303a] px-3 py-2 text-[12px] font-medium text-[#d8e1e8]"
+                        className="glass-inset mt-4 inline-flex items-center gap-2 rounded-[10px] px-3 py-2 text-[12px] font-medium text-[#d8e1e8] transition hover:border-[rgba(0,201,177,0.25)]"
                       >
                         {card.cta.label}
                         <ArrowUpRight className="h-3.5 w-3.5" />
@@ -359,7 +359,7 @@ export default function FeaturePageView({
           return (
             <div key={card.title} className="yb-card rounded-[16px] px-4 py-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-[12px] border border-[#173832] bg-[#081313] text-[#22ddd0]">
+                <div className="glass-accent flex h-10 w-10 items-center justify-center rounded-[12px] text-[#22ddd0]">
                   <CardIcon className="h-4.5 w-4.5" />
                 </div>
                 <div className="text-[14px] font-medium text-white">{card.title}</div>

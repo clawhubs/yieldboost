@@ -186,6 +186,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         txHash: string;
         explorerUrl?: string;
         timestamp?: string;
+        proofRegistryAddress?: string;
+        proofRegistryTxHash?: string;
+        proofRegistryProofId?: string;
+        proofRegistryExplorerUrl?: string;
       };
 
       const nextResult: OptimizationResult = {
@@ -196,6 +200,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         txHash: storageData.txHash,
         proofUrl: storageData.explorerUrl,
         timestamp: storageData.timestamp ?? new Date().toISOString(),
+        proofRegistryAddress: storageData.proofRegistryAddress,
+        proofRegistryTxHash: storageData.proofRegistryTxHash,
+        proofRegistryProofId: storageData.proofRegistryProofId,
+        proofRegistryExplorerUrl: storageData.proofRegistryExplorerUrl,
       };
 
       startTransition(() => {

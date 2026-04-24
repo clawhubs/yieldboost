@@ -91,7 +91,7 @@ export default function ZeroGStats() {
         <div className="flex items-center justify-between gap-3">
           <div className="text-[12px] font-medium text-white">0G NETWORK STATS</div>
           <a
-            href="https://chainscan-newton.0g.ai"
+            href="https://chainscan-galileo.0g.ai"
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-1 text-[11px] text-[#25d6c6]"
@@ -125,7 +125,7 @@ export default function ZeroGStats() {
           <ImpactLine path="M8 24C18 23 23 21 32 18C40 16 46 19 55 15C63 11 71 8 80 12C88 15 93 18 100 9" />
           <ImpactLine path="M8 23C17 18 26 12 36 15C45 18 52 24 61 20C70 16 77 9 86 12C92 14 96 17 100 10" />
         </div>
-        <div className="mt-3 flex items-center gap-2 border-t border-[#142028] pt-3 text-[11px] text-[#2fe06d]">
+        <div className="mt-3 flex items-center gap-2 border-t border-[rgba(255,255,255,0.06)] pt-3 text-[11px] text-[#2fe06d]">
           <ShieldCheck className="h-4 w-4" />
           Secured by 0G Network. Verified by Zero-Knowledge.
         </div>

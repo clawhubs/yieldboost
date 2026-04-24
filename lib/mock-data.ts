@@ -91,9 +91,9 @@ export const topOpportunities = [
 ] as const;
 
 export const transactionProofs = [
-  { hash: "0x3f8...b291", network: "0G Newton", age: "2 sec ago" },
-  { hash: "0xa7c...dbe2", network: "0G Newton", age: "8 sec ago" },
-  { hash: "0x9b2...dd49", network: "0G Newton", age: "15 sec ago" },
+  { hash: "0x3f8...b291", network: "0G Galileo", age: "2 sec ago" },
+  { hash: "0xa7c...dbe2", network: "0G Galileo", age: "8 sec ago" },
+  { hash: "0x9b2...dd49", network: "0G Galileo", age: "15 sec ago" },
 ] as const;
 
 export const chainStats = [

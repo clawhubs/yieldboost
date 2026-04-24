@@ -16,13 +16,13 @@ const settingsPatchSchema = z.object({
 });
 
 export async function GET() {
-  return NextResponse.json(getSettingsResponse());
+  return NextResponse.json(await getSettingsResponse());
 }
 
 export async function PATCH(req: NextRequest) {
   const body = (await req.json()) as SettingsPatchInput;
   const patch = settingsPatchSchema.parse(body);
-  updateSettingsState(patch);
+  await updateSettingsState(patch);
 
   return NextResponse.json({
     success: true,

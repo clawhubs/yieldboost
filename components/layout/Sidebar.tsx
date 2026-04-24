@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 import {
   ArrowRight,
   ChartNoAxesCombined,
@@ -16,6 +17,7 @@ import {
   Package2,
   Settings2,
   Star,
+  Pencil,
   Wallet2,
   Boxes,
   BriefcaseBusiness,
@@ -45,16 +47,48 @@ const navigation: NavigationItem[] = [
 
 const socialIcons = [Globe, MessageCircleMore, GitBranch, Grid2X2, Image];
 
+const DEFAULT_WALLET = "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D";
+const LS_KEY = "yb_wallet_override";
+
+function shortAddr(addr: string) {
+  return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+}
+
 export default function Sidebar() {
   const pathname = usePathname();
+  const [walletCopied, setWalletCopied] = useState(false);
+  const [walletAddr, setWalletAddr] = useState(DEFAULT_WALLET);
+  const [editing, setEditing] = useState(false);
+  const [inputVal, setInputVal] = useState("");
+
+  useEffect(() => {
+    const saved = localStorage.getItem(LS_KEY);
+    if (saved && saved.startsWith("0x") && saved.length >= 10) {
+      setWalletAddr(saved);
+    }
+  }, []);
+
+  function startEdit() {
+    setInputVal(walletAddr);
+    setEditing(true);
+  }
+
+  function commitEdit() {
+    const val = inputVal.trim();
+    if (val.startsWith("0x") && val.length >= 10) {
+      setWalletAddr(val);
+      localStorage.setItem(LS_KEY, val);
+    }
+    setEditing(false);
+  }
 
   return (
     <aside
       data-testid="sidebar"
-      className="w-full border-b border-[#141b22] bg-[#05090d] px-[10px] py-[10px] md:sticky md:top-0 md:h-screen md:w-[242px] md:flex-none md:overflow-y-auto md:border-b-0 md:border-r"
+      className="yb-card w-full border-b px-[10px] py-[10px] md:sticky md:top-0 md:h-screen md:w-[242px] md:flex-none md:overflow-y-auto md:border-b-0 md:border-r"
     >
       <div className="min-h-0">
-        <div className="rounded-[18px] border border-[#172028] bg-[linear-gradient(180deg,#0a1117_0%,#060a0f_100%)] px-4 py-4">
+        <div className="glass-inset rounded-[18px] px-4 py-4">
           <BrandLogo />
           <p className="mt-2.5 text-[12px] text-[#c9d2db]">AI Agent for DeFi Growth</p>
         </div>
@@ -70,8 +104,8 @@ export default function Sidebar() {
                 data-testid={`nav-${label.toLowerCase()}`}
                 className={`flex min-w-fit items-center gap-3 rounded-[14px] border px-4 py-[11px] text-[13px] font-medium transition md:min-w-0 ${
                   active
-                    ? "border-[#0ea89a] bg-[linear-gradient(180deg,rgba(0,201,177,0.18),rgba(0,130,116,0.12))] text-white shadow-[inset_0_0_0_1px_rgba(0,201,177,0.18)]"
-                    : "border-transparent text-[#f4f7fb] hover:border-[#182028] hover:bg-[#0a1117]"
+                    ? "border-[rgba(0,201,177,0.28)] bg-[rgba(0,201,177,0.10)] text-white shadow-[inset_0_0_0_1px_rgba(0,201,177,0.14),0_0_20px_rgba(0,201,177,0.06)]"
+                    : "border-transparent text-[#f4f7fb] hover:border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.04)]"
                 }`}
               >
                 <Icon className={`h-4 w-4 ${active ? "text-[#1fd8c8]" : "text-[#f4f7fb]"}`} />
@@ -87,21 +121,49 @@ export default function Sidebar() {
         </nav>
       </div>
 
-      <div className="mt-4 space-y-3 border-t border-[#121920] pt-4 md:mt-4">
-        <div className="rounded-[18px] border border-[#1b232c] bg-[linear-gradient(180deg,#0b1218_0%,#0a0f14_100%)] p-4">
+      <div className="mt-4 space-y-3 border-t border-[rgba(255,255,255,0.06)] pt-4 md:mt-4">
+        <div className="glass-inset rounded-[18px] p-4">
           <div className="flex items-center gap-2 text-[13px] font-medium text-white">
             <span className="inline-flex h-3 w-3 rounded-full bg-[#35d56e] shadow-[0_0_14px_rgba(53,213,110,0.55)]" />
             Account
           </div>
           <div className="mt-1 pl-5 text-[12px] text-[#35d56e]">Connected</div>
 
-          <div className="mt-4 flex items-center justify-between rounded-[12px] border border-[#1a232b] px-3 py-3 text-[13px] text-[#d8e0e8]">
-            <div className="flex items-center gap-3">
-              <Wallet2 className="h-4 w-4 text-[#d8e0e8]" />
-              <span>0x7eF3...8e21</span>
+          {editing ? (
+            <div className="mt-4 flex items-center gap-2">
+              <input
+                autoFocus
+                value={inputVal}
+                onChange={(e) => setInputVal(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") commitEdit(); if (e.key === "Escape") setEditing(false); }}
+                placeholder="0x..."
+                className="glass-inset flex-1 rounded-[10px] border-[rgba(37,214,198,0.4)] px-3 py-2 text-[12px] text-[#d8e0e8] outline-none"
+              />
+              <button type="button" onClick={commitEdit} className="glass-accent rounded-[10px] px-3 py-2 text-[11px] font-semibold text-[#22ddd0]">OK</button>
             </div>
-            <Copy className="h-3.5 w-3.5 text-[#9ca9b6]" />
-          </div>
+          ) : (
+            <div className="mt-4 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={async () => {
+                  await navigator.clipboard.writeText(walletAddr);
+                  setWalletCopied(true);
+                  window.setTimeout(() => setWalletCopied(false), 1400);
+                }}
+                className="glass-inset flex flex-1 items-center justify-between rounded-[12px] px-3 py-3 text-[13px] text-[#d8e0e8] transition hover:border-[rgba(0,201,177,0.35)]"
+              >
+                <div className="flex items-center gap-3">
+                  <Wallet2 className="h-4 w-4 text-[#d8e0e8]" />
+                  <span>{shortAddr(walletAddr)}</span>
+                </div>
+                <span className="text-[10px] text-[#9ca9b6]">{walletCopied ? "Copied!" : ""}</span>
+                <Copy className="h-3.5 w-3.5 text-[#9ca9b6]" />
+              </button>
+              <button type="button" onClick={startEdit} title="Use your own wallet" className="glass-inset flex h-9 w-9 flex-none items-center justify-center rounded-[10px] text-[#9ca9b6] transition hover:border-[rgba(0,201,177,0.35)] hover:text-[#22ddd0]">
+                <Pencil className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
 
           <div className="mt-4 flex items-center gap-3 text-[13px] text-[#e5edf5]">
             <Gift className="h-4 w-4 text-[#f3a441]" />
@@ -128,7 +190,7 @@ export default function Sidebar() {
             <button
               key={index}
               type="button"
-              className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-[#1d252e] bg-[#070c11] text-[#d8e0e8]"
+              className="glass-inset flex h-9 w-9 items-center justify-center rounded-[10px] text-[#d8e0e8] transition hover:border-[rgba(0,201,177,0.25)]"
             >
               <Icon className="h-4 w-4" />
             </button>

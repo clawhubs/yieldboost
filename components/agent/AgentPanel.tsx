@@ -89,7 +89,7 @@ export default function AgentPanel() {
     <section className="yb-card rounded-[18px] p-4 md:p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#153632] px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-[#22ddd0]">
+          <div className="glass-accent inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-[#22ddd0]">
             <Sparkles className="h-3.5 w-3.5" />
             AI Agent
           </div>
@@ -99,17 +99,17 @@ export default function AgentPanel() {
             optimization
           </h2>
         </div>
-        <span className="rounded-[10px] border border-[#24303a] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#d7e0e8]">
+        <span className="glass-inset rounded-[10px] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#d7e0e8]">
           {progress}
         </span>
       </div>
 
       <div className="mt-5 space-y-4">
-        <div className="ml-auto max-w-[90%] rounded-[14px] border border-[#1b242d] bg-[#0b1117] px-4 py-4 text-[14px] leading-7 text-[#edf3f8]">
+        <div className="glass-inset ml-auto max-w-[90%] rounded-[14px] px-4 py-4 text-[14px] leading-7 text-[#edf3f8]">
           {activePrompt}
         </div>
 
-        <div className="rounded-[14px] border border-[#1b242d] bg-[#0b1117] px-4 py-4">
+        <div className="glass-inset rounded-[14px] px-4 py-4">
           <div className="text-[15px] text-white">Analyzing your portfolio...</div>
           <div className="mt-4 space-y-3">
             {assistantSteps.map((step) => {
@@ -135,7 +135,7 @@ export default function AgentPanel() {
           <div className="mt-4 text-right text-[11px] text-[#a4b0bc]">Live sync</div>
         </div>
 
-        <div className="rounded-[14px] border border-[#1b242d] bg-[#0b1117] px-4 py-4">
+        <div className="glass-inset rounded-[14px] px-4 py-4">
           <div className="text-[15px] text-white">Recommended response</div>
           <div className="mt-3 text-[14px] leading-7 text-[#e6edf3]">
             {streamingText || "YieldBoost is ready to stream its recommendation after execution begins."}
@@ -145,7 +145,7 @@ export default function AgentPanel() {
         {latestResult ? (
           <div
             data-testid="optimization-result"
-            className="rounded-[16px] border border-[#1b242d] bg-[radial-gradient(circle_at_top_right,rgba(57,235,169,0.16),transparent_35%),linear-gradient(180deg,#0b1117_0%,#081015_100%)] px-4 py-5"
+            className="rounded-[16px] border border-[rgba(57,235,169,0.18)] bg-[radial-gradient(circle_at_top_right,rgba(57,235,169,0.14),transparent_35%)] px-4 py-5 backdrop-blur-[20px]"
           >
             <div className="text-[15px] text-[#22ddd0]">
               Optimization Complete! 🎉
@@ -165,25 +165,64 @@ export default function AgentPanel() {
               </div>
             </div>
 
-            <div className="mt-5 flex flex-wrap gap-3">
-              {latestResult.proofUrl ? (
-                <a
-                  href={latestResult.proofUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 rounded-[12px] border border-[#1a5b56] px-4 py-3 text-[14px] font-medium text-[#22ddd0]"
-                >
-                  View on Explorer
-                  <ArrowUpRight className="h-4 w-4" />
-                </a>
-              ) : null}
-              <div className="rounded-[12px] border border-[#24303a] px-4 py-3 text-[13px] text-[#d8e1e8]">
-                Proof CID: {latestResult.storageProof?.slice(0, 16)}...
+            <div className="mt-5 space-y-3">
+              <div className="flex flex-wrap gap-3">
+                {latestResult.proofUrl ? (
+                  <a
+                    href={latestResult.proofUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="glass-accent inline-flex items-center gap-2 rounded-[12px] px-4 py-3 text-[14px] font-medium text-[#22ddd0] transition hover:border-[rgba(0,201,177,0.4)]"
+                  >
+                    View on Explorer
+                    <ArrowUpRight className="h-4 w-4" />
+                  </a>
+                ) : null}
+                {latestResult.storageProof ? (
+                  <div className="glass-inset rounded-[12px] px-4 py-3 text-[13px] text-[#d8e1e8]">
+                    CID: {latestResult.storageProof.slice(0, 16)}...
+                  </div>
+                ) : null}
               </div>
+              {latestResult.proofRegistryAddress ? (
+                <div className="glass-accent rounded-[12px] px-4 py-3">
+                  <div className="text-[11px] uppercase tracking-[0.08em] text-[#22ddd0]">ProofRegistry</div>
+                  <div className="mt-2 space-y-2 text-[13px] text-[#d8e1e8]">
+                    {latestResult.proofRegistryProofId ? (
+                      <div>Proof ID: <span className="font-medium text-white">#{latestResult.proofRegistryProofId}</span></div>
+                    ) : null}
+                    <div className="truncate">Contract: {latestResult.proofRegistryAddress.slice(0, 10)}...{latestResult.proofRegistryAddress.slice(-6)}</div>
+                    {latestResult.proofRegistryTxHash ? (
+                      <div className="truncate">TX: {latestResult.proofRegistryTxHash.slice(0, 10)}...{latestResult.proofRegistryTxHash.slice(-6)}</div>
+                    ) : null}
+                  </div>
+                  {latestResult.proofRegistryExplorerUrl ? (
+                    <a
+                      href={latestResult.proofRegistryExplorerUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-3 inline-flex items-center gap-2 text-[12px] font-medium text-[#22ddd0]"
+                    >
+                      View Registry TX <ArrowUpRight className="h-3.5 w-3.5" />
+                    </a>
+                  ) : null}
+                </div>
+              ) : latestResult.storageProof ? (
+                <div className="glass-inset rounded-[12px] px-4 py-3">
+                  <div className="flex items-center gap-2 text-[11px] text-[#d9a441]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#d9a441]" />
+                    <span className="uppercase tracking-[0.08em]">0G Storage only · registry pending</span>
+                  </div>
+                  <div className="mt-1 text-[12px] text-[#9faab6]">
+                    Proof is anchored on 0G Storage. On-chain ProofRegistry requires{" "}
+                    <code className="text-[#d8e1e8]">ZG_PROOF_REGISTRY_ADDRESS</code> env.
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
         ) : (
-          <div className="rounded-[14px] border border-[#1b242d] bg-[#0b1117] px-4 py-4">
+          <div className="glass-inset rounded-[14px] px-4 py-4">
             <div className="text-[15px] text-white">Ready to execute</div>
             <div className="mt-3 text-[14px] leading-7 text-[#d7e0e8]">
               Start the optimizer to generate a 0G-backed recommendation and execution proof.
@@ -205,7 +244,7 @@ export default function AgentPanel() {
             name="prompt"
             rows={3}
             defaultValue={activePrompt}
-            className="w-full rounded-[14px] border border-[#1b242d] bg-[#0b1117] px-4 py-4 text-[14px] text-white outline-none transition focus:border-[#1fd8c8]"
+            className="glass-inset w-full rounded-[14px] px-4 py-4 text-[14px] text-white outline-none transition focus:border-[rgba(31,216,200,0.6)]"
           />
         </label>
 

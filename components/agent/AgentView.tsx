@@ -36,10 +36,12 @@ export default function AgentView() {
     >
       <motion.header
         variants={item}
-        className="flex flex-col gap-3 rounded-[18px] border border-[#141c23] bg-[#060c11] px-5 py-4 xl:flex-row xl:items-center xl:justify-between"
+        className="yb-card flex flex-col gap-3 rounded-[18px] px-5 py-4 xl:flex-row xl:items-center xl:justify-between"
       >
         <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#153632] px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-[#21d8c8]">
+          <div
+            className="glass-accent inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-[#21d8c8]"
+          >
             <Sparkles className="h-3.5 w-3.5" />
             AI Agent
           </div>
@@ -53,9 +55,9 @@ export default function AgentView() {
         </div>
 
         <div className="grid gap-2 sm:grid-cols-2 xl:w-[360px]">
-          <div className="rounded-[14px] border border-[#153832] bg-[linear-gradient(180deg,rgba(8,30,28,0.98),rgba(7,18,20,0.98))] px-4 py-3">
+          <div className="glass-accent rounded-[14px] px-4 py-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0c1d16] text-[#2fe06d]">
+              <div className="glass-inset flex h-10 w-10 items-center justify-center rounded-full text-[#2fe06d]">
                 <ShieldCheck className="h-5 w-5" />
               </div>
               <div>
@@ -64,9 +66,9 @@ export default function AgentView() {
               </div>
             </div>
           </div>
-          <div className="rounded-[14px] border border-[#18242d] bg-[#0a1117] px-4 py-3">
+          <div className="glass-inset rounded-[14px] px-4 py-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0e171e] text-[#22ddd0]">
+              <div className="glass-inset flex h-10 w-10 items-center justify-center rounded-full text-[#22ddd0]">
                 <Bot className="h-5 w-5" />
               </div>
               <div>
@@ -94,15 +96,15 @@ export default function AgentView() {
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <span className="rounded-[10px] border border-[#174642] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#22ddd0]">
+                <span className="glass-accent rounded-[10px] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#22ddd0]">
                   30 points
                 </span>
-                <span className="rounded-[10px] border border-[#22303a] px-3 py-1 text-[11px] text-[#d8e1e8]">
+                <span className="glass-inset rounded-[10px] px-3 py-1 text-[11px] text-[#d8e1e8]">
                   0G Network verified
                 </span>
               </div>
             </div>
-            <div className="mt-5 rounded-[16px] border border-[#17212a] bg-[radial-gradient(circle_at_top_right,rgba(34,221,208,0.14),transparent_30%),linear-gradient(180deg,#081017_0%,#070c11_100%)] px-4 py-4">
+            <div className="glass-inset mt-5 rounded-[16px] border-[rgba(0,201,177,0.12)] bg-[radial-gradient(circle_at_top_right,rgba(34,221,208,0.10),transparent_40%)] px-4 py-4">
               <YieldChart data={yieldSeries} />
             </div>
           </section>

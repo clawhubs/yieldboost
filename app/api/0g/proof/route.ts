@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const storedProof = getStoredProofByCid(cid);
+  const storedProof = await getStoredProofByCid(cid);
   if (storedProof) {
     return NextResponse.json({
       success: true,
@@ -23,6 +23,10 @@ export async function GET(req: NextRequest) {
         timestamp: storedProof.timestamp,
         explorerUrl: storedProof.explorerUrl,
         decision: storedProof.decision,
+        proofRegistryAddress: storedProof.proofRegistryAddress,
+        proofRegistryTxHash: storedProof.proofRegistryTxHash,
+        proofRegistryProofId: storedProof.proofRegistryProofId,
+        proofRegistryExplorerUrl: storedProof.proofRegistryExplorerUrl,
       },
     });
   }
@@ -66,7 +70,7 @@ export async function GET(req: NextRequest) {
                 ? data.explorerUrl
                 : undefined) ??
               (process.env.NEXT_PUBLIC_0G_EXPLORER_BASE_URL ??
-                "https://chainscan-newton.0g.ai"),
+                "https://chainscan-galileo.0g.ai"),
           },
         });
       }

@@ -39,6 +39,8 @@ Acces Key and token
 # local artifacts
 .artifacts
 test-results
+Plan/
+memory/daily/
 
 # vercel
 .vercel

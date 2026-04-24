@@ -27,6 +27,10 @@ export interface OptimizationResult {
   totalPortfolio: number;
   riskProfile: "Low" | "Moderate" | "High";
   proofUrl?: string;
+  proofRegistryAddress?: string;
+  proofRegistryTxHash?: string;
+  proofRegistryProofId?: string;
+  proofRegistryExplorerUrl?: string;
 }
 
 export interface OptimizationFeedItem {
@@ -131,7 +135,7 @@ export function createProofDetails(): ProofDetails {
   const suffix = Date.now().toString(16).slice(-8);
   const explorerBase =
     process.env.NEXT_PUBLIC_0G_EXPLORER_BASE_URL ??
-    "https://chainscan-newton.0g.ai";
+    "https://chainscan-galileo.0g.ai";
 
   return {
     txHash: `0x0g${suffix.padEnd(18, "a")}bb9e4`,
