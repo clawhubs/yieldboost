@@ -120,7 +120,7 @@ export function mapPortfolioApiToFeatureConfig(
             tone: "white",
           },
         ],
-        footer: "Fallback stays on the existing mock config if this API ever fails.",
+        footer: "Fallback keeps the current page shell stable if this API ever fails.",
       },
     ],
   };
@@ -261,7 +261,7 @@ export function mapOpportunitiesApiToFeatureConfig(
         helper: item.note,
         tone: getTone(index),
       })),
-      footer: "Opportunity ranking is now backend-fed with mock-safe fallback.",
+      footer: "Opportunity ranking is now backend-fed with a stable page fallback.",
     },
     table: {
       ...base.table,

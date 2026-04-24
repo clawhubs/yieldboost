@@ -1,13 +1,15 @@
 "use client";
 
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Bot, ShieldCheck, Sparkles } from "lucide-react";
 import AgentPanel from "@/components/agent/AgentPanel";
 import OptimizationProgress from "@/components/agent/OptimizationProgress";
 import YieldChart from "@/components/agent/YieldChart";
 import ZeroGStats from "@/components/dashboard/ZeroGStats";
+import { usePortfolio } from "@/hooks/usePortfolio";
 import { useYieldOptimizer } from "@/hooks/useYieldOptimizer";
-import { dashboardSnapshot, yieldSeries } from "@/lib/mock-data";
+import { buildOptimizationSnapshot, createYieldSeries } from "@/lib/optimizations";
 
 const container = {
   hidden: { opacity: 0 },
@@ -24,8 +26,19 @@ const item = {
 
 export default function AgentView() {
   const { latestResult, progress } = useYieldOptimizer();
-
-  const projectedApy = latestResult?.optimized_apy ?? dashboardSnapshot.optimized_apy;
+  const { portfolio } = usePortfolio();
+  const baseSnapshot = useMemo(
+    () => buildOptimizationSnapshot(
+      Object.fromEntries((portfolio?.tokens ?? []).map((token) => [token.symbol, token.valueUSD])),
+    ),
+    [portfolio],
+  );
+  const currentApy = latestResult?.current_apy ?? portfolio?.currentAPY ?? baseSnapshot.current_apy;
+  const projectedApy = latestResult?.optimized_apy ?? baseSnapshot.optimized_apy;
+  const yieldSeries = useMemo(
+    () => createYieldSeries(currentApy, projectedApy),
+    [currentApy, projectedApy],
+  );
 
   return (
     <motion.section
@@ -89,7 +102,7 @@ export default function AgentView() {
                   Yield Trajectory
                 </p>
                 <h2 className="mt-2 font-[family-name:var(--font-display)] text-[30px] font-semibold text-white">
-                  From {dashboardSnapshot.current_apy}% to {projectedApy}%
+                  From {currentApy}% to {projectedApy}%
                 </h2>
                 <p className="mt-2 text-[13px] text-[#a7b3be]">
                   Live simulation of the route selected by the 0G Network optimizer.
@@ -111,7 +124,7 @@ export default function AgentView() {
 
           <OptimizationProgress
             progress={progress}
-            executionSeconds={latestResult?.executionSeconds ?? dashboardSnapshot.executionSeconds}
+            executionSeconds={latestResult?.executionSeconds ?? baseSnapshot.executionSeconds}
           />
 
           <ZeroGStats />

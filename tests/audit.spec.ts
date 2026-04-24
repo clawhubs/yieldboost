@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 
-const BASE = "http://127.0.0.1:3020";
+const BASE =
+  process.env.PLAYWRIGHT_BASE_URL ??
+  `http://127.0.0.1:${process.env.PLAYWRIGHT_PORT ?? "3020"}`;
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -363,6 +365,9 @@ for (const pg of sidebarPages) {
     }
 
     expect(pageText.trim().length, `${pg.label} page appears blank`).toBeGreaterThan(50);
+    expect(pageText, `${pg.label} still exposes mock wording`).not.toMatch(
+      /\bmock(?:up)?\b|\bplaceholder\b/i,
+    );
 
     await page.screenshot({
       path: `test-results/audit-13-sidebar-${pg.label.toLowerCase()}.png`,
@@ -370,3 +375,24 @@ for (const pg of sidebarPages) {
     });
   });
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 14. Dashboard shortcut buttons are clickable and route correctly
+// ═══════════════════════════════════════════════════════════════════════════
+test("14 · Dashboard shortcut buttons navigate correctly", async ({ page }) => {
+  await page.goto(BASE, { waitUntil: "networkidle" });
+
+  await page.getByTestId("risk-profile").click();
+  await page.waitForURL("**/settings", { timeout: 15000 });
+  await expect(page.getByTestId("sidebar")).toBeVisible();
+
+  await page.goto(BASE, { waitUntil: "networkidle" });
+  await page.getByTestId("alerts-button").click();
+  await page.waitForURL("**/watchlist", { timeout: 15000 });
+  await expect(page.getByTestId("sidebar")).toBeVisible();
+
+  await page.screenshot({
+    path: "test-results/audit-14-dashboard-shortcuts.png",
+    fullPage: true,
+  });
+});

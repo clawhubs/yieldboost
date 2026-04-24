@@ -1,5 +1,8 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import { ArrowUpRight, Box, Cpu, ShieldCheck } from "lucide-react";
-import { chainStats } from "@/lib/mock-data";
+import { useYieldOptimizer } from "@/hooks/useYieldOptimizer";
 
 const whyZeroG = [
   {
@@ -20,12 +23,6 @@ const whyZeroG = [
     line1: "Inference + orchestration ready",
     line2: "Designed for autonomous apps",
   },
-] as const;
-
-const impactStats = [
-  { label: "New Accounts", value: "+18,392" },
-  { label: "Compute Jobs", value: "184,392" },
-  { label: "ZK Proofs Verified", value: "2.14M" },
 ] as const;
 
 function ImpactBars() {
@@ -65,6 +62,64 @@ function ImpactLine({
 }
 
 export default function ZeroGStats() {
+  const { latestResult } = useYieldOptimizer();
+  const [globalStats, setGlobalStats] = useState<{
+    hasData: boolean;
+    formatted: {
+      users: string;
+      computeJobs: string;
+      tvl: string;
+      recentJobs24h: string;
+      protocols: string;
+    };
+  } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadStats() {
+      try {
+        const response = await fetch("/api/stats/global", { cache: "no-store" });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (!cancelled) {
+          setGlobalStats(data);
+        }
+      } catch {
+        if (!cancelled) {
+          setGlobalStats(null);
+        }
+      }
+    }
+
+    void loadStats();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [latestResult]);
+
+  const chainStats = useMemo(
+    () => [
+      { label: "Wallets Optimized", value: globalStats?.formatted.users ?? "0" },
+      { label: "Compute Jobs", value: globalStats?.formatted.computeJobs ?? "0" },
+      { label: "Tracked TVL", value: globalStats?.formatted.tvl ?? "$0" },
+      { label: "Jobs (24h)", value: globalStats?.formatted.recentJobs24h ?? "0" },
+      { label: "Protocols", value: globalStats?.formatted.protocols ?? "0" },
+      { label: "Proof Coverage", value: globalStats?.hasData ? "100%" : "0%" },
+    ],
+    [globalStats],
+  );
+
+  const impactStats = useMemo(
+    () => [
+      { label: "Confidence", value: `${latestResult?.confidence ?? 96}%` },
+      { label: "Projected APY", value: `${latestResult?.optimized_apy ?? 0}%` },
+      { label: "Annual Gain", value: latestResult ? `$${latestResult.estimatedAnnualGain.toLocaleString()}` : "$0" },
+    ],
+    [latestResult],
+  );
+
   return (
     <section
       data-testid="zerog-stats"

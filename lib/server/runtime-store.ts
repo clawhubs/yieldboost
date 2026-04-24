@@ -1,5 +1,7 @@
 import "server-only";
 
+import { promises as fs } from "node:fs";
+import path from "node:path";
 import { kv } from "@vercel/kv";
 
 import {
@@ -13,6 +15,7 @@ import {
 const PROOFS_KEY = "yieldboost:proofs";
 const SETTINGS_KEY = "yieldboost:settings";
 const MAX_PROOFS = 50;
+const LOCAL_STORE_PATH = path.join(process.cwd(), ".artifacts", "runtime-store.json");
 
 function isKvConfigured() {
   return Boolean(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
@@ -38,6 +41,43 @@ function getLocalStore(): RuntimeStore {
   return globalStore.__yieldboostRuntimeStore;
 }
 
+async function readLocalStoreFile(): Promise<RuntimeStore | null> {
+  try {
+    const raw = await fs.readFile(LOCAL_STORE_PATH, "utf8");
+    const parsed = JSON.parse(raw) as Partial<RuntimeStore>;
+
+    return {
+      proofs: Array.isArray(parsed.proofs) ? parsed.proofs : [],
+      settings: parsed.settings
+        ? { ...getDefaultSettingsState(), ...parsed.settings }
+        : getDefaultSettingsState(),
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function writeLocalStoreFile(store: RuntimeStore) {
+  try {
+    await fs.mkdir(path.dirname(LOCAL_STORE_PATH), { recursive: true });
+    await fs.writeFile(LOCAL_STORE_PATH, JSON.stringify(store, null, 2), "utf8");
+  } catch (error) {
+    console.warn("[runtime-store] Local file write failed:", error);
+  }
+}
+
+async function loadLocalStore(): Promise<RuntimeStore> {
+  const cached = getLocalStore();
+  const fromDisk = await readLocalStoreFile();
+
+  if (fromDisk) {
+    globalStore.__yieldboostRuntimeStore = fromDisk;
+    return fromDisk;
+  }
+
+  return cached;
+}
+
 // --- Public API (async) ---
 export async function recordStoredProof(
   record: StoredProofRecord,
@@ -54,14 +94,16 @@ export async function recordStoredProof(
       }
       return record;
     } catch (error) {
-      console.warn("[runtime-store] KV write failed, using in-memory:", error);
+      console.warn("[runtime-store] KV write failed, using local fallback:", error);
     }
   }
-  const store = getLocalStore();
+  const store = await loadLocalStore();
   store.proofs = [record, ...store.proofs.filter((item) => item.cid !== record.cid)].slice(
     0,
     MAX_PROOFS,
   );
+  globalStore.__yieldboostRuntimeStore = store;
+  await writeLocalStoreFile(store);
   return record;
 }
 
@@ -71,10 +113,10 @@ export async function getStoredProofs(): Promise<StoredProofRecord[]> {
       const items = await kv.lrange<StoredProofRecord>(PROOFS_KEY, 0, MAX_PROOFS - 1);
       return items ?? [];
     } catch (error) {
-      console.warn("[runtime-store] KV read failed, using in-memory:", error);
+      console.warn("[runtime-store] KV read failed, using local fallback:", error);
     }
   }
-  return [...getLocalStore().proofs];
+  return [...(await loadLocalStore()).proofs];
 }
 
 export async function getStoredProofByCid(
@@ -98,7 +140,7 @@ export async function getSettingsState(): Promise<SettingsState> {
       console.warn("[runtime-store] KV settings read failed:", error);
     }
   }
-  return { ...getLocalStore().settings };
+  return { ...(await loadLocalStore()).settings };
 }
 
 export async function getSettingsResponse() {
@@ -118,6 +160,9 @@ export async function updateSettingsState(
       console.warn("[runtime-store] KV settings write failed:", error);
     }
   }
-  getLocalStore().settings = next;
+  const store = await loadLocalStore();
+  store.settings = next;
+  globalStore.__yieldboostRuntimeStore = store;
+  await writeLocalStoreFile(store);
   return next;
 }

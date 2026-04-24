@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useMemo, useEffect } from "react";
 import {
   Activity,
@@ -34,7 +35,6 @@ import {
   ExternalLink,
 } from "lucide-react";
 import ProofModal from "@/components/modals/ProofModal";
-import { chainStats } from "@/lib/mock-data";
 import { useYieldOptimizer } from "@/hooks/useYieldOptimizer";
 import { usePortfolio } from "@/hooks/usePortfolio";
 
@@ -71,12 +71,6 @@ const whyOg = [
   { icon: Box, title: "AI-NATIVE STORAGE", line1: "Petabyte scale", line2: "Low cost, high throughput" },
   { icon: ShieldCheck, title: "VERIFIABLE COMPUTE", line1: "ZK-proofs on-chain", line2: "Trustless & verifiable" },
   { icon: Cpu, title: "BUILT FOR AI AGENTS", line1: "Decentralized infra", line2: "Designed for scale" },
-] as const;
-
-const impactStats = [
-  { label: "New Accounts", value: "+18,392" },
-  { label: "Compute Jobs", value: "184,392" },
-  { label: "ZK Proofs Verified", value: "2.14M" },
 ] as const;
 
 const footerItems = [
@@ -217,7 +211,7 @@ const EXPLORER_BASE = "https://chainscan-galileo.0g.ai";
 export default function DashboardView() {
   const [proofOpen, setProofOpen] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
-  const { latestResult, optimize, isOptimizing } = useYieldOptimizer();
+  const { latestResult, optimize, isOptimizing, progress, streamingText } = useYieldOptimizer();
   const { portfolio } = usePortfolio();
   const [globalStats, setGlobalStats] = useState<{
     hasData: boolean;
@@ -302,6 +296,41 @@ export default function DashboardView() {
     ? `${portfolio.walletAddress.slice(0, 6)}...${portfolio.walletAddress.slice(-4)}`
     : "wallet connected";
 
+  const statusTimeLabel = latestResult
+    ? new Date(latestResult.timestamp).toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+      })
+    : "Live now";
+
+  const syncPct = latestResult ? 100 : portfolio?.tokens?.length ? 98.4 : 0;
+  const chainStats = useMemo(
+    () => [
+      { label: "Wallets Optimized", value: globalStats?.formatted.users ?? "0" },
+      { label: "Compute Jobs", value: globalStats?.formatted.computeJobs ?? "0" },
+      { label: "Tracked TVL", value: globalStats?.formatted.tvl ?? "$0" },
+      { label: "Jobs (24h)", value: globalStats?.formatted.recentJobs24h ?? "0" },
+      { label: "Protocols", value: globalStats?.formatted.protocols ?? "0" },
+      { label: "Proof Coverage", value: globalStats?.hasData ? "100%" : "0%" },
+    ],
+    [globalStats],
+  );
+  const impactStats = useMemo(
+    () => [
+      { label: "Confidence", value: `${live.confidence}%` },
+      { label: "Projected APY", value: `${live.optimizedApy}%` },
+      { label: "Annual Gain", value: `$${live.estimatedAnnualGain.toLocaleString()}` },
+    ],
+    [live],
+  );
+  const progressSteps = [
+    { label: "Analyzing", key: "analyzing" },
+    { label: "Optimizing", key: "optimizing" },
+    { label: "Executing", key: "executing" },
+    { label: "Done", key: "done" },
+  ] as const;
+  const activeProgressIndex = progressSteps.findIndex((step) => step.key === progress);
+
   return (
     <>
       <section className="animate-fade-in-up p-[10px] md:h-full">
@@ -316,8 +345,8 @@ export default function DashboardView() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
+                <Link
+                  href="/settings"
                   data-testid="risk-profile"
                   className="flex h-[46px] items-center gap-2 rounded-[12px] border border-[#1b242d] bg-[#0a1117] px-4 text-left"
                 >
@@ -326,9 +355,9 @@ export default function DashboardView() {
                     <div className="mt-0.5 text-[12px] font-medium text-[#2ad7c8]">Moderate</div>
                   </div>
                   <ChevronDown className="h-4 w-4 text-[#d9e1e8]" />
-                </button>
-                <button
-                  type="button"
+                </Link>
+                <Link
+                  href="/watchlist"
                   data-testid="alerts-button"
                   className="relative flex h-[46px] w-[46px] items-center justify-center rounded-[12px] border border-[#1b242d] bg-[#0a1117] text-white"
                 >
@@ -336,7 +365,7 @@ export default function DashboardView() {
                   <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#1cdad0] px-1 text-[9px] font-semibold text-[#061015]">
                     3
                   </span>
-                </button>
+                </Link>
                 <button
                   type="button"
                   data-testid="boost-yield-cta"
@@ -446,18 +475,31 @@ export default function DashboardView() {
                   </div>
                   <div>
                     <div className="text-[14px] font-semibold text-[#21d8c8]">0G STORAGE STATUS</div>
-                    <div className="text-[13px] text-white">Your portfolio data is securely synced to 0G Storage</div>
-                    <div className="mt-1 text-[11px] text-[#a8b4bf]">Last synced: 2s ago to 0G Storage</div>
+                    <div className="text-[13px] text-white">
+                      {latestResult
+                        ? "Latest optimization proof is synchronized to 0G Storage"
+                        : "Wallet data is ready for the next 0G proof write"}
+                    </div>
+                    <div className="mt-1 text-[11px] text-[#a8b4bf]">
+                      {latestResult
+                        ? `Last synced: ${statusTimeLabel} to 0G Storage`
+                        : portfolio?.tokens?.length
+                          ? `Wallet snapshot live for ${portfolioWalletLabel}`
+                          : "Waiting for the first live wallet snapshot"}
+                    </div>
                   </div>
                 </div>
 
                 <div className="min-w-0">
                   <div className="flex items-center justify-between text-[13px] text-[#d8e1e9]">
-                    <span>Synchronizing...</span>
-                    <span>98.4%</span>
+                    <span>{latestResult ? "Synchronized" : "Preparing proof sync"}</span>
+                    <span>{syncPct.toFixed(1)}%</span>
                   </div>
                   <div className="mt-2 h-[12px] rounded-full bg-[#0c141b] p-[2px]">
-                    <div className="h-full w-[98.4%] rounded-full bg-[linear-gradient(90deg,#22ddd0_0%,#18aeb8_100%)]" />
+                    <div
+                      className="h-full rounded-full bg-[linear-gradient(90deg,#22ddd0_0%,#18aeb8_100%)]"
+                      style={{ width: `${syncPct}%` }}
+                    />
                   </div>
                 </div>
 
@@ -479,12 +521,36 @@ export default function DashboardView() {
             </div>
 
             <div className="grid gap-[10px] xl:grid-cols-4">
-              {[
-                { label: "TOTAL PORTFOLIO VALUE", value: `$${live.totalPortfolio.toLocaleString()}`, change: "↑ 5.34% (24h)", icon: Wallet2, accent: false },
-                { label: "TOTAL EARNED (ALL TIME)", value: `$${live.estimatedAnnualGain.toLocaleString()}`, change: "↑ 12.45%", icon: DollarSign, accent: false },
-                { label: "AVG. CURRENT APY", value: `${live.currentApy}%`, change: "", icon: Gauge, accent: false },
-                { label: "POTENTIAL AFTER AI", value: `${live.optimizedApy}%`, change: `↑ ${live.yieldIncreasePct}%`, icon: Plane, accent: true },
-              ].map((item, index) => (
+                {[
+                  {
+                    label: "TOTAL PORTFOLIO VALUE",
+                    value: `$${live.totalPortfolio.toLocaleString()}`,
+                    change: portfolio?.tokens?.length ? `Wallet live · ${portfolioWalletLabel}` : "Waiting for wallet sync",
+                    icon: Wallet2,
+                    accent: false,
+                  },
+                  {
+                    label: "PROJECTED ANNUAL GAIN",
+                    value: `$${live.estimatedAnnualGain.toLocaleString()}`,
+                    change: latestResult ? "Based on the latest proof-backed route" : "Calculated from the active portfolio snapshot",
+                    icon: DollarSign,
+                    accent: false,
+                  },
+                  {
+                    label: "AVG. CURRENT APY",
+                    value: `${live.currentApy}%`,
+                    change: latestResult ? `Last executed at ${statusTimeLabel}` : "Current wallet baseline",
+                    icon: Gauge,
+                    accent: false,
+                  },
+                  {
+                    label: "POTENTIAL AFTER AI",
+                    value: `${live.optimizedApy}%`,
+                    change: `↑ ${live.yieldIncreasePct}%`,
+                    icon: Plane,
+                    accent: true,
+                  },
+                ].map((item, index) => (
                 <div
                   key={item.label}
                   data-testid={
@@ -551,9 +617,9 @@ export default function DashboardView() {
               <div className="yb-card rounded-[14px] px-4 py-4">
                 <div className="flex items-center justify-between gap-3">
                   <div className="text-[12px] font-medium text-white">AI DECISION LOG</div>
-                  <button type="button" className="rounded-[10px] border border-[#24303a] px-3 py-1 text-[11px] text-[#d7e0e8]">
+                  <Link href="/analytics" className="rounded-[10px] border border-[#24303a] px-3 py-1 text-[11px] text-[#d7e0e8]">
                     Why?
-                  </button>
+                  </Link>
                 </div>
                 <div className="mt-4 space-y-2">
                   {liveDecisions.map((item) => (
@@ -572,9 +638,9 @@ export default function DashboardView() {
               <div className="yb-card rounded-[14px] px-4 py-4">
                 <div className="flex items-center justify-between gap-3">
                   <div className="text-[12px] font-medium text-white">TOP OPPORTUNITIES</div>
-                  <button type="button" className="rounded-[10px] border border-[#24303a] px-3 py-1 text-[11px] text-[#d7e0e8]">
+                  <Link href="/opportunities" className="rounded-[10px] border border-[#24303a] px-3 py-1 text-[11px] text-[#d7e0e8]">
                     View all
-                  </button>
+                  </Link>
                 </div>
                 <div className="mt-4 space-y-4">
                   {liveOpportunities.map((item) => (
@@ -657,39 +723,38 @@ export default function DashboardView() {
                 ) : null}
               </div>
 
-              <div data-testid="optimization-progress" className="yb-card rounded-[14px] px-4 py-4">
-                <div className="text-[12px] font-medium text-white">OPTIMIZATION PROGRESS</div>
-                <div className="mt-5 flex items-center justify-between">
-                  {[
-                    { label: "Analyzing", done: true },
-                    { label: "Optimizing", done: true },
-                    { label: "Executing", active: true, step: "3" },
-                    { label: "Done", step: "4" },
-                  ].map((step, index) => (
-                    <div key={step.label} className="relative flex flex-1 flex-col items-center">
-                      {index < 3 ? (
-                        <div className="absolute left-1/2 top-[18px] h-[2px] w-full bg-[#27423f]" />
-                      ) : null}
-                      <div
-                        className={`relative z-10 flex h-9 w-9 items-center justify-center rounded-full border text-[13px] ${
-                          step.done
-                            ? "border-[#2ed86a] bg-[#12321c] text-[#2ed86a]"
-                            : step.active
-                              ? "yb-glow-border border-[#25d6c6] bg-[#0d2523] text-[#25d6c6]"
-                              : "border-[#2b3640] bg-[#091117] text-[#d7dfe7]"
-                        }`}
-                      >
-                        {step.done ? <CheckCheck className="h-4 w-4" /> : step.step}
-                      </div>
-                      <div className="mt-3 text-[12px] text-[#d8e1e8]">{step.label}</div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-5 flex items-center justify-center gap-2 text-[12px] text-[#d6dee6]">
-                  <Zap className="h-4 w-4 text-[#f7b24c]" />
-                  Executed in 8.42 seconds
-                </div>
-              </div>
+	              <div data-testid="optimization-progress" className="yb-card rounded-[14px] px-4 py-4">
+	                <div className="text-[12px] font-medium text-white">OPTIMIZATION PROGRESS</div>
+	                <div className="mt-5 flex items-center justify-between">
+	                  {progressSteps.map((step, index) => {
+	                    const done = progress === "done" || index < activeProgressIndex;
+	                    const active = index === activeProgressIndex && progress !== "done";
+
+	                    return (
+	                    <div key={step.label} className="relative flex flex-1 flex-col items-center">
+	                      {index < 3 ? (
+	                        <div className="absolute left-1/2 top-[18px] h-[2px] w-full bg-[#27423f]" />
+	                      ) : null}
+	                      <div
+	                        className={`relative z-10 flex h-9 w-9 items-center justify-center rounded-full border text-[13px] ${
+	                          done
+	                            ? "border-[#2ed86a] bg-[#12321c] text-[#2ed86a]"
+	                            : active
+	                              ? "yb-glow-border border-[#25d6c6] bg-[#0d2523] text-[#25d6c6]"
+	                              : "border-[#2b3640] bg-[#091117] text-[#d7dfe7]"
+	                        }`}
+	                      >
+	                        {done ? <CheckCheck className="h-4 w-4" /> : index + 1}
+	                      </div>
+	                      <div className="mt-3 text-[12px] text-[#d8e1e8]">{step.label}</div>
+	                    </div>
+	                  )})}
+	                </div>
+	                <div className="mt-5 flex items-center justify-center gap-2 text-[12px] text-[#d6dee6]">
+	                  <Zap className="h-4 w-4 text-[#f7b24c]" />
+	                  Executed in {(latestResult?.executionSeconds ?? 8.42).toFixed(2)} seconds
+	                </div>
+	              </div>
 
               <div className="yb-card rounded-[14px] px-4 py-4">
                 <div className="text-[12px] font-medium text-white">EXECUTING STRATEGY...</div>
@@ -722,12 +787,12 @@ export default function DashboardView() {
                 <div className="mt-5 text-[13px] text-[#d8e1e8]">The data layer for the AI-native Web3.</div>
               </div>
 
-              <div data-testid="zerog-stats" className="yb-card rounded-[14px] px-4 py-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <div className="text-[12px] font-medium text-white">0G CHAIN STATS</div>
-                    <div className="text-[10px] text-[#6b7a87]">source: 0g.ai network docs</div>
-                  </div>
+	              <div data-testid="zerog-stats" className="yb-card rounded-[14px] px-4 py-4">
+	                <div className="flex items-center justify-between gap-3">
+	                  <div>
+	                    <div className="text-[12px] font-medium text-white">0G CHAIN STATS</div>
+	                    <div className="text-[10px] text-[#6b7a87]">source: live app runtime</div>
+	                  </div>
                   <a href={EXPLORER_BASE} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[11px] text-[#25d6c6]">View on 0G Explorer <ExternalLink className="h-3 w-3" /></a>
                 </div>
                 <div className="mt-4 grid grid-cols-3 gap-3">
@@ -740,11 +805,11 @@ export default function DashboardView() {
                 </div>
               </div>
 
-              <div className="yb-card rounded-[14px] px-4 py-4">
-                <div>
-                  <div className="text-[12px] font-medium text-white">0G ECOSYSTEM IMPACT (30D)</div>
-                  <div className="text-[10px] text-[#6b7a87]">source: 0g.ai network docs</div>
-                </div>
+	              <div className="yb-card rounded-[14px] px-4 py-4">
+	                <div>
+	                  <div className="text-[12px] font-medium text-white">0G ECOSYSTEM IMPACT (30D)</div>
+	                  <div className="text-[10px] text-[#6b7a87]">source: optimizer activity and proof history</div>
+	                </div>
                 <div className="mt-4 grid grid-cols-3 gap-5">
                   {impactStats.map((item) => (
                     <div key={item.label}>
@@ -795,12 +860,12 @@ export default function DashboardView() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <button type="button" className="flex h-10 w-10 items-center justify-center rounded-[10px] border border-[#1b242d] bg-[#0a1117] text-[#d8e1e8]">
+                <Link href="/watchlist" className="flex h-10 w-10 items-center justify-center rounded-[10px] border border-[#1b242d] bg-[#0a1117] text-[#d8e1e8]">
                   <Grid2X2 className="h-4 w-4" />
-                </button>
-                <button type="button" className="flex h-10 w-10 items-center justify-center rounded-[10px] border border-[#1b242d] bg-[#0a1117] text-[#d8e1e8]">
+                </Link>
+                <Link href="/agent" className="flex h-10 w-10 items-center justify-center rounded-[10px] border border-[#1b242d] bg-[#0a1117] text-[#d8e1e8]">
                   <Expand className="h-4 w-4" />
-                </button>
+                </Link>
               </div>
             </div>
 
@@ -815,7 +880,7 @@ export default function DashboardView() {
                   yield with low risk.
                 </div>
                 <div className="mt-4 flex items-center justify-end gap-2 text-[11px] text-[#a4b0bc]">
-                  <span>10:30 AM</span>
+                  <span>{statusTimeLabel}</span>
                   <CheckCheck className="h-4 w-4 text-[#25d6c6]" />
                 </div>
               </div>
@@ -835,7 +900,7 @@ export default function DashboardView() {
                     </div>
                   ))}
                 </div>
-                <div className="mt-4 text-right text-[11px] text-[#a4b0bc]">10:30 AM</div>
+                <div className="mt-4 text-right text-[11px] text-[#a4b0bc]">{statusTimeLabel}</div>
               </div>
             </div>
 
@@ -844,13 +909,21 @@ export default function DashboardView() {
                 <AgentSideRail icon={CircleDashed} />
               </div>
               <div className="min-w-0 flex-1 rounded-[14px] border border-[#1b242d] bg-[#0b1117] px-4 py-4">
-                <div className="text-[15px] text-white">Here&apos;s your optimal strategy:</div>
+                <div className="text-[15px] text-white">
+                  {streamingText ? "Latest recommendation:" : "Here&apos;s your optimal strategy:"}
+                </div>
                 <div className="mt-3 text-[14px] leading-7 text-[#e6edf3]">
-                  You can increase your yield by
-                  <br />
-                  <span className="text-[16px] font-semibold text-[#2fe06d]">+{live.yieldIncreasePct}% (+${live.estimatedAnnualGain.toLocaleString()}/year)</span>
-                  <br />
-                  with low risk.
+                  {streamingText ? (
+                    streamingText
+                  ) : (
+                    <>
+                      You can increase your yield by
+                      <br />
+                      <span className="text-[16px] font-semibold text-[#2fe06d]">+{live.yieldIncreasePct}% (+${live.estimatedAnnualGain.toLocaleString()}/year)</span>
+                      <br />
+                      with low risk.
+                    </>
+                  )}
                 </div>
                 <button
                   type="button"
@@ -863,7 +936,7 @@ export default function DashboardView() {
                   {isOptimizing ? "Executing Optimization..." : "Execute Optimization"}
                 </button>
                 <div className="mt-4 flex items-center justify-end gap-2 text-[11px] text-[#a4b0bc]">
-                  <span>10:31 AM</span>
+                  <span>{statusTimeLabel}</span>
                   <CheckCheck className="h-4 w-4 text-[#25d6c6]" />
                 </div>
               </div>
@@ -874,7 +947,9 @@ export default function DashboardView() {
                 <AgentSideRail icon={Clock3} />
               </div>
               <div className="min-w-0 flex-1 rounded-[14px] border border-[#1b242d] bg-[#0b1117] px-4 py-4">
-                <div className="text-[15px] text-white">Executing strategy...</div>
+                <div className="text-[15px] text-white">
+                  {progress === "done" ? "Strategy executed" : "Executing strategy..."}
+                </div>
                 <div className="mt-4 space-y-3">
                   {executionSteps.map((item) => (
                     <div key={item} className="flex items-center gap-3 text-[13px] text-[#d7e0e8]">
@@ -884,7 +959,7 @@ export default function DashboardView() {
                   ))}
                 </div>
                 <div className="mt-4 flex items-center justify-end gap-2 text-[11px] text-[#a4b0bc]">
-                  <span>10:31 AM</span>
+                  <span>{statusTimeLabel}</span>
                   <CheckCheck className="h-4 w-4 text-[#25d6c6]" />
                 </div>
               </div>
@@ -904,7 +979,11 @@ export default function DashboardView() {
                   <CheckCheck className="h-10 w-10 text-[#68ff7a]" />
                 </div>
               </div>
-              <div className="mt-2 text-[13px] text-[#dbe4ec]">You&apos;re now earning more!</div>
+              <div className="mt-2 text-[13px] text-[#dbe4ec]">
+                {latestResult?.storageProof
+                  ? `Proof stored as ${latestResult.storageProof.slice(0, 12)}...`
+                  : "Run the optimizer to create the first proof-backed result."}
+              </div>
               <button
                 type="button"
                 data-testid="agent-card-proof"
@@ -914,7 +993,7 @@ export default function DashboardView() {
                 View on Explorer →
               </button>
               <div className="mt-4 flex items-center justify-end gap-2 text-[11px] text-[#a4b0bc]">
-                <span>10:32 AM</span>
+                <span>{statusTimeLabel}</span>
                 <CheckCheck className="h-4 w-4 text-[#25d6c6]" />
               </div>
             </div>

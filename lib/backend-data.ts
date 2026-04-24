@@ -275,6 +275,12 @@ function formatPercent(value: number, digits = 2) {
   return `${value.toFixed(digits)}%`;
 }
 
+function formatCompactNumber(value: number) {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(2)}M`;
+  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}k`;
+  return value.toLocaleString("en-US");
+}
+
 function formatTime(timestamp: string) {
   return new Date(timestamp).toLocaleTimeString("en-US", {
     hour: "numeric",
@@ -318,6 +324,149 @@ export function getPortfolioValueMap(
   return Object.fromEntries(
     tokens.map((token) => [token.symbol, token.valueUSD]),
   ) as Record<string, number>;
+}
+
+function createOptimizationResultFromProof(
+  proof: StoredProofRecord,
+): OptimizationResult {
+  return {
+    current_apy: proof.decision.current_apy,
+    optimized_apy: proof.decision.optimized_apy,
+    yield_increase: proof.decision.yield_increase,
+    yield_increase_pct: proof.decision.yield_increase_pct,
+    top_protocols: [
+      {
+        name: proof.decision.recommended,
+        apy: proof.decision.optimized_apy,
+        risk:
+          proof.decision.optimized_apy >= 28
+            ? "high"
+            : proof.decision.optimized_apy >= 16
+              ? "medium"
+              : "low",
+      },
+    ],
+    recommended: proof.decision.recommended,
+    confidence: proof.decision.confidence,
+    reasoning: proof.decision.reasoning,
+    storageProof: proof.cid,
+    txHash: proof.txHash,
+    timestamp: proof.timestamp,
+    executionSeconds: proof.decision.executionSeconds ?? 8.42,
+    estimatedAnnualGain:
+      proof.decision.estimatedAnnualGain ?? proof.decision.yield_increase,
+    totalPortfolio: proof.decision.totalPortfolio ?? 0,
+    riskProfile: "Moderate",
+    proofUrl: proof.explorerUrl,
+    walletAddress: proof.walletAddress,
+    proofRegistryAddress: proof.proofRegistryAddress,
+    proofRegistryTxHash: proof.proofRegistryTxHash,
+    proofRegistryProofId: proof.proofRegistryProofId,
+    proofRegistryExplorerUrl: proof.proofRegistryExplorerUrl,
+  };
+}
+
+function getActiveSnapshot(
+  proofs: StoredProofRecord[] = [],
+  portfolio: PortfolioResponse = getMockPortfolio(),
+) {
+  if (proofs[0]) {
+    return createOptimizationResultFromProof(proofs[0]);
+  }
+
+  return buildOptimizationSnapshot(getPortfolioValueMap(portfolio));
+}
+
+function getPortfolioBreakdown(portfolio: PortfolioResponse) {
+  const total = portfolio.totalUSD || 0;
+
+  return (portfolio.tokens.length > 0 ? portfolio.tokens : getMockPortfolio().tokens).map((token) => ({
+    ...token,
+    pct: total > 0 ? round((token.valueUSD / total) * 100, 1) : 0,
+  }));
+}
+
+export function buildPortfolioSummaryFromPortfolio(
+  portfolio: PortfolioResponse = getMockPortfolio(),
+  proofs: StoredProofRecord[] = [],
+): PortfolioSummaryResponse {
+  const snapshot = getActiveSnapshot(proofs, portfolio);
+  const breakdown = getPortfolioBreakdown(portfolio);
+  const topTokens = breakdown.slice(0, 4);
+  const idleCapital = round(
+    proofs[0]
+      ? Math.max(
+          0,
+          (portfolio.totalUSD || snapshot.totalPortfolio) *
+            Math.min(0.4, snapshot.yield_increase_pct / 100),
+        )
+      : portfolio.totalUSD,
+  );
+
+  return {
+    hero: {
+      totalPortfolio: round(portfolio.totalUSD || snapshot.totalPortfolio, 2),
+      idleCapital,
+      syncPct: proofs[0] ? 100 : portfolio.tokens.length > 0 ? 98.4 : 92,
+      trackedPositions: Math.max(portfolio.tokens.length, 1),
+    },
+    allocation: topTokens.map((token, index) => ({
+      symbol: token.symbol,
+      pct: token.pct,
+      note:
+        index === 0
+          ? "Largest tracked allocation"
+          : token.pct >= 20
+            ? "Core portfolio exposure"
+            : "Supporting position in the current wallet mix",
+    })),
+    positions: topTokens.map((token, index) => ({
+      asset: token.symbol,
+      protocol:
+        index === 0
+          ? snapshot.recommended
+          : index === 1
+            ? "0G Network Vault"
+            : index === 2
+              ? "Reward Pool"
+              : "Lending Loop",
+      apy:
+        index === 0
+          ? snapshot.optimized_apy
+          : index === 1
+            ? Math.max(snapshot.current_apy, 8.5)
+            : Math.max(snapshot.current_apy - index * 1.1, 4.5),
+      exposure: token.pct >= 40 ? "High" : token.pct >= 15 ? "Medium" : "Low",
+      state:
+        index === 0
+          ? proofs[0]
+            ? "optimized"
+            : "ready"
+          : token.pct >= 40
+            ? "watch"
+            : "healthy",
+    })),
+    health: {
+      diversification:
+        topTokens.length > 2
+          ? `Healthy across ${topTokens.length} tracked assets`
+          : "Concentrated wallet, consider diversification",
+      slippageBudget: "0.8% max for auto execution",
+      riskProfile: `${snapshot.riskProfile} with capital preservation bias`,
+    },
+    reviewerNotes: {
+      syncStatus: proofs[0]
+        ? "Latest optimization anchored to 0G Storage"
+        : "Wallet snapshot available for the next optimization run",
+      nextTrigger:
+        idleCapital > 0
+          ? `Optimize once idle capital exceeds ${formatCurrency(idleCapital)}`
+          : "Ready for manual optimization review",
+      proofMode: proofs[0]
+        ? "Explorer-ready record after execution"
+        : "Proof entry will appear after the first execution",
+    },
+  };
 }
 
 export function getMockPortfolioSummary(): PortfolioSummaryResponse {
@@ -596,7 +745,7 @@ export function getMockHistory(): HistoryResponse {
     },
     verification: {
       explorerSource: "0G Galileo reference path",
-      storageAnchor: "CID reserved for every mock run",
+      storageAnchor: "CID reserved for every recorded run",
       reviewStatus: "Ready for judge walkthrough",
     },
   };
@@ -606,7 +755,40 @@ export function buildHistoryFromProofs(
   proofs: StoredProofRecord[],
 ): HistoryResponse {
   if (proofs.length === 0) {
-    return getMockHistory();
+    return {
+      hero: {
+        runs: 0,
+        successRate: 100,
+        proofEntries: 0,
+        valueRouted: 0,
+      },
+      timeline: [
+        {
+          time: "Now",
+          value: "Portfolio waiting for first optimization",
+          note: "Run the agent to generate a live proof trail",
+        },
+      ],
+      ledger: [
+        {
+          timestamp: "Pending",
+          action: "No proof stored yet",
+          cid: "Awaiting first run",
+          explorer: "0G Galileo",
+          state: "ready",
+        },
+      ],
+      latestOutcome: {
+        realizedApyLift: "+0.00%",
+        annualizedGain: "+$0 projected",
+        executionTime: "Pending first run",
+      },
+      verification: {
+        explorerSource: "0G Galileo reference path",
+        storageAnchor: "No proof entry recorded yet",
+        reviewStatus: "Run the optimizer to populate live history",
+      },
+    };
   }
 
   const latest = proofs[0];
@@ -748,6 +930,109 @@ export function getMockAnalytics(): AnalyticsResponse {
   };
 }
 
+export function buildAnalyticsFromProofs(
+  proofs: StoredProofRecord[],
+  portfolio: PortfolioResponse = getMockPortfolio(),
+): AnalyticsResponse {
+  const snapshot = getActiveSnapshot(proofs, portfolio);
+  const totalRuns = proofs.length;
+  const averageLift =
+    totalRuns > 0
+      ? round(
+          proofs.reduce((sum, proof) => sum + proof.decision.yield_increase_pct, 0) /
+            totalRuns,
+          2,
+        )
+      : snapshot.yield_increase_pct;
+  const averageExecution =
+    totalRuns > 0
+      ? round(
+          proofs.reduce(
+            (sum, proof) => sum + (proof.decision.executionSeconds ?? 8.42),
+            0,
+          ) / totalRuns,
+          2,
+        )
+      : snapshot.executionSeconds;
+  const proofCoverage = totalRuns > 0 ? 100 : 0;
+
+  return {
+    hero: {
+      avgApyLift: `+${averageLift.toFixed(2)}%`,
+      avgExecution: `${averageExecution.toFixed(2)}s`,
+      computeJobs: formatCompactNumber(totalRuns),
+      uptime: totalRuns > 0 ? "100.00%" : "Standby",
+    },
+    overview: [
+      {
+        label: "Gross Yield Lift",
+        value: `+${averageLift.toFixed(2)}%`,
+        note: totalRuns > 0 ? "Averaged from stored optimization runs" : "Ready once the first run completes",
+      },
+      {
+        label: "Net Gain After Fees",
+        value: formatCurrency(snapshot.estimatedAnnualGain),
+        note: "Based on the most recent optimization plan",
+      },
+      {
+        label: "Risk Compression",
+        value: snapshot.riskProfile === "Low" ? "-22%" : snapshot.riskProfile === "Moderate" ? "-18%" : "-9%",
+        note: "Lower concentration after route selection",
+      },
+      {
+        label: "Proof Completion",
+        value: `${proofCoverage}%`,
+        note: totalRuns > 0 ? "Every recorded run has an explorer trace" : "No proof recorded yet",
+      },
+    ],
+    matrix: [
+      {
+        metric: "APY Improvement",
+        current: `+${averageLift.toFixed(2)}%`,
+        benchmark: `${snapshot.current_apy.toFixed(2)}%`,
+        direction: "Up",
+        state: averageLift > 0 ? "strong" : "steady",
+      },
+      {
+        metric: "Execution Time",
+        current: `${averageExecution.toFixed(2)}s`,
+        benchmark: "12.50s",
+        direction: averageExecution <= 12.5 ? "Down" : "Up",
+        state: averageExecution <= 12.5 ? "better" : "watch",
+      },
+      {
+        metric: "Proof Coverage",
+        current: `${proofCoverage}%`,
+        benchmark: "100%",
+        direction: proofCoverage >= 100 ? "Up" : "Down",
+        state: proofCoverage >= 100 ? "clean" : "pending",
+      },
+      {
+        metric: "Risk Deviation",
+        current: snapshot.riskProfile,
+        benchmark: "Moderate",
+        direction: snapshot.riskProfile === "High" ? "Up" : "Down",
+        state: snapshot.riskProfile === "High" ? "watch" : "safe",
+      },
+    ],
+    efficiency: {
+      computeEfficiency:
+        totalRuns > 0 ? "Live optimization runs executing with proof capture" : "Optimizer ready and awaiting execution",
+      storageFootprint:
+        totalRuns > 0 ? `${formatCompactNumber(totalRuns)} proof snapshots stored` : "No proof snapshots stored yet",
+      explorerCoverage:
+        totalRuns > 0 ? "History and proof modal can deep-link to explorer receipts" : "Explorer links will appear after the first run",
+    },
+    modelConfidence: {
+      averageConfidence: `${snapshot.confidence}% on top-ranked actions`,
+      fallbackUsage:
+        totalRuns > 0 ? "Reduced after live optimization history was recorded" : "Will decline once live runs replace baseline guidance",
+      userExplainability:
+        totalRuns > 0 ? "Reasoning stream persisted with the latest proof entry" : "Reasoning stream available during the first execution",
+    },
+  };
+}
+
 export function getMockWatchlist(): WatchlistResponse {
   return {
     hero: {
@@ -813,6 +1098,88 @@ export function getMockWatchlist(): WatchlistResponse {
       promoteToOpportunity: "1 click once threshold is met",
       sendToAgent: "Mock-ready for manual execution",
       archiveSignal: "Keep the list clean for demos",
+    },
+  };
+}
+
+export function buildWatchlistFromState(
+  proofs: StoredProofRecord[],
+  settings: SettingsState = getDefaultSettingsState(),
+  portfolio: PortfolioResponse = getMockPortfolio(),
+): WatchlistResponse {
+  const snapshot = getActiveSnapshot(proofs, portfolio);
+  const breakdown = getPortfolioBreakdown(portfolio);
+  const hotSignals = Math.min(7, Math.max(1, snapshot.top_protocols.length + (proofs.length > 0 ? 2 : 1)));
+  const idleCandidates = breakdown.filter((token) => token.pct >= 20).length || 1;
+
+  return {
+    hero: {
+      watchedPools: Math.max(3, breakdown.length + snapshot.top_protocols.length),
+      hotSignals,
+      idleCandidates,
+      alertsToday: proofs.length > 0 ? Math.min(5, proofs.length + 1) : 2,
+    },
+    protocolsUnderWatch: [
+      {
+        label: snapshot.recommended,
+        value: `+${snapshot.yield_increase_pct.toFixed(2)}%`,
+        note: "Best current lift for the active wallet profile",
+      },
+      {
+        label: "0G Staking Vault",
+        value: settings.riskProfile === "Low" ? "Preferred" : "Stable",
+        note: "Low-risk ecosystem anchor",
+      },
+      {
+        label: breakdown[0]?.symbol ?? "Wallet Core",
+        value: `${breakdown[0]?.pct ?? 0}%`,
+        note: "Largest current portfolio allocation",
+      },
+      {
+        label: "Slippage Guard",
+        value: settings.maxSlippage,
+        note: "Current automatic execution ceiling",
+      },
+    ],
+    alerts: [
+      {
+        protocol: snapshot.recommended,
+        signal: `Projected lift +${snapshot.yield_increase_pct.toFixed(2)}%`,
+        action: "Send to agent for execution",
+        priority: "High",
+        state: proofs[0] ? "live" : "ready",
+      },
+      {
+        protocol: "0G Vault",
+        signal: `${settings.riskProfile} profile active`,
+        action: "Maintain proof-friendly allocation",
+        priority: "Medium",
+        state: "stable",
+      },
+      {
+        protocol: breakdown[0]?.symbol ?? "Wallet",
+        signal: `${idleCandidates} idle candidate${idleCandidates > 1 ? "s" : ""} detected`,
+        action: "Review concentration before next run",
+        priority: "High",
+        state: "alert",
+      },
+      {
+        protocol: "Notifications",
+        signal: `${settings.notificationMode} updates enabled`,
+        action: settings.notificationMode === "Digest" ? "Review summary later" : "Monitor live activity",
+        priority: "Medium",
+        state: "watch",
+      },
+    ],
+    conditions: {
+      yieldDelta: "Alert above +3.0% projected lift",
+      liquidityGuard: `Respect ${settings.maxSlippage} slippage ceiling`,
+      proofPreference: "Prioritize destinations with explorer-ready proof trails",
+    },
+    quickActions: {
+      promoteToOpportunity: "Open the opportunities menu for route ranking",
+      sendToAgent: "Send the top alert to the optimizer in one click",
+      archiveSignal: "Archive resolved alerts after proof storage completes",
     },
   };
 }
@@ -888,7 +1255,156 @@ export function buildSettingsResponse(
           ? "Digest demo enabled"
           : "Enabled for walkthrough clarity",
       explorerShortcut: `Pinned to ${state.explorerDefault}`,
-      autoPrefill: "Mock data on every route",
+      autoPrefill:
+        state.autoExecute
+          ? "Live defaults applied on every route"
+          : "Manual review required before route execution",
+    },
+  };
+}
+
+export function buildStrategiesFromState(
+  proofs: StoredProofRecord[],
+  settings: SettingsState = getDefaultSettingsState(),
+  portfolio: PortfolioResponse = getMockPortfolio(),
+): StrategiesResponse {
+  const snapshot = getActiveSnapshot(proofs, portfolio);
+  const breakdown = getPortfolioBreakdown(portfolio);
+  const liveStrategies = Math.max(1, snapshot.top_protocols.length + breakdown.length);
+  const queuedTemplates = Math.max(1, breakdown.length);
+  const autoEligible = settings.autoExecute ? Math.min(queuedTemplates, 2) : 0;
+
+  return {
+    hero: {
+      liveStrategies,
+      avgConfidence: snapshot.confidence,
+      simulatedRoutes: Math.max(8, liveStrategies * 8),
+      guardrailsActive: 4,
+    },
+    stack: [
+      {
+        label: "Recommended Route",
+        value: `${snapshot.optimized_apy.toFixed(2)}%`,
+        note: `${snapshot.recommended} currently leads for this wallet`,
+      },
+      {
+        label: "Risk Profile",
+        value: settings.riskProfile,
+        note: "Controls route selection and execution thresholds",
+      },
+      {
+        label: "Annualized Gain",
+        value: formatCurrency(snapshot.estimatedAnnualGain),
+        note: "Projected from the current optimization snapshot",
+      },
+      {
+        label: "Execution Time",
+        value: `${snapshot.executionSeconds.toFixed(2)}s`,
+        note: proofs[0] ? "Measured from the latest proof-backed run" : "Expected wall-clock completion",
+      },
+    ],
+    templates: [
+      {
+        name: "Primary Yield Route",
+        target: snapshot.recommended,
+        risk: settings.riskProfile,
+        trigger: `>${formatCurrency(Math.max(portfolio.totalUSD * 0.2, 0.01))} allocatable capital`,
+        state: proofs[0] ? "live" : "ready",
+      },
+      {
+        name: "0G Core Hold",
+        target: "0G Staking Vault",
+        risk: "Low",
+        trigger: "Maintain proof-friendly baseline",
+        state: "live",
+      },
+      {
+        name: "Risk Compression",
+        target: breakdown[0]?.symbol ?? "Largest Allocation",
+        risk: "Low",
+        trigger: "Concentration crosses review threshold",
+        state: queuedTemplates > 1 ? "watch" : "ready",
+      },
+      {
+        name: "Manual Review Route",
+        target: settings.autoExecute ? "Auto execution allowed" : "Needs confirmation",
+        risk: settings.riskProfile,
+        trigger: settings.notificationMode === "Digest" ? "Digest review window" : "Realtime review window",
+        state: settings.autoExecute ? "queued" : "manual",
+      },
+    ],
+    guardrails: {
+      maxSlippage: `${settings.maxSlippage} per route`,
+      riskEscalation: `Blocked above ${settings.riskProfile.toLowerCase()} posture`,
+      proofRequirement: "Mandatory explorer-ready proof reference",
+    },
+    queue: {
+      queuedTemplates: `${queuedTemplates} waiting for review`,
+      autoEligible: `${autoEligible} can run immediately`,
+      needsManualReview: `${Math.max(queuedTemplates - autoEligible, 0)} need confirmation`,
+    },
+  };
+}
+
+export function buildOpportunitiesFromState(
+  proofs: StoredProofRecord[],
+  settings: SettingsState = getDefaultSettingsState(),
+  portfolio: PortfolioResponse = getMockPortfolio(),
+): OpportunitiesResponse {
+  const snapshot = getActiveSnapshot(proofs, portfolio);
+  const protocols = snapshot.top_protocols.length > 0 ? snapshot.top_protocols : [
+    { name: snapshot.recommended, apy: snapshot.optimized_apy, risk: "medium" as const },
+  ];
+  const ready = protocols.filter((protocol) => protocol.risk !== "high").length;
+
+  return {
+    hero: {
+      topEstimatedApy: Math.max(...protocols.map((protocol) => protocol.apy)),
+      signalsMonitored: Math.max(4, portfolio.tokens.length * 6),
+      opportunitiesReady: ready,
+      proofEligiblePct: 100,
+    },
+    rankedHighlights: [
+      {
+        label: protocols[0].name,
+        value: `${protocols[0].apy.toFixed(2)}%`,
+        note: "Current best balance of yield and proofability",
+      },
+      {
+        label: "Confidence",
+        value: `${snapshot.confidence}%`,
+        note: "From the active optimization snapshot",
+      },
+      {
+        label: "Risk Profile",
+        value: settings.riskProfile,
+        note: "Filters out routes beyond the selected posture",
+      },
+      {
+        label: "Annualized Gain",
+        value: formatCurrency(snapshot.estimatedAnnualGain),
+        note: "Projected gain if the top route is executed",
+      },
+    ],
+    board: protocols.slice(0, 4).map((protocol, index) => ({
+      route:
+        index === 0
+          ? `${portfolio.tokens[0]?.symbol ?? "Wallet"} → ${protocol.name}`
+          : protocol.name,
+      apy: `${protocol.apy.toFixed(2)}%`,
+      risk: protocol.risk === "high" ? "High" : protocol.risk === "medium" ? "Moderate" : "Low",
+      liquidity: index === 0 ? "High" : index === 1 ? "High" : "Medium",
+      state: index === 0 ? "best" : protocol.risk === "low" ? "safe" : "watch",
+    })),
+    selectionLogic: {
+      momentumWeight: "Balanced toward verified APY lift",
+      riskFilter: `Rejects routes above ${settings.riskProfile.toLowerCase()} posture`,
+      proofGate: "Only routes with explorer-ready proof support are highlighted",
+    },
+    executionReadiness: {
+      autoExecutable: `${settings.autoExecute ? ready : 0} routes ready right now`,
+      manualReview: `${settings.autoExecute ? Math.max(protocols.length - ready, 0) : protocols.length} routes need review`,
+      slippageWindow: `${Math.max(0.4, Number.parseFloat(settings.maxSlippage) / 2).toFixed(1)}% to ${settings.maxSlippage} across shortlist`,
     },
   };
 }

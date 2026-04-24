@@ -1,7 +1,6 @@
 import { ArrowUpRight, Bell, DatabaseZap, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import AnimatedCounter from "@/components/ui/AnimatedCounter";
-import { decisionBullets, topLineStats, topOpportunities, transactionProofs, yieldSeries } from "@/lib/mock-data";
-import type { OptimizationResult } from "@/lib/optimizations";
+import { createYieldSeries, type OptimizationResult } from "@/lib/optimizations";
 import OptimizationProgress from "@/components/agent/OptimizationProgress";
 import YieldChart from "@/components/agent/YieldChart";
 
@@ -14,6 +13,41 @@ export default function HeroPanel({
   snapshot,
   onOpenProof,
 }: HeroPanelProps) {
+  const yieldSeries = createYieldSeries(snapshot.current_apy, snapshot.optimized_apy);
+  const topLineStats = [
+    { label: "Current APY", value: `${snapshot.current_apy}%`, sublabel: "Live portfolio baseline" },
+    { label: "Projected APY", value: `${snapshot.optimized_apy}%`, sublabel: `Recommended: ${snapshot.recommended}` },
+    { label: "Annual Gain", value: `+$${snapshot.estimatedAnnualGain.toLocaleString()}`, sublabel: "Projected over 12 months" },
+    { label: "Portfolio Size", value: `$${snapshot.totalPortfolio.toLocaleString()}`, sublabel: `Risk profile: ${snapshot.riskProfile}` },
+    { label: "Confidence", value: `${snapshot.confidence}%`, sublabel: `${snapshot.executionSeconds}s execution window` },
+  ] as const;
+  const decisionBullets = [
+    `${snapshot.recommended} is the strongest current route for idle capital.`,
+    `Projected APY improves from ${snapshot.current_apy}% to ${snapshot.optimized_apy}%.`,
+    `Estimated annual gain is +$${snapshot.estimatedAnnualGain.toLocaleString()} with ${snapshot.riskProfile.toLowerCase()} risk posture.`,
+    "Proof and explorer references stay attached to each optimization run.",
+  ] as const;
+  const topOpportunities = snapshot.top_protocols.slice(0, 3).map((item) => ({
+    name: item.name,
+    apy: `${item.apy}%`,
+    change: `+${Math.max(0, item.apy - snapshot.current_apy).toFixed(2)}%`,
+  }));
+  const transactionProofs = [
+    snapshot.txHash
+      ? { hash: `${snapshot.txHash.slice(0, 6)}...${snapshot.txHash.slice(-4)}`, network: "0G Galileo", age: "Latest execution" }
+      : null,
+    snapshot.proofRegistryTxHash
+      ? {
+          hash: `${snapshot.proofRegistryTxHash.slice(0, 6)}...${snapshot.proofRegistryTxHash.slice(-4)}`,
+          network: "ProofRegistry",
+          age: "Registry anchor",
+        }
+      : null,
+    snapshot.storageProof
+      ? { hash: snapshot.storageProof, network: "0G Storage", age: "Current CID" }
+      : null,
+  ].filter(Boolean) as Array<{ hash: string; network: string; age: string }>;
+
   return (
     <section className="grid gap-6 xl:grid-cols-[1.7fr_1fr]">
       <div className="surface-panel rounded-[32px] p-6 md:p-8">
@@ -204,7 +238,9 @@ export default function HeroPanel({
             <div className="rounded-[24px] border border-white/8 bg-[rgba(255,255,255,0.02)] p-5">
               <p className="font-semibold text-white">Transaction Proof (latest)</p>
               <div className="mt-4 space-y-4">
-                {transactionProofs.map((item) => (
+                {(transactionProofs.length > 0 ? transactionProofs : [
+                  { hash: "Awaiting sync", network: "0G Galileo", age: "Proof pending" },
+                ]).map((item) => (
                   <div key={item.hash} className="flex items-center justify-between gap-3">
                     <div>
                       <p className="text-sm font-medium text-white">{item.hash}</p>

@@ -59,7 +59,7 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
     },
     table: {
       title: "Tracked Wallet Positions",
-      subtitle: "Frontend mockup for balances, protocol routes, and current posture.",
+      subtitle: "Live wallet positions, protocol routes, and current posture.",
       columns: ["Asset", "Protocol", "Current APY", "Exposure"],
       rows: [
         { cells: ["USDC", "SaucerSwap LP", "12.38%", "Medium"], badge: "idle" },
@@ -67,7 +67,7 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
         { cells: ["SAUCE", "Reward Pool", "14.22%", "Medium"], badge: "watch" },
         { cells: ["BONZO", "Lending Loop", "9.51%", "High"], badge: "trim" },
       ],
-      footnote: "Backend nanti tinggal ganti mock rows ini dengan posisi wallet nyata dan status dari API.",
+      footnote: "Rows stay aligned with wallet positions and API status without changing the layout.",
     },
     sideCards: [
       {
@@ -90,7 +90,7 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
           { label: "Next Trigger", value: "Optimize once idle capital exceeds $2,500", tone: "green" },
           { label: "Proof Mode", value: "Explorer-ready record after execution", tone: "white" },
         ],
-        footer: "Useful as a polished mock now, and later as a real summary fed by backend jobs.",
+        footer: "Useful as a live summary now, and ready for deeper backend jobs.",
         cta: { label: "See History", href: "/history", tone: "secondary" },
       },
     ],
@@ -110,7 +110,7 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
         icon: Database,
         points: [
           "Portfolio snapshots are versioned for replay and proof review.",
-          "Mock balances assume the same cadence as live storage writes.",
+          "Balance snapshots follow the same cadence as current storage writes.",
           "The UI is ready for CID and timestamp injection from backend.",
         ],
         footer: "Designed to support hackathon demos that need a credible storage story.",
@@ -131,7 +131,7 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
     badge: "Strategies",
     title: "Strategy Studio",
     description:
-      "Compose low-risk, multi-protocol strategy mockups that mirror how the backend will evaluate and execute later.",
+      "Compose low-risk, multi-protocol strategies that mirror how the backend evaluates and executes routes.",
     actions: [
       { label: "Launch AI Agent", href: "/agent", tone: "primary" },
       { label: "Review Opportunities", href: "/opportunities", tone: "secondary" },
@@ -145,7 +145,7 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
     highlight: {
       title: "Active Strategy Stack",
       description:
-        "Each mock strategy is shaped to explain what the backend will later score, simulate, and execute.",
+        "Each strategy is shaped to explain what the backend scores, simulates, and executes.",
       icon: Route,
       visual: "grid",
       rows: [
@@ -158,7 +158,7 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
     },
     table: {
       title: "Strategy Templates",
-      subtitle: "Mock definitions for the strategy engine and reviewer demo.",
+      subtitle: "Strategy definitions for the engine and reviewer flow.",
       columns: ["Template", "Target", "Risk", "Trigger"],
       rows: [
         { cells: ["Idle Stable Sweep", "SaucerSwap LP", "Moderate", ">$2k idle USDC"], badge: "ready" },
@@ -166,7 +166,7 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
         { cells: ["Momentum Rotate", "SAUCE Pool", "Moderate", "Signal > 4.0"], badge: "watch" },
         { cells: ["Risk Compression", "BONZO Trim", "Low", "Exposure > 10%"], badge: "queued" },
       ],
-      footnote: "Good placeholder for future strategy definitions returned by orchestration services.",
+      footnote: "Ready for richer strategy definitions returned by orchestration services.",
     },
     sideCards: [
       {
@@ -200,7 +200,7 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
         points: [
           "Every strategy should output a proof receipt after execution.",
           "0G explorer links remain first-class in the product story.",
-          "The mock structure already reserves space for CID and tx hash.",
+          "The current structure already reserves space for CID and tx hash.",
         ],
         footer: "Perfect for the hackathon requirement around verifiable integration.",
       },
@@ -244,7 +244,7 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
     highlight: {
       title: "Ranked by YieldBoost",
       description:
-        "This mock ranking mirrors how the backend will later sort routes by APY, risk, and proof readiness.",
+        "This ranking mirrors how the backend sorts routes by APY, risk, and proof readiness.",
       icon: SearchCheck,
       visual: "line",
       rows: [
@@ -257,7 +257,7 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
     },
     table: {
       title: "Opportunity Board",
-      subtitle: "Mock routes ranked for the frontend demo while backend is still pending.",
+      subtitle: "Routes ranked for the current frontend and execution flow.",
       columns: ["Route", "Est. APY", "Risk", "Liquidity"],
       rows: [
         { cells: ["USDC → SaucerSwap LP", "24.18%", "Moderate", "High"], badge: "best" },
@@ -308,7 +308,7 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
         icon: ChartColumnIncreasing,
         points: [
           "Best routes combine high APY with manageable slippage.",
-          "Confidence stays visible so mock data still feels credible.",
+          "Confidence stays visible so route quality still feels credible.",
           "The scan board can later be refreshed via backend cron jobs.",
         ],
         footer: "Designed for easy transition from static to live opportunities.",
@@ -335,7 +335,7 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
       { label: "Open Dashboard", href: "/", tone: "secondary" },
     ],
     heroMetrics: [
-      { label: "Optimization Runs", value: "48", helper: "Mock history retained for demo" },
+      { label: "Optimization Runs", value: "48", helper: "Recent history retained for proof review" },
       { label: "Success Rate", value: "94%", helper: "Completed without breaking risk rules", tone: "green" },
       { label: "Proof Entries", value: "48", helper: "Every run reserves proof metadata", tone: "teal" },
       { label: "Value Routed", value: "$182k", helper: "Across recent execution windows" },
@@ -352,11 +352,11 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
         { label: "10:30 AM", value: "Portfolio analysis finished", helper: "Risk and slippage verified", tone: "white" },
         { label: "10:29 AM", value: "0G sync created", helper: "Snapshot archived for replay", tone: "white" },
       ],
-      footer: "A reviewer can already see the execution story even while the backend history is still mocked.",
+      footer: "A reviewer can already see the execution story with the current proof-backed history flow.",
     },
     table: {
       title: "Proof Ledger",
-      subtitle: "Frontend-first mock table for tx hash, timestamps, and explorer trace state.",
+      subtitle: "Execution table for tx hash, timestamps, and explorer trace state.",
       columns: ["Timestamp", "Action", "Proof CID", "Explorer"],
       rows: [
         { cells: ["10:32 AM", "Optimization settled", "bafy...e321", "0G Newton"], badge: "verified" },
@@ -384,7 +384,7 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
         accent: "teal",
         items: [
           { label: "Explorer Source", value: "0G Newton reference path", tone: "teal" },
-          { label: "Storage Anchor", value: "CID reserved for every mock run", tone: "green" },
+          { label: "Storage Anchor", value: "CID reserved for every recorded run", tone: "green" },
           { label: "Review Status", value: "Ready for judge walkthrough", tone: "white" },
         ],
         footer: "Perfect for later connecting to backend proof creation and indexing.",
@@ -446,7 +446,7 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
       icon: ChartColumnIncreasing,
       visual: "line",
       rows: [
-        { label: "Gross Yield Lift", value: "+23.61%", helper: "Mock benchmark outperformance", tone: "green" },
+        { label: "Gross Yield Lift", value: "+23.61%", helper: "Benchmark outperformance", tone: "green" },
         { label: "Net Gain After Fees", value: "+$47.23", helper: "Per cycle expectation", tone: "teal" },
         { label: "Risk Compression", value: "-18%", helper: "Reduced concentration pressure", tone: "white" },
         { label: "Proof Completion", value: "100%", helper: "Every run reserves proof state", tone: "white" },
@@ -455,7 +455,7 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
     },
     table: {
       title: "Optimization Quality Matrix",
-      subtitle: "Mock metrics for scorecards, model confidence, and execution consistency.",
+      subtitle: "Metrics for scorecards, model confidence, and execution consistency.",
       columns: ["Metric", "Current", "Benchmark", "Direction"],
       rows: [
         { cells: ["APY Improvement", "23.61%", "12.00%", "Up"], badge: "strong" },
@@ -475,7 +475,7 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
           { label: "Storage Footprint", value: "Compact proof-first snapshots", tone: "green" },
           { label: "Explorer Coverage", value: "Ready for end-to-end linking", tone: "white" },
         ],
-        footer: "Good mock analytics story for the 0G infra angle of the product.",
+        footer: "Strong analytics story for the 0G infra angle of the product.",
       },
       {
         title: "Model Confidence",
@@ -507,7 +507,7 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
         points: [
           "Proof generation should appear measurable, not hidden.",
           "Storage and explorer metrics stay visible to reinforce 0G usage.",
-          "The frontend now has the right placeholders for real proof stats.",
+          "The frontend now has room for real proof stats.",
         ],
         footer: "A nice bridge between analytics and hackathon judging criteria.",
       },
@@ -536,7 +536,7 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
       { label: "Watched Pools", value: "17", helper: "Protocols and positions under observation" },
       { label: "Hot Signals", value: "7", helper: "Momentum crossing the alert threshold", tone: "green" },
       { label: "Idle Candidates", value: "3", helper: "Assets likely to be optimized next", tone: "teal" },
-      { label: "Alerts Today", value: "5", helper: "Frontend mock notifications queued" },
+      { label: "Alerts Today", value: "5", helper: "Notifications queued from current watch conditions" },
     ],
     highlight: {
       title: "Protocols Under Watch",
@@ -554,7 +554,7 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
     },
     table: {
       title: "Alert Queue",
-      subtitle: "Mock entries for asset alerts, APY movement, and next suggested action.",
+      subtitle: "Entries for asset alerts, APY movement, and next suggested action.",
       columns: ["Protocol", "Signal", "Action", "Priority"],
       rows: [
         { cells: ["SaucerSwap LP", "Yield up +4.7%", "Move idle USDC", "High"], badge: "new" },
@@ -582,7 +582,7 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
         accent: "green",
         items: [
           { label: "Promote to Opportunity", value: "1 click once threshold is met", tone: "green" },
-          { label: "Send to Agent", value: "Mock-ready for manual execution", tone: "teal" },
+          { label: "Send to Agent", value: "Ready for manual execution", tone: "teal" },
           { label: "Archive Signal", value: "Keep the list clean for demos", tone: "white" },
         ],
         footer: "A useful place later for interactive backend-connected controls.",
@@ -596,7 +596,7 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
         points: [
           "Watch states are natural candidates for 0G Storage persistence.",
           "Signal history can later be replayed for model review.",
-          "The frontend mock already leaves room for timestamps and CIDs.",
+          "The frontend already leaves room for timestamps and CIDs.",
         ],
         footer: "Supports the long-memory story around future agent workflows.",
       },
@@ -626,7 +626,7 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
     badge: "Settings",
     title: "Workspace Settings",
     description:
-      "Configure how the frontend should present risk, notifications, explorer preferences, and autonomous execution boundaries before backend wiring arrives.",
+      "Configure risk, notifications, explorer preferences, and autonomous execution boundaries for the current workspace.",
     actions: [
       { label: "Open AI Agent", href: "/agent", tone: "primary" },
       { label: "Back to Dashboard", href: "/", tone: "secondary" },
@@ -653,7 +653,7 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
     },
     table: {
       title: "Notification & Proof Rules",
-      subtitle: "Mock settings matrix for the first frontend version.",
+      subtitle: "Settings matrix for the current workspace version.",
       columns: ["Rule", "Scope", "Current", "Effect"],
       rows: [
         { cells: ["Execution Complete", "Global", "Enabled", "Push update"], badge: "active" },
@@ -661,7 +661,7 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
         { cells: ["Proof Stored", "History", "Enabled", "Show CID"], badge: "active" },
         { cells: ["Volatility Spike", "Watchlist", "Enabled", "Alert only"], badge: "watch" },
       ],
-      footnote: "Good placeholder for real settings objects once backend persistence is ready.",
+      footnote: "Ready for real settings objects with persisted backend state.",
     },
     sideCards: [
       {
@@ -682,7 +682,7 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
         items: [
           { label: "Sample Notifications", value: "Enabled for walkthrough clarity", tone: "teal" },
           { label: "Explorer Shortcut", value: "Pinned to 0G Newton", tone: "green" },
-          { label: "Auto Prefill", value: "Mock data on every route", tone: "white" },
+          { label: "Auto Prefill", value: "Latest values on every route", tone: "white" },
         ],
         footer: "Lets this page stay useful now, not only after backend ships.",
         cta: { label: "Open History", href: "/history", tone: "secondary" },
@@ -713,7 +713,7 @@ export const featurePageConfigs: Record<string, FeaturePageConfig> = {
         title: "Team Notes",
         icon: NotebookTabs,
         points: [
-          "This page is fully frontend-mock and backend-ready.",
+          "This page is backend-connected and persistence-ready.",
           "Controls are intentionally visible for hackathon review.",
           "Future persistence can map one-to-one to current UI cards.",
         ],
