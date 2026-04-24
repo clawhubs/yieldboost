@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
+  BookOpenText,
   ChartNoAxesCombined,
   Clock3,
   Copy,
@@ -65,6 +66,7 @@ const navigation: NavigationItem[] = [
   { href: "/history", label: "History", icon: Clock3 },
   { href: "/analytics", label: "Analytics", icon: ChartNoAxesCombined },
   { href: "/watchlist", label: "Watchlist", icon: Star, badge: "NEW" },
+  { href: "/docs", label: "Docs", icon: BookOpenText },
   { href: "/settings", label: "Settings", icon: Settings2 },
 ];
 

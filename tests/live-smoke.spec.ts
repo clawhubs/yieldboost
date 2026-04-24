@@ -43,7 +43,7 @@ test("LIVE · Proof modal opens on vercel", async ({ page }) => {
 });
 
 test("LIVE · All sidebar routes reachable (200)", async ({ page }) => {
-  const pages = ["/", "/agent", "/portfolio", "/strategies", "/opportunities", "/history", "/analytics", "/watchlist", "/settings"];
+  const pages = ["/", "/agent", "/portfolio", "/strategies", "/opportunities", "/history", "/analytics", "/watchlist", "/docs", "/settings"];
   const broken: string[] = [];
 
   for (const p of pages) {

@@ -1,13 +1,18 @@
 import Link from "next/link";
 import { ArrowRight, BookOpenText, Boxes, CircleHelp, Network, ShieldCheck, Waypoints } from "lucide-react";
-import { getAllDocPages, getDocsNavigation, getDocsRuntimeStatus } from "@/lib/docs/content";
+import {
+  getAllDocPages,
+  getDocsNavigation,
+  getDocsRuntimeStatus,
+  type DocNavGroup,
+} from "@/lib/docs/content";
 
 const categoryIcons = {
   "Product Fundamentals": BookOpenText,
   "Optimization Flow": Waypoints,
   "Platform & Trust": ShieldCheck,
   "Technical Reference": Boxes,
-} as const;
+} satisfies Record<DocNavGroup["title"], typeof BookOpenText>;
 
 export default function DocsHomePage() {
   const status = getDocsRuntimeStatus();
@@ -63,7 +68,7 @@ export default function DocsHomePage() {
       <section className="grid gap-[10px] 2xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-[10px]">
           {groups.map((group) => {
-            const Icon = categoryIcons[group.title];
+            const Icon = categoryIcons[group.title as keyof typeof categoryIcons] ?? BookOpenText;
 
             return (
               <section key={group.title} className="yb-card rounded-[18px] px-5 py-5">
