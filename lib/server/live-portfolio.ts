@@ -2,14 +2,29 @@ import "server-only";
 
 import { formatUnits, JsonRpcProvider } from "ethers";
 import type { PortfolioResponse } from "@/lib/backend-data";
-import { resolveWalletAddress } from "@/lib/wallet";
+import {
+  getServer0GNetworkConfig,
+  type WalletNetworkKey,
+  resolveWalletAddress,
+} from "@/lib/wallet";
 import { getLatestStoredProof } from "@/lib/server/runtime-store";
 
 export async function getLivePortfolioSnapshot(
   walletAddressInput?: string | null,
+  networkKey: WalletNetworkKey = "testnet",
 ): Promise<PortfolioResponse> {
   const walletAddress = resolveWalletAddress(walletAddressInput);
-  const rpcUrl = process.env.ZG_RPC_URL ?? process.env.NEXT_PUBLIC_ZG_RPC;
+  if (!walletAddress) {
+    return {
+      walletAddress: undefined,
+      source: "wallet_disconnected",
+      latestTxHash: undefined,
+      tokens: [],
+      totalUSD: 0,
+      currentAPY: 0,
+    };
+  }
+  const rpcUrl = getServer0GNetworkConfig(networkKey).rpcUrl;
   const latestProof = await getLatestStoredProof();
 
   let nativeBalance = 0;
@@ -31,7 +46,7 @@ export async function getLivePortfolioSnapshot(
       : nativeBalance;
 
   return {
-    walletAddress,
+    walletAddress: walletAddress ?? undefined,
     source,
     latestTxHash: latestProof?.txHash,
     tokens:

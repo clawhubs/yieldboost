@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   ChartNoAxesCombined,
@@ -14,22 +14,39 @@ import {
   Grid2X2,
   House,
   Image,
+  MessageCircleMore,
   Package2,
+  Pencil,
+  BriefcaseBusiness,
   Settings2,
   Star,
-  Pencil,
   Wallet2,
   Boxes,
-  BriefcaseBusiness,
-  MessageCircleMore,
   Zap,
 } from "lucide-react";
 import BrandLogo from "@/components/ui/BrandLogo";
+import WalletConnectModal from "@/components/modals/WalletConnectModal";
 import {
-  DEFAULT_WALLET_ADDRESS,
+  getAuthorizedAccounts,
+  getInjectedWalletById,
+  getInjectedWalletOptions,
+  inferNetworkKeyFromChainId,
+  switchOrAddNetwork,
+  type InjectedProvider,
+  type WalletOption,
+} from "@/lib/browser-wallet";
+import {
+  getAvailableWalletNetworks,
   isWalletAddress,
+  resolveWalletNetworkKey,
+  type WalletNetworkKey,
   WALLET_CHANGE_EVENT,
+  WALLET_CONNECT_REQUEST_EVENT,
   WALLET_COOKIE_KEY,
+  WALLET_NETWORK_COOKIE_KEY,
+  WALLET_NETWORK_STORAGE_KEY,
+  WALLET_OVERRIDE_STORAGE_KEY,
+  WALLET_PROVIDER_STORAGE_KEY,
 } from "@/lib/wallet";
 
 interface NavigationItem {
@@ -52,50 +69,319 @@ const navigation: NavigationItem[] = [
 ];
 
 const socialIcons = [Globe, MessageCircleMore, GitBranch, Grid2X2, Image];
-
-const LS_KEY = "yb_wallet_override";
+const availableNetworks = getAvailableWalletNetworks();
 
 function shortAddr(addr: string) {
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
 }
 
+function setCookie(name: string, value: string) {
+  document.cookie = `${name}=${value}; path=/; max-age=31536000; SameSite=Lax`;
+}
+
+function clearCookie(name: string) {
+  document.cookie = `${name}=; path=/; max-age=0; SameSite=Lax`;
+}
+
 export default function Sidebar() {
   const pathname = usePathname();
   const [walletCopied, setWalletCopied] = useState(false);
-  const [walletAddr, setWalletAddr] = useState(DEFAULT_WALLET_ADDRESS);
+  const [walletAddr, setWalletAddr] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [inputVal, setInputVal] = useState("");
+  const [walletOptions, setWalletOptions] = useState<WalletOption[]>([]);
+  const [walletModalOpen, setWalletModalOpen] = useState(false);
+  const [connectingId, setConnectingId] = useState<string | null>(null);
+  const [selectedNetwork, setSelectedNetwork] = useState<WalletNetworkKey>("testnet");
+  const [connected, setConnected] = useState(false);
+  const [errorText, setErrorText] = useState<string | null>(null);
 
-  useEffect(() => {
-    const saved = localStorage.getItem(LS_KEY);
-    if (isWalletAddress(saved)) {
-      const nextWallet = saved as string;
-      setWalletAddr(nextWallet);
-      document.cookie = `${WALLET_COOKIE_KEY}=${nextWallet}; path=/; max-age=31536000; SameSite=Lax`;
-      window.dispatchEvent(
-        new CustomEvent(WALLET_CHANGE_EVENT, { detail: { walletAddress: nextWallet } }),
-      );
-      return;
+  const providerRef = useRef<InjectedProvider | null>(null);
+  const providerIdRef = useRef<string | null>(null);
+  const listenersRef = useRef<{
+    accountsChanged: (...args: unknown[]) => void;
+    chainChanged: (...args: unknown[]) => void;
+    disconnect: (...args: unknown[]) => void;
+  } | null>(null);
+
+  const selectedNetworkConfig = useMemo(
+    () => availableNetworks.find((network) => network.key === selectedNetwork) ?? availableNetworks[0],
+    [selectedNetwork],
+  );
+  const isCustomWatchMode = !connected && Boolean(walletAddr);
+  const activeWalletAddress = walletAddr ?? "";
+
+  const broadcastWalletChange = useCallback((
+    nextWalletAddress: string | null | undefined,
+    nextNetwork: WalletNetworkKey,
+    nextWalletLabel?: string | null,
+    isConnected = false,
+  ) => {
+    if (nextWalletAddress) {
+      setCookie(WALLET_COOKIE_KEY, nextWalletAddress);
+    } else {
+      clearCookie(WALLET_COOKIE_KEY);
     }
-    document.cookie = `${WALLET_COOKIE_KEY}=${DEFAULT_WALLET_ADDRESS}; path=/; max-age=31536000; SameSite=Lax`;
+    setCookie(WALLET_NETWORK_COOKIE_KEY, nextNetwork);
+
+    window.dispatchEvent(
+      new CustomEvent(WALLET_CHANGE_EVENT, {
+        detail: {
+          walletAddress: nextWalletAddress ?? undefined,
+          networkKey: nextNetwork,
+          walletLabel: nextWalletLabel ?? undefined,
+          connected: isConnected,
+        },
+      }),
+    );
   }, []);
 
+  const cleanupProviderListeners = useCallback(() => {
+    if (!providerRef.current || !listenersRef.current) return;
+
+    const { accountsChanged, chainChanged, disconnect } = listenersRef.current;
+    providerRef.current.removeListener?.("accountsChanged", accountsChanged);
+    providerRef.current.removeListener?.("chainChanged", chainChanged);
+    providerRef.current.removeListener?.("disconnect", disconnect);
+    listenersRef.current = null;
+  }, []);
+
+  const applyDisconnectedState = useCallback((nextNetwork: WalletNetworkKey) => {
+    cleanupProviderListeners();
+    providerRef.current = null;
+    providerIdRef.current = null;
+    localStorage.removeItem(WALLET_PROVIDER_STORAGE_KEY);
+    localStorage.removeItem(WALLET_OVERRIDE_STORAGE_KEY);
+
+    setConnected(false);
+    setWalletAddr(null);
+    setErrorText(null);
+    broadcastWalletChange(undefined, nextNetwork, null, false);
+  }, [broadcastWalletChange, cleanupProviderListeners]);
+
+  const attachProviderListeners = useCallback((
+    provider: InjectedProvider,
+    providerId: string,
+    providerName: string,
+  ) => {
+    cleanupProviderListeners();
+
+    const accountsChanged = (accountsValue: unknown) => {
+      const accounts = Array.isArray(accountsValue) ? accountsValue : [];
+      const nextAccount =
+        accounts.find((item): item is string => typeof item === "string") ?? null;
+
+      if (!nextAccount || !isWalletAddress(nextAccount)) {
+        applyDisconnectedState(selectedNetwork);
+        return;
+      }
+
+      setWalletAddr(nextAccount);
+      setConnected(true);
+      setErrorText(null);
+      localStorage.setItem(WALLET_OVERRIDE_STORAGE_KEY, nextAccount);
+      localStorage.setItem(WALLET_PROVIDER_STORAGE_KEY, providerId);
+      broadcastWalletChange(nextAccount, selectedNetwork, providerName, true);
+    };
+
+    const chainChanged = (chainIdValue: unknown) => {
+      if (typeof chainIdValue !== "string") return;
+
+      const matchedNetwork = inferNetworkKeyFromChainId(
+        chainIdValue,
+        availableNetworks.filter((network) => network.enabled),
+      );
+      if (!matchedNetwork) return;
+
+      setSelectedNetwork(matchedNetwork);
+      localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, matchedNetwork);
+      setCookie(WALLET_NETWORK_COOKIE_KEY, matchedNetwork);
+      broadcastWalletChange(walletAddr, matchedNetwork, providerName, true);
+    };
+
+    const disconnect = () => {
+      applyDisconnectedState(selectedNetwork);
+    };
+
+    provider.on?.("accountsChanged", accountsChanged);
+    provider.on?.("chainChanged", chainChanged);
+    provider.on?.("disconnect", disconnect);
+
+    providerRef.current = provider;
+    providerIdRef.current = providerId;
+    listenersRef.current = { accountsChanged, chainChanged, disconnect };
+  }, [applyDisconnectedState, broadcastWalletChange, cleanupProviderListeners, selectedNetwork, walletAddr]);
+
+  useEffect(() => {
+    function refreshWalletOptions() {
+      setWalletOptions(getInjectedWalletOptions());
+    }
+
+    refreshWalletOptions();
+    window.addEventListener("focus", refreshWalletOptions);
+    const intervalId = window.setInterval(refreshWalletOptions, 1500);
+
+    const savedNetwork = resolveWalletNetworkKey(
+      localStorage.getItem(WALLET_NETWORK_STORAGE_KEY),
+    );
+    setSelectedNetwork(savedNetwork);
+    setCookie(WALLET_NETWORK_COOKIE_KEY, savedNetwork);
+
+    const savedProviderId = localStorage.getItem(WALLET_PROVIDER_STORAGE_KEY);
+    const savedWallet = localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY);
+
+    void (async () => {
+      async function restoreAuthorizedWallet(
+        providerId: string,
+        networkKey: WalletNetworkKey,
+      ) {
+        const wallet = getInjectedWalletById(providerId);
+        if (!wallet) return false;
+
+        const accounts = await getAuthorizedAccounts(wallet.provider);
+        const nextAccount = accounts.find((account) => isWalletAddress(account));
+        if (!nextAccount) return false;
+
+        providerRef.current = wallet.provider;
+        providerIdRef.current = wallet.id;
+        setWalletAddr(nextAccount);
+        setConnected(true);
+        setErrorText(null);
+        localStorage.setItem(WALLET_OVERRIDE_STORAGE_KEY, nextAccount);
+        localStorage.setItem(WALLET_PROVIDER_STORAGE_KEY, wallet.id);
+        attachProviderListeners(wallet.provider, wallet.id, wallet.name);
+        broadcastWalletChange(nextAccount, networkKey, wallet.name, true);
+        return true;
+      }
+
+      if (savedProviderId) {
+        const restored = await restoreAuthorizedWallet(savedProviderId, savedNetwork);
+        if (restored) return;
+      }
+
+      if (isWalletAddress(savedWallet)) {
+        const nextWallet = savedWallet!;
+        setWalletAddr(nextWallet);
+        setErrorText(null);
+        broadcastWalletChange(nextWallet, savedNetwork, null, false);
+        return;
+      }
+
+      broadcastWalletChange(undefined, savedNetwork, null, false);
+    })();
+
+    return () => {
+      cleanupProviderListeners();
+      window.removeEventListener("focus", refreshWalletOptions);
+      window.clearInterval(intervalId);
+    };
+  }, [attachProviderListeners, broadcastWalletChange, cleanupProviderListeners]);
+
+  useEffect(() => {
+    function handleWalletConnectRequest(event: Event) {
+      const detail = (event as CustomEvent<{ networkKey?: WalletNetworkKey }>).detail;
+      const nextNetwork = resolveWalletNetworkKey(detail?.networkKey);
+      setSelectedNetwork(nextNetwork);
+      localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, nextNetwork);
+      setCookie(WALLET_NETWORK_COOKIE_KEY, nextNetwork);
+      setWalletModalOpen(true);
+      setErrorText(null);
+    }
+
+    window.addEventListener(
+      WALLET_CONNECT_REQUEST_EVENT,
+      handleWalletConnectRequest as EventListener,
+    );
+
+    return () => {
+      window.removeEventListener(
+        WALLET_CONNECT_REQUEST_EVENT,
+        handleWalletConnectRequest as EventListener,
+      );
+    };
+  }, []);
+
+  async function connectWallet(option: WalletOption) {
+    setConnectingId(option.id);
+    setWalletModalOpen(false);
+    setErrorText(null);
+
+    try {
+      if (!selectedNetworkConfig?.enabled) {
+        throw new Error(
+          `${selectedNetworkConfig?.label ?? "Selected network"} is not configured yet.`,
+        );
+      }
+
+      await switchOrAddNetwork(option.provider, selectedNetworkConfig);
+      const accounts = (await option.provider.request({
+        method: "eth_requestAccounts",
+      })) as string[];
+      const nextAccount = Array.isArray(accounts)
+        ? accounts.find((account) => isWalletAddress(account))
+        : null;
+
+      if (!nextAccount) {
+        throw new Error(`No account returned by ${option.name}.`);
+      }
+
+      setWalletAddr(nextAccount);
+      setConnected(true);
+      setErrorText(null);
+
+      localStorage.setItem(WALLET_OVERRIDE_STORAGE_KEY, nextAccount);
+      localStorage.setItem(WALLET_PROVIDER_STORAGE_KEY, option.id);
+      localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, selectedNetwork);
+
+      attachProviderListeners(option.provider, option.id, option.name);
+      broadcastWalletChange(nextAccount, selectedNetwork, option.name, true);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : `Failed to connect ${option.name}.`;
+      setErrorText(message);
+    } finally {
+      setConnectingId(null);
+    }
+  }
+
+  function handleConnectWalletById(walletId: string) {
+    const option = walletOptions.find((wallet) => wallet.id === walletId);
+    if (!option) {
+      setErrorText(`${walletId} is not detected in this browser.`);
+      return;
+    }
+
+    void connectWallet(option);
+  }
+
   function startEdit() {
-    setInputVal(walletAddr);
+    setInputVal(walletAddr ?? "");
     setEditing(true);
+    setWalletModalOpen(false);
   }
 
   function commitEdit() {
-    const val = inputVal.trim();
-    if (isWalletAddress(val)) {
-      setWalletAddr(val);
-      localStorage.setItem(LS_KEY, val);
-      document.cookie = `${WALLET_COOKIE_KEY}=${val}; path=/; max-age=31536000; SameSite=Lax`;
-      window.dispatchEvent(
-        new CustomEvent(WALLET_CHANGE_EVENT, { detail: { walletAddress: val } }),
-      );
+    const value = inputVal.trim();
+    if (!isWalletAddress(value)) {
+      setEditing(false);
+      return;
     }
+
+    cleanupProviderListeners();
+    providerRef.current = null;
+    providerIdRef.current = null;
+    localStorage.removeItem(WALLET_PROVIDER_STORAGE_KEY);
+    localStorage.setItem(WALLET_OVERRIDE_STORAGE_KEY, value);
+
+    setWalletAddr(value);
+    setConnected(false);
+    setErrorText(null);
     setEditing(false);
+    broadcastWalletChange(value, selectedNetwork, null, false);
+  }
+
+  function disconnectWallet() {
+    applyDisconnectedState(selectedNetwork);
   }
 
   return (
@@ -140,29 +426,44 @@ export default function Sidebar() {
       <div className="mt-4 space-y-3 border-t border-[rgba(255,255,255,0.06)] pt-4 md:mt-4">
         <div className="glass-inset rounded-[18px] p-4">
           <div className="flex items-center gap-2 text-[13px] font-medium text-white">
-            <span className="inline-flex h-3 w-3 rounded-full bg-[#35d56e] shadow-[0_0_14px_rgba(53,213,110,0.55)]" />
+            <span
+              className={`inline-flex h-3 w-3 rounded-full shadow-[0_0_14px_rgba(53,213,110,0.55)] ${
+                connected ? "bg-[#35d56e]" : "bg-[#f3a441]"
+              }`}
+            />
             Account
           </div>
-          <div className="mt-1 pl-5 text-[12px] text-[#35d56e]">Connected</div>
+          <div className={`mt-1 pl-5 text-[12px] ${connected ? "text-[#35d56e]" : "text-[#f3a441]"}`}>
+                  {connected ? "Connected" : isCustomWatchMode ? "Watch mode" : "Not connected"}
+          </div>
 
           {editing ? (
             <div className="mt-4 flex items-center gap-2">
               <input
                 autoFocus
                 value={inputVal}
-                onChange={(e) => setInputVal(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") commitEdit(); if (e.key === "Escape") setEditing(false); }}
+                onChange={(event) => setInputVal(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") commitEdit();
+                  if (event.key === "Escape") setEditing(false);
+                }}
                 placeholder="0x..."
                 className="glass-inset flex-1 rounded-[10px] border-[rgba(37,214,198,0.4)] px-3 py-2 text-[12px] text-[#d8e0e8] outline-none"
               />
-              <button type="button" onClick={commitEdit} className="glass-accent rounded-[10px] px-3 py-2 text-[11px] font-semibold text-[#22ddd0]">OK</button>
+              <button
+                type="button"
+                onClick={commitEdit}
+                className="glass-accent rounded-[10px] px-3 py-2 text-[11px] font-semibold text-[#22ddd0]"
+              >
+                OK
+              </button>
             </div>
-          ) : (
+          ) : connected || isCustomWatchMode ? (
             <div className="mt-4 flex items-center gap-2">
               <button
                 type="button"
                 onClick={async () => {
-                  await navigator.clipboard.writeText(walletAddr);
+                  await navigator.clipboard.writeText(activeWalletAddress);
                   setWalletCopied(true);
                   window.setTimeout(() => setWalletCopied(false), 1400);
                 }}
@@ -170,35 +471,68 @@ export default function Sidebar() {
               >
                 <div className="flex items-center gap-3">
                   <Wallet2 className="h-4 w-4 text-[#d8e0e8]" />
-                  <span>{shortAddr(walletAddr)}</span>
+                  <span>{shortAddr(activeWalletAddress)}</span>
                 </div>
                 <span className="text-[10px] text-[#9ca9b6]">{walletCopied ? "Copied!" : ""}</span>
                 <Copy className="h-3.5 w-3.5 text-[#9ca9b6]" />
               </button>
-              <button type="button" onClick={startEdit} title="Use your own wallet" className="glass-inset flex h-9 w-9 flex-none items-center justify-center rounded-[10px] text-[#9ca9b6] transition hover:border-[rgba(0,201,177,0.35)] hover:text-[#22ddd0]">
+              <button
+                type="button"
+                onClick={startEdit}
+                title="Use custom watch wallet"
+                className="glass-inset flex h-9 w-9 flex-none items-center justify-center rounded-[10px] text-[#9ca9b6] transition hover:border-[rgba(0,201,177,0.35)] hover:text-[#22ddd0]"
+              >
                 <Pencil className="h-3.5 w-3.5" />
               </button>
             </div>
-          )}
+          ) : null}
 
-          <div className="mt-4 flex items-center gap-3 text-[13px] text-[#e5edf5]">
-            <Gift className="h-4 w-4 text-[#f3a441]" />
-            <span>Refer friends → Earn YA0G</span>
-          </div>
+          {connected || isCustomWatchMode ? (
+            <div className="mt-3 rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-3">
+              <div className="text-[12px] font-medium text-white">
+                {shortAddr(activeWalletAddress)}
+              </div>
+              <div className="mt-1 text-[11px] text-[#9ca9b6]">
+                {connected ? selectedNetworkConfig?.label : "Watch wallet"}
+              </div>
+              {connected ? (
+                <button
+                  type="button"
+                  onClick={disconnectWallet}
+                  className="mt-3 rounded-[10px] border border-[rgba(255,255,255,0.08)] px-3 py-2 text-[11px] font-semibold text-white transition hover:border-[rgba(255,255,255,0.18)]"
+                >
+                  Disconnect
+                </button>
+              ) : null}
+            </div>
+          ) : null}
 
-          <div className="mt-4">
-            <p className="text-[14px] text-[#27de6b]">15 YA0G</p>
-            <p className="mt-1 text-[13px] text-[#d9e2ea]">pending rewards</p>
-          </div>
+          {errorText ? (
+            <div className="mt-3 text-[11px] leading-5 text-[#ff9b9b]">{errorText}</div>
+          ) : null}
 
-          <button
-            type="button"
-            data-testid="claim-rewards"
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-[11px] bg-[linear-gradient(180deg,#1fd7ce_0%,#11b7bf_100%)] px-4 py-3 text-[14px] font-medium text-[#081116]"
-          >
-            Claim Now
-            <ArrowRight className="h-4 w-4" />
-          </button>
+          {connected || isCustomWatchMode ? (
+            <>
+              <div className="mt-4 flex items-center gap-3 text-[13px] text-[#e5edf5]">
+                <Gift className="h-4 w-4 text-[#f3a441]" />
+                <span>Refer friends → Earn YA0G</span>
+              </div>
+
+              <div className="mt-4">
+                <p className="text-[14px] text-[#27de6b]">15 YA0G</p>
+                <p className="mt-1 text-[13px] text-[#d9e2ea]">pending rewards</p>
+              </div>
+
+              <button
+                type="button"
+                data-testid="claim-rewards"
+                className="mt-4 flex w-full items-center justify-center gap-2 rounded-[11px] bg-[linear-gradient(180deg,#1fd7ce_0%,#11b7bf_100%)] px-4 py-3 text-[14px] font-medium text-[#081116]"
+              >
+                Claim Now
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </>
+          ) : null}
         </div>
 
         <div className="flex items-center gap-2">
@@ -221,6 +555,14 @@ export default function Sidebar() {
           </div>
         </div>
       </div>
+      <WalletConnectModal
+        open={walletModalOpen}
+        onOpenChange={setWalletModalOpen}
+        onConnectWallet={handleConnectWalletById}
+        walletOptions={walletOptions}
+        network={selectedNetworkConfig}
+        connectingId={connectingId}
+      />
     </aside>
   );
 }

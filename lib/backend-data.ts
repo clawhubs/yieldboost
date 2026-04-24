@@ -3,6 +3,7 @@ import {
   buildOptimizationSnapshot,
   createProofDetails,
 } from "@/lib/optimizations";
+import type { WalletNetworkKey } from "@/lib/wallet";
 
 export interface PortfolioToken {
   symbol: string;
@@ -249,6 +250,7 @@ export interface StoredProofRecord {
   txHash: string;
   blockNumber: number;
   timestamp: string;
+  networkKey?: WalletNetworkKey;
   explorerUrl: string;
   decision: StoredDecisionPayload;
   walletAddress?: string;

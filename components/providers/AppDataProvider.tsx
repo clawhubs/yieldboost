@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useCallback,
   createContext,
   startTransition,
   useContext,
@@ -16,7 +17,14 @@ import {
   type OptimizationState,
   buildOptimizationSnapshot,
 } from "@/lib/optimizations";
-import { DEFAULT_WALLET_ADDRESS, WALLET_CHANGE_EVENT } from "@/lib/wallet";
+import {
+  type WalletNetworkKey,
+  WALLET_CHANGE_EVENT,
+  WALLET_NETWORK_STORAGE_KEY,
+  WALLET_OVERRIDE_STORAGE_KEY,
+  isWalletAddress,
+  resolveWalletNetworkKey,
+} from "@/lib/wallet";
 
 interface YieldOptimizerContextValue {
   isOptimizing: boolean;
@@ -33,13 +41,27 @@ interface YieldOptimizerContextValue {
 interface PortfolioContextValue {
   portfolio: PortfolioResponse | null;
   loading: boolean;
-  refreshPortfolio: () => Promise<PortfolioResponse | null>;
+  networkKey: WalletNetworkKey;
+  refreshPortfolio: (
+    walletAddress?: string,
+    networkKey?: WalletNetworkKey,
+  ) => Promise<PortfolioResponse | null>;
 }
 
 const YieldOptimizerContext = createContext<YieldOptimizerContextValue | null>(
   null,
 );
 const PortfolioContext = createContext<PortfolioContextValue | null>(null);
+
+function buildEmptyPortfolio(walletAddress?: string): PortfolioResponse {
+  return {
+    walletAddress,
+    tokens: [],
+    totalUSD: 0,
+    currentAPY: 0,
+    source: walletAddress ? "wallet_unavailable" : "wallet_disconnected",
+  };
+}
 
 function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -68,19 +90,35 @@ function parseStreamingChunk(
 export function AppDataProvider({ children }: { children: ReactNode }) {
   const [portfolio, setPortfolio] = useState<PortfolioResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [networkKey, setNetworkKey] = useState<WalletNetworkKey>("testnet");
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizations, setOptimizations] = useState<OptimizationResult[]>([]);
   const [streamingText, setStreamingText] = useState("");
   const [progress, setProgress] = useState<OptimizationState>("analyzing");
   const [latestResult, setLatestResult] = useState<OptimizationResult | null>(null);
 
-  async function refreshPortfolio(walletAddress?: string) {
+  const refreshPortfolio = useCallback(async (
+    walletAddress?: string,
+    networkKeyInput: WalletNetworkKey = networkKey,
+  ) => {
+    if (!walletAddress) {
+      const emptyPortfolio = buildEmptyPortfolio();
+      setPortfolio(emptyPortfolio);
+      setLoading(false);
+      return emptyPortfolio;
+    }
+
     setLoading(true);
 
     try {
-      const url = walletAddress
-        ? `/api/portfolio?wallet=${encodeURIComponent(walletAddress)}`
-        : "/api/portfolio";
+      const params = new URLSearchParams();
+      if (walletAddress) {
+        params.set("wallet", walletAddress);
+      }
+      params.set("network", networkKeyInput);
+
+      const url =
+        params.size > 0 ? `/api/portfolio?${params.toString()}` : "/api/portfolio";
       const response = await fetch(url, { cache: "no-store" });
       if (!response.ok) {
         throw new Error("Failed to fetch portfolio");
@@ -91,46 +129,83 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       return nextPortfolio;
     } catch {
       const emptyPortfolio: PortfolioResponse = {
-        walletAddress: walletAddress ?? DEFAULT_WALLET_ADDRESS,
-        tokens: [],
-        totalUSD: 0,
-        currentAPY: 0,
-        source: "wallet_unavailable",
+        ...buildEmptyPortfolio(walletAddress),
+        source: `wallet_unavailable_${networkKeyInput}`,
       };
       setPortfolio(emptyPortfolio);
       return emptyPortfolio;
     } finally {
       setLoading(false);
     }
-  }
+  }, [networkKey]);
 
   useEffect(() => {
     const savedWallet =
       typeof window !== "undefined"
-        ? window.localStorage.getItem("yb_wallet_override") ?? undefined
+        ? window.localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY) ?? undefined
+        : undefined;
+    const savedNetwork =
+      typeof window !== "undefined"
+        ? resolveWalletNetworkKey(
+            window.localStorage.getItem(WALLET_NETWORK_STORAGE_KEY) ?? undefined,
+          )
         : undefined;
 
-    void refreshPortfolio(savedWallet);
+    const initialNetwork = savedNetwork ?? "testnet";
+    const initialWallet = isWalletAddress(savedWallet) ? savedWallet : undefined;
+    setNetworkKey(initialNetwork);
+    if (initialWallet) {
+      void refreshPortfolio(initialWallet, initialNetwork);
+    } else {
+      setPortfolio(buildEmptyPortfolio());
+      setLoading(false);
+      setLatestResult(null);
+      setOptimizations([]);
+    }
 
-    async function hydrateLatest() {
+    async function hydrateLatest(walletAddress: string, nextNetwork: WalletNetworkKey) {
       try {
-        const response = await fetch("/api/agent/latest", { cache: "no-store" });
+        const params = new URLSearchParams({
+          network: nextNetwork,
+          wallet: walletAddress,
+        });
+        const response = await fetch(`/api/agent/latest?${params.toString()}`, {
+          cache: "no-store",
+        });
         if (!response.ok) return;
         const data = (await response.json()) as { data?: OptimizationResult | null };
         if (data.data) {
           setLatestResult(data.data);
           setOptimizations([data.data]);
+        } else {
+          setLatestResult(null);
+          setOptimizations([]);
         }
       } catch {
         // Leave the dashboard in its empty-live state until a real run exists.
       }
     }
 
-    void hydrateLatest();
+    if (initialWallet) {
+      void hydrateLatest(initialWallet, initialNetwork);
+    }
 
     function handleWalletChange(event: Event) {
-      const detail = (event as CustomEvent<{ walletAddress?: string }>).detail;
-      void refreshPortfolio(detail?.walletAddress);
+      const detail = (
+        event as CustomEvent<{ walletAddress?: string; networkKey?: WalletNetworkKey }>
+      ).detail;
+      const nextNetwork = resolveWalletNetworkKey(detail?.networkKey);
+      setNetworkKey(nextNetwork);
+      if (detail?.walletAddress) {
+        void refreshPortfolio(detail.walletAddress, nextNetwork);
+        void hydrateLatest(detail.walletAddress, nextNetwork);
+        return;
+      }
+
+      setPortfolio(buildEmptyPortfolio());
+      setLoading(false);
+      setLatestResult(null);
+      setOptimizations([]);
     }
 
     window.addEventListener(WALLET_CHANGE_EVENT, handleWalletChange as EventListener);
@@ -138,7 +213,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     return () => {
       window.removeEventListener(WALLET_CHANGE_EVENT, handleWalletChange as EventListener);
     };
-  }, []);
+  }, [refreshPortfolio]);
 
   async function optimize(
     portfolioInput: Record<string, number>,
@@ -190,6 +265,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          networkKey,
+          walletAddress: portfolio?.walletAddress,
           decision: {
             current_apy:
               optimizationData.current_apy ?? fallbackResult.current_apy,
@@ -267,7 +344,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
   return (
     <PortfolioContext.Provider
-      value={{ portfolio, loading, refreshPortfolio }}
+      value={{ portfolio, loading, networkKey, refreshPortfolio }}
     >
       <YieldOptimizerContext.Provider
         value={{

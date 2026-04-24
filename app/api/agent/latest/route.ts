@@ -3,7 +3,13 @@ import { JsonRpcProvider } from "ethers";
 import { createDecisionSummary } from "@/lib/backend-data";
 import { type OptimizationResult } from "@/lib/optimizations";
 import { getLatestStoredProof } from "@/lib/server/runtime-store";
-import { resolveWalletAddress, WALLET_COOKIE_KEY } from "@/lib/wallet";
+import {
+  getServer0GNetworkConfig,
+  resolveWalletAddress,
+  resolveWalletNetworkKey,
+  WALLET_COOKIE_KEY,
+  WALLET_NETWORK_COOKIE_KEY,
+} from "@/lib/wallet";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -15,21 +21,36 @@ function inferRiskBand(apy: number): "low" | "medium" | "high" {
 }
 
 export async function GET(req: NextRequest) {
+  const requestedWallet = resolveWalletAddress(
+    req.nextUrl.searchParams.get("wallet") ?? req.cookies.get(WALLET_COOKIE_KEY)?.value,
+  );
+  if (!requestedWallet) {
+    return NextResponse.json({ success: true, data: null });
+  }
+
   const storedProof = await getLatestStoredProof();
 
   if (!storedProof) {
     return NextResponse.json({ success: true, data: null });
   }
 
-  const walletFromCookie = resolveWalletAddress(req.cookies.get(WALLET_COOKIE_KEY)?.value);
-  let walletAddress = storedProof.walletAddress ?? walletFromCookie;
+  if (storedProof.walletAddress && storedProof.walletAddress !== requestedWallet) {
+    return NextResponse.json({ success: true, data: null });
+  }
 
-  const rpcUrl = process.env.ZG_RPC_URL ?? process.env.NEXT_PUBLIC_ZG_RPC;
+  let walletAddress = storedProof.walletAddress ?? requestedWallet;
+
+  const networkKey = resolveWalletNetworkKey(
+    storedProof.networkKey ??
+      req.nextUrl.searchParams.get("network") ??
+      req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value,
+  );
+  const rpcUrl = getServer0GNetworkConfig(networkKey).rpcUrl;
   if (rpcUrl && storedProof.txHash) {
     try {
       const provider = new JsonRpcProvider(rpcUrl);
       const tx = await provider.getTransaction(storedProof.txHash);
-      if (typeof tx?.from === "string") {
+      if (typeof tx?.from === "string" && tx.from.length > 0) {
         walletAddress = tx.from;
       }
     } catch {
@@ -64,7 +85,7 @@ export async function GET(req: NextRequest) {
     totalPortfolio: storedProof.decision.totalPortfolio ?? 0,
     riskProfile: "Moderate",
     proofUrl: storedProof.explorerUrl,
-    walletAddress,
+    walletAddress: walletAddress ?? undefined,
     proofRegistryAddress: storedProof.proofRegistryAddress,
     proofRegistryTxHash: storedProof.proofRegistryTxHash,
     proofRegistryProofId: storedProof.proofRegistryProofId,

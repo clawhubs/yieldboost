@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getLatestStoredProof, getStoredProofByCid } from "@/lib/server/runtime-store";
+import { getServer0GNetworkConfig, resolveWalletNetworkKey } from "@/lib/wallet";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -19,6 +20,7 @@ export async function GET(req: NextRequest) {
         txHash: storedProof.txHash,
         block: storedProof.blockNumber,
         timestamp: storedProof.timestamp,
+        networkKey: storedProof.networkKey,
         explorerUrl: storedProof.explorerUrl,
         walletAddress: storedProof.walletAddress,
         decision: storedProof.decision,
@@ -37,7 +39,9 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const storageUrl = process.env.ZG_STORAGE_URL ?? process.env.NEXT_PUBLIC_ZG_STORAGE;
+  const networkKey = resolveWalletNetworkKey(req.nextUrl.searchParams.get("network"));
+  const networkConfig = getServer0GNetworkConfig(networkKey);
+  const storageUrl = networkConfig.storageUrl;
 
   if (storageUrl) {
     try {
@@ -65,8 +69,7 @@ export async function GET(req: NextRequest) {
               (typeof data.explorerUrl === "string"
                 ? data.explorerUrl
                 : undefined) ??
-              (process.env.NEXT_PUBLIC_0G_EXPLORER_BASE_URL ??
-                "https://chainscan-galileo.0g.ai"),
+              networkConfig.explorerBase,
           },
         });
       }

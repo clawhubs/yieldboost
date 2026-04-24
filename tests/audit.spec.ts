@@ -377,9 +377,9 @@ for (const pg of sidebarPages) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// 14. Dashboard shortcut buttons are clickable and route correctly
+// 14. Dashboard controls are clickable and notifications are functional
 // ═══════════════════════════════════════════════════════════════════════════
-test("14 · Dashboard shortcut buttons navigate correctly", async ({ page }) => {
+test("14 · Dashboard controls open settings and optimization notifications", async ({ page }) => {
   await page.goto(BASE, { waitUntil: "networkidle" });
 
   await page.getByTestId("risk-profile").click();
@@ -388,8 +388,7 @@ test("14 · Dashboard shortcut buttons navigate correctly", async ({ page }) => 
 
   await page.goto(BASE, { waitUntil: "networkidle" });
   await page.getByTestId("alerts-button").click();
-  await page.waitForURL("**/watchlist", { timeout: 15000 });
-  await expect(page.getByTestId("sidebar")).toBeVisible();
+  await expect(page.getByTestId("optimization-notification-panel")).toBeVisible();
 
   await page.screenshot({
     path: "test-results/audit-14-dashboard-shortcuts.png",

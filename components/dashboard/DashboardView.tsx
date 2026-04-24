@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   Activity,
   Bell,
@@ -37,6 +37,11 @@ import {
 import ProofModal from "@/components/modals/ProofModal";
 import { useYieldOptimizer } from "@/hooks/useYieldOptimizer";
 import { usePortfolio } from "@/hooks/usePortfolio";
+import {
+  getAvailableWalletNetworks,
+  WALLET_CONNECT_REQUEST_EVENT,
+  type WalletNetworkKey,
+} from "@/lib/wallet";
 
 const decisionItems = [
   "0G/USDC LP yield dropped 2.1% (7d avg)",
@@ -207,12 +212,17 @@ function AgentSideRail({ icon: Icon }: { icon: typeof Activity }) {
 }
 
 const EXPLORER_BASE = "https://chainscan-galileo.0g.ai";
+const walletNetworks = getAvailableWalletNetworks();
 
 export default function DashboardView() {
   const [proofOpen, setProofOpen] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [alertsOpen, setAlertsOpen] = useState(false);
+  const [walletMenuOpen, setWalletMenuOpen] = useState(false);
   const { latestResult, optimize, isOptimizing, progress, streamingText } = useYieldOptimizer();
-  const { portfolio } = usePortfolio();
+  const { portfolio, networkKey } = usePortfolio();
+  const alertsRef = useRef<HTMLDivElement | null>(null);
+  const walletMenuRef = useRef<HTMLDivElement | null>(null);
   const [globalStats, setGlobalStats] = useState<{
     hasData: boolean;
     formatted: { users: string; computeJobs: string; tvl: string; recentJobs24h: string; protocols: string };
@@ -235,6 +245,34 @@ export default function DashboardView() {
       cancelled = true;
     };
   }, [latestResult]);
+
+  useEffect(() => {
+    if (!alertsOpen && !walletMenuOpen) return;
+
+    function handlePointerDown(event: MouseEvent) {
+      if (!alertsRef.current?.contains(event.target as Node)) {
+        setAlertsOpen(false);
+      }
+      if (!walletMenuRef.current?.contains(event.target as Node)) {
+        setWalletMenuOpen(false);
+      }
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setAlertsOpen(false);
+        setWalletMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [alertsOpen, walletMenuOpen]);
 
   async function copyToClipboard(value: string, field: string) {
     await navigator.clipboard.writeText(value);
@@ -295,6 +333,7 @@ export default function DashboardView() {
   const portfolioWalletLabel = portfolio?.walletAddress
     ? `${portfolio.walletAddress.slice(0, 6)}...${portfolio.walletAddress.slice(-4)}`
     : "wallet connected";
+  const activeNetwork = walletNetworks.find((item) => item.key === networkKey) ?? walletNetworks[0];
 
   const statusTimeLabel = latestResult
     ? new Date(latestResult.timestamp).toLocaleTimeString("en-US", {
@@ -302,6 +341,16 @@ export default function DashboardView() {
         minute: "2-digit",
       })
     : "Live now";
+
+  const optimizationNotification = latestResult
+    ? {
+        title: "Optimization succeeded",
+        message: `${latestResult.recommended} raised APY from ${latestResult.current_apy}% to ${latestResult.optimized_apy}%.`,
+        gain: `+$${latestResult.estimatedAnnualGain.toLocaleString()} / year`,
+        timestamp: statusTimeLabel,
+      }
+    : null;
+  const notificationCount = optimizationNotification ? 1 : 0;
 
   const syncPct = latestResult ? 100 : portfolio?.tokens?.length ? 98.4 : 0;
   const chainStats = useMemo(
@@ -345,27 +394,132 @@ export default function DashboardView() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <Link
-                  href="/settings"
-                  data-testid="risk-profile"
-                  className="flex h-[46px] items-center gap-2 rounded-[12px] border border-[#1b242d] bg-[#0a1117] px-4 text-left"
-                >
-                  <div>
-                    <div className="text-[11px] text-[#d9e1e8]">Risk Profile</div>
-                    <div className="mt-0.5 text-[12px] font-medium text-[#2ad7c8]">Moderate</div>
-                  </div>
-                  <ChevronDown className="h-4 w-4 text-[#d9e1e8]" />
-                </Link>
-                <Link
-                  href="/watchlist"
-                  data-testid="alerts-button"
-                  className="relative flex h-[46px] w-[46px] items-center justify-center rounded-[12px] border border-[#1b242d] bg-[#0a1117] text-white"
-                >
-                  <Bell className="h-4 w-4" />
-                  <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#1cdad0] px-1 text-[9px] font-semibold text-[#061015]">
-                    3
-                  </span>
-                </Link>
+                <div ref={walletMenuRef} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setWalletMenuOpen((open) => !open)}
+                    className="flex h-[46px] items-center gap-3 rounded-[12px] border border-[#1b242d] bg-[#0a1117] px-4 text-left transition hover:border-[#2ad7c8]/40"
+                  >
+                    <Wallet2 className="h-4 w-4 text-[#d9e1e8]" />
+                    <div>
+                      <div className="text-[11px] text-[#d9e1e8]">Wallet</div>
+                      <div className="mt-0.5 text-[12px] font-medium text-[#2ad7c8]">
+                        {portfolio?.walletAddress ? portfolioWalletLabel : "Connect Wallet"}
+                      </div>
+                    </div>
+                    <ChevronDown className="h-4 w-4 text-[#d9e1e8]" />
+                  </button>
+
+                  {walletMenuOpen ? (
+                    <div className="absolute right-0 top-[54px] z-20 w-[220px] rounded-[16px] border border-[#17313a] bg-[#081117] p-2 shadow-[0_18px_44px_rgba(0,0,0,0.45)]">
+                      <div className="px-2 pb-2 pt-1 text-[11px] uppercase tracking-[0.12em] text-[#87a0ad]">
+                        Choose Network
+                      </div>
+                      <div className="space-y-2">
+                        {walletNetworks.map((network) => (
+                          <button
+                            key={network.key}
+                            type="button"
+                            disabled={!network.enabled}
+                            onClick={() => {
+                              window.dispatchEvent(
+                                new CustomEvent(WALLET_CONNECT_REQUEST_EVENT, {
+                                  detail: { networkKey: network.key as WalletNetworkKey },
+                                }),
+                              );
+                              setWalletMenuOpen(false);
+                            }}
+                            className={`flex w-full items-start justify-between rounded-[12px] border px-3 py-3 text-left transition ${
+                              network.key === networkKey
+                                ? "border-[rgba(0,201,177,0.35)] bg-[rgba(0,201,177,0.08)]"
+                                : "border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] hover:border-[rgba(0,201,177,0.25)]"
+                            } ${!network.enabled ? "cursor-not-allowed opacity-50" : ""}`}
+                          >
+                            <div>
+                              <div className="text-[13px] font-semibold text-white">
+                                {network.key === "testnet" ? "Testnet" : "Mainnet"}
+                              </div>
+                              <div className="mt-1 text-[11px] text-[#8ea1af]">
+                                {network.enabled ? network.chainName : "Set env first"}
+                              </div>
+                            </div>
+                            <div className="rounded-full border border-[#21453f] px-2 py-1 text-[10px] font-semibold text-[#2ad7c8]">
+                              {network.key === activeNetwork.key ? "Current" : "Open"}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+                <div ref={alertsRef} className="relative">
+                  <button
+                    type="button"
+                    data-testid="alerts-button"
+                    aria-expanded={alertsOpen}
+                    aria-label="Optimization notifications"
+                    onClick={() => setAlertsOpen((open) => !open)}
+                    className="relative flex h-[46px] w-[46px] items-center justify-center rounded-[12px] border border-[#1b242d] bg-[#0a1117] text-white transition hover:border-[#2ad7c8]/50"
+                  >
+                    <Bell className="h-4 w-4" />
+                    {notificationCount > 0 ? (
+                      <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#1cdad0] px-1 text-[9px] font-semibold text-[#061015]">
+                        {notificationCount}
+                      </span>
+                    ) : null}
+                  </button>
+
+                  {alertsOpen ? (
+                    <div
+                      data-testid="optimization-notification-panel"
+                      className="absolute right-0 top-[54px] z-20 w-[320px] rounded-[16px] border border-[#17313a] bg-[#081117] p-3 shadow-[0_18px_44px_rgba(0,0,0,0.45)]"
+                    >
+                      <div className="flex items-start justify-between gap-3 rounded-[12px] border border-[#16353a] bg-[linear-gradient(135deg,rgba(34,221,208,0.12),rgba(8,17,23,0.96))] p-3">
+                        <div className="flex gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-[12px] border border-[#1f5d53] bg-[#0b1b1a] text-[#28decf]">
+                            <Check className="h-4 w-4" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-[13px] font-semibold text-white">
+                              {optimizationNotification?.title ?? "No notifications yet"}
+                            </div>
+                            <div className="mt-1 text-[12px] leading-5 text-[#cdd8e1]">
+                              {optimizationNotification?.message ?? "Run an optimization to get a success notification here."}
+                            </div>
+                            <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px]">
+                              <span className="rounded-full border border-[#21453f] bg-[#0b1a18] px-2 py-1 text-[#29de74]">
+                                {optimizationNotification?.gain ?? "Waiting for first run"}
+                              </span>
+                              <span className="text-[#8ea1af]">
+                                {optimizationNotification ? `Synced ${optimizationNotification.timestamp}` : "Standby"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 flex items-center justify-between gap-3 px-1">
+                        <div className="text-[11px] text-[#8ea1af]">
+                          {latestResult?.storageProof
+                            ? `CID ${latestResult.storageProof.slice(0, 10)}...`
+                            : "Proof receipt will appear after execution"}
+                        </div>
+                        {latestResult?.proofUrl ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAlertsOpen(false);
+                              setProofOpen(true);
+                            }}
+                            className="text-[11px] font-semibold text-[#2ad7c8]"
+                          >
+                            View proof
+                          </button>
+                        ) : null}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
                 <button
                   type="button"
                   data-testid="boost-yield-cta"

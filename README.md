@@ -22,11 +22,24 @@ UPSTASH_REDIS_REST_TOKEN=
 ZG_PRIVATE_KEY=
 NEXT_PUBLIC_ZG_RPC=https://evmrpc-testnet.0g.ai
 NEXT_PUBLIC_ZG_STORAGE=https://indexer-storage-testnet-standard.0g.ai
+NEXT_PUBLIC_0G_TESTNET_CHAIN_ID=16602
+NEXT_PUBLIC_0G_TESTNET_CHAIN_NAME="0G Galileo Testnet"
+NEXT_PUBLIC_0G_MAINNET_CHAIN_ID=
+NEXT_PUBLIC_0G_MAINNET_CHAIN_NAME="0G Mainnet"
+NEXT_PUBLIC_0G_MAINNET_RPC=
+NEXT_PUBLIC_0G_MAINNET_STORAGE=
+NEXT_PUBLIC_0G_MAINNET_EXPLORER_BASE_URL=
+ZG_MAINNET_RPC_URL=
+ZG_MAINNET_STORAGE_URL=
+ZG_MAINNET_PRIVATE_KEY=
+ZG_MAINNET_PROOF_REGISTRY_ADDRESS=
 NEXT_PUBLIC_CONTRACT_ADDRESS=
 NEXT_PUBLIC_APP_URL=http://localhost:3020
 ```
 
 If `E2B_API_KEY` or `OPENAI_API_KEY` is missing, the app falls back to a deterministic mock optimization so the UI still works locally.
+
+Wallet login now supports common injected wallets such as MetaMask, Rabby, Coinbase Wallet, Trust Wallet, and OKX Wallet. The sidebar network switch uses the configured testnet/mainnet RPC settings above.
 
 ## Local run
 

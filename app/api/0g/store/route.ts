@@ -16,6 +16,12 @@ import {
   type StoredProofRecord,
   type StoredDecisionPayload,
 } from "@/lib/backend-data";
+import {
+  getServer0GNetworkConfig,
+  resolveWalletNetworkKey,
+  type WalletNetworkKey,
+  WALLET_NETWORK_COOKIE_KEY,
+} from "@/lib/wallet";
 import { recordStoredProof } from "@/lib/server/runtime-store";
 
 export const runtime = "nodejs";
@@ -33,17 +39,7 @@ const decisionSchema = z.object({
   reasoning: z.string().optional(),
 });
 
-function getConfig() {
-  return {
-    storageUrl: process.env.ZG_STORAGE_URL ?? process.env.NEXT_PUBLIC_ZG_STORAGE,
-    rpcUrl: process.env.ZG_RPC_URL ?? process.env.NEXT_PUBLIC_ZG_RPC,
-    privateKey: process.env.ZG_PRIVATE_KEY,
-    proofRegistryAddress: process.env.ZG_PROOF_REGISTRY_ADDRESS,
-    explorerBase:
-      process.env.NEXT_PUBLIC_0G_EXPLORER_BASE_URL ??
-      "https://chainscan-galileo.0g.ai",
-  };
-}
+const walletAddressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/).optional();
 
 const proofRegistryAbi = [
   "event ProofRecorded(uint256 indexed proofId,address indexed owner,string cid,bytes32 indexed rootHash,bytes32 storageTxHash,uint256 currentApyBps,uint256 optimizedApyBps,uint64 timestamp)",
@@ -60,9 +56,17 @@ function joinNotes(...notes: Array<string | undefined>) {
 }
 
 export async function POST(req: NextRequest) {
-  const payload = (await req.json()) as { decision?: unknown };
+  const payload = (await req.json()) as {
+    decision?: unknown;
+    networkKey?: WalletNetworkKey;
+    walletAddress?: string;
+  };
   const decision = decisionSchema.parse(payload.decision) as StoredDecisionPayload;
-  const config = getConfig();
+  const walletAddress = walletAddressSchema.safeParse(payload.walletAddress).data;
+  const networkKey = resolveWalletNetworkKey(
+    payload.networkKey ?? req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value,
+  );
+  const config = getServer0GNetworkConfig(networkKey);
 
   if (!config.storageUrl || !config.rpcUrl || !config.privateKey) {
     return NextResponse.json(
@@ -130,9 +134,10 @@ export async function POST(req: NextRequest) {
         txHash,
         blockNumber: receipt?.blockNumber ?? 0,
         timestamp,
+        networkKey,
         explorerUrl: `${config.explorerBase.replace(/\/$/, "")}/tx/${txHash}`,
         decision,
-        walletAddress: signer.address,
+        walletAddress: walletAddress ?? signer.address,
         note: receipt ? undefined : "pending_receipt",
       };
 
@@ -196,6 +201,7 @@ export async function POST(req: NextRequest) {
         txHash: proof.txHash,
         blockNumber: proof.blockNumber,
         timestamp: proof.timestamp,
+        networkKey: proof.networkKey,
         explorerUrl: proof.explorerUrl,
         walletAddress: proof.walletAddress,
         proofRegistryAddress: proof.proofRegistryAddress,
