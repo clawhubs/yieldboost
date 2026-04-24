@@ -9,6 +9,12 @@ export default defineConfig({
     baseURL: "http://127.0.0.1:3020",
     trace: "on-first-retry",
   },
+  webServer: {
+    command: "npm run dev -- --port 3020",
+    url: "http://127.0.0.1:3020",
+    reuseExistingServer: true,
+    timeout: 30_000,
+  },
   projects: [
     {
       name: "chromium",

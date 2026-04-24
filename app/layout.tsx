@@ -40,8 +40,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body
+        suppressHydrationWarning
         className={`${display.variable} ${body.variable} ${condensed.variable} min-h-screen bg-[#030609] font-sans text-[var(--text-primary)] antialiased`}
       >
         <AppDataProvider>

@@ -132,6 +132,7 @@ export async function POST(req: NextRequest) {
         timestamp,
         explorerUrl: `${config.explorerBase.replace(/\/$/, "")}/tx/${txHash}`,
         decision,
+        walletAddress: signer.address,
         note: receipt ? undefined : "pending_receipt",
       };
 
@@ -196,6 +197,7 @@ export async function POST(req: NextRequest) {
         blockNumber: proof.blockNumber,
         timestamp: proof.timestamp,
         explorerUrl: proof.explorerUrl,
+        walletAddress: proof.walletAddress,
         proofRegistryAddress: proof.proofRegistryAddress,
         proofRegistryTxHash: proof.proofRegistryTxHash,
         proofRegistryProofId: proof.proofRegistryProofId,

@@ -27,6 +27,7 @@ export interface OptimizationResult {
   totalPortfolio: number;
   riskProfile: "Low" | "Moderate" | "High";
   proofUrl?: string;
+  walletAddress?: string;
   proofRegistryAddress?: string;
   proofRegistryTxHash?: string;
   proofRegistryProofId?: string;

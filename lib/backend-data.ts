@@ -14,6 +14,9 @@ export interface PortfolioResponse {
   tokens: PortfolioToken[];
   totalUSD: number;
   currentAPY: number;
+  walletAddress?: string;
+  source?: string;
+  latestTxHash?: string;
 }
 
 export interface PortfolioSummaryResponse {
@@ -248,6 +251,7 @@ export interface StoredProofRecord {
   timestamp: string;
   explorerUrl: string;
   decision: StoredDecisionPayload;
+  walletAddress?: string;
   proofRegistryAddress?: string;
   proofRegistryTxHash?: string;
   proofRegistryProofId?: string;

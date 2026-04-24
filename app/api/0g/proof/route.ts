@@ -1,18 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createStoredProofFallback } from "@/lib/backend-data";
-import { getStoredProofByCid } from "@/lib/server/runtime-store";
+import { getLatestStoredProof, getStoredProofByCid } from "@/lib/server/runtime-store";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function GET(req: NextRequest) {
   const cid = req.nextUrl.searchParams.get("cid");
 
-  if (!cid) {
-    return NextResponse.json(
-      { success: false, error: "Missing cid query parameter" },
-      { status: 400 },
-    );
-  }
+  const storedProof = cid
+    ? await getStoredProofByCid(cid)
+    : await getLatestStoredProof();
 
-  const storedProof = await getStoredProofByCid(cid);
   if (storedProof) {
     return NextResponse.json({
       success: true,
@@ -22,6 +20,7 @@ export async function GET(req: NextRequest) {
         block: storedProof.blockNumber,
         timestamp: storedProof.timestamp,
         explorerUrl: storedProof.explorerUrl,
+        walletAddress: storedProof.walletAddress,
         decision: storedProof.decision,
         proofRegistryAddress: storedProof.proofRegistryAddress,
         proofRegistryTxHash: storedProof.proofRegistryTxHash,
@@ -31,8 +30,14 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  const storageUrl =
-    process.env.ZG_STORAGE_URL ?? process.env.NEXT_PUBLIC_ZG_STORAGE;
+  if (!cid) {
+    return NextResponse.json(
+      { success: false, error: "No live proof available yet" },
+      { status: 404 },
+    );
+  }
+
+  const storageUrl = process.env.ZG_STORAGE_URL ?? process.env.NEXT_PUBLIC_ZG_STORAGE;
 
   if (storageUrl) {
     try {
@@ -47,21 +52,12 @@ export async function GET(req: NextRequest) {
           success: true,
           data: {
             cid,
-            txHash:
-              (typeof data.txHash === "string" ? data.txHash : undefined) ??
-              createStoredProofFallback({
-                current_apy: 12.38,
-                optimized_apy: 23.84,
-                yield_increase: 2356.41,
-                yield_increase_pct: 23.61,
-                recommended: "SaucerSwap LP",
-                confidence: 96,
-              }).txHash,
+            txHash: typeof data.txHash === "string" ? data.txHash : undefined,
             block:
               (typeof data.block === "number" ? data.block : undefined) ??
               (typeof data.blockNumber === "number"
                 ? data.blockNumber
-                : 4829102),
+                : 0),
             timestamp:
               (typeof data.timestamp === "string" ? data.timestamp : undefined) ??
               new Date().toISOString(),
@@ -75,27 +71,12 @@ export async function GET(req: NextRequest) {
         });
       }
     } catch {
-      // Ignore remote failure and fall back to local mock-safe payload.
+      // Ignore remote failure and return an honest error below.
     }
   }
 
-  const fallbackProof = createStoredProofFallback({
-    current_apy: 12.38,
-    optimized_apy: 23.84,
-    yield_increase: 2356.41,
-    yield_increase_pct: 23.61,
-    recommended: "SaucerSwap LP",
-    confidence: 96,
-  });
-
   return NextResponse.json({
-    success: true,
-    data: {
-      cid,
-      txHash: fallbackProof.txHash,
-      block: fallbackProof.blockNumber,
-      timestamp: fallbackProof.timestamp,
-      explorerUrl: fallbackProof.explorerUrl,
-    },
-  });
+    success: false,
+    error: "Proof not found on the live store",
+  }, { status: 404 });
 }

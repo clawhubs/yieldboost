@@ -278,7 +278,7 @@ export default function FeaturePageView({
                 <div className="text-[13px] font-medium text-white">{table.title}</div>
                 <div className="mt-1 text-[12px] text-[#9faab6]">{table.subtitle}</div>
               </div>
-              <div className="glass-accent rounded-[10px] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#22ddd0]">
+              <div className="rounded-[10px] border border-[#174642] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#22ddd0]">
                 live data
               </div>
             </div>

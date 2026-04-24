@@ -2,7 +2,6 @@
 
 import { useActionState } from "react";
 import { ArrowUpRight, Check, CheckCheck, CircleDashed, Send, Sparkles } from "lucide-react";
-import { getFallbackPortfolioValueMap } from "@/components/providers/AppDataProvider";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import { useYieldOptimizer } from "@/hooks/useYieldOptimizer";
 import type { OptimizationState } from "@/lib/optimizations";
@@ -56,13 +55,15 @@ export default function AgentPanel() {
       const livePortfolio = Object.fromEntries(
         (portfolio?.tokens ?? []).map((token) => [token.symbol, token.valueUSD]),
       );
-      const portfolioPayload =
-        Object.keys(livePortfolio).length > 0
-          ? livePortfolio
-          : getFallbackPortfolioValueMap();
+      if (Object.keys(livePortfolio).length === 0) {
+        return {
+          error: "No live wallet balance is available yet. Refresh the wallet data first.",
+          prompt,
+        };
+      }
 
       try {
-        await optimize(portfolioPayload, prompt);
+        await optimize(livePortfolio, prompt);
         return { error: "", prompt };
       } catch {
         return {

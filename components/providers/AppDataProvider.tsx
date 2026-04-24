@@ -10,14 +10,13 @@ import {
 } from "react";
 import {
   type PortfolioResponse,
-  getMockPortfolio,
-  getPortfolioValueMap,
 } from "@/lib/backend-data";
 import {
   type OptimizationResult,
   type OptimizationState,
   buildOptimizationSnapshot,
 } from "@/lib/optimizations";
+import { DEFAULT_WALLET_ADDRESS, WALLET_CHANGE_EVENT } from "@/lib/wallet";
 
 interface YieldOptimizerContextValue {
   isOptimizing: boolean;
@@ -75,11 +74,14 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const [progress, setProgress] = useState<OptimizationState>("analyzing");
   const [latestResult, setLatestResult] = useState<OptimizationResult | null>(null);
 
-  async function refreshPortfolio() {
+  async function refreshPortfolio(walletAddress?: string) {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/portfolio", { cache: "no-store" });
+      const url = walletAddress
+        ? `/api/portfolio?wallet=${encodeURIComponent(walletAddress)}`
+        : "/api/portfolio";
+      const response = await fetch(url, { cache: "no-store" });
       if (!response.ok) {
         throw new Error("Failed to fetch portfolio");
       }
@@ -88,16 +90,54 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       setPortfolio(nextPortfolio);
       return nextPortfolio;
     } catch {
-      const fallback = getMockPortfolio();
-      setPortfolio(fallback);
-      return fallback;
+      const emptyPortfolio: PortfolioResponse = {
+        walletAddress: walletAddress ?? DEFAULT_WALLET_ADDRESS,
+        tokens: [],
+        totalUSD: 0,
+        currentAPY: 0,
+        source: "wallet_unavailable",
+      };
+      setPortfolio(emptyPortfolio);
+      return emptyPortfolio;
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    void refreshPortfolio();
+    const savedWallet =
+      typeof window !== "undefined"
+        ? window.localStorage.getItem("yb_wallet_override") ?? undefined
+        : undefined;
+
+    void refreshPortfolio(savedWallet);
+
+    async function hydrateLatest() {
+      try {
+        const response = await fetch("/api/agent/latest", { cache: "no-store" });
+        if (!response.ok) return;
+        const data = (await response.json()) as { data?: OptimizationResult | null };
+        if (data.data) {
+          setLatestResult(data.data);
+          setOptimizations([data.data]);
+        }
+      } catch {
+        // Leave the dashboard in its empty-live state until a real run exists.
+      }
+    }
+
+    void hydrateLatest();
+
+    function handleWalletChange(event: Event) {
+      const detail = (event as CustomEvent<{ walletAddress?: string }>).detail;
+      void refreshPortfolio(detail?.walletAddress);
+    }
+
+    window.addEventListener(WALLET_CHANGE_EVENT, handleWalletChange as EventListener);
+
+    return () => {
+      window.removeEventListener(WALLET_CHANGE_EVENT, handleWalletChange as EventListener);
+    };
   }, []);
 
   async function optimize(
@@ -186,6 +226,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         txHash: string;
         explorerUrl?: string;
         timestamp?: string;
+        walletAddress?: string;
         proofRegistryAddress?: string;
         proofRegistryTxHash?: string;
         proofRegistryProofId?: string;
@@ -200,6 +241,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         txHash: storageData.txHash,
         proofUrl: storageData.explorerUrl,
         timestamp: storageData.timestamp ?? new Date().toISOString(),
+        walletAddress: storageData.walletAddress,
         proofRegistryAddress: storageData.proofRegistryAddress,
         proofRegistryTxHash: storageData.proofRegistryTxHash,
         proofRegistryProofId: storageData.proofRegistryProofId,
@@ -259,8 +301,4 @@ export function usePortfolioContext() {
   }
 
   return context;
-}
-
-export function getFallbackPortfolioValueMap() {
-  return getPortfolioValueMap(getMockPortfolio());
 }

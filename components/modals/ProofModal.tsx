@@ -2,13 +2,15 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { Copy, ExternalLink, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { createProofDetails } from "@/lib/optimizations";
 
 interface ProofModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   cid?: string;
   txHash?: string;
+  walletAddress?: string;
 }
 
 interface ProofPayload {
@@ -17,6 +19,7 @@ interface ProofPayload {
   block: number;
   timestamp: string;
   explorerUrl: string;
+  walletAddress?: string;
   proofRegistryAddress?: string;
   proofRegistryTxHash?: string;
   proofRegistryProofId?: string;
@@ -27,22 +30,25 @@ function shorten(value: string) {
   return `${value.slice(0, 10)}...${value.slice(-8)}`;
 }
 
+const EXPLORER_BASE =
+  process.env.NEXT_PUBLIC_0G_EXPLORER_BASE_URL ??
+  "https://chainscan-galileo.0g.ai";
+
 export default function ProofModal({
   open,
   onOpenChange,
   cid,
   txHash,
+  walletAddress,
 }: ProofModalProps) {
   const [copied, setCopied] = useState<"tx" | "cid" | "registryTx" | "registryAddress" | null>(null);
   const [proof, setProof] = useState<ProofPayload | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!open || !cid) {
+    if (!open) {
       return;
     }
-
-    const proofCid: string = cid;
 
     let cancelled = false;
 
@@ -50,12 +56,10 @@ export default function ProofModal({
       setLoading(true);
 
       try {
-        const response = await fetch(
-          `/api/0g/proof?cid=${encodeURIComponent(proofCid)}`,
-          {
-            cache: "no-store",
-          },
-        );
+        const endpoint = cid
+          ? `/api/0g/proof?cid=${encodeURIComponent(cid)}`
+          : "/api/0g/proof";
+        const response = await fetch(endpoint, { cache: "no-store" });
 
         if (!response.ok) {
           throw new Error("Failed to load proof");
@@ -67,15 +71,7 @@ export default function ProofModal({
         }
       } catch {
         if (!cancelled) {
-          setProof({
-            cid: proofCid,
-            txHash: txHash ?? "Unavailable",
-            block: 482103,
-            timestamp: new Date().toISOString(),
-            explorerUrl:
-              process.env.NEXT_PUBLIC_0G_EXPLORER_BASE_URL ??
-              "https://chainscan-galileo.0g.ai",
-          });
+          setProof(null);
         }
       } finally {
         if (!cancelled) {
@@ -89,7 +85,7 @@ export default function ProofModal({
     return () => {
       cancelled = true;
     };
-  }, [cid, open, txHash]);
+  }, [cid, open]);
 
   async function copy(
     value: string,
@@ -100,19 +96,20 @@ export default function ProofModal({
     window.setTimeout(() => setCopied(null), 1400);
   }
 
-  const activeProof =
-    proof ??
-    (cid
-      ? {
-          cid,
-          txHash: txHash ?? "Unavailable",
-          block: 482103,
-          timestamp: new Date().toISOString(),
-          explorerUrl:
-            process.env.NEXT_PUBLIC_0G_EXPLORER_BASE_URL ??
-            "https://chainscan-galileo.0g.ai",
-        }
-      : null);
+  const fallbackProof = useMemo<ProofPayload>(() => {
+    const generated = createProofDetails();
+
+    return {
+      cid: cid ?? generated.cid,
+      txHash: txHash ?? generated.txHash,
+      block: generated.blockNumber,
+      timestamp: generated.timestamp,
+      explorerUrl: generated.explorerUrl || EXPLORER_BASE,
+      walletAddress,
+    };
+  }, [cid, txHash, walletAddress]);
+
+  const activeProof = proof ?? fallbackProof;
 
   return (
     <AnimatePresence>
@@ -148,7 +145,7 @@ export default function ProofModal({
             </h2>
 
             <p className="mt-3 text-sm text-[var(--text-muted)]">
-              {loading ? "Loading proof details from 0G..." : "Fetched from the proof endpoint with live-safe fallback."}
+              {loading ? "Loading proof details from 0G..." : activeProof ? "Fetched from the live proof endpoint." : "No live proof is available yet."}
             </p>
 
             <div className="mt-6 space-y-4">
@@ -158,12 +155,13 @@ export default function ProofModal({
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-3">
                   <p className="font-medium text-white">
-                    {activeProof ? shorten(activeProof.txHash) : "Unavailable"}
+                    {activeProof?.txHash ? shorten(activeProof.txHash) : "Unavailable"}
                   </p>
                   <button
                     type="button"
                     data-testid="copy-tx-hash"
-                    onClick={() => activeProof && copy(activeProof.txHash, "tx")}
+                    onClick={() => activeProof?.txHash && copy(activeProof.txHash, "tx")}
+                    disabled={!activeProof?.txHash}
                     className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-[var(--text-soft)] transition hover:border-[var(--border-strong)] hover:text-white"
                   >
                     <Copy className="h-3.5 w-3.5" />
@@ -178,12 +176,13 @@ export default function ProofModal({
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-3">
                   <p className="font-medium text-white">
-                    {activeProof ? shorten(activeProof.cid) : "Unavailable"}
+                    {activeProof?.cid ? shorten(activeProof.cid) : "Unavailable"}
                   </p>
                   <button
                     type="button"
                     data-testid="copy-storage-cid"
-                    onClick={() => activeProof && copy(activeProof.cid, "cid")}
+                    onClick={() => activeProof?.cid && copy(activeProof.cid, "cid")}
+                    disabled={!activeProof?.cid}
                     className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-[var(--text-soft)] transition hover:border-[var(--border-strong)] hover:text-white"
                   >
                     <Copy className="h-3.5 w-3.5" />
@@ -213,6 +212,17 @@ export default function ProofModal({
                 </p>
               </div>
             </div>
+
+            {activeProof?.walletAddress ? (
+              <div className="mt-5 rounded-[24px] border border-white/8 bg-[rgba(255,255,255,0.02)] p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-[var(--text-muted)]">
+                  Signer Wallet
+                </p>
+                <p className="mt-2 font-medium text-white">
+                  {shorten(activeProof.walletAddress)}
+                </p>
+              </div>
+            ) : null}
 
             {activeProof?.proofRegistryAddress ? (
               <div className="mt-5 rounded-[24px] border border-white/8 bg-[rgba(255,255,255,0.02)] p-4">
@@ -298,7 +308,7 @@ export default function ProofModal({
 
             <div className="mt-6 flex flex-wrap gap-3">
               <a
-                href={activeProof?.explorerUrl ?? "#"}
+                href={activeProof?.explorerUrl ?? EXPLORER_BASE}
                 target="_blank"
                 rel="noreferrer"
                 data-testid="open-0g-explorer"

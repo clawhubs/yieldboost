@@ -25,6 +25,12 @@ import {
   Zap,
 } from "lucide-react";
 import BrandLogo from "@/components/ui/BrandLogo";
+import {
+  DEFAULT_WALLET_ADDRESS,
+  isWalletAddress,
+  WALLET_CHANGE_EVENT,
+  WALLET_COOKIE_KEY,
+} from "@/lib/wallet";
 
 interface NavigationItem {
   href: string;
@@ -47,7 +53,6 @@ const navigation: NavigationItem[] = [
 
 const socialIcons = [Globe, MessageCircleMore, GitBranch, Grid2X2, Image];
 
-const DEFAULT_WALLET = "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D";
 const LS_KEY = "yb_wallet_override";
 
 function shortAddr(addr: string) {
@@ -57,15 +62,22 @@ function shortAddr(addr: string) {
 export default function Sidebar() {
   const pathname = usePathname();
   const [walletCopied, setWalletCopied] = useState(false);
-  const [walletAddr, setWalletAddr] = useState(DEFAULT_WALLET);
+  const [walletAddr, setWalletAddr] = useState(DEFAULT_WALLET_ADDRESS);
   const [editing, setEditing] = useState(false);
   const [inputVal, setInputVal] = useState("");
 
   useEffect(() => {
     const saved = localStorage.getItem(LS_KEY);
-    if (saved && saved.startsWith("0x") && saved.length >= 10) {
-      setWalletAddr(saved);
+    if (isWalletAddress(saved)) {
+      const nextWallet = saved as string;
+      setWalletAddr(nextWallet);
+      document.cookie = `${WALLET_COOKIE_KEY}=${nextWallet}; path=/; max-age=31536000; SameSite=Lax`;
+      window.dispatchEvent(
+        new CustomEvent(WALLET_CHANGE_EVENT, { detail: { walletAddress: nextWallet } }),
+      );
+      return;
     }
+    document.cookie = `${WALLET_COOKIE_KEY}=${DEFAULT_WALLET_ADDRESS}; path=/; max-age=31536000; SameSite=Lax`;
   }, []);
 
   function startEdit() {
@@ -75,9 +87,13 @@ export default function Sidebar() {
 
   function commitEdit() {
     const val = inputVal.trim();
-    if (val.startsWith("0x") && val.length >= 10) {
+    if (isWalletAddress(val)) {
       setWalletAddr(val);
       localStorage.setItem(LS_KEY, val);
+      document.cookie = `${WALLET_COOKIE_KEY}=${val}; path=/; max-age=31536000; SameSite=Lax`;
+      window.dispatchEvent(
+        new CustomEvent(WALLET_CHANGE_EVENT, { detail: { walletAddress: val } }),
+      );
     }
     setEditing(false);
   }
