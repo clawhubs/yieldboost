@@ -10,6 +10,7 @@ import {
   Grid2X2,
   MessageCircleMore,
   Zap,
+  ShieldCheck,
 } from "lucide-react";
 import type { LiveData } from "./types";
 
@@ -56,6 +57,10 @@ export default function DashboardAgentPanel({ live, onOpenProof }: Props) {
             <div className="mt-1 flex items-center gap-2 text-[11px] text-[#2fe06d]">
               <span className="inline-flex h-2.5 w-2.5 animate-glow-pulse rounded-full bg-[#2fe06d]" />
               Powered by 0G Compute Network
+            </div>
+            <div className="mt-1.5 flex items-center gap-1.5 rounded-full border border-[rgba(47,224,109,0.3)] bg-[rgba(47,224,109,0.1)] px-2.5 py-1 text-[10px] font-medium text-[#2fe06d]">
+              <ShieldCheck className="h-3 w-3" />
+              TEE Verified
             </div>
           </div>
         </div>

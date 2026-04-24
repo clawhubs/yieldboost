@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Copy, ExternalLink, X } from "lucide-react";
+import { Copy, ExternalLink, X, ShieldCheck } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { createProofDetails } from "@/lib/optimizations";
 
@@ -11,6 +11,12 @@ interface ProofModalProps {
   cid?: string;
   txHash?: string;
   walletAddress?: string;
+  decision?: {
+    current_apy: number;
+    optimized_apy: number;
+    recommended: string;
+    reasoning?: string;
+  };
 }
 
 interface ProofPayload {
@@ -24,6 +30,12 @@ interface ProofPayload {
   proofRegistryTxHash?: string;
   proofRegistryProofId?: string;
   proofRegistryExplorerUrl?: string;
+  // TEE / 0G Compute metadata
+  teeProvider?: string;
+  teeModel?: string;
+  teeChatId?: string;
+  teeVerified?: boolean;
+  llmProvider?: string;
 }
 
 function shorten(value: string) {
@@ -40,6 +52,7 @@ export default function ProofModal({
   cid,
   txHash,
   walletAddress,
+  decision,
 }: ProofModalProps) {
   const [copied, setCopied] = useState<"tx" | "cid" | "registryTx" | "registryAddress" | null>(null);
   const [proof, setProof] = useState<ProofPayload | null>(null);
@@ -231,6 +244,49 @@ export default function ProofModal({
                   </div>
                 ) : null}
 
+                {activeProof?.teeVerified ? (
+                  <div className="rounded-[20px] border border-[rgba(47,224,109,0.3)] bg-[rgba(47,224,109,0.05)] p-4 sm:rounded-[24px]">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className="h-5 w-5 text-[#2fe06d]" />
+                        <p className="text-xs uppercase tracking-[0.18em] text-[#2fe06d]">
+                          TEE Verified Inference
+                        </p>
+                      </div>
+                      {activeProof.llmProvider && (
+                        <div className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-medium text-white">
+                          {activeProof.llmProvider}
+                        </div>
+                      )}
+                    </div>
+                    <p className="mt-3 text-sm text-[var(--text-muted)]">
+                      Recommendation verified inside TEE enclave on 0G Compute Network
+                    </p>
+                    {activeProof.teeModel && (
+                      <div className="mt-3 grid gap-3 md:grid-cols-2">
+                        <div className="surface-inset rounded-[16px] p-3">
+                          <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
+                            Model
+                          </p>
+                          <p className="mt-1 text-sm font-medium text-white">
+                            {activeProof.teeModel}
+                          </p>
+                        </div>
+                        {activeProof.teeChatId && (
+                          <div className="surface-inset rounded-[16px] p-3">
+                            <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
+                              Chat ID
+                            </p>
+                            <p className="mt-1 break-all text-sm font-medium text-white">
+                              {shorten(activeProof.teeChatId)}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ) : null}
+
                 {activeProof?.proofRegistryAddress ? (
                   <div className="rounded-[20px] border border-white/8 bg-[rgba(255,255,255,0.02)] p-4 sm:rounded-[24px]">
                     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -327,6 +383,39 @@ export default function ProofModal({
                   View on 0G Explorer
                   <ExternalLink className="h-4 w-4" />
                 </a>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      const response = await fetch("/api/agent/mint", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          portfolio: {},
+                          decision: decision || {
+                            current_apy: 0,
+                            optimized_apy: 0,
+                            recommended: "test",
+                            reasoning: "test",
+                          },
+                          storageCid: activeProof?.cid,
+                          txHash: activeProof?.txHash,
+                        }),
+                      });
+                      const data = await response.json();
+                      if (data.success) {
+                        alert(`Agent minted! Token ID: ${data.tokenId}`);
+                      } else {
+                        alert(`Mint failed: ${data.error}`);
+                      }
+                    } catch (error) {
+                      alert(`Mint error: ${error}`);
+                    }
+                  }}
+                  className="inline-flex w-full items-center justify-center rounded-full border border-[rgba(0,201,177,0.3)] bg-[rgba(0,201,177,0.1)] px-5 py-3 text-sm font-semibold text-[#22ddd0] transition hover:border-[rgba(0,201,177,0.5)] hover:bg-[rgba(0,201,177,0.2)] sm:w-auto"
+                >
+                  Mint as Agent
+                </button>
                 <button
                   type="button"
                   onClick={() => onOpenChange(false)}

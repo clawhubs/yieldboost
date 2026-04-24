@@ -108,7 +108,7 @@ function getNetworkConfigs() {
       chainName:
         process.env.NEXT_PUBLIC_0G_TESTNET_CHAIN_NAME ?? "0G Galileo Testnet",
       chainId: testnetChainId,
-      rpcUrl: process.env.ZG_RPC_URL ?? process.env.NEXT_PUBLIC_ZG_RPC,
+      rpcUrl: "https://evmrpc-testnet.0g.ai",
       storageUrl:
         process.env.ZG_STORAGE_URL ?? process.env.NEXT_PUBLIC_ZG_STORAGE,
       explorerBase:
@@ -121,9 +121,7 @@ function getNetworkConfigs() {
       label: "0G Mainnet",
       chainName: process.env.NEXT_PUBLIC_0G_MAINNET_CHAIN_NAME ?? "0G Mainnet",
       chainId: mainnetChainId,
-      rpcUrl:
-        process.env.ZG_MAINNET_RPC_URL ??
-        process.env.NEXT_PUBLIC_0G_MAINNET_RPC,
+      rpcUrl: "https://evmrpc.0g.ai",
       storageUrl:
         process.env.ZG_MAINNET_STORAGE_URL ??
         process.env.NEXT_PUBLIC_0G_MAINNET_STORAGE,

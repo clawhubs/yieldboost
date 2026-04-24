@@ -3,6 +3,7 @@ import { Sandbox } from "@e2b/code-interpreter";
 import { generateText } from "ai";
 import { NextRequest } from "next/server";
 import { buildNarrative, buildOptimizationSnapshot, portfolioSchema } from "@/lib/optimizations";
+import { runTEEInference, isComputeConfigured } from "@/lib/server/og-compute";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -191,9 +192,30 @@ export async function POST(req: NextRequest) {
 
   let narrative = buildNarrative(result, prompt);
   let provider = "fallback";
+  let teeAttestation = null;
   const providerPrompt = `Portfolio total: $${result.totalPortfolio}. Current APY ${result.current_apy}%. Optimized APY ${result.optimized_apy}%. Recommended protocol: ${result.recommended}. User request: ${prompt ?? "Optimize for best yield with low risk."}`;
 
-  if (process.env.ALIBABA_API_KEY) {
+  // Priority 1: Try 0G Compute with TEE
+  if (isComputeConfigured()) {
+    try {
+      console.log("Attempting 0G Compute TEE inference...");
+      const computeResult = await runTEEInference(providerPrompt);
+      console.log("0G Compute result:", computeResult.provider, computeResult.text ? "has text" : "no text");
+      if (computeResult.text && computeResult.provider === "0g-tee") {
+        narrative = computeResult.text;
+        provider = "0g-tee";
+        teeAttestation = computeResult.attestation;
+        console.log("Using 0G Compute TEE for narrative");
+      }
+    } catch (error) {
+      console.warn("0G Compute inference failed, falling back to other providers", error);
+    }
+  } else {
+    console.log("0G Compute not configured, skipping TEE inference");
+  }
+
+  // Priority 2: Try Alibaba
+  if (provider === "fallback" && process.env.ALIBABA_API_KEY) {
     try {
       const generated = await getAlibabaNarrative(providerPrompt);
       if (generated) {
@@ -203,7 +225,10 @@ export async function POST(req: NextRequest) {
     } catch {
       narrative = buildNarrative(result, prompt);
     }
-  } else {
+  }
+
+  // Priority 3: Try OpenAI
+  if (provider === "fallback") {
     const model = getLanguageModel();
 
     if (model) {
@@ -230,12 +255,19 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  const responseHeaders: Record<string, string> = {
+    ...headers,
+    "X-LLM-Provider": provider,
+    "Access-Control-Expose-Headers": "X-Optimization-Result, X-LLM-Provider",
+  };
+
+  // Include TEE attestation in headers if available
+  if (teeAttestation) {
+    responseHeaders["X-TEE-Attestation"] = JSON.stringify(teeAttestation);
+    responseHeaders["Access-Control-Expose-Headers"] += ", X-TEE-Attestation";
+  }
+
   return new Response(createMockStream(narrative), {
-    headers: {
-      ...headers,
-      "X-LLM-Provider": provider,
-      "Access-Control-Expose-Headers":
-        "X-Optimization-Result, X-LLM-Provider",
-    },
+    headers: responseHeaders,
   });
 }

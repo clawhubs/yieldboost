@@ -235,10 +235,10 @@ export interface SettingsPatchInput {
 export interface StoredDecisionPayload {
   current_apy: number;
   optimized_apy: number;
-  yield_increase: number;
-  yield_increase_pct: number;
+  yield_increase?: number;
+  yield_increase_pct?: number;
   recommended: string;
-  confidence: number;
+  confidence?: number;
   executionSeconds?: number;
   estimatedAnnualGain?: number;
   totalPortfolio?: number;
@@ -259,6 +259,12 @@ export interface StoredProofRecord {
   proofRegistryProofId?: string;
   proofRegistryExplorerUrl?: string;
   note?: string;
+  // TEE / 0G Compute metadata
+  teeProvider?: string;
+  teeModel?: string;
+  teeChatId?: string;
+  teeVerified?: boolean;
+  llmProvider?: string;
 }
 
 function round(value: number, digits = 2) {
@@ -334,8 +340,8 @@ function createOptimizationResultFromProof(
   return {
     current_apy: proof.decision.current_apy,
     optimized_apy: proof.decision.optimized_apy,
-    yield_increase: proof.decision.yield_increase,
-    yield_increase_pct: proof.decision.yield_increase_pct,
+    yield_increase: proof.decision.yield_increase ?? 0,
+    yield_increase_pct: proof.decision.yield_increase_pct ?? 0,
     top_protocols: [
       {
         name: proof.decision.recommended,
@@ -349,14 +355,14 @@ function createOptimizationResultFromProof(
       },
     ],
     recommended: proof.decision.recommended,
-    confidence: proof.decision.confidence,
+    confidence: proof.decision.confidence ?? 0,
     reasoning: proof.decision.reasoning,
     storageProof: proof.cid,
     txHash: proof.txHash,
     timestamp: proof.timestamp,
     executionSeconds: proof.decision.executionSeconds ?? 8.42,
     estimatedAnnualGain:
-      proof.decision.estimatedAnnualGain ?? proof.decision.yield_increase,
+      proof.decision.estimatedAnnualGain ?? proof.decision.yield_increase ?? 0,
     totalPortfolio: proof.decision.totalPortfolio ?? 0,
     riskProfile: "Moderate",
     proofUrl: proof.explorerUrl,
@@ -847,7 +853,7 @@ export function buildHistoryFromProofs(
         latest.decision.optimized_apy - latest.decision.current_apy
       ).toFixed(2)}%`,
       annualizedGain: `+${formatCurrency(
-        latest.decision.estimatedAnnualGain ?? latest.decision.yield_increase,
+        latest.decision.estimatedAnnualGain ?? latest.decision.yield_increase ?? 0,
       )} projected`,
       executionTime: `${(latest.decision.executionSeconds ?? 8.42).toFixed(2)} seconds`,
     },
@@ -941,7 +947,7 @@ export function buildAnalyticsFromProofs(
   const averageLift =
     totalRuns > 0
       ? round(
-          proofs.reduce((sum, proof) => sum + proof.decision.yield_increase_pct, 0) /
+          proofs.reduce((sum, proof) => sum + (proof.decision.yield_increase_pct ?? 0), 0) /
             totalRuns,
           2,
         )

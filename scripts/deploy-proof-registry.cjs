@@ -87,22 +87,34 @@ function compileContract(contractPath, contractName) {
 }
 
 async function main() {
+  const network = process.argv[2] || "testnet";
   const rootDir = path.resolve(__dirname, "..");
   const envLocal = readEnvFile(path.join(rootDir, ".env.local"));
 
-  const rpcUrl = getEnv("ZG_RPC_URL", envLocal) || getEnv("NEXT_PUBLIC_ZG_RPC", envLocal);
-  const privateKey = getEnv("ZG_PRIVATE_KEY", envLocal);
-  const explorerBase =
-    getEnv("NEXT_PUBLIC_0G_EXPLORER_BASE_URL", envLocal) ||
-    "https://chainscan-galileo.0g.ai";
+  let rpcUrl, privateKey, explorerBase, chainId;
+
+  if (network === "mainnet") {
+    rpcUrl = getEnv("ZG_MAINNET_RPC_URL", envLocal) || "https://evmrpc.0g.ai";
+    privateKey = getEnv("ZG_MAINNET_PRIVATE_KEY", envLocal) || getEnv("ZG_PRIVATE_KEY", envLocal);
+    explorerBase = getEnv("NEXT_PUBLIC_0G_MAINNET_EXPLORER_BASE_URL", envLocal) || "https://0gscan.com";
+    chainId = 16661;
+  } else {
+    rpcUrl = getEnv("ZG_RPC_URL", envLocal) || getEnv("NEXT_PUBLIC_ZG_RPC", envLocal) || "https://evmrpc-testnet.0g.ai";
+    privateKey = getEnv("ZG_PRIVATE_KEY", envLocal);
+    explorerBase = getEnv("NEXT_PUBLIC_0G_EXPLORER_BASE_URL", envLocal) || "https://chainscan-galileo.0g.ai";
+    chainId = 16602;
+  }
 
   if (!rpcUrl) {
-    throw new Error("Missing ZG_RPC_URL.");
+    throw new Error("Missing RPC URL.");
   }
 
   if (!privateKey) {
-    throw new Error("Missing ZG_PRIVATE_KEY.");
+    throw new Error("Missing private key.");
   }
+
+  console.log(`Deploying to ${network}...`);
+  console.log(`RPC: ${rpcUrl}`);
 
   const contractPath = path.join(rootDir, "contracts", "ProofRegistry.sol");
   const { abi, bytecode } = compileContract(contractPath, "ProofRegistry");
@@ -130,7 +142,8 @@ async function main() {
   const deployment = {
     contractName: "ProofRegistry",
     address,
-    chainId: 16602,
+    network,
+    chainId,
     rpcUrl,
     deployer: signer.address,
     transactionHash: contract.deploymentTransaction().hash,
@@ -140,15 +153,28 @@ async function main() {
     abi,
   };
 
+  const deploymentFile = network === "mainnet" 
+    ? "proof-registry-deployment-mainnet.json"
+    : "proof-registry-deployment.json";
+
   fs.writeFileSync(
-    path.join(artifactDir, "proof-registry-deployment.json"),
+    path.join(artifactDir, deploymentFile),
     JSON.stringify(deployment, null, 2),
     "utf8",
   );
 
   console.log("");
-  console.log(`ZG_PROOF_REGISTRY_ADDRESS=${address}`);
+  console.log(`Network: ${network}`);
+  console.log(`Contract Address: ${address}`);
   console.log(`Explorer: ${deployment.explorerUrl}`);
+  
+  if (network === "mainnet") {
+    console.log(`\nAdd this to .env.local:`);
+    console.log(`ZG_MAINNET_PROOF_REGISTRY_ADDRESS=${address}`);
+  } else {
+    console.log(`\nAdd this to .env.local:`);
+    console.log(`ZG_PROOF_REGISTRY_ADDRESS=${address}`);
+  }
 }
 
 main().catch((error) => {

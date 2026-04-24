@@ -60,6 +60,12 @@ export async function POST(req: NextRequest) {
     decision?: unknown;
     networkKey?: WalletNetworkKey;
     walletAddress?: string;
+    // TEE metadata from client
+    teeProvider?: string;
+    teeModel?: string;
+    teeChatId?: string;
+    teeVerified?: boolean;
+    llmProvider?: string;
   };
   const decision = decisionSchema.parse(payload.decision) as StoredDecisionPayload;
   const walletAddress = walletAddressSchema.safeParse(payload.walletAddress).data;
@@ -103,17 +109,26 @@ export async function POST(req: NextRequest) {
       const provider = new JsonRpcProvider(config.rpcUrl);
       const signer = new Wallet(config.privateKey, provider);
       const indexer = new Indexer(config.storageUrl);
+      
+      console.log("0G Storage upload starting...");
+      console.log("Storage URL:", config.storageUrl);
+      console.log("RPC URL:", config.rpcUrl);
+      
       const [uploadResult, uploadError] = await indexer.upload(file, config.rpcUrl, signer);
 
       if (uploadError) {
+        console.error("0G Storage upload error:", uploadError);
         return NextResponse.json(
           {
             success: false,
             error: uploadError.message,
+            details: uploadError,
           },
           { status: 502 },
         );
       }
+      
+      console.log("0G Storage upload success:", uploadResult);
 
       const txHash =
         "txHash" in uploadResult ? uploadResult.txHash : uploadResult.txHashes[0];
@@ -139,6 +154,12 @@ export async function POST(req: NextRequest) {
         decision,
         walletAddress: walletAddress ?? signer.address,
         note: receipt ? undefined : "pending_receipt",
+        // TEE / 0G Compute metadata
+        teeProvider: payload.teeProvider,
+        teeModel: payload.teeModel,
+        teeChatId: payload.teeChatId,
+        teeVerified: payload.teeVerified,
+        llmProvider: payload.llmProvider,
       };
 
       if (!config.proofRegistryAddress) {
@@ -209,6 +230,12 @@ export async function POST(req: NextRequest) {
         proofRegistryProofId: proof.proofRegistryProofId,
         proofRegistryExplorerUrl: proof.proofRegistryExplorerUrl,
         note: proof.note,
+        // TEE / 0G Compute metadata
+        teeProvider: proof.teeProvider,
+        teeModel: proof.teeModel,
+        teeChatId: proof.teeChatId,
+        teeVerified: proof.teeVerified,
+        llmProvider: proof.llmProvider,
       });
     } finally {
       await file.close();

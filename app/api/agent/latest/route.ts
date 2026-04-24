@@ -61,8 +61,8 @@ export async function GET(req: NextRequest) {
   const result: OptimizationResult = {
     current_apy: storedProof.decision.current_apy,
     optimized_apy: storedProof.decision.optimized_apy,
-    yield_increase: storedProof.decision.yield_increase,
-    yield_increase_pct: storedProof.decision.yield_increase_pct,
+    yield_increase: storedProof.decision.yield_increase ?? 0,
+    yield_increase_pct: storedProof.decision.yield_increase_pct ?? 0,
     top_protocols: [
       {
         name: storedProof.decision.recommended,
@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
       },
     ],
     recommended: storedProof.decision.recommended,
-    confidence: storedProof.decision.confidence,
+    confidence: storedProof.decision.confidence ?? 0,
     reasoning:
       storedProof.decision.reasoning ??
       createDecisionSummary(storedProof.decision),
@@ -81,7 +81,7 @@ export async function GET(req: NextRequest) {
     executionSeconds: storedProof.decision.executionSeconds ?? 8.42,
     estimatedAnnualGain:
       storedProof.decision.estimatedAnnualGain ??
-      storedProof.decision.yield_increase,
+      storedProof.decision.yield_increase ?? 0,
     totalPortfolio: storedProof.decision.totalPortfolio ?? 0,
     riskProfile: "Moderate",
     proofUrl: storedProof.explorerUrl,

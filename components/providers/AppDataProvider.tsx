@@ -197,6 +197,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       const nextNetwork = resolveWalletNetworkKey(detail?.networkKey);
       setNetworkKey(nextNetwork);
       if (detail?.walletAddress) {
+        // Force portfolio refresh on wallet change
+        setPortfolio(buildEmptyPortfolio());
         void refreshPortfolio(detail.walletAddress, nextNetwork);
         void hydrateLatest(detail.walletAddress, nextNetwork);
         return;
@@ -228,7 +230,11 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     try {
       const response = await fetch("/api/agent/optimize", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "X-Wallet-Extension-Bypass": "true",
+        },
+        credentials: "omit",
         body: JSON.stringify({ portfolio: portfolioInput, prompt }),
       });
 
@@ -240,6 +246,19 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       const optimizationData = rawHeader
         ? (JSON.parse(rawHeader) as Partial<OptimizationResult>)
         : fallbackResult;
+
+      // Extract TEE attestation from headers
+      const llmProvider = response.headers.get("X-LLM-Provider") || undefined;
+      const teeAttestationHeader = response.headers.get("X-TEE-Attestation");
+      const teeAttestation = teeAttestationHeader
+        ? (JSON.parse(teeAttestationHeader) as {
+            chatId: string;
+            isValid: boolean;
+            provider: string;
+            model: string;
+            timestamp: string;
+          })
+        : undefined;
 
       await wait(320);
       setProgress("optimizing");
@@ -291,6 +310,12 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
               optimizationData.totalPortfolio ?? fallbackResult.totalPortfolio,
             reasoning: fullText || optimizationData.reasoning || fallbackResult.reasoning,
           },
+          // TEE / 0G Compute metadata
+          teeProvider: teeAttestation?.provider,
+          teeModel: teeAttestation?.model,
+          teeChatId: teeAttestation?.chatId,
+          teeVerified: teeAttestation?.isValid,
+          llmProvider,
         }),
       });
 

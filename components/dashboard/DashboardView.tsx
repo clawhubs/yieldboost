@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, lazy, Suspense } from "react";
 import {
   Activity,
   Bell,
@@ -34,7 +34,8 @@ import {
   Copy,
   ExternalLink,
 } from "lucide-react";
-import ProofModal from "@/components/modals/ProofModal";
+const ProofModal = lazy(() => import("@/components/modals/ProofModal"));
+const HeroChart = lazy(() => import("@/components/dashboard/HeroChart"));
 import { useYieldOptimizer } from "@/hooks/useYieldOptimizer";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import {
@@ -42,6 +43,8 @@ import {
   WALLET_CONNECT_REQUEST_EVENT,
   type WalletNetworkKey,
 } from "@/lib/wallet";
+
+import { MiniSpark, ImpactBars, ImpactLine, MetricIcon, AgentSideRail } from "@/components/dashboard/DashboardLazySections";
 
 const decisionItems = [
   "0G/USDC LP yield dropped 2.1% (7d avg)",
@@ -84,132 +87,6 @@ const footerItems = [
   { icon: Zap, label: "1-Click Execution" },
   { icon: Sparkles, label: "AI-Powered" },
 ] as const;
-
-function HeroChart() {
-  return (
-    <div data-testid="yield-chart" className="relative h-[176px]">
-      <svg
-        viewBox="0 0 640 176"
-        className="absolute inset-0 h-full w-full"
-        aria-hidden="true"
-      >
-        <defs>
-          <linearGradient id="heroFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#28e0d7" stopOpacity="0.78" />
-            <stop offset="100%" stopColor="#28e0d7" stopOpacity="0" />
-          </linearGradient>
-          <filter id="heroGlow" x="-20%" y="-40%" width="140%" height="200%">
-            <feGaussianBlur stdDeviation="4" result="coloredBlur" />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-
-        <path
-          d="M24 132C48 125 61 114 79 107C97 100 121 105 139 96C157 87 176 71 193 70C210 69 233 75 249 67C265 59 284 46 301 47C317 48 333 57 350 52C367 47 382 31 399 32C416 33 438 44 456 40C474 36 490 20 507 21C525 22 541 30 557 26C573 22 594 10 616 11V157H24V132Z"
-          fill="url(#heroFill)"
-          opacity="0.95"
-        />
-        <path
-          d="M24 132C48 125 61 114 79 107C97 100 121 105 139 96C157 87 176 71 193 70C210 69 233 75 249 67C265 59 284 46 301 47C317 48 333 57 350 52C367 47 382 31 399 32C416 33 438 44 456 40C474 36 490 20 507 21C525 22 541 30 557 26C573 22 594 10 616 11"
-          fill="none"
-          stroke="#3FF3E9"
-          strokeWidth="4"
-          strokeLinecap="round"
-          filter="url(#heroGlow)"
-        />
-        <line
-          x1="23"
-          y1="129"
-          x2="618"
-          y2="129"
-          stroke="#c6d0d9"
-          strokeDasharray="4 6"
-          strokeOpacity="0.35"
-        />
-        <circle cx="24" cy="132" r="5" fill="#3FF3E9" />
-        <circle cx="616" cy="11" r="6" fill="#A7FFF8" stroke="#3FF3E9" strokeWidth="3" />
-      </svg>
-
-      <div className="absolute right-2 top-0 text-[14px] font-semibold text-white">APY</div>
-      <div className="absolute left-0 top-[128px] text-[11px] text-white/90">Today</div>
-      <div className="absolute left-0 bottom-0 text-[11px] text-[#cfd8e0]">Today</div>
-      <div className="absolute right-0 bottom-0 text-[11px] text-[#cfd8e0]">After Optimization</div>
-    </div>
-  );
-}
-
-function MiniSpark({ color = "#2cf0dd" }: { color?: string }) {
-  return (
-    <svg viewBox="0 0 96 30" className="h-[26px] w-[96px]" aria-hidden="true">
-      <path
-        d="M1 22C8 22 9 18 16 18C23 18 24 24 31 24C38 24 38 13 45 13C52 13 54 22 61 22C68 22 68 9 75 9C82 9 84 16 95 4"
-        fill="none"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function ImpactBars() {
-  const heights = [10, 17, 12, 20, 14, 24, 27, 16, 25, 22, 18, 26];
-
-  return (
-    <div className="flex h-[32px] items-end gap-[4px] overflow-hidden" aria-hidden="true">
-      {heights.map((height, index) => (
-        <div
-          key={index}
-          className="min-w-0 flex-1 rounded-t-[8px] bg-[linear-gradient(180deg,#5cf48e_0%,#2ecf67_45%,#0c1a12_100%)] shadow-[0_0_10px_rgba(76,235,130,0.14)]"
-          style={{ height: `${height}px` }}
-        />
-      ))}
-    </div>
-  );
-}
-
-function ImpactLine({
-  path,
-}: {
-  path: string;
-}) {
-  return (
-    <svg viewBox="0 0 108 32" className="h-[32px] w-full" aria-hidden="true">
-      <path d={path} fill="none" stroke="#42ebe2" strokeWidth="4.5" strokeOpacity="0.08" strokeLinecap="round" />
-      <path
-        d={path}
-        fill="none"
-        stroke="#42ebe2"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function MetricIcon({
-  icon: Icon,
-}: {
-  icon: typeof Users;
-}) {
-  return (
-    <div className="flex h-10 w-10 items-center justify-center rounded-[12px] border border-[#18232c] bg-[#091117] text-[#dce4eb]">
-      <Icon className="h-4 w-4" />
-    </div>
-  );
-}
-
-function AgentSideRail({ icon: Icon }: { icon: typeof Activity }) {
-  return (
-    <div className="flex h-10 w-10 items-center justify-center rounded-[12px] border border-[#1b242d] bg-[#0a1117] text-[#cfd9e2]">
-      <Icon className="h-4 w-4" />
-    </div>
-  );
-}
 
 const EXPLORER_BASE = "https://chainscan-galileo.0g.ai";
 const walletNetworks = getAvailableWalletNetworks();
@@ -295,13 +172,24 @@ export default function DashboardView() {
     await optimize(livePortfolio, "Optimize my portfolio for best yield with low risk");
   }
 
+  const live = useMemo(() => {
+    // Always prioritize portfolio API data for totalPortfolio
+    const totalPortfolio = portfolio?.totalUSD ?? 0;
+    const currentApy = portfolio?.currentAPY ?? latestResult?.current_apy ?? 0;
+    const optimizedApy = latestResult?.optimized_apy ?? currentApy;
+    const yieldIncreasePct = latestResult?.yield_increase_pct ?? 0;
+    const estimatedAnnualGain = latestResult?.estimatedAnnualGain ?? 0;
+    const confidence = latestResult?.confidence ?? 0;
+    return { totalPortfolio, currentApy, optimizedApy, yieldIncreasePct, estimatedAnnualGain, confidence };
+  }, [latestResult, portfolio]);
+
   const liveDecisions = useMemo(() => {
     if (!latestResult) return decisionItems as readonly string[];
     const gain = latestResult.estimatedAnnualGain.toLocaleString();
     const bullets: string[] = [
       `${latestResult.recommended} selected with ${latestResult.confidence}% confidence`,
       `APY lift ${latestResult.current_apy}% → ${latestResult.optimized_apy}% (+${latestResult.yield_increase_pct}%)`,
-      `Projected annual gain +$${gain} on $${latestResult.totalPortfolio.toLocaleString()} portfolio`,
+      `Projected annual gain +$${gain} on $${live.totalPortfolio.toLocaleString()} portfolio`,
       latestResult.proofRegistryProofId
         ? `ProofRegistry entry #${latestResult.proofRegistryProofId} recorded on 0G Galileo`
         : `Proof anchored to 0G Storage (CID ${latestResult.storageProof?.slice(0, 10) ?? "pending"}…)`,
@@ -319,16 +207,6 @@ export default function DashboardView() {
       icon: iconMap[idx] ?? Disc3,
     }));
   }, [latestResult]);
-
-  const live = useMemo(() => {
-    const totalPortfolio = latestResult?.totalPortfolio ?? portfolio?.totalUSD ?? 0;
-    const currentApy = latestResult?.current_apy ?? portfolio?.currentAPY ?? 0;
-    const optimizedApy = latestResult?.optimized_apy ?? currentApy;
-    const yieldIncreasePct = latestResult?.yield_increase_pct ?? 0;
-    const estimatedAnnualGain = latestResult?.estimatedAnnualGain ?? 0;
-    const confidence = latestResult?.confidence ?? 0;
-    return { totalPortfolio, currentApy, optimizedApy, yieldIncreasePct, estimatedAnnualGain, confidence };
-  }, [latestResult, portfolio]);
 
   const portfolioWalletLabel = portfolio?.walletAddress
     ? `${portfolio.walletAddress.slice(0, 6)}...${portfolio.walletAddress.slice(-4)}`
@@ -588,7 +466,9 @@ export default function DashboardView() {
                   </div>
                 </div>
 
-                <HeroChart />
+                <Suspense fallback={<div className="h-[176px] animate-pulse bg-[#0a1218] rounded-lg" />}>
+                  <HeroChart />
+                </Suspense>
               </div>
             </div>
 
@@ -1162,13 +1042,21 @@ export default function DashboardView() {
         </div>
       </section>
 
-      <ProofModal
-        open={proofOpen}
-        onOpenChange={setProofOpen}
-        cid={latestResult?.storageProof}
-        txHash={latestResult?.txHash}
-        walletAddress={latestResult?.walletAddress}
-      />
+      <Suspense fallback={null}>
+        <ProofModal
+          open={proofOpen}
+          onOpenChange={setProofOpen}
+          cid={latestResult?.storageProof}
+          txHash={latestResult?.txHash}
+          walletAddress={latestResult?.walletAddress}
+          decision={latestResult ? {
+            current_apy: latestResult.current_apy,
+            optimized_apy: latestResult.optimized_apy,
+            recommended: latestResult.recommended,
+            reasoning: latestResult.reasoning,
+          } : undefined}
+        />
+      </Suspense>
     </>
   );
 }

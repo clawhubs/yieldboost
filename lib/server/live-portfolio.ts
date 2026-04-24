@@ -40,10 +40,8 @@ export async function getLivePortfolioSnapshot(
     }
   }
 
-  const totalUSD =
-    latestProof?.decision.totalPortfolio && latestProof.decision.totalPortfolio > 0
-      ? latestProof.decision.totalPortfolio
-      : nativeBalance;
+  // Always use actual RPC balance, don't use stored proof
+  const totalUSD = nativeBalance;
 
   return {
     walletAddress: walletAddress ?? undefined,
@@ -55,7 +53,7 @@ export async function getLivePortfolioSnapshot(
             {
               symbol: "0G",
               amount: Number(nativeBalance.toFixed(6)),
-              valueUSD: Number(totalUSD.toFixed(2)),
+              valueUSD: Number(nativeBalance.toFixed(2)),
             },
           ]
         : [],
