@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import DocsArticle from "@/components/docs/DocsArticle";
+import DocsPageView from "@/components/docs/DocsPageView";
 import {
   getDocNeighbors,
   getDocPage,
@@ -49,11 +49,5 @@ export default async function DocumentationPage({ params }: DocPageProps) {
   const page = getDocPage(slug as DocSlug, status);
   const neighbors = getDocNeighbors(slug as DocSlug);
 
-  return (
-    <DocsArticle
-      page={page}
-      previous={neighbors.previous}
-      next={neighbors.next}
-    />
-  );
+  return <DocsPageView page={page} previous={neighbors.previous} next={neighbors.next} />;
 }

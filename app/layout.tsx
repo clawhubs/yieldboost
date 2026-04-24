@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, Space_Grotesk, Barlow_Condensed } from "next/font/google";
 import { AppDataProvider } from "@/components/providers/AppDataProvider";
-import Sidebar from "@/components/layout/Sidebar";
 import "./globals.css";
 
 const display = Space_Grotesk({
@@ -47,12 +46,7 @@ export default function RootLayout({
       >
         <AppDataProvider>
           <div className="ambient-bg" aria-hidden="true" />
-          <div className="relative min-h-screen md:flex md:h-screen">
-            <Sidebar />
-            <main className="relative min-w-0 flex-1 overflow-x-hidden md:h-screen md:overflow-y-auto">
-              {children}
-            </main>
-          </div>
+          {children}
         </AppDataProvider>
       </body>
     </html>
