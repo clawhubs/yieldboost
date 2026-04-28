@@ -7,7 +7,12 @@ import {
   type WalletNetworkKey,
   resolveWalletAddress,
 } from "@/lib/wallet";
-import { getLatestStoredProof } from "@/lib/server/runtime-store";
+import { getLatestStoredProofForWallet } from "@/lib/server/runtime-store";
+
+function round(value: number, digits = 6) {
+  const multiplier = 10 ** digits;
+  return Math.round(value * multiplier) / multiplier;
+}
 
 export async function getLivePortfolioSnapshot(
   walletAddressInput?: string | null,
@@ -22,10 +27,13 @@ export async function getLivePortfolioSnapshot(
       tokens: [],
       totalUSD: 0,
       currentAPY: 0,
+      displayTotal: undefined,
+      displayUnit: undefined,
+      displayLabel: undefined,
     };
   }
   const rpcUrl = getServer0GNetworkConfig(networkKey).rpcUrl;
-  const latestProof = await getLatestStoredProof();
+  const latestProof = await getLatestStoredProofForWallet(walletAddress);
 
   let nativeBalance = 0;
   let source = "wallet_rpc_unavailable";
@@ -40,10 +48,9 @@ export async function getLivePortfolioSnapshot(
     }
   }
 
-  const totalUSD =
-    latestProof?.decision.totalPortfolio && latestProof.decision.totalPortfolio > 0
-      ? latestProof.decision.totalPortfolio
-      : nativeBalance;
+  // Always use actual RPC balance, don't use stored proof
+  const exactNativeBalance = round(nativeBalance, 6);
+  const totalUSD = exactNativeBalance;
 
   return {
     walletAddress: walletAddress ?? undefined,
@@ -54,12 +61,15 @@ export async function getLivePortfolioSnapshot(
         ? [
             {
               symbol: "0G",
-              amount: Number(nativeBalance.toFixed(6)),
-              valueUSD: Number(totalUSD.toFixed(2)),
+              amount: exactNativeBalance,
+              valueUSD: exactNativeBalance,
             },
           ]
         : [],
-    totalUSD: Number(totalUSD.toFixed(2)),
+    totalUSD,
     currentAPY: latestProof?.decision.current_apy ?? 0,
+    displayTotal: exactNativeBalance,
+    displayUnit: "0G",
+    displayLabel: "Native 0G balance",
   };
 }

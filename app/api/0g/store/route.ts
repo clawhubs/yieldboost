@@ -55,11 +55,36 @@ function joinNotes(...notes: Array<string | undefined>) {
   return values.length ? values.join(",") : undefined;
 }
 
+function getStorageUrlCandidates(
+  networkKey: WalletNetworkKey,
+  configuredUrl: string | undefined,
+) {
+  const candidates =
+    networkKey === "testnet"
+      ? [
+          configuredUrl,
+          "https://indexer-storage-testnet-turbo.0g.ai",
+          "https://indexer-storage-testnet-standard.0g.ai",
+        ]
+      : [configuredUrl];
+
+  return candidates.filter(
+    (value, index, items): value is string =>
+      Boolean(value) && items.indexOf(value) === index,
+  );
+}
+
 export async function POST(req: NextRequest) {
   const payload = (await req.json()) as {
     decision?: unknown;
     networkKey?: WalletNetworkKey;
     walletAddress?: string;
+    // TEE metadata from client
+    teeProvider?: string;
+    teeModel?: string;
+    teeChatId?: string;
+    teeVerified?: boolean;
+    llmProvider?: string;
   };
   const decision = decisionSchema.parse(payload.decision) as StoredDecisionPayload;
   const walletAddress = walletAddressSchema.safeParse(payload.walletAddress).data;
@@ -102,14 +127,61 @@ export async function POST(req: NextRequest) {
     try {
       const provider = new JsonRpcProvider(config.rpcUrl);
       const signer = new Wallet(config.privateKey, provider);
-      const indexer = new Indexer(config.storageUrl);
-      const [uploadResult, uploadError] = await indexer.upload(file, config.rpcUrl, signer);
+      const storageUrlCandidates = getStorageUrlCandidates(
+        networkKey,
+        config.storageUrl,
+      );
 
-      if (uploadError) {
+      console.log("0G Storage upload starting...");
+      console.log("Storage URL candidates:", storageUrlCandidates);
+      console.log("RPC URL:", config.rpcUrl);
+
+      let uploadResult:
+        | {
+            txHash: string;
+            rootHash: string;
+          }
+        | {
+            txHashes: string[];
+            rootHashes: string[];
+          }
+        | null = null;
+      let lastUploadError: unknown = null;
+
+      for (const storageUrl of storageUrlCandidates) {
+        try {
+          const indexer = new Indexer(storageUrl);
+          const [nextUploadResult, uploadError] = await indexer.upload(
+            file,
+            config.rpcUrl,
+            signer,
+          );
+
+          if (uploadError) {
+            lastUploadError = uploadError;
+            console.error(`0G Storage upload error via ${storageUrl}:`, uploadError);
+            continue;
+          }
+
+          uploadResult = nextUploadResult;
+          console.log(`0G Storage upload success via ${storageUrl}:`, uploadResult);
+          break;
+        } catch (error) {
+          lastUploadError = error;
+          console.error(`0G Storage upload threw via ${storageUrl}:`, error);
+        }
+      }
+
+      if (!uploadResult) {
+        const message =
+          lastUploadError instanceof Error
+            ? lastUploadError.message
+            : "0G storage upload failed across all configured endpoints.";
+
         return NextResponse.json(
           {
             success: false,
-            error: uploadError.message,
+            error: message,
           },
           { status: 502 },
         );
@@ -139,6 +211,12 @@ export async function POST(req: NextRequest) {
         decision,
         walletAddress: walletAddress ?? signer.address,
         note: receipt ? undefined : "pending_receipt",
+        // TEE / 0G Compute metadata
+        teeProvider: payload.teeProvider,
+        teeModel: payload.teeModel,
+        teeChatId: payload.teeChatId,
+        teeVerified: payload.teeVerified,
+        llmProvider: payload.llmProvider,
       };
 
       if (!config.proofRegistryAddress) {
@@ -209,6 +287,12 @@ export async function POST(req: NextRequest) {
         proofRegistryProofId: proof.proofRegistryProofId,
         proofRegistryExplorerUrl: proof.proofRegistryExplorerUrl,
         note: proof.note,
+        // TEE / 0G Compute metadata
+        teeProvider: proof.teeProvider,
+        teeModel: proof.teeModel,
+        teeChatId: proof.teeChatId,
+        teeVerified: proof.teeVerified,
+        llmProvider: proof.llmProvider,
       });
     } finally {
       await file.close();

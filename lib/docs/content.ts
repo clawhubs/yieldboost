@@ -12,6 +12,7 @@ export type DocSlug =
   | "execute-optimization"
   | "proof-and-verification"
   | "0g-integration"
+  | "strategy-as-inft"
   | "wallet-and-security"
   | "faq"
   | "troubleshooting"
@@ -156,7 +157,12 @@ const sidebarGroups: Array<{
       {
         slug: "0g-integration",
         label: "0G Integration",
-        description: "Live 0G Storage flow, explorer links, and ProofRegistry behavior.",
+        description: "Live 0G Storage, TEE-verified inference via 0G Compute Network, explorer links, and ProofRegistry behavior.",
+      },
+      {
+        slug: "strategy-as-inft",
+        label: "Strategy as INFT",
+        description: "How yield optimization strategies become tradable Agent NFTs with encrypted metadata and authorization.",
       },
       {
         slug: "wallet-and-security",
@@ -781,10 +787,11 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
       label: "0G Integration",
       category: "Platform & Trust",
       description:
-        "A truthful map of how 0G is used today in the project and what is still environment-dependent.",
+        "Live 0G Storage, TEE-verified inference via 0G Compute Network, explorer links, and ProofRegistry behavior.",
       summary: [
         { label: "Default Path", value: status.networks.testnet.label, tone: "teal" },
         { label: "Storage", value: storageStatus, tone: "green" },
+        { label: "TEE Inference", value: "0G Compute Network (when configured)", tone: "green" },
         { label: "Explorer", value: status.networks.testnet.explorerBase, tone: "white" },
       ],
       quickLinks: pageQuickLinks("proof-and-verification", "wallet-and-security", "roadmap"),
@@ -795,9 +802,29 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           bullets: [
             "Network configuration is modeled explicitly for testnet and mainnet in the wallet layer.",
             "The proof storage route can upload a JSON proof package through the 0G TypeScript SDK when the active network has RPC, storage URL, and private key configured.",
-            "The UI consistently surfaces the resulting storage tx hash, explorer link, and optional ProofRegistry transaction.",
+            "TEE-verified inference is available via 0G Compute Network when `ZG_COMPUTE_PROVIDER_ADDRESS` and `ZG_LEDGER_PRIVATE_KEY` are configured.",
+            "The UI consistently surfaces the resulting storage tx hash, explorer link, TEE attestation badge, and optional ProofRegistry transaction.",
             "The current explorer path is built from the configured explorer base and the returned transaction hashes.",
           ],
+        },
+        {
+          id: "tee-verification",
+          title: "TEE-verified inference via 0G Compute",
+          paragraphs: [
+            "When 0G Compute credentials are configured, the optimization route prioritizes TEE-verified inference through the 0G Compute Network. This provides hardware-enforced privacy and mitigates front-running risks.",
+            "The TEE attestation includes provider address, model identifier, chat ID, and verification status. These metadata are stored alongside the proof record and surfaced in the proof modal with a distinctive green badge.",
+          ],
+          bullets: [
+            "TEE inference is the highest-priority narrative provider when configured, falling back to Alibaba, OpenAI, or deterministic narrative if unavailable.",
+            "The UI displays a 'TEE Verified' badge in the agent panel and proof modal when attestation is present.",
+            "TEE metadata (provider, model, chat ID, verification status) is persisted in the stored proof record for audit trails.",
+          ],
+          callout: {
+            tone: "green",
+            title: "TEE configuration",
+            body:
+              "To enable TEE verification, set `ZG_COMPUTE_PROVIDER_ADDRESS` and `ZG_LEDGER_PRIVATE_KEY` in your environment. The app will automatically use TEE inference when available.",
+          },
         },
         {
           id: "how-storage-write-works",
@@ -806,7 +833,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             {
               title: "Serialize decision payload",
               body:
-                "The app creates a temporary JSON file that includes optimization values, timestamp, and `appId: yieldboost-ai`.",
+                "The app creates a temporary JSON file that includes optimization values, timestamp, TEE metadata (if available), and `appId: yieldboost-ai`.",
             },
             {
               title: "Upload through the 0G SDK",
@@ -816,7 +843,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             {
               title: "Capture the returned metadata",
               body:
-                "The route stores the returned root hash, tx hash, block info when obtainable, wallet address, explorer URL, and optional note flags.",
+                "The route stores the returned root hash, tx hash, block info when obtainable, wallet address, explorer URL, TEE attestation fields, and optional note flags.",
             },
             {
               title: "Persist locally or in KV",
@@ -826,30 +853,34 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           ],
         },
         {
-          id: "what-is-not-yet-full-0g-compute",
-          title: "What is not yet a full 0G compute implementation",
+          id: "compute-fallbacks",
+          title: "Compute and narrative fallback behavior",
           paragraphs: [
-            "The user interface often describes the optimizer in 0G-forward language, but the current codebase does not execute portfolio optimization inside a dedicated 0G Compute integration yet.",
-            "Instead, optimization scoring currently comes from deterministic logic or an E2B sandbox-assisted snapshot, while narrative generation comes from Alibaba, OpenAI, or a built-in fallback depending on environment configuration.",
+            "The optimization engine supports multiple inference providers with a clear priority order: 0G Compute (TEE) first, then Alibaba, then OpenAI, then deterministic fallback.",
+            "This ensures the app remains functional even when some providers are unavailable or misconfigured, while still prioritizing TEE-verified inference when possible.",
           ],
-          callout: {
-            tone: "amber",
-            title: "Recommended phrasing",
-            body:
-              "Describe the current project as 0G proof-integrated and 0G-ready for deeper compute evolution, not as a finished end-to-end 0G Compute execution engine.",
+          table: {
+            columns: ["Provider", "Priority", "When active", "What it provides"],
+            rows: [
+              ["0G Compute (TEE)", "1 (highest)", "ZG_COMPUTE_PROVIDER_ADDRESS + ZG_LEDGER_PRIVATE_KEY set", "TEE-verified inference with hardware attestation"],
+              ["Alibaba Qwen", "2", "ALIBABA_API_KEY set", "OpenAI-compatible inference via DashScope"],
+              ["OpenAI gpt-4o-mini", "3", "OPENAI_API_KEY set", "OpenAI model as narrative fallback"],
+              ["Deterministic", "4 (lowest)", "Always available", "Built-in narrative templates"],
+            ],
           },
         },
         {
           id: "network-matrix",
           title: "Network matrix",
           table: {
-            columns: ["Network", "Wallet switch support", "Storage config", "ProofRegistry", "Explorer"],
+            columns: ["Network", "Wallet switch support", "Storage config", "ProofRegistry", "TEE Compute", "Explorer"],
             rows: [
               [
                 status.networks.testnet.label,
                 status.networks.testnet.enabled ? "Configured" : "Missing chain config",
                 status.networks.testnet.storageConfigured ? "Ready" : "Needs envs",
                 status.networks.testnet.proofRegistryConfigured ? "Configured" : "Optional / off",
+                hasValue(process.env.ZG_COMPUTE_PROVIDER_ADDRESS) && hasValue(process.env.ZG_LEDGER_PRIVATE_KEY) ? "Configured" : "Optional / off",
                 status.networks.testnet.explorerBase,
               ],
               [
@@ -857,9 +888,94 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
                 status.networks.mainnet.enabled ? "Configured" : "Optional / off",
                 status.networks.mainnet.storageConfigured ? "Ready" : "Needs envs",
                 status.networks.mainnet.proofRegistryConfigured ? "Configured" : "Optional / off",
+                hasValue(process.env.ZG_COMPUTE_PROVIDER_ADDRESS) && hasValue(process.env.ZG_LEDGER_PRIVATE_KEY) ? "Configured" : "Optional / off",
                 status.networks.mainnet.explorerBase,
               ],
             ],
+          },
+        },
+      ],
+    },
+    {
+      slug: "strategy-as-inft",
+      href: "/docs/strategy-as-inft",
+      label: "Strategy as INFT",
+      category: "Platform & Trust",
+      description:
+        "How yield optimization strategies become tradable Agent NFTs with encrypted metadata and authorization.",
+      summary: [
+        { label: "Contract", value: "YieldStrategyINFT (ERC-721)", tone: "teal" },
+        { label: "Metadata", value: "Encrypted on 0G Storage", tone: "green" },
+        { label: "Authorization", value: "Usage rights for other wallets", tone: "white" },
+      ],
+      quickLinks: pageQuickLinks("0g-integration", "wallet-and-security", "faq"),
+      sections: [
+        {
+          id: "what-is-strategy-inft",
+          title: "What Strategy as INFT means",
+          paragraphs: [
+            "Each successful yield optimization can be minted as an Agent NFT. This NFT represents the strategy details, the APY achieved, and the proof of the optimization run.",
+            "The strategy metadata is encrypted and stored on 0G Storage, while the hash and key identifiers are stored on-chain. This allows the strategy to be traded, authorized for use by others, or verified without exposing the full strategy details.",
+          ],
+          bullets: [
+            "NFT represents a specific yield optimization strategy",
+            "Encrypted metadata protects strategy details while allowing verification",
+            "TEE attestation can be verified on-chain if available",
+            "Authorization system allows sharing strategies without transferring ownership",
+          ],
+        },
+        {
+          id: "how-to-mint",
+          title: "How to mint an Agent NFT",
+          steps: [
+            {
+              title: "Complete an optimization",
+              body:
+                "Run an optimization from the dashboard or Boost page. Once the proof is stored, you can mint the strategy as an NFT.",
+            },
+            {
+              title: "Open the proof modal",
+              body:
+                "Click 'View on Explorer' or open the proof modal from the latest result card.",
+            },
+            {
+              title: "Click 'Mint as Agent'",
+              body:
+                "In the proof modal footer, click the 'Mint as Agent' button. This calls the mint API which deploys the strategy to the YieldStrategyINFT contract.",
+            },
+            {
+              title: "View in Agent Gallery",
+              body:
+                "After minting, visit the /agents page to see all your minted Agent NFTs with their APY, verification status, and ownership.",
+            },
+          ],
+        },
+        {
+          id: "authorization-system",
+          title: "Strategy authorization and sharing",
+          paragraphs: [
+            "Agent NFTs include an authorization system that allows the owner to grant usage rights to other wallets without transferring ownership.",
+            "This enables strategy sharing scenarios where one user creates a profitable strategy and others can use it while the creator retains ownership and potential royalties.",
+          ],
+          bullets: [
+            "Owners can authorize specific addresses to use their strategy",
+            "Authorization can be revoked at any time",
+            "Authorized users can execute the strategy without owning the NFT",
+            "This creates a potential marketplace for strategy licensing",
+          ],
+        },
+        {
+          id: "tee-verification",
+          title: "TEE verification in Agent NFTs",
+          paragraphs: [
+            "If an optimization was performed using 0G Compute with TEE, the Agent NFT will include a verification flag indicating TEE attestation.",
+            "This provides cryptographic proof that the strategy recommendation was generated inside a Trusted Execution Environment, adding trust and verifiability to the strategy.",
+          ],
+          callout: {
+            tone: "green",
+            title: "TEE Verified badge",
+            body:
+              "Agent NFTs with TEE verification display a green 'Verified' badge, indicating the strategy was generated with hardware-enforced privacy and attestation.",
           },
         },
       ],

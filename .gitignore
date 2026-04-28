@@ -48,3 +48,6 @@ memory/daily/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# hackathon notes
+Hakcaton 0G
