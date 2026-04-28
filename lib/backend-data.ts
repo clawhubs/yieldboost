@@ -248,6 +248,15 @@ export interface StoredDecisionPayload {
   reasoning?: string;
 }
 
+export interface StoredPortfolioSnapshot {
+  tokens: PortfolioToken[];
+  totalUSD: number;
+  currentAPY: number;
+  displayTotal?: number;
+  displayUnit?: string;
+  displayLabel?: string;
+}
+
 export interface StoredProofRecord {
   cid: string;
   txHash: string;
@@ -257,6 +266,7 @@ export interface StoredProofRecord {
   explorerUrl: string;
   decision: StoredDecisionPayload;
   walletAddress?: string;
+  portfolioSnapshot?: StoredPortfolioSnapshot;
   proofRegistryAddress?: string;
   proofRegistryTxHash?: string;
   proofRegistryProofId?: string;

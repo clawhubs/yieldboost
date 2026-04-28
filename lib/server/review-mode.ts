@@ -6,7 +6,9 @@ import {
   getAvailableWalletNetworks,
   getServer0GNetworkConfig,
   getServerDefaultNetworkKey,
+  getYieldStrategyInftAddress,
   resolveWalletAddress,
+  sameWalletAddress,
   WALLET_COOKIE_KEY,
 } from "@/lib/wallet";
 import { getDocsRuntimeStatus } from "@/lib/docs/content";
@@ -92,6 +94,29 @@ function formatTime(value: string | undefined) {
   });
 }
 
+function formatSnapshotValue(proof: StoredProofRecord | null) {
+  if (!proof) return "Pending";
+
+  const displayTotal = proof.portfolioSnapshot?.displayTotal;
+  const displayUnit = proof.portfolioSnapshot?.displayUnit;
+  if (typeof displayTotal === "number" && displayUnit) {
+    const rounded = displayTotal > 0 && displayTotal < 1
+      ? displayTotal.toFixed(4)
+      : displayTotal.toFixed(2);
+    return `${rounded} ${displayUnit}`;
+  }
+
+  const fallback = proof.decision.totalPortfolio;
+  if (typeof fallback === "number" && fallback > 0) {
+    const rounded = fallback > 0 && fallback < 1
+      ? fallback.toFixed(4)
+      : fallback.toFixed(2);
+    return `${rounded} 0G`;
+  }
+
+  return "Pending";
+}
+
 function toHealthStatus(value: boolean): HealthStatus {
   return value ? "configured" : "pending";
 }
@@ -118,19 +143,43 @@ function buildEnvChecklist() {
       name: "ZG_STORAGE_URL",
       requiredFor: "Testnet proof upload",
       status: hasValue(readEnv("ZG_STORAGE_URL")) ? "set" : "missing",
-      detail: "Required for `/api/0g/store` on the default testnet submission path.",
+      detail: "Legacy testnet server storage env. The app now prefers `ZG_TESTNET_STORAGE_URL` or `NEXT_PUBLIC_ZG_STORAGE` before falling back here.",
     },
     {
       name: "ZG_PRIVATE_KEY",
       requiredFor: "Testnet proof upload signer",
       status: hasValue(readEnv("ZG_PRIVATE_KEY")) ? "set" : "missing",
-      detail: "Used by the 0G Storage write path for proof commits.",
+      detail: "Legacy testnet signer env. The app now prefers `ZG_TESTNET_PRIVATE_KEY` before falling back here.",
     },
     {
       name: "ZG_PROOF_REGISTRY_ADDRESS",
       requiredFor: "Optional testnet on-chain proof anchoring",
       status: hasValue(readEnv("ZG_PROOF_REGISTRY_ADDRESS")) ? "set" : "optional",
-      detail: "Without it, proofs still land in 0G Storage but Registry writes stay unavailable.",
+      detail: "Legacy testnet registry env. The app now prefers `ZG_TESTNET_PROOF_REGISTRY_ADDRESS` before falling back here.",
+    },
+    {
+      name: "ZG_TESTNET_RPC_URL",
+      requiredFor: "Explicit testnet server RPC",
+      status: hasValue(readEnv("ZG_TESTNET_RPC_URL")) ? "set" : "optional",
+      detail: "Recommended when the same environment also has mainnet RPC values, so testnet compute/proof routes cannot drift onto the wrong chain.",
+    },
+    {
+      name: "ZG_TESTNET_STORAGE_URL",
+      requiredFor: "Explicit testnet proof upload",
+      status: hasValue(readEnv("ZG_TESTNET_STORAGE_URL")) ? "set" : "optional",
+      detail: "Recommended companion to `ZG_TESTNET_RPC_URL` for unambiguous testnet proof writes.",
+    },
+    {
+      name: "ZG_TESTNET_PRIVATE_KEY",
+      requiredFor: "Explicit testnet proof signer",
+      status: hasValue(readEnv("ZG_TESTNET_PRIVATE_KEY")) ? "set" : "optional",
+      detail: "Recommended if you want separate signers for testnet and mainnet proof writes.",
+    },
+    {
+      name: "ZG_TESTNET_PROOF_REGISTRY_ADDRESS",
+      requiredFor: "Explicit testnet registry anchoring",
+      status: hasValue(readEnv("ZG_TESTNET_PROOF_REGISTRY_ADDRESS")) ? "set" : "optional",
+      detail: "Lets testnet and mainnet proof registry contracts stay separate without reusing one env name.",
     },
     {
       name: "ZG_MAINNET_RPC_URL",
@@ -182,9 +231,15 @@ function buildEnvChecklist() {
     },
     {
       name: "YIELD_STRATEGY_INFT_ADDRESS",
-      requiredFor: "Agent NFT contract mode",
+      requiredFor: "Testnet / shared Agent NFT contract mode",
       status: hasValue(readEnv("YIELD_STRATEGY_INFT_ADDRESS")) ? "set" : "optional",
       detail: "Without it, `/agents` falls back to proof-backed history instead of contract reads.",
+    },
+    {
+      name: "YIELD_STRATEGY_INFT_MAINNET_ADDRESS",
+      requiredFor: "Mainnet Agent NFT contract mode",
+      status: hasValue(readEnv("YIELD_STRATEGY_INFT_MAINNET_ADDRESS")) ? "set" : "optional",
+      detail: "Recommended once mainnet cutover is active so testnet and mainnet contract addresses do not share one env.",
     },
   ];
 
@@ -206,7 +261,9 @@ function buildMainnetChecklist({
   const hasMainnetRegistry = hasValue(readEnv("ZG_MAINNET_PROOF_REGISTRY_ADDRESS"));
   const hasMainnetChainId = hasValue(readEnv("NEXT_PUBLIC_0G_MAINNET_CHAIN_ID"));
   const hasMainnetExplorer = hasValue(readEnv("NEXT_PUBLIC_0G_MAINNET_EXPLORER_BASE_URL"));
-  const hasInft = hasValue(readEnv("YIELD_STRATEGY_INFT_ADDRESS"));
+  const hasInft =
+    hasValue(readEnv("YIELD_STRATEGY_INFT_MAINNET_ADDRESS")) ||
+    hasValue(readEnv("YIELD_STRATEGY_INFT_ADDRESS"));
 
   return [
     {
@@ -242,7 +299,7 @@ function buildMainnetChecklist({
       status: hasInft ? "partial" : "pending",
       detail: hasInft
         ? "Agent routes can use a deployed INFT address, but production cutover still needs the final mainnet contract value in Vercel."
-        : "Set `YIELD_STRATEGY_INFT_ADDRESS` in the mainnet deployment environment.",
+        : "Set `YIELD_STRATEGY_INFT_MAINNET_ADDRESS` (or fall back to `YIELD_STRATEGY_INFT_ADDRESS`) in the mainnet deployment environment.",
     },
     {
       label: "Proof history for public review",
@@ -259,10 +316,12 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   const proofs = await getStoredProofs();
   const cookieStore = await cookies();
   const requestedWallet = resolveWalletAddress(cookieStore.get(WALLET_COOKIE_KEY)?.value);
-  const walletScopedProof = requestedWallet
-    ? await getLatestStoredProofForWallet(requestedWallet)
-    : null;
-  const latestProof = walletScopedProof ?? (requestedWallet ? null : proofs[0] ?? null);
+  const reviewWallet = requestedWallet ?? DEFAULT_WALLET_ADDRESS;
+  const walletScopedProof = await getLatestStoredProofForWallet(reviewWallet);
+  const latestProof = walletScopedProof;
+  const scopedProofs = proofs.filter((proof) =>
+    sameWalletAddress(proof.walletAddress, reviewWallet),
+  );
   const preferredNetwork = getServerDefaultNetworkKey();
   const preferredConfig = getServer0GNetworkConfig(preferredNetwork);
   const networks = getAvailableWalletNetworks();
@@ -278,7 +337,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
       label: "Proof Store",
       value: runtimeStatus.runtimeStore,
       helper: latestProof
-        ? `${proofs.length} recorded proof(s) available for review`
+        ? `${scopedProofs.length} recorded proof(s) available for this judge wallet`
         : "No runtime proof recorded yet",
       tone: latestProof ? "green" : "amber",
     },
@@ -296,10 +355,10 @@ export async function getJudgePageData(): Promise<JudgePageData> {
     },
     {
       label: "Review Wallet",
-      value: requestedWallet ?? DEFAULT_WALLET_ADDRESS,
+      value: reviewWallet,
       helper: requestedWallet
         ? "Judge page is currently scoped to the active wallet in this browser session."
-        : "Judge mode can load the public review wallet instantly without wallet connection.",
+        : "Judge mode defaults to the public review wallet when no wallet is active.",
       tone: requestedWallet ? "teal" : "white",
     },
   ];
@@ -319,18 +378,18 @@ export async function getJudgePageData(): Promise<JudgePageData> {
           tone: "green",
         },
         {
-          label: "Latest Proof",
-          value: shorten(latestProof.cid, 12),
-          helper: formatTime(latestProof.timestamp),
+          label: "Snapshot Value",
+          value: formatSnapshotValue(latestProof),
+          helper:
+            latestProof.portfolioSnapshot?.displayLabel ??
+            "Wallet snapshot pinned from the latest recorded proof.",
           tone: "white",
         },
         {
-          label: "Registry",
-          value: latestProof.proofRegistryProofId ? `#${latestProof.proofRegistryProofId}` : "Storage only",
-          helper: latestProof.proofRegistryAddress
-            ? `Contract ${shorten(latestProof.proofRegistryAddress, 8)}`
-            : "Awaiting registry configuration",
-          tone: latestProof.proofRegistryAddress ? "green" : "amber",
+          label: "Proof History",
+          value: `${scopedProofs.length} run${scopedProofs.length === 1 ? "" : "s"}`,
+          helper: `Latest proof recorded ${formatTime(latestProof.timestamp)}`,
+          tone: scopedProofs.length > 0 ? "green" : "amber",
         },
       ]
     : [
@@ -345,7 +404,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
         {
           label: "Review Path",
           value: "Judge snapshot",
-          helper: "Use the judge route to review the latest recorded testnet result without extension setup.",
+          helper: "Use the judge route to review the latest recorded testnet result without extension setup or rerunning optimize.",
           tone: "teal",
         },
         {
@@ -406,12 +465,12 @@ export async function getJudgePageData(): Promise<JudgePageData> {
     },
     {
       title: "Yield Strategy INFT",
-      status: hasValue(readEnv("YIELD_STRATEGY_INFT_ADDRESS")) ? "configured" : "partial",
-      detail: hasValue(readEnv("YIELD_STRATEGY_INFT_ADDRESS"))
+      status: getYieldStrategyInftAddress(preferredNetwork) ? "configured" : "partial",
+      detail: getYieldStrategyInftAddress(preferredNetwork)
         ? "Agent routes can read a deployed contract address when the environment is set."
         : "The `/agents` page stays demo-safe by falling back to proof-backed strategies when contract envs are missing.",
-      address: readEnv("YIELD_STRATEGY_INFT_ADDRESS"),
-      meta: hasValue(readEnv("YIELD_STRATEGY_INFT_ADDRESS"))
+      address: getYieldStrategyInftAddress(preferredNetwork),
+      meta: getYieldStrategyInftAddress(preferredNetwork)
         ? "Contract mode available"
         : "Proof-backed fallback active",
     },
@@ -451,7 +510,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   if (!hasValue(readEnv("ZG_MAINNET_PROOF_REGISTRY_ADDRESS"))) {
     blockers.push("Mainnet ProofRegistry address is still missing, so on-chain verification is not fully cut over.");
   }
-  if (!hasValue(readEnv("YIELD_STRATEGY_INFT_ADDRESS"))) {
+  if (!getYieldStrategyInftAddress(preferredNetwork)) {
     blockers.push("Agent NFT contract env is not set, so `/agents` relies on proof-backed fallback instead of live contract reads.");
   }
   if (!hasValue(readEnv("KV_REST_API_URL")) || !hasValue(readEnv("KV_REST_API_TOKEN"))) {
@@ -467,12 +526,12 @@ export async function getJudgePageData(): Promise<JudgePageData> {
     mainnetChecklist,
     envChecklist,
     demoFlow: [
-      "Open `/judge` for the no-wallet review path.",
-      "Judge mode auto-loads the public review wallet behind the scenes when no connected wallet is present.",
-      "Visit `/` for the dashboard snapshot, `/history` for the proof ledger, and `/agents` for proof-backed strategies.",
-      "Exit judge mode from the sidebar whenever you want to return to the normal user flow and run a fresh testnet optimization.",
+      "Open `/judge` as the submission entry point.",
+      "If there is no active wallet in the browser, judge mode pins the public review wallet automatically.",
+      "Open `/`, `/history`, or `/agents` while judge mode is active to inspect the same wallet snapshot and proof history.",
+      "Use `Exit judge mode` in the sidebar to return to the normal user wallet flow and run a fresh testnet optimization.",
     ],
     blockers,
-    proofCount: proofs.length,
+    proofCount: scopedProofs.length,
   };
 }

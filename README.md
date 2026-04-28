@@ -76,6 +76,12 @@ NEXT_PUBLIC_ZG_RPC=https://evmrpc-testnet.0g.ai
 NEXT_PUBLIC_ZG_STORAGE=https://indexer-storage-testnet-turbo.0g.ai
 
 ZG_NETWORK_KEY=testnet
+ZG_TESTNET_RPC_URL=https://evmrpc-testnet.0g.ai
+ZG_TESTNET_STORAGE_URL=https://indexer-storage-testnet-turbo.0g.ai
+ZG_TESTNET_PRIVATE_KEY=<testnet_storage_signer>
+ZG_TESTNET_PROOF_REGISTRY_ADDRESS=<optional_testnet_registry>
+
+# Legacy fallback names still supported
 ZG_RPC_URL=https://evmrpc-testnet.0g.ai
 ZG_STORAGE_URL=https://indexer-storage-testnet-turbo.0g.ai
 ZG_PRIVATE_KEY=<testnet_storage_signer>
@@ -111,6 +117,7 @@ ZG_MAINNET_RPC_URL=https://evmrpc.0g.ai
 ZG_MAINNET_STORAGE_URL=<mainnet_storage_endpoint>
 ZG_MAINNET_PRIVATE_KEY=<mainnet_storage_signer>
 ZG_MAINNET_PROOF_REGISTRY_ADDRESS=<mainnet_registry_contract>
+YIELD_STRATEGY_INFT_MAINNET_ADDRESS=<mainnet_agent_nft_contract>
 ```
 
 ### Fallback behavior
@@ -118,6 +125,7 @@ ZG_MAINNET_PROOF_REGISTRY_ADDRESS=<mainnet_registry_contract>
 - If 0G Compute is missing or underfunded, optimization narration falls back to the deterministic/local path and the UI keeps running.
 - If 0G Storage or the indexer fails, the optimization result is still shown, but the app surfaces the proof-sync blocker honestly instead of pretending a proof was written.
 - If `YIELD_STRATEGY_INFT_ADDRESS` is missing, `/agents` falls back to proof-backed runtime history.
+- If testnet and mainnet envs coexist in one deployment, prefer the explicit `ZG_TESTNET_*` and `ZG_MAINNET_*` names so proof/compute flows do not drift onto the wrong chain.
 - If Vercel KV is missing, runtime proof history falls back to `.artifacts/runtime-store.json`.
 
 ## Mainnet Checklist
@@ -126,7 +134,7 @@ ZG_MAINNET_PROOF_REGISTRY_ADDRESS=<mainnet_registry_contract>
 2. Set `ZG_MAINNET_STORAGE_URL` and `ZG_MAINNET_PRIVATE_KEY` for mainnet proof writes.
 3. Deploy or confirm the mainnet ProofRegistry, then set `ZG_MAINNET_PROOF_REGISTRY_ADDRESS`.
 4. Point `ZG_NETWORK_KEY=mainnet` only after the previous steps are complete.
-5. Set the final `YIELD_STRATEGY_INFT_ADDRESS` in the mainnet deployment environment if agent contract mode is required.
+5. Set the final `YIELD_STRATEGY_INFT_MAINNET_ADDRESS` in the mainnet deployment environment. `YIELD_STRATEGY_INFT_ADDRESS` can stay mapped to testnet or shared fallback mode.
 
 ### Builder Funding Note
 
@@ -155,6 +163,12 @@ npm run lint
 npm run build
 npx playwright test tests/dashboard.spec.ts tests/audit.spec.ts tests/docs.spec.ts
 npx playwright test tests/live-smoke.spec.ts
+```
+
+```bash
+node scripts/deploy-proof-registry.cjs testnet
+node scripts/deploy-inft.cjs testnet
+node scripts/setup-tee-broker.cjs testnet
 ```
 
 ## Documentation

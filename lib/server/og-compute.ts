@@ -5,7 +5,11 @@
 
 import { ethers } from "ethers";
 import { createZGComputeNetworkBroker } from "@0glabs/0g-serving-broker";
-import { getServer0GNetworkConfig, getServerDefaultNetworkKey } from "@/lib/wallet";
+import {
+  getServer0GNetworkConfig,
+  getServerDefaultNetworkKey,
+  type WalletNetworkKey,
+} from "@/lib/wallet";
 
 export interface TEEAttestation {
   chatId: string;
@@ -25,8 +29,9 @@ export interface ComputeResult {
 // Type for the broker instance (inferred from SDK)
 type ZGBroker = Awaited<ReturnType<typeof createZGComputeNetworkBroker>>;
 
-let brokerInstance: ZGBroker | null = null;
+const brokerInstances: Partial<Record<WalletNetworkKey, ZGBroker>> = {};
 const MIN_INFERENCE_SUBACCOUNT_FUND = BigInt(10 ** 18);
+const COMPUTE_REQUEST_TIMEOUT_MS = 15_000;
 
 function extractErrorMessage(error: unknown) {
   if (error instanceof Error && error.message) {
@@ -81,14 +86,15 @@ async function ensureInferenceSubAccount(
  * Initialize 0G Compute broker
  * Requires ZG_COMPUTE_PROVIDER_ADDRESS and ZG_LEDGER_PRIVATE_KEY in env
  */
-async function getBroker(): Promise<ZGBroker | null> {
-  if (brokerInstance) {
-    return brokerInstance;
+async function getBroker(
+  networkKey: WalletNetworkKey = getServerDefaultNetworkKey(),
+): Promise<ZGBroker | null> {
+  if (brokerInstances[networkKey]) {
+    return brokerInstances[networkKey] ?? null;
   }
 
   const providerAddress = process.env.ZG_COMPUTE_PROVIDER_ADDRESS;
   const privateKey = process.env.ZG_LEDGER_PRIVATE_KEY;
-  const networkKey = getServerDefaultNetworkKey();
   const networkConfig = getServer0GNetworkConfig(networkKey);
 
   if (!providerAddress || !privateKey) {
@@ -107,7 +113,8 @@ async function getBroker(): Promise<ZGBroker | null> {
     const wallet = new ethers.Wallet(privateKey, provider);
 
     // Create broker instance
-    brokerInstance = await createZGComputeNetworkBroker(wallet);
+    const brokerInstance = await createZGComputeNetworkBroker(wallet);
+    brokerInstances[networkKey] = brokerInstance;
     console.log("0G Compute: Broker initialized successfully");
 
     // Auto-acknowledge provider on first initialization
@@ -121,6 +128,7 @@ async function getBroker(): Promise<ZGBroker | null> {
     return brokerInstance;
   } catch (error) {
     console.error("0G Compute: Failed to initialize broker", error);
+    delete brokerInstances[networkKey];
     return null;
   }
 }
@@ -131,9 +139,10 @@ async function getBroker(): Promise<ZGBroker | null> {
  * @returns ComputeResult with text and optional TEE attestation
  */
 export async function runTEEInference(
-  prompt: string
+  prompt: string,
+  networkKey: WalletNetworkKey = getServerDefaultNetworkKey(),
 ): Promise<ComputeResult> {
-  const broker = await getBroker();
+  const broker = await getBroker(networkKey);
 
   if (!broker) {
     console.warn("0G Compute: Broker not available, using fallback");
@@ -146,7 +155,6 @@ export async function runTEEInference(
 
   const providerAddress = process.env.ZG_COMPUTE_PROVIDER_ADDRESS;
   const privateKey = process.env.ZG_LEDGER_PRIVATE_KEY;
-  const networkKey = getServerDefaultNetworkKey();
   const networkConfig = getServer0GNetworkConfig(networkKey);
   if (!providerAddress) {
     console.warn("0G Compute: Missing ZG_COMPUTE_PROVIDER_ADDRESS");
@@ -195,6 +203,7 @@ export async function runTEEInference(
     // Make OpenAI-compatible request
     const response = await fetch(`${endpoint}/chat/completions`, {
       method: "POST",
+      signal: AbortSignal.timeout(COMPUTE_REQUEST_TIMEOUT_MS),
       headers: {
         "Content-Type": "application/json",
         ...headers,

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
@@ -94,6 +94,7 @@ function clearCookie(name: string) {
 }
 
 export default function Sidebar() {
+  const router = useRouter();
   const pathname = usePathname();
   const { judgeMode, enterJudgeMode, exitJudgeMode } = usePortfolio();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -456,6 +457,9 @@ export default function Sidebar() {
       applyDisconnectedState(selectedNetwork);
     }
     setMobileNavOpen(false);
+    if (pathname === "/judge") {
+      router.push("/");
+    }
   }
 
   function renderNavigation(mode: "desktop" | "mobile") {
@@ -674,10 +678,10 @@ export default function Sidebar() {
                   Start here for hackathon review
                 </div>
                 <div className="mt-1 text-[11px] leading-5 text-[#9ca9b6]">
-                  Tap `Judge` in the menu to open the read-only judge snapshot instantly. Exit judge mode whenever you want to return to the normal wallet flow.
+                  Tap `Judge` in the menu to open the read-only review snapshot instantly. Return to the normal wallet flow anytime from the sidebar.
                 </div>
                 <div className="mt-3 rounded-[10px] border border-[rgba(34,221,208,0.2)] bg-[rgba(34,221,208,0.08)] px-3 py-2 text-[11px] font-medium text-[#9ff7f0]">
-                  Judge nav auto-loads the public review wallet
+                  Judge entry auto-loads the public review wallet
                 </div>
                 <div className="mt-2 grid gap-2">
                   <button

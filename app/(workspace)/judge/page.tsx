@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   Wallet2,
 } from "lucide-react";
+import JudgeModeBootstrap from "@/components/judge/JudgeModeBootstrap";
 import { getJudgePageData } from "@/lib/server/review-mode";
 
 export const dynamic = "force-dynamic";
@@ -61,6 +62,7 @@ export default async function JudgePage() {
 
   return (
     <section data-testid="judge-page" className="space-y-[10px] p-[10px]">
+      <JudgeModeBootstrap />
       <header className="yb-card rounded-[18px] px-5 py-5">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div className="max-w-3xl">
@@ -69,10 +71,10 @@ export default async function JudgePage() {
               Judge Mode
             </div>
             <h1 className="mt-3 font-[family-name:var(--font-display)] text-[30px] font-semibold leading-[1.08] text-white md:text-[40px]">
-              Review YieldBoost in one clean pass.
+              Review the latest wallet result in one clean pass.
             </h1>
             <p className="mt-3 max-w-2xl text-[15px] leading-7 text-[#9daab6]">
-              YieldBoost AI finds a better low-risk yield route, shows the decision clearly, and anchors proof data into the 0G stack. This page is the read-only judging snapshot for the latest recorded testnet result.
+              YieldBoost AI finds a better low-risk yield route, shows the decision clearly, and anchors proof data into the 0G stack. This page stays read-only and follows the latest recorded testnet snapshot for the active judge wallet.
             </p>
             <p className="mt-4 text-[13px] text-[#d8e1e8]">{data.runtimeLabel}</p>
           </div>
@@ -130,7 +132,7 @@ export default async function JudgePage() {
               <div>
                 <h2 className="text-[22px] font-semibold text-white">What the product does</h2>
                 <p className="mt-1 text-[13px] text-[#9faab6]">
-                  The shortest story a judge needs before opening any deeper route.
+                  The shortest story a judge needs before opening a deeper route.
                 </p>
               </div>
             </div>
@@ -138,8 +140,8 @@ export default async function JudgePage() {
             <div className="mt-4 grid gap-[10px] md:grid-cols-3">
               {[
                 {
-                  title: "Recorded testnet result",
-                  body: "Judge mode is focused on the latest recorded testnet proof and result, not on asking the reviewer to rerun the full flow.",
+                  title: "Recorded wallet snapshot",
+                  body: "Judge mode stays focused on the latest recorded testnet proof and wallet snapshot, not on asking the reviewer to rerun the full flow.",
                 },
                 {
                   title: "AI recommendation",
@@ -164,9 +166,9 @@ export default async function JudgePage() {
                 <Bot className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="text-[22px] font-semibold text-white">Latest proof and result</h2>
+                <h2 className="text-[22px] font-semibold text-white">Latest proof and wallet snapshot</h2>
                 <p className="mt-1 text-[13px] text-[#9faab6]">
-                  Live runtime data when available, honest empty state when not.
+                  Latest result for the active judge wallet, with honest empty state when no proof exists yet.
                 </p>
               </div>
             </div>
@@ -225,7 +227,7 @@ export default async function JudgePage() {
               </div>
 
               <div className="yb-soft-card rounded-[16px] px-4 py-4">
-                <div className="text-[12px] font-medium text-white">Demo / public wallet flow</div>
+                <div className="text-[12px] font-medium text-white">Judge flow</div>
                 <div className="mt-4 space-y-3">
                   {data.demoFlow.map((step) => (
                     <div key={step} className="flex items-start gap-3 text-[13px] leading-6 text-[#d8e1e8]">
@@ -235,7 +237,7 @@ export default async function JudgePage() {
                   ))}
                 </div>
                 <div className="mt-4 rounded-[12px] border border-[rgba(34,221,208,0.18)] bg-[rgba(34,221,208,0.06)] px-3 py-3 text-[12px] leading-6 text-[#d9eef0]">
-                  Snapshot wallet: <span className="break-all text-white">{data.statusCards[3]?.value}</span>
+                  Judge wallet: <span className="break-all text-white">{data.statusCards[3]?.value}</span>
                 </div>
               </div>
             </div>

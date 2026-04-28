@@ -73,8 +73,29 @@ test("judge page is reachable without wallet connection", async ({ page }) => {
   await page.goto(`${BASE}/judge`, { waitUntil: "networkidle" });
 
   await expect(page.getByTestId("judge-page")).toBeVisible();
-  await expect(page.getByText("Latest proof and result")).toBeVisible();
+  await expect(page.getByText("Latest proof and wallet snapshot")).toBeVisible();
   await expect(page.getByText("Vercel env checklist")).toBeVisible();
+  await expect(page.getByText("Judge wallet:")).toBeVisible();
+  await expect(page.getByText("Open latest tx")).toBeVisible();
+});
+
+test("direct judge entry bootstraps the review wallet across dashboard and history", async ({
+  page,
+}) => {
+  await clearWalletState(page);
+  await page.goto(`${BASE}/judge`, { waitUntil: "networkidle" });
+
+  await expect(page.getByTestId("judge-page")).toBeVisible();
+  await expect(page.getByText("Judge wallet:")).toContainText(/0x8a3c/i);
+
+  await page.getByRole("link", { name: "Open dashboard" }).click();
+  await expect(page).toHaveURL(BASE);
+  await expect(page.getByTestId("sidebar")).toContainText("Judge mode");
+  await expect(page.getByTestId("boost-yield-cta")).toBeDisabled();
+
+  const historyResponse = await page.goto(`${BASE}/history`, { waitUntil: "networkidle" });
+  expect(historyResponse?.ok()).toBeTruthy();
+  await expect(page.getByRole("heading", { name: "Execution History & Proof Ledger" })).toBeVisible();
 });
 
 test("judge nav enables read-only judge mode for review", async ({ page }) => {
@@ -104,6 +125,7 @@ test("judge mode can be exited back to the normal no-wallet flow", async ({ page
 
   await page.getByRole("button", { name: "Exit judge mode" }).click();
 
+  await expect(page).toHaveURL(BASE);
   await expect(page.getByTestId("sidebar")).not.toContainText("Judge mode");
   await expect(page.getByTestId("sidebar")).toContainText("Not connected");
   await expect(page.getByTestId("sidebar")).not.toContainText(/0x8a3c/i);
@@ -191,8 +213,55 @@ test("seeded demo wallet hydrates normal testnet data", async ({ page }) => {
   await expect(page.getByTestId("boost-yield-cta")).toBeEnabled({ timeout: 30_000 });
 });
 
-test("1-click optimize writes a real proof from the demo wallet", async ({ page }) => {
+test("1-click optimize surfaces a stored proof receipt from the demo wallet", async ({
+  page,
+}) => {
+  const optimizationHeader = JSON.stringify({
+    current_apy: 4.2,
+    optimized_apy: 8.7,
+    yield_increase: 220,
+    yield_increase_pct: 107,
+    top_protocols: [{ name: "SaucerSwap LP", apy: 24.18, risk: "medium" }],
+    recommended: "SaucerSwap LP",
+    confidence: 91,
+    executionSeconds: 6.4,
+    estimatedAnnualGain: 220,
+    totalPortfolio: 1200,
+    reasoning: "Testing live proof write with a deterministic optimize response.",
+    riskProfile: "Moderate",
+  });
+
   await enableDemoWatchMode(page);
+  await page.route("**/api/agent/optimize", async (route) => {
+    await route.fulfill({
+      status: 200,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "X-Optimization-Result": optimizationHeader,
+      },
+      body: '0:"Testing live proof write with a deterministic optimize response."\\n',
+    });
+  });
+  await page.route("**/api/0g/store", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        cid: "0xe8c827c03427e1cecc768ec2eb4f30b34ab3315e9979cd6568fafc76e1853d88",
+        txHash: "0xd086a8015810dfa8cb49242f0c9f2351407ff66d6b95c1eb5586581bdcc073b1",
+        explorerUrl:
+          "https://chainscan-galileo.0g.ai/tx/0xd086a8015810dfa8cb49242f0c9f2351407ff66d6b95c1eb5586581bdcc073b1",
+        timestamp: new Date().toISOString(),
+        walletAddress: DEMO_WALLET,
+        proofRegistryAddress: "0x516D005367045b1fc18c9c9a0Ff7bf8653d1B4e3",
+        proofRegistryTxHash:
+          "0x7028b3002c2dd849be9266b4821ce7d3fff81bb07df851c63611b26b112be307",
+        proofRegistryProofId: "23",
+        proofRegistryExplorerUrl:
+          "https://chainscan-galileo.0g.ai/tx/0x7028b3002c2dd849be9266b4821ce7d3fff81bb07df851c63611b26b112be307",
+      }),
+    });
+  });
   await page.goto(BASE, { waitUntil: "networkidle" });
 
   const optimizeButton = page.getByTestId("boost-yield-cta");
@@ -202,7 +271,7 @@ test("1-click optimize writes a real proof from the demo wallet", async ({ page 
     (response) =>
       response.url().includes("/api/0g/store") &&
       response.request().method() === "POST",
-    { timeout: 90_000 },
+    { timeout: 30_000 },
   );
 
   await optimizeButton.click();

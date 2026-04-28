@@ -7,6 +7,22 @@ const { ethers } = require("ethers");
 const fs = require("fs");
 const path = require("path");
 
+function findImports(importPath) {
+  const searchPaths = [
+    path.join(process.cwd(), importPath),
+    path.join(process.cwd(), "node_modules", importPath),
+    path.join(__dirname, importPath),
+  ];
+
+  for (const candidate of searchPaths) {
+    if (fs.existsSync(candidate)) {
+      return { contents: fs.readFileSync(candidate, "utf8") };
+    }
+  }
+
+  return { error: `File not found: ${importPath}` };
+}
+
 async function compileContracts() {
   console.log("Compiling contracts...");
   
@@ -41,10 +57,10 @@ async function compileContracts() {
     },
   };
   
-  const output = JSON.parse(solc.compile(JSON.stringify(input)));
-  
-  if (output.errors) {
-    console.error("Compilation errors:", output.errors);
+  const output = JSON.parse(solc.compile(JSON.stringify(input), { import: findImports }));
+  const fatalErrors = (output.errors || []).filter((item) => item.severity === "error");
+  if (fatalErrors.length > 0) {
+    console.error("Compilation errors:", fatalErrors);
     throw new Error("Compilation failed");
   }
   

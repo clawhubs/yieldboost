@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ethers } from "ethers";
 import { getStoredProofs } from "@/lib/server/runtime-store";
 import {
+  getYieldStrategyInftAddress,
   getServer0GNetworkConfig,
   resolveWalletAddress,
   resolveWalletNetworkKey,
@@ -62,7 +63,7 @@ export async function GET(req: NextRequest) {
     const networkConfig = getServer0GNetworkConfig(networkKey);
 
     // Get contract address from env
-    const inftAddress = process.env.YIELD_STRATEGY_INFT_ADDRESS;
+    const inftAddress = getYieldStrategyInftAddress(networkKey);
     const privateKey = process.env.ZG_LEDGER_PRIVATE_KEY || process.env.ZG_PRIVATE_KEY;
 
     if (!inftAddress || !privateKey) {

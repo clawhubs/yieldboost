@@ -7,6 +7,7 @@ import {
   generateAttestationHash,
 } from "@/lib/server/encryption";
 import {
+  getYieldStrategyInftAddress,
   getServer0GNetworkConfig,
   resolveWalletNetworkKey,
   WALLET_NETWORK_COOKIE_KEY,
@@ -40,14 +41,15 @@ export async function POST(req: NextRequest) {
     const networkConfig = getServer0GNetworkConfig(networkKey);
 
     // Get contract addresses from env
-    const inftAddress = process.env.YIELD_STRATEGY_INFT_ADDRESS;
+    const inftAddress = getYieldStrategyInftAddress(networkKey);
     const privateKey = process.env.ZG_LEDGER_PRIVATE_KEY || process.env.ZG_PRIVATE_KEY;
 
     if (!inftAddress || !privateKey) {
       return NextResponse.json(
         {
           success: false,
-          error: "YIELD_STRATEGY_INFT_ADDRESS or ZG_LEDGER_PRIVATE_KEY not configured",
+          error:
+            "YieldStrategy INFT address or deploy signer is not configured for the active network",
         },
         { status: 503 }
       );

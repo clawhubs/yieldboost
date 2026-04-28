@@ -3,6 +3,7 @@ import { buildAnalyticsFromProofs } from "@/lib/backend-data";
 import { getLivePortfolioSnapshot } from "@/lib/server/live-portfolio";
 import { getStoredProofs } from "@/lib/server/runtime-store";
 import {
+  JUDGE_MODE_COOKIE_KEY,
   resolveWalletAddress,
   resolveWalletNetworkKey,
   sameWalletAddress,
@@ -15,8 +16,11 @@ export async function GET(req: NextRequest) {
   const networkKey = resolveWalletNetworkKey(
     req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value,
   );
+  const judgeMode = req.cookies.get(JUDGE_MODE_COOKIE_KEY)?.value === "true";
   const [portfolio, proofs] = await Promise.all([
-    getLivePortfolioSnapshot(walletAddress, networkKey),
+    getLivePortfolioSnapshot(walletAddress, networkKey, {
+      preferProofSnapshot: judgeMode,
+    }),
     getStoredProofs(),
   ]);
 

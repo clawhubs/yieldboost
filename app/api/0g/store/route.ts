@@ -15,6 +15,7 @@ import { z } from "zod";
 import {
   type StoredProofRecord,
   type StoredDecisionPayload,
+  type StoredPortfolioSnapshot,
 } from "@/lib/backend-data";
 import {
   getServer0GNetworkConfig,
@@ -40,6 +41,22 @@ const decisionSchema = z.object({
 });
 
 const walletAddressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/).optional();
+const portfolioSnapshotSchema = z
+  .object({
+    tokens: z.array(
+      z.object({
+        symbol: z.string(),
+        amount: z.number(),
+        valueUSD: z.number(),
+      }),
+    ),
+    totalUSD: z.number(),
+    currentAPY: z.number(),
+    displayTotal: z.number().optional(),
+    displayUnit: z.string().optional(),
+    displayLabel: z.string().optional(),
+  })
+  .optional();
 
 const proofRegistryAbi = [
   "event ProofRecorded(uint256 indexed proofId,address indexed owner,string cid,bytes32 indexed rootHash,bytes32 storageTxHash,uint256 currentApyBps,uint256 optimizedApyBps,uint64 timestamp)",
@@ -77,6 +94,7 @@ function getStorageUrlCandidates(
 export async function POST(req: NextRequest) {
   const payload = (await req.json()) as {
     decision?: unknown;
+    portfolioSnapshot?: unknown;
     networkKey?: WalletNetworkKey;
     walletAddress?: string;
     // TEE metadata from client
@@ -87,6 +105,9 @@ export async function POST(req: NextRequest) {
     llmProvider?: string;
   };
   const decision = decisionSchema.parse(payload.decision) as StoredDecisionPayload;
+  const portfolioSnapshot = portfolioSnapshotSchema.parse(
+    payload.portfolioSnapshot,
+  ) as StoredPortfolioSnapshot | undefined;
   const walletAddress = walletAddressSchema.safeParse(payload.walletAddress).data;
   const networkKey = resolveWalletNetworkKey(
     payload.networkKey ?? req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value,
@@ -210,6 +231,7 @@ export async function POST(req: NextRequest) {
         explorerUrl: `${config.explorerBase.replace(/\/$/, "")}/tx/${txHash}`,
         decision,
         walletAddress: walletAddress ?? signer.address,
+        portfolioSnapshot,
         note: receipt ? undefined : "pending_receipt",
         // TEE / 0G Compute metadata
         teeProvider: payload.teeProvider,

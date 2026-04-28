@@ -45,6 +45,22 @@ function getEnv(name, fallback) {
   return fallback[name];
 }
 
+function findImports(importPath) {
+  const candidates = [
+    path.join(process.cwd(), importPath),
+    path.join(process.cwd(), "node_modules", importPath),
+    path.join(process.cwd(), "contracts", importPath),
+  ];
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return { contents: fs.readFileSync(candidate, "utf8") };
+    }
+  }
+
+  return { error: `File not found: ${importPath}` };
+}
+
 function compileContract(contractPath, contractName) {
   const source = fs.readFileSync(contractPath, "utf8");
   const input = {
@@ -67,9 +83,8 @@ function compileContract(contractPath, contractName) {
     },
   };
 
-  const output = JSON.parse(solc.compile(JSON.stringify(input)));
-  const errors = output.errors ?? [];
-  const fatalErrors = errors.filter((item) => item.severity === "error");
+  const output = JSON.parse(solc.compile(JSON.stringify(input), { import: findImports }));
+  const fatalErrors = (output.errors ?? []).filter((item) => item.severity === "error");
 
   if (fatalErrors.length) {
     throw new Error(fatalErrors.map((item) => item.formattedMessage).join("\n"));
@@ -91,21 +106,30 @@ async function main() {
   const rootDir = path.resolve(__dirname, "..");
   const envLocal = readEnvFile(path.join(rootDir, ".env.local"));
 
-  let rpcUrl, privateKey, explorerBase, chainId;
+  let rpcUrl;
+  let privateKey;
+  let explorerBase;
+  let chainId;
 
   if (network === "mainnet") {
     rpcUrl = getEnv("ZG_MAINNET_RPC_URL", envLocal) || "https://evmrpc.0g.ai";
-    privateKey = getEnv("ZG_MAINNET_PRIVATE_KEY", envLocal) || getEnv("ZG_PRIVATE_KEY", envLocal);
-    explorerBase = getEnv("NEXT_PUBLIC_0G_MAINNET_EXPLORER_BASE_URL", envLocal) || "https://0gscan.com";
+    privateKey =
+      getEnv("ZG_MAINNET_PRIVATE_KEY", envLocal) ||
+      getEnv("ZG_PRIVATE_KEY", envLocal);
+    explorerBase =
+      getEnv("NEXT_PUBLIC_0G_MAINNET_EXPLORER_BASE_URL", envLocal) ||
+      "https://0gscan.com";
     chainId = 16661;
   } else {
     rpcUrl =
-      getEnv("ZG_TESTNET_RPC_URL", envLocal) ||
       getEnv("NEXT_PUBLIC_ZG_RPC", envLocal) ||
+      getEnv("ZG_TESTNET_RPC_URL", envLocal) ||
       getEnv("ZG_RPC_URL", envLocal) ||
       "https://evmrpc-testnet.0g.ai";
     privateKey = getEnv("ZG_TESTNET_PRIVATE_KEY", envLocal) || getEnv("ZG_PRIVATE_KEY", envLocal);
-    explorerBase = getEnv("NEXT_PUBLIC_0G_EXPLORER_BASE_URL", envLocal) || "https://chainscan-galileo.0g.ai";
+    explorerBase =
+      getEnv("NEXT_PUBLIC_0G_EXPLORER_BASE_URL", envLocal) ||
+      "https://chainscan-galileo.0g.ai";
     chainId = 16602;
   }
 
@@ -117,11 +141,11 @@ async function main() {
     throw new Error("Missing private key.");
   }
 
-  console.log(`Deploying to ${network}...`);
+  console.log(`Deploying YieldStrategyINFT to ${network}...`);
   console.log(`RPC: ${rpcUrl}`);
 
-  const contractPath = path.join(rootDir, "contracts", "ProofRegistry.sol");
-  const { abi, bytecode } = compileContract(contractPath, "ProofRegistry");
+  const contractPath = path.join(rootDir, "contracts", "YieldStrategyINFT.sol");
+  const { abi, bytecode } = compileContract(contractPath, "YieldStrategyINFT");
 
   const provider = new JsonRpcProvider(rpcUrl);
   const signer = new Wallet(privateKey, provider);
@@ -131,7 +155,7 @@ async function main() {
   console.log(`Balance: ${formatEther(balance)} 0G`);
 
   const factory = new ContractFactory(abi, bytecode, signer);
-  const contract = await factory.deploy();
+  const contract = await factory.deploy(signer.address);
   console.log(`Deployment tx: ${contract.deploymentTransaction().hash}`);
 
   await contract.waitForDeployment();
@@ -144,7 +168,7 @@ async function main() {
   fs.mkdirSync(artifactDir, { recursive: true });
 
   const deployment = {
-    contractName: "ProofRegistry",
+    contractName: "YieldStrategyINFT",
     address,
     network,
     chainId,
@@ -157,9 +181,9 @@ async function main() {
     abi,
   };
 
-  const deploymentFile = network === "mainnet" 
-    ? "proof-registry-deployment-mainnet.json"
-    : "proof-registry-deployment.json";
+  const deploymentFile = network === "mainnet"
+    ? "yield-strategy-inft-deployment-mainnet.json"
+    : "yield-strategy-inft-deployment.json";
 
   fs.writeFileSync(
     path.join(artifactDir, deploymentFile),
@@ -171,13 +195,13 @@ async function main() {
   console.log(`Network: ${network}`);
   console.log(`Contract Address: ${address}`);
   console.log(`Explorer: ${deployment.explorerUrl}`);
-  
+
   if (network === "mainnet") {
-    console.log(`\nAdd this to .env.local:`);
-    console.log(`ZG_MAINNET_PROOF_REGISTRY_ADDRESS=${address}`);
+    console.log("\nAdd this to .env.local:");
+    console.log(`YIELD_STRATEGY_INFT_MAINNET_ADDRESS=${address}`);
   } else {
-    console.log(`\nAdd this to .env.local:`);
-    console.log(`ZG_PROOF_REGISTRY_ADDRESS=${address}`);
+    console.log("\nAdd this to .env.local:");
+      console.log(`YIELD_STRATEGY_INFT_ADDRESS=${address}`);
   }
 }
 

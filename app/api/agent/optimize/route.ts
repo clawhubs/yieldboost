@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { buildNarrative, buildOptimizationSnapshot, portfolioSchema } from "@/lib/optimizations";
 import { runTEEInference, isComputeConfigured } from "@/lib/server/og-compute";
+import { resolveWalletNetworkKey, WALLET_NETWORK_COOKIE_KEY } from "@/lib/wallet";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -42,6 +43,9 @@ export async function POST(req: NextRequest) {
 
   const portfolio = portfolioSchema.parse(body.portfolio);
   const prompt = body.prompt?.trim();
+  const networkKey = resolveWalletNetworkKey(
+    req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value,
+  );
 
   const result = buildOptimizationSnapshot(portfolio, prompt);
 
@@ -73,7 +77,7 @@ export async function POST(req: NextRequest) {
   if (isComputeConfigured()) {
     try {
       console.log("Attempting 0G Compute TEE inference...");
-      const computeResult = await runTEEInference(providerPrompt);
+      const computeResult = await runTEEInference(providerPrompt, networkKey);
       console.log("0G Compute result:", computeResult.provider, computeResult.text ? "has text" : "no text");
       computeStatus = computeResult.provider;
       computeError = computeResult.error ?? null;

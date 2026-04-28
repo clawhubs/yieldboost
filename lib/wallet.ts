@@ -135,18 +135,23 @@ function getNetworkConfigs() {
         process.env.NEXT_PUBLIC_0G_TESTNET_CHAIN_NAME ?? "0G Galileo Testnet",
       chainId: testnetChainId,
       rpcUrl:
-        process.env.ZG_RPC_URL ??
+        process.env.ZG_TESTNET_RPC_URL ??
         process.env.NEXT_PUBLIC_ZG_RPC ??
+        process.env.ZG_RPC_URL ??
         DEFAULT_TESTNET_RPC_URL,
       storageUrl: normalizeStorageUrl(
         "testnet",
-        process.env.ZG_STORAGE_URL ?? process.env.NEXT_PUBLIC_ZG_STORAGE,
+        process.env.ZG_TESTNET_STORAGE_URL ??
+          process.env.NEXT_PUBLIC_ZG_STORAGE ??
+          process.env.ZG_STORAGE_URL,
       ),
       explorerBase:
         process.env.NEXT_PUBLIC_0G_EXPLORER_BASE_URL ??
         "https://chainscan-galileo.0g.ai",
-      privateKey: process.env.ZG_PRIVATE_KEY,
-      proofRegistryAddress: process.env.ZG_PROOF_REGISTRY_ADDRESS,
+      privateKey: process.env.ZG_TESTNET_PRIVATE_KEY ?? process.env.ZG_PRIVATE_KEY,
+      proofRegistryAddress:
+        process.env.ZG_TESTNET_PROOF_REGISTRY_ADDRESS ??
+        process.env.ZG_PROOF_REGISTRY_ADDRESS,
     }),
     mainnet: buildNetworkConfig("mainnet", {
       label: "0G Mainnet",
@@ -192,6 +197,21 @@ export function getServer0GNetworkConfig(
 
 export function getServerDefaultNetworkKey(): WalletNetworkKey {
   return resolveWalletNetworkKey(process.env.ZG_NETWORK_KEY);
+}
+
+export function getYieldStrategyInftAddress(
+  value: string | null | undefined,
+) {
+  const networkKey = resolveWalletNetworkKey(value);
+
+  if (networkKey === "mainnet") {
+    return (
+      process.env.YIELD_STRATEGY_INFT_MAINNET_ADDRESS ??
+      process.env.YIELD_STRATEGY_INFT_ADDRESS
+    );
+  }
+
+  return process.env.YIELD_STRATEGY_INFT_ADDRESS;
 }
 
 export function isWalletAddress(value: string | null | undefined) {

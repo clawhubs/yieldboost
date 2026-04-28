@@ -358,6 +358,20 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
                 optimizationData.totalPortfolio ?? fallbackResult.totalPortfolio,
               reasoning: fullText || optimizationData.reasoning || fallbackResult.reasoning,
             },
+            portfolioSnapshot: portfolio
+              ? {
+                  tokens: portfolio.tokens.map((token) => ({
+                    symbol: token.symbol,
+                    amount: token.amount,
+                    valueUSD: token.valueUSD,
+                  })),
+                  totalUSD: portfolio.totalUSD,
+                  currentAPY: portfolio.currentAPY,
+                  displayTotal: portfolio.displayTotal,
+                  displayUnit: portfolio.displayUnit,
+                  displayLabel: portfolio.displayLabel,
+                }
+              : undefined,
             // TEE / 0G Compute metadata
             teeProvider: teeAttestation?.provider,
             teeModel: teeAttestation?.model,

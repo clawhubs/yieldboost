@@ -24,6 +24,7 @@ import {
 } from "@/lib/server/feature-page-mappers";
 import { getSettingsState, getStoredProofs } from "@/lib/server/runtime-store";
 import {
+  JUDGE_MODE_COOKIE_KEY,
   resolveWalletAddress,
   resolveWalletNetworkKey,
   sameWalletAddress,
@@ -137,8 +138,11 @@ export async function getWatchlistPageConfig() {
     const networkKey = resolveWalletNetworkKey(
       cookieStore.get(WALLET_NETWORK_COOKIE_KEY)?.value,
     );
+    const judgeMode = cookieStore.get(JUDGE_MODE_COOKIE_KEY)?.value === "true";
     const [portfolio, settings, proofs] = await Promise.all([
-      getLivePortfolioSnapshot(walletAddress, networkKey),
+      getLivePortfolioSnapshot(walletAddress, networkKey, {
+        preferProofSnapshot: judgeMode,
+      }),
       getSettingsState(),
       getStoredProofs(),
     ]);
