@@ -495,10 +495,24 @@ export default function Sidebar() {
   }
 
   function renderSidebarContent(mode: "desktop" | "mobile") {
+    const isMobileMode = mode === "mobile";
+    const shellCardClass = isMobileMode
+      ? "rounded-[18px] border border-[rgba(255,255,255,0.08)] bg-[rgba(7,14,22,0.96)] px-4 py-4 shadow-[0_20px_48px_rgba(0,0,0,0.45)]"
+      : "glass-inset rounded-[18px] px-4 py-4";
+    const panelCardClass = isMobileMode
+      ? "rounded-[18px] border border-[rgba(255,255,255,0.08)] bg-[rgba(8,16,24,0.96)] p-4 shadow-[0_12px_28px_rgba(0,0,0,0.28)]"
+      : "glass-inset rounded-[18px] p-4";
+    const insetButtonClass = isMobileMode
+      ? "rounded-[10px] border border-[rgba(255,255,255,0.08)] bg-[rgba(12,21,31,0.98)]"
+      : "glass-inset rounded-[10px]";
+    const softInsetClass = isMobileMode
+      ? "rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(12,21,31,0.96)]"
+      : "rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)]";
+
     return (
       <>
         <div className="min-h-0">
-          <div className="glass-inset rounded-[18px] px-4 py-4">
+          <div className={shellCardClass}>
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <BrandLogo />
@@ -509,7 +523,7 @@ export default function Sidebar() {
                   type="button"
                   onClick={() => setMobileNavOpen(false)}
                   aria-label="Close navigation menu"
-                  className="glass-inset flex h-9 w-9 flex-none items-center justify-center rounded-[10px] text-[#d8e0e8]"
+                  className={`${insetButtonClass} flex h-9 w-9 flex-none items-center justify-center text-[#d8e0e8]`}
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -521,7 +535,7 @@ export default function Sidebar() {
         </div>
 
         <div className="mt-4 space-y-3 border-t border-[rgba(255,255,255,0.06)] pt-4">
-          <div className="glass-inset rounded-[18px] p-4">
+          <div className={panelCardClass}>
             <div className="flex items-center gap-2 text-[13px] font-medium text-white">
               <span
                 className={`inline-flex h-3 w-3 rounded-full shadow-[0_0_14px_rgba(53,213,110,0.55)] ${
@@ -530,7 +544,7 @@ export default function Sidebar() {
               />
               Account
             </div>
-            <div className={`mt-1 pl-5 text-[12px] ${connected ? "text-[#35d56e]" : "text-[#f3a441]"}`}>
+              <div className={`mt-1 pl-5 text-[12px] ${connected ? "text-[#35d56e]" : "text-[#f3a441]"}`}>
               {connected ? "Connected" : isCustomWatchMode ? "Watch mode" : "Not connected"}
             </div>
 
@@ -545,7 +559,7 @@ export default function Sidebar() {
                     if (event.key === "Escape") setEditing(false);
                   }}
                   placeholder="0x..."
-                  className="glass-inset flex-1 rounded-[10px] border-[rgba(37,214,198,0.4)] px-3 py-2 text-[12px] text-[#d8e0e8] outline-none"
+                  className={`${insetButtonClass} flex-1 border-[rgba(37,214,198,0.4)] px-3 py-2 text-[12px] text-[#d8e0e8] outline-none`}
                 />
                 <button
                   type="button"
@@ -564,7 +578,7 @@ export default function Sidebar() {
                     setWalletCopied(true);
                     window.setTimeout(() => setWalletCopied(false), 1400);
                   }}
-                  className="glass-inset flex flex-1 items-center justify-between rounded-[12px] px-3 py-3 text-[13px] text-[#d8e0e8] transition hover:border-[rgba(0,201,177,0.35)]"
+                  className={`${softInsetClass} flex flex-1 items-center justify-between px-3 py-3 text-[13px] text-[#d8e0e8] transition hover:border-[rgba(0,201,177,0.35)]`}
                 >
                   <div className="flex items-center gap-3">
                     <Wallet2 className="h-4 w-4 text-[#d8e0e8]" />
@@ -577,7 +591,7 @@ export default function Sidebar() {
                   type="button"
                   onClick={startEdit}
                   title="Use custom watch wallet"
-                  className="glass-inset flex h-9 w-9 flex-none items-center justify-center rounded-[10px] text-[#9ca9b6] transition hover:border-[rgba(0,201,177,0.35)] hover:text-[#22ddd0]"
+                  className={`${insetButtonClass} flex h-9 w-9 flex-none items-center justify-center text-[#9ca9b6] transition hover:border-[rgba(0,201,177,0.35)] hover:text-[#22ddd0]`}
                 >
                   <Pencil className="h-3.5 w-3.5" />
                 </button>
@@ -585,7 +599,7 @@ export default function Sidebar() {
             ) : null}
 
             {connected || isCustomWatchMode ? (
-              <div className="mt-3 rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-3">
+              <div className={`mt-3 p-3 ${softInsetClass}`}>
                 <div className="text-[12px] font-medium text-white">
                   {shortAddr(activeWalletAddress)}
                 </div>
@@ -609,12 +623,12 @@ export default function Sidebar() {
             ) : null}
 
             {!connected && !isCustomWatchMode ? (
-              <div className="mt-4 rounded-[12px] border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.02)] p-3">
+              <div className={`mt-4 p-3 ${softInsetClass}`}>
                 <div className="text-[12px] font-medium text-white">
                   Start here for hackathon review
                 </div>
                 <div className="mt-1 text-[11px] leading-5 text-[#9ca9b6]">
-                  Open Judge Mode first for the shortest product walkthrough, then jump into wallet or demo flow only when needed.
+                  Open Judge Mode first, then connect a wallet or load the demo wallet only if the judge needs the full flow.
                 </div>
                 <div className="mt-3 grid gap-2">
                   <Link
@@ -630,7 +644,7 @@ export default function Sidebar() {
                       setMobileNavOpen(false);
                       setWalletModalOpen(true);
                     }}
-                    className="glass-inset rounded-[10px] px-3 py-2 text-[11px] font-semibold text-white"
+                    className={`${insetButtonClass} px-3 py-2 text-[11px] font-semibold text-white`}
                   >
                     Connect wallet
                   </button>
@@ -640,7 +654,7 @@ export default function Sidebar() {
                       setMobileNavOpen(false);
                       applyWatchWallet(DEFAULT_WALLET_ADDRESS);
                     }}
-                    className="glass-inset rounded-[10px] px-3 py-2 text-[11px] font-semibold text-white"
+                    className={`${insetButtonClass} px-3 py-2 text-[11px] font-semibold text-white`}
                   >
                     Use demo watch wallet
                   </button>
@@ -672,17 +686,19 @@ export default function Sidebar() {
             ) : null}
           </div>
 
-          <div className="flex items-center gap-2">
-            {socialIcons.map((Icon, index) => (
-              <button
-                key={index}
-                type="button"
-                className="glass-inset flex h-9 w-9 items-center justify-center rounded-[10px] text-[#d8e0e8] transition hover:border-[rgba(0,201,177,0.25)]"
-              >
-                <Icon className="h-4 w-4" />
-              </button>
-            ))}
-          </div>
+          {isMobileMode ? null : (
+            <div className="flex items-center gap-2">
+              {socialIcons.map((Icon, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  className="glass-inset flex h-9 w-9 items-center justify-center rounded-[10px] text-[#d8e0e8] transition hover:border-[rgba(0,201,177,0.25)]"
+                >
+                  <Icon className="h-4 w-4" />
+                </button>
+              ))}
+            </div>
+          )}
 
           <div className="px-2">
             <p className="text-[12px] text-[#9daab6]">Powered by</p>
@@ -737,7 +753,7 @@ export default function Sidebar() {
           type="button"
           aria-label="Close navigation menu"
           onClick={() => setMobileNavOpen(false)}
-          className="fixed inset-0 z-40 bg-[rgba(2,6,12,0.72)] backdrop-blur-sm md:hidden"
+          className="fixed inset-0 z-40 bg-[rgba(2,6,12,0.88)] backdrop-blur-md md:hidden"
         />
       ) : null}
 
@@ -745,9 +761,9 @@ export default function Sidebar() {
         <aside
           id="mobile-sidebar-drawer"
           data-testid="mobile-sidebar-drawer"
-          className="fixed inset-y-0 left-0 z-50 w-[min(88vw,320px)] px-[10px] py-[10px] md:hidden"
+          className="fixed inset-y-0 left-0 z-50 w-[min(92vw,336px)] px-[10px] py-[10px] md:hidden"
         >
-          <div className="yb-card flex h-full flex-col overflow-y-auto px-[10px] py-[10px]">
+          <div className="flex h-full flex-col overflow-y-auto rounded-[24px] border border-[rgba(255,255,255,0.08)] bg-[rgba(4,10,16,0.98)] px-[10px] py-[10px] shadow-[0_28px_72px_rgba(0,0,0,0.58)] backdrop-blur-[28px]">
             {renderSidebarContent("mobile")}
           </div>
         </aside>
