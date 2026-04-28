@@ -449,7 +449,7 @@ export default function Sidebar() {
 
   function renderNavigation(mode: "desktop" | "mobile") {
     return (
-      <nav className="mt-4 flex flex-col gap-2">
+      <nav className="flex flex-col gap-2">
         {navigation.map(({ href, icon: Icon, label, badge }) => {
           const active = pathname === href;
           const isJudgeEntry = href === "/judge";
@@ -517,6 +517,12 @@ export default function Sidebar() {
     const softInsetClass = isMobileMode
       ? "rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(12,21,31,0.96)]"
       : "rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)]";
+    const navigationShellClass = isMobileMode
+      ? "mt-4 rounded-[18px] border border-[rgba(255,255,255,0.08)] bg-[rgba(8,16,24,0.98)] p-3 shadow-[0_12px_28px_rgba(0,0,0,0.24)]"
+      : "mt-4";
+    const lowerSectionClass = isMobileMode
+      ? "mt-4 space-y-3"
+      : "mt-4 space-y-3 border-t border-[rgba(255,255,255,0.06)] pt-4";
 
     return (
       <>
@@ -540,10 +546,17 @@ export default function Sidebar() {
             </div>
           </div>
 
-          {renderNavigation(mode)}
+          <div className={navigationShellClass}>
+            {isMobileMode ? (
+              <div className="mb-3 px-1 text-[10px] uppercase tracking-[0.16em] text-[#22ddd0]">
+                Menu
+              </div>
+            ) : null}
+            {renderNavigation(mode)}
+          </div>
         </div>
 
-        <div className="mt-4 space-y-3 border-t border-[rgba(255,255,255,0.06)] pt-4">
+        <div className={lowerSectionClass}>
           <div className={panelCardClass}>
             <div className="flex items-center gap-2 text-[13px] font-medium text-white">
               <span
@@ -637,19 +650,12 @@ export default function Sidebar() {
                   Start here for hackathon review
                 </div>
                 <div className="mt-1 text-[11px] leading-5 text-[#9ca9b6]">
-                  Open Judge Mode first, then connect a wallet or load the demo wallet only if the judge needs the full flow.
+                  Tap `Judge` in the menu to start demo watch mode instantly. Connect a wallet only if the judge needs the full live flow.
                 </div>
-                <div className="mt-3 grid gap-2">
-                  <Link
-                    href="/judge"
-                    onClick={() => {
-                      activateJudgeReviewMode();
-                      setMobileNavOpen(false);
-                    }}
-                    className="glass-accent rounded-[10px] px-3 py-2 text-center text-[11px] font-semibold text-[#22ddd0]"
-                  >
-                    Open judge mode
-                  </Link>
+                <div className="mt-3 rounded-[10px] border border-[rgba(34,221,208,0.2)] bg-[rgba(34,221,208,0.08)] px-3 py-2 text-[11px] font-medium text-[#9ff7f0]">
+                  Judge nav auto-starts review mode
+                </div>
+                <div className="mt-2 grid gap-2">
                   <button
                     type="button"
                     onClick={() => {
