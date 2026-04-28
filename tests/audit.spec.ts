@@ -76,7 +76,7 @@ test("judge page is reachable without wallet connection", async ({ page }) => {
   await expect(page.getByText("Latest proof and wallet snapshot")).toBeVisible();
   await expect(page.getByText("Vercel env checklist")).toBeVisible();
   await expect(page.getByText("Judge wallet:")).toBeVisible();
-  await expect(page.getByText("Open latest tx")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Open latest tx" }).first()).toBeVisible();
 });
 
 test("direct judge entry bootstraps the review wallet across dashboard and history", async ({
@@ -86,7 +86,7 @@ test("direct judge entry bootstraps the review wallet across dashboard and histo
   await page.goto(`${BASE}/judge`, { waitUntil: "networkidle" });
 
   await expect(page.getByTestId("judge-page")).toBeVisible();
-  await expect(page.getByText("Judge wallet:")).toContainText(/0x8a3c/i);
+  await expect(page.getByText(/Judge wallet:\s*0x8a3c/i)).toBeVisible();
 
   await page.getByRole("link", { name: "Open dashboard" }).click();
   await expect(page).toHaveURL(BASE);
