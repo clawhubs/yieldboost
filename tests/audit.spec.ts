@@ -53,7 +53,7 @@ test("dashboard stays usable without a connected wallet", async ({ page }) => {
   await expect(page.getByTestId("sidebar")).toBeVisible();
   await expect(page.getByTestId("hero-card")).toBeVisible();
   await expect(page.getByTestId("nav-judge")).toBeVisible();
-  await expect(page.getByText("Ready for live data or judge review")).toBeVisible();
+  await expect(page.getByText("Start here for hackathon review")).toBeVisible();
   await expect(page.getByTestId("boost-yield-cta")).toBeDisabled();
 });
 

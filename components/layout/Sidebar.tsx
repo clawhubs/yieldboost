@@ -61,6 +61,7 @@ interface NavigationItem {
 }
 
 const navigation: NavigationItem[] = [
+  { href: "/judge", label: "Judge", icon: ShieldCheck, badge: "START" },
   { href: "/", label: "Dashboard", icon: House },
   { href: "/agent", label: "Boost", icon: Zap, badge: "HOT" },
   { href: "/portfolio", label: "Portfolio", icon: BriefcaseBusiness },
@@ -70,7 +71,6 @@ const navigation: NavigationItem[] = [
   { href: "/analytics", label: "Analytics", icon: ChartNoAxesCombined },
   { href: "/watchlist", label: "Watchlist", icon: Star, badge: "NEW" },
   { href: "/agents", label: "Agents", icon: Bot },
-  { href: "/judge", label: "Judge", icon: ShieldCheck, badge: "LIVE" },
   { href: "/docs", label: "Docs", icon: BookOpenText },
   { href: "/settings", label: "Settings", icon: Settings2 },
 ];
@@ -427,6 +427,7 @@ export default function Sidebar() {
         <nav className="mt-4 flex gap-2 overflow-x-auto pb-2 md:flex-col md:overflow-visible md:pb-0">
           {navigation.map(({ href, icon: Icon, label, badge }) => {
             const active = pathname === href;
+            const isJudgeEntry = href === "/judge";
 
             return (
               <Link
@@ -436,13 +437,25 @@ export default function Sidebar() {
                 className={`flex min-w-fit items-center gap-3 rounded-[14px] border px-4 py-[11px] text-[13px] font-medium transition md:min-w-0 ${
                   active
                     ? "border-[rgba(0,201,177,0.28)] bg-[rgba(0,201,177,0.10)] text-white shadow-[inset_0_0_0_1px_rgba(0,201,177,0.14),0_0_20px_rgba(0,201,177,0.06)]"
+                    : isJudgeEntry
+                      ? "border-[rgba(0,201,177,0.18)] bg-[linear-gradient(180deg,rgba(0,201,177,0.12)_0%,rgba(255,255,255,0.03)_100%)] text-white hover:border-[rgba(0,201,177,0.32)] hover:bg-[rgba(0,201,177,0.10)]"
                     : "border-transparent text-[#f4f7fb] hover:border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.04)]"
                 }`}
               >
-                <Icon className={`h-4 w-4 ${active ? "text-[#1fd8c8]" : "text-[#f4f7fb]"}`} />
+                <Icon
+                  className={`h-4 w-4 ${
+                    active || isJudgeEntry ? "text-[#1fd8c8]" : "text-[#f4f7fb]"
+                  }`}
+                />
                 <span>{label}</span>
                 {badge ? (
-                  <span className="ml-auto rounded-full border border-[#12453f] px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-[#25d6c6]">
+                  <span
+                    className={`ml-auto rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] ${
+                      isJudgeEntry
+                        ? "border-[rgba(34,221,208,0.24)] bg-[rgba(34,221,208,0.10)] text-[#7ef7ef]"
+                        : "border-[#12453f] text-[#25d6c6]"
+                    }`}
+                  >
                     {badge}
                   </span>
                 ) : null}
@@ -543,16 +556,22 @@ export default function Sidebar() {
           {!connected && !isCustomWatchMode ? (
             <div className="mt-4 rounded-[12px] border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.02)] p-3">
               <div className="text-[12px] font-medium text-white">
-                Ready for live data or judge review
+                Start here for hackathon review
               </div>
               <div className="mt-1 text-[11px] leading-5 text-[#9ca9b6]">
-                Connect a wallet for live execution, or keep the demo moving with a public watch wallet.
+                Open Judge Mode first for the shortest product walkthrough, then jump into wallet or demo flow only when needed.
               </div>
               <div className="mt-3 grid gap-2">
+                <Link
+                  href="/judge"
+                  className="glass-accent rounded-[10px] px-3 py-2 text-center text-[11px] font-semibold text-[#22ddd0]"
+                >
+                  Open judge mode
+                </Link>
                 <button
                   type="button"
                   onClick={() => setWalletModalOpen(true)}
-                  className="glass-accent rounded-[10px] px-3 py-2 text-[11px] font-semibold text-[#22ddd0]"
+                  className="glass-inset rounded-[10px] px-3 py-2 text-[11px] font-semibold text-white"
                 >
                   Connect wallet
                 </button>
@@ -563,12 +582,6 @@ export default function Sidebar() {
                 >
                   Use demo watch wallet
                 </button>
-                <Link
-                  href="/judge"
-                  className="glass-inset rounded-[10px] px-3 py-2 text-center text-[11px] font-semibold text-[#d8e0e8] transition hover:border-[rgba(0,201,177,0.25)]"
-                >
-                  Open judge mode
-                </Link>
               </div>
             </div>
           ) : null}
