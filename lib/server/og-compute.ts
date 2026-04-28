@@ -5,6 +5,7 @@
 
 import { ethers } from "ethers";
 import { createZGComputeNetworkBroker } from "@0glabs/0g-serving-broker";
+import { getServer0GNetworkConfig, getServerDefaultNetworkKey } from "@/lib/wallet";
 
 export interface TEEAttestation {
   chatId: string;
@@ -87,6 +88,8 @@ async function getBroker(): Promise<ZGBroker | null> {
 
   const providerAddress = process.env.ZG_COMPUTE_PROVIDER_ADDRESS;
   const privateKey = process.env.ZG_LEDGER_PRIVATE_KEY;
+  const networkKey = getServerDefaultNetworkKey();
+  const networkConfig = getServer0GNetworkConfig(networkKey);
 
   if (!providerAddress || !privateKey) {
     console.warn("0G Compute: Missing ZG_COMPUTE_PROVIDER_ADDRESS or ZG_LEDGER_PRIVATE_KEY");
@@ -94,8 +97,13 @@ async function getBroker(): Promise<ZGBroker | null> {
   }
 
   try {
-    // Initialize ethers provider and wallet for 0G testnet
-    const provider = new ethers.JsonRpcProvider("https://evmrpc-testnet.0g.ai");
+    if (!networkConfig.rpcUrl) {
+      console.warn(`0G Compute: Missing RPC URL for ${networkConfig.label}`);
+      return null;
+    }
+
+    // Initialize ethers provider and wallet for the active 0G network.
+    const provider = new ethers.JsonRpcProvider(networkConfig.rpcUrl);
     const wallet = new ethers.Wallet(privateKey, provider);
 
     // Create broker instance
@@ -138,6 +146,8 @@ export async function runTEEInference(
 
   const providerAddress = process.env.ZG_COMPUTE_PROVIDER_ADDRESS;
   const privateKey = process.env.ZG_LEDGER_PRIVATE_KEY;
+  const networkKey = getServerDefaultNetworkKey();
+  const networkConfig = getServer0GNetworkConfig(networkKey);
   if (!providerAddress) {
     console.warn("0G Compute: Missing ZG_COMPUTE_PROVIDER_ADDRESS");
     return {
@@ -155,7 +165,15 @@ export async function runTEEInference(
   }
 
   try {
-    const provider = new ethers.JsonRpcProvider("https://evmrpc-testnet.0g.ai");
+    if (!networkConfig.rpcUrl) {
+      return {
+        text: "",
+        provider: "fallback",
+        error: `Missing RPC URL for ${networkConfig.label}`,
+      };
+    }
+
+    const provider = new ethers.JsonRpcProvider(networkConfig.rpcUrl);
     const wallet = new ethers.Wallet(privateKey, provider);
 
     await ensureInferenceSubAccount(broker, providerAddress, wallet);

@@ -41,6 +41,7 @@ import { useYieldOptimizer } from "@/hooks/useYieldOptimizer";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import {
   getAvailableWalletNetworks,
+  getWalletNetworkConfig,
   WALLET_CONNECT_REQUEST_EVENT,
   type WalletNetworkKey,
 } from "@/lib/wallet";
@@ -89,7 +90,6 @@ const footerItems = [
   { icon: Sparkles, label: "AI-Powered" },
 ] as const;
 
-const EXPLORER_BASE = "https://chainscan-galileo.0g.ai";
 const walletNetworks = getAvailableWalletNetworks();
 
 function formatPortfolioMetricValue(value: number, unit?: string) {
@@ -184,6 +184,8 @@ export default function DashboardView() {
   const canOptimize = walletConnected && hasDetectedAssets && !loading && !isOptimizing;
   const walletStatusLabel = latestResult
     ? `Live · ${new Date(latestResult.timestamp).toLocaleTimeString()}`
+    : portfolio?.source === "wallet_proof_fallback"
+      ? `Proof-backed demo snapshot · ${portfolioWalletLabel}`
     : hasDetectedAssets
       ? `Wallet live · ${portfolioWalletLabel}`
       : walletConnected
@@ -212,6 +214,8 @@ export default function DashboardView() {
   );
   const portfolioMetricLabel =
     portfolio?.displayUnit === "0G" ? "TOTAL 0G BALANCE" : "TOTAL PORTFOLIO VALUE";
+  const activeNetwork = walletNetworks.find((item) => item.key === networkKey) ?? walletNetworks[0];
+  const activeExplorerBase = getWalletNetworkConfig(networkKey).explorerBase;
 
   const liveDecisions = useMemo(() => {
     if (!latestResult) return decisionItems as readonly string[];
@@ -221,11 +225,11 @@ export default function DashboardView() {
       `APY lift ${latestResult.current_apy}% → ${latestResult.optimized_apy}% (+${latestResult.yield_increase_pct}%)`,
       `Projected annual gain +$${gain} on ${portfolioMetricValue} portfolio`,
       latestResult.proofRegistryProofId
-        ? `ProofRegistry entry #${latestResult.proofRegistryProofId} recorded on 0G Galileo`
+        ? `ProofRegistry entry #${latestResult.proofRegistryProofId} recorded on ${activeNetwork.label}`
         : `Proof anchored to 0G Storage (CID ${latestResult.storageProof?.slice(0, 10) ?? "pending"}…)`,
     ];
     return bullets;
-  }, [latestResult, portfolioMetricValue]);
+  }, [activeNetwork.label, latestResult, portfolioMetricValue]);
 
   const liveOpportunities = useMemo(() => {
     if (!latestResult || latestResult.top_protocols.length === 0) return opportunities;
@@ -237,8 +241,6 @@ export default function DashboardView() {
       icon: iconMap[idx] ?? Disc3,
     }));
   }, [latestResult]);
-
-  const activeNetwork = walletNetworks.find((item) => item.key === networkKey) ?? walletNetworks[0];
 
   const statusTimeLabel = latestResult
     ? new Date(latestResult.timestamp).toLocaleTimeString("en-US", {
@@ -257,7 +259,7 @@ export default function DashboardView() {
     : null;
   const notificationCount = optimizationNotification ? 1 : 0;
 
-  const syncPct = latestResult ? 100 : portfolio?.tokens?.length ? 98.4 : 0;
+  const syncPct = latestResult?.storageProof ? 100 : latestResult ? 62 : portfolio?.tokens?.length ? 98.4 : 0;
   const chainStats = useMemo(
     () => [
       { label: "Wallets Optimized", value: globalStats?.formatted.users ?? "0" },
@@ -539,13 +541,17 @@ export default function DashboardView() {
                   <div>
                     <div className="text-[14px] font-semibold text-[#21d8c8]">0G STORAGE STATUS</div>
                     <div className="text-[13px] text-white">
-                      {latestResult
+                      {latestResult?.storageProof
                         ? "Latest optimization proof is synchronized to 0G Storage"
+                        : latestResult?.proofStatusDetail
+                          ? "Latest optimization finished, but proof sync is currently blocked"
                         : "Wallet data is ready for the next 0G proof write"}
                     </div>
                     <div className="mt-1 text-[11px] text-[#a8b4bf]">
-                      {latestResult
+                      {latestResult?.storageProof
                         ? `Last synced: ${statusTimeLabel} to 0G Storage`
+                        : latestResult?.proofStatusDetail
+                          ? latestResult.proofStatusDetail
                         : portfolio?.tokens?.length
                           ? `Wallet snapshot live for ${portfolioWalletLabel}`
                           : "Waiting for the first live wallet snapshot"}
@@ -735,7 +741,7 @@ export default function DashboardView() {
                           <span className="truncate">{latestResult.txHash.slice(0, 10)}...{latestResult.txHash.slice(-6)}</span>
                           <button type="button" onClick={() => copyToClipboard(latestResult.txHash!, "dashTx")} className="text-[#9faab6] hover:text-white"><Copy className="h-3 w-3" />{copiedField === "dashTx" ? <span className="ml-1 text-[9px]">Copied</span> : null}</button>
                         </div>
-                        <div className="mt-1 text-[11px] text-[#9faab6]">0G Galileo</div>
+                        <div className="mt-1 text-[11px] text-[#9faab6]">{activeNetwork.label}</div>
                         {latestResult.walletAddress ? (
                           <div className="mt-1 text-[11px] text-[#6fc7b9]">
                             Signer {latestResult.walletAddress.slice(0, 6)}...{latestResult.walletAddress.slice(-4)}
@@ -771,7 +777,9 @@ export default function DashboardView() {
                   </div>
                 ) : (
                   <div className="mt-4 rounded-[12px] border border-dashed border-[#1b2b33] bg-[#091117] px-4 py-4 text-[12px] text-[#9faab6]">
-                    No live proof has been recorded in this session yet. Run 1-click optimization to write a real 0G tx hash and ProofRegistry entry.
+                    {latestResult?.proofStatusDetail
+                      ? `Latest optimization completed, but proof sync is blocked: ${latestResult.proofStatusDetail}`
+                      : "No live proof has been recorded in this session yet. Run 1-click optimization to write a real 0G tx hash and ProofRegistry entry."}
                   </div>
                 )}
                 {latestResult?.proofUrl ? (
@@ -856,7 +864,7 @@ export default function DashboardView() {
 	                    <div className="text-[12px] font-medium text-white">0G CHAIN STATS</div>
 	                    <div className="text-[10px] text-[#6b7a87]">source: live app runtime</div>
 	                  </div>
-                  <a href={EXPLORER_BASE} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[11px] text-[#25d6c6]">View on 0G Explorer <ExternalLink className="h-3 w-3" /></a>
+                  <a href={activeExplorerBase} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[11px] text-[#25d6c6]">View on 0G Explorer <ExternalLink className="h-3 w-3" /></a>
                 </div>
                 <div className="mt-4 grid grid-cols-3 gap-3">
                   {chainStats.map((item) => (
@@ -1001,7 +1009,12 @@ export default function DashboardView() {
                 </button>
                 {walletConnected && !hasDetectedAssets ? (
                   <div className="mt-3 text-[12px] leading-5 text-[#d3ac62]">
-                    Wallet testnet sudah connect, tapi app saat ini baru mendeteksi balance on-chain yang didukung dari snapshot RPC. Jika saldo native 0G masih 0 atau token belum terindeks, hasil real optimize belum punya posisi untuk dihitung.
+                    Wallet is connected, but the current RPC snapshot only surfaces supported on-chain balances. If the native balance is still zero or assets are not indexed yet, the optimizer will wait for a real position to evaluate.
+                  </div>
+                ) : null}
+                {!walletConnected ? (
+                  <div className="mt-3 text-[12px] leading-5 text-[#8eced3]">
+                    No wallet is connected yet. Use the sidebar to connect normally or switch into watch mode with the demo wallet for judge review.
                   </div>
                 ) : null}
                 <div className="mt-4 flex items-center justify-end gap-2 text-[11px] text-[#a4b0bc]">

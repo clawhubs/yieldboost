@@ -6,6 +6,11 @@ import {
   encryptStrategy,
   generateAttestationHash,
 } from "@/lib/server/encryption";
+import {
+  getServer0GNetworkConfig,
+  resolveWalletNetworkKey,
+  WALLET_NETWORK_COOKIE_KEY,
+} from "@/lib/wallet";
 
 export const runtime = "nodejs";
 
@@ -28,6 +33,11 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { portfolio, decision, storageCid, txHash } = mintRequestSchema.parse(body);
+    const networkKey = resolveWalletNetworkKey(
+      req.nextUrl.searchParams.get("network") ??
+        req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value,
+    );
+    const networkConfig = getServer0GNetworkConfig(networkKey);
 
     // Get contract addresses from env
     const inftAddress = process.env.YIELD_STRATEGY_INFT_ADDRESS;
@@ -43,8 +53,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Connect to 0G testnet
-    const provider = new ethers.JsonRpcProvider("https://evmrpc-testnet.0g.ai");
+    if (!networkConfig.rpcUrl) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `${networkConfig.label} RPC is not configured`,
+        },
+        { status: 503 },
+      );
+    }
+
+    const provider = new ethers.JsonRpcProvider(networkConfig.rpcUrl);
     const wallet = new ethers.Wallet(privateKey, provider);
 
     // Generate content hash
@@ -100,7 +119,7 @@ export async function POST(req: NextRequest) {
       encryptedUri,
       contentHash,
       apy: decision.optimized_apy,
-      explorerUrl: `https://chainscan-galileo.0g.ai/tx/${receipt.hash}`,
+      explorerUrl: `${networkConfig.explorerBase.replace(/\/$/, "")}/tx/${receipt.hash}`,
     });
   } catch (error) {
     console.error("Mint error:", error);

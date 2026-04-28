@@ -44,6 +44,8 @@ export interface Server0GNetworkConfig extends WalletNetworkConfig {
 
 const DEFAULT_TESTNET_STORAGE_URL =
   "https://indexer-storage-testnet-turbo.0g.ai";
+const DEFAULT_TESTNET_RPC_URL = "https://evmrpc-testnet.0g.ai";
+const DEFAULT_MAINNET_RPC_URL = "https://evmrpc.0g.ai";
 
 function normalizeStorageUrl(
   key: WalletNetworkKey,
@@ -130,7 +132,10 @@ function getNetworkConfigs() {
       chainName:
         process.env.NEXT_PUBLIC_0G_TESTNET_CHAIN_NAME ?? "0G Galileo Testnet",
       chainId: testnetChainId,
-      rpcUrl: "https://evmrpc-testnet.0g.ai",
+      rpcUrl:
+        process.env.ZG_RPC_URL ??
+        process.env.NEXT_PUBLIC_ZG_RPC ??
+        DEFAULT_TESTNET_RPC_URL,
       storageUrl: normalizeStorageUrl(
         "testnet",
         process.env.ZG_STORAGE_URL ?? process.env.NEXT_PUBLIC_ZG_STORAGE,
@@ -145,7 +150,10 @@ function getNetworkConfigs() {
       label: "0G Mainnet",
       chainName: process.env.NEXT_PUBLIC_0G_MAINNET_CHAIN_NAME ?? "0G Mainnet",
       chainId: mainnetChainId,
-      rpcUrl: "https://evmrpc.0g.ai",
+      rpcUrl:
+        process.env.ZG_MAINNET_RPC_URL ??
+        process.env.NEXT_PUBLIC_0G_MAINNET_RPC ??
+        DEFAULT_MAINNET_RPC_URL,
       storageUrl:
         process.env.ZG_MAINNET_STORAGE_URL ??
         process.env.NEXT_PUBLIC_0G_MAINNET_STORAGE,
@@ -178,6 +186,10 @@ export function getServer0GNetworkConfig(
   value: string | null | undefined,
 ): Server0GNetworkConfig {
   return getNetworkConfigs()[resolveWalletNetworkKey(value)];
+}
+
+export function getServerDefaultNetworkKey(): WalletNetworkKey {
+  return resolveWalletNetworkKey(process.env.ZG_NETWORK_KEY);
 }
 
 export function isWalletAddress(value: string | null | undefined) {

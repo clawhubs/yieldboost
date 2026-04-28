@@ -48,16 +48,21 @@ export async function getLivePortfolioSnapshot(
     }
   }
 
-  // Always use actual RPC balance, don't use stored proof
-  const exactNativeBalance = round(nativeBalance, 6);
+  const proofBackedBalance = round(latestProof?.decision.totalPortfolio ?? 0, 6);
+  const shouldUseProofFallback =
+    nativeBalance <= 0 &&
+    proofBackedBalance > 0 &&
+    latestProof?.walletAddress;
+  const effectiveBalance = shouldUseProofFallback ? proofBackedBalance : nativeBalance;
+  const exactNativeBalance = round(effectiveBalance, 6);
   const totalUSD = exactNativeBalance;
 
   return {
     walletAddress: walletAddress ?? undefined,
-    source,
+    source: shouldUseProofFallback ? "wallet_proof_fallback" : source,
     latestTxHash: latestProof?.txHash,
     tokens:
-      nativeBalance > 0
+      exactNativeBalance > 0
         ? [
             {
               symbol: "0G",
@@ -70,6 +75,8 @@ export async function getLivePortfolioSnapshot(
     currentAPY: latestProof?.decision.current_apy ?? 0,
     displayTotal: exactNativeBalance,
     displayUnit: "0G",
-    displayLabel: "Native 0G balance",
+    displayLabel: shouldUseProofFallback
+      ? "Latest proof-backed 0G balance"
+      : "Native 0G balance",
   };
 }

@@ -13,6 +13,7 @@ YieldBoost AI is a yield optimization platform that combines AI-driven recommend
 - **TEE Verification**: Hardware-enforced privacy and attestation for trusted inference when using 0G Compute
 - **Strategy as INFT**: Mint yield strategies as tradable Agent NFTs with encrypted metadata and authorization
 - **Multi-Network Support**: Testnet and mainnet support for 0G Network with wallet connection
+- **Judge Mode**: `/judge` provides a no-wallet review path with live runtime status, proof metadata, env readiness, and mainnet cutover notes
 - **Transparent Fallbacks**: Graceful degradation when providers are unavailable
 
 ## Architecture
@@ -60,50 +61,72 @@ YieldBoost AI is a yield optimization platform that combines AI-driven recommend
 
 ## Environment
 
-Create `.env.local` and add the values you have:
+Create `.env.local` for local development, then mirror the same categories into Vercel.
+
+### Required for judge + testnet demo
 
 ```env
-# 0G Compute Network (TEE)
-ZG_COMPUTE_PROVIDER_ADDRESS=0x69Eb5a0BD7d0f4bF39eD5CE9Bd3376c61863aE08
-ZG_LEDGER_PRIVATE_KEY=<your_private_key>
-
-# 0G Storage & RPC
-ZG_STORAGE_URL=https://indexer-storage-testnet-standard.0g.ai
-ZG_RPC_URL=https://evmrpc-testnet.0g.ai
-ZG_PRIVATE_KEY=<your_private_key>
-
-# ProofRegistry (optional)
-ZG_PROOF_REGISTRY_ADDRESS=<contract_address>
-
-# Strategy INFT (after deployment)
-YIELD_STRATEGY_INFT_ADDRESS=<contract_address>
-MOCK_ORACLE_ADDRESS=<contract_address>
-
-# Alternative Inference (fallbacks)
-ALIBABA_API_KEY=<dashscope_api_key>
-OPENAI_API_KEY=<openai_api_key>
-
-# E2B Sandbox (optional, for compute)
-E2B_API_KEY=<e2b_api_key>
-
-# Rate Limiting (optional)
-UPSTASH_REDIS_REST_URL=<upstash_url>
-UPSTASH_REDIS_REST_TOKEN=<upstash_token>
-
-# Public URLs
-NEXT_PUBLIC_0G_EXPLORER_BASE_URL=https://chainscan-galileo.0g.ai
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_DEMO_WALLET_ADDRESS=0x...
+
+NEXT_PUBLIC_0G_TESTNET_CHAIN_ID=16602
+NEXT_PUBLIC_0G_TESTNET_CHAIN_NAME=0G Galileo Testnet
+NEXT_PUBLIC_0G_EXPLORER_BASE_URL=https://chainscan-galileo.0g.ai
+NEXT_PUBLIC_ZG_RPC=https://evmrpc-testnet.0g.ai
+NEXT_PUBLIC_ZG_STORAGE=https://indexer-storage-testnet-turbo.0g.ai
+
+ZG_NETWORK_KEY=testnet
+ZG_RPC_URL=https://evmrpc-testnet.0g.ai
+ZG_STORAGE_URL=https://indexer-storage-testnet-turbo.0g.ai
+ZG_PRIVATE_KEY=<testnet_storage_signer>
+ZG_PROOF_REGISTRY_ADDRESS=<optional_testnet_registry>
 ```
 
-### Required for Full Functionality
+### Optional but recommended
 
-- `ZG_COMPUTE_PROVIDER_ADDRESS` + `ZG_LEDGER_PRIVATE_KEY`: TEE-verified inference
-- `ZG_STORAGE_URL` + `ZG_RPC_URL` + `ZG_PRIVATE_KEY`: Proof storage
-- `YIELD_STRATEGY_INFT_ADDRESS`: Agent NFT minting
+```env
+ZG_COMPUTE_PROVIDER_ADDRESS=0x...
+ZG_LEDGER_PRIVATE_KEY=<compute_or_contract_signer>
+YIELD_STRATEGY_INFT_ADDRESS=<agent_nft_contract>
+KV_REST_API_URL=<vercel_kv_url>
+KV_REST_API_TOKEN=<vercel_kv_token>
+UPSTASH_REDIS_REST_URL=<upstash_url>
+UPSTASH_REDIS_REST_TOKEN=<upstash_token>
+ALIBABA_API_KEY=<dashscope_api_key>
+OPENAI_API_KEY=<openai_api_key>
+E2B_API_KEY=<e2b_api_key>
+```
 
-### Fallback Behavior
+### Mainnet cutover envs
 
-If 0G Compute credentials are missing, the app automatically falls back to Alibaba → OpenAI → deterministic narrative generation, ensuring the UI remains functional.
+```env
+NEXT_PUBLIC_0G_MAINNET_CHAIN_ID=<mainnet_chain_id>
+NEXT_PUBLIC_0G_MAINNET_CHAIN_NAME=0G Mainnet
+NEXT_PUBLIC_0G_MAINNET_EXPLORER_BASE_URL=https://chainscan.0g.ai
+NEXT_PUBLIC_0G_MAINNET_RPC=https://evmrpc.0g.ai
+NEXT_PUBLIC_0G_MAINNET_STORAGE=<mainnet_storage_endpoint>
+
+ZG_NETWORK_KEY=mainnet
+ZG_MAINNET_RPC_URL=https://evmrpc.0g.ai
+ZG_MAINNET_STORAGE_URL=<mainnet_storage_endpoint>
+ZG_MAINNET_PRIVATE_KEY=<mainnet_storage_signer>
+ZG_MAINNET_PROOF_REGISTRY_ADDRESS=<mainnet_registry_contract>
+```
+
+### Fallback behavior
+
+- If 0G Compute is missing or underfunded, optimization narration falls back to the deterministic/local path and the UI keeps running.
+- If 0G Storage or the indexer fails, the optimization result is still shown, but the app surfaces the proof-sync blocker honestly instead of pretending a proof was written.
+- If `YIELD_STRATEGY_INFT_ADDRESS` is missing, `/agents` falls back to proof-backed runtime history.
+- If Vercel KV is missing, runtime proof history falls back to `.artifacts/runtime-store.json`.
+
+## Mainnet Checklist
+
+1. Set the public mainnet chain/env values so wallet switching and explorer labels are correct.
+2. Set `ZG_MAINNET_STORAGE_URL` and `ZG_MAINNET_PRIVATE_KEY` for mainnet proof writes.
+3. Deploy or confirm the mainnet ProofRegistry, then set `ZG_MAINNET_PROOF_REGISTRY_ADDRESS`.
+4. Point `ZG_NETWORK_KEY=mainnet` only after the previous steps are complete.
+5. Set the final `YIELD_STRATEGY_INFT_ADDRESS` in the mainnet deployment environment if agent contract mode is required.
 
 ## Local Run
 
@@ -119,7 +142,8 @@ Then open `http://localhost:3000`.
 ```bash
 npm run lint
 npm run build
-npm run test:ui  # Playwright tests
+npx playwright test tests/dashboard.spec.ts tests/audit.spec.ts tests/docs.spec.ts
+npx playwright test tests/live-smoke.spec.ts
 ```
 
 ## Documentation
@@ -130,6 +154,7 @@ Comprehensive documentation is available in the app at `/docs`:
 - **How 1-Click Works**: Optimization flow explanation
 - **0G Integration**: Detailed 0G Network usage
 - **Strategy as INFT**: Agent NFT and minting guide
+- **Judge Mode**: Review path for judges and wallet-free demos
 - **Architecture**: Technical implementation details
 
 ## Smart Contracts
@@ -149,4 +174,3 @@ For deployment instructions, see `/contracts/README.md`.
 ## License
 
 MIT
-

@@ -280,74 +280,109 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       setProgress("executing");
       await wait(280);
 
-      const storageResponse = await fetch("/api/0g/store", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          networkKey,
-          walletAddress: portfolio?.walletAddress,
-          decision: {
-            current_apy:
-              optimizationData.current_apy ?? fallbackResult.current_apy,
-            optimized_apy:
-              optimizationData.optimized_apy ?? fallbackResult.optimized_apy,
-            yield_increase:
-              optimizationData.yield_increase ?? fallbackResult.yield_increase,
-            yield_increase_pct:
-              optimizationData.yield_increase_pct ??
-              fallbackResult.yield_increase_pct,
-            recommended:
-              optimizationData.recommended ?? fallbackResult.recommended,
-            confidence:
-              optimizationData.confidence ?? fallbackResult.confidence,
-            executionSeconds:
-              optimizationData.executionSeconds ??
-              fallbackResult.executionSeconds,
-            estimatedAnnualGain:
-              optimizationData.estimatedAnnualGain ??
-              fallbackResult.estimatedAnnualGain,
-            totalPortfolio:
-              optimizationData.totalPortfolio ?? fallbackResult.totalPortfolio,
-            reasoning: fullText || optimizationData.reasoning || fallbackResult.reasoning,
-          },
-          // TEE / 0G Compute metadata
-          teeProvider: teeAttestation?.provider,
-          teeModel: teeAttestation?.model,
-          teeChatId: teeAttestation?.chatId,
-          teeVerified: teeAttestation?.isValid,
-          llmProvider,
-        }),
-      });
+      let storageErrorMessage: string | undefined;
+      let storageData:
+        | {
+            cid: string;
+            txHash: string;
+            explorerUrl?: string;
+            timestamp?: string;
+            walletAddress?: string;
+            proofRegistryAddress?: string;
+            proofRegistryTxHash?: string;
+            proofRegistryProofId?: string;
+            proofRegistryExplorerUrl?: string;
+            note?: string;
+          }
+        | null = null;
 
-      if (!storageResponse.ok) {
-        throw new Error(`Storage failed with status ${storageResponse.status}`);
+      try {
+        const storageResponse = await fetch("/api/0g/store", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            networkKey,
+            walletAddress: portfolio?.walletAddress,
+            decision: {
+              current_apy:
+                optimizationData.current_apy ?? fallbackResult.current_apy,
+              optimized_apy:
+                optimizationData.optimized_apy ?? fallbackResult.optimized_apy,
+              yield_increase:
+                optimizationData.yield_increase ?? fallbackResult.yield_increase,
+              yield_increase_pct:
+                optimizationData.yield_increase_pct ??
+                fallbackResult.yield_increase_pct,
+              recommended:
+                optimizationData.recommended ?? fallbackResult.recommended,
+              confidence:
+                optimizationData.confidence ?? fallbackResult.confidence,
+              executionSeconds:
+                optimizationData.executionSeconds ??
+                fallbackResult.executionSeconds,
+              estimatedAnnualGain:
+                optimizationData.estimatedAnnualGain ??
+                fallbackResult.estimatedAnnualGain,
+              totalPortfolio:
+                optimizationData.totalPortfolio ?? fallbackResult.totalPortfolio,
+              reasoning: fullText || optimizationData.reasoning || fallbackResult.reasoning,
+            },
+            // TEE / 0G Compute metadata
+            teeProvider: teeAttestation?.provider,
+            teeModel: teeAttestation?.model,
+            teeChatId: teeAttestation?.chatId,
+            teeVerified: teeAttestation?.isValid,
+            llmProvider,
+          }),
+        });
+
+        if (!storageResponse.ok) {
+          let message = `Storage failed with status ${storageResponse.status}`;
+          try {
+            const payload = (await storageResponse.json()) as { error?: string };
+            if (payload.error) {
+              message = payload.error;
+            }
+          } catch {
+            // Keep the HTTP status-based message when parsing fails.
+          }
+          storageErrorMessage = message;
+        } else {
+          storageData = (await storageResponse.json()) as {
+            cid: string;
+            txHash: string;
+            explorerUrl?: string;
+            timestamp?: string;
+            walletAddress?: string;
+            proofRegistryAddress?: string;
+            proofRegistryTxHash?: string;
+            proofRegistryProofId?: string;
+            proofRegistryExplorerUrl?: string;
+            note?: string;
+          };
+        }
+      } catch (error) {
+        storageErrorMessage =
+          error instanceof Error ? error.message : "0G storage request failed";
       }
-
-      const storageData = (await storageResponse.json()) as {
-        cid: string;
-        txHash: string;
-        explorerUrl?: string;
-        timestamp?: string;
-        walletAddress?: string;
-        proofRegistryAddress?: string;
-        proofRegistryTxHash?: string;
-        proofRegistryProofId?: string;
-        proofRegistryExplorerUrl?: string;
-      };
 
       const nextResult: OptimizationResult = {
         ...fallbackResult,
         ...optimizationData,
         reasoning: fullText || optimizationData.reasoning || fallbackResult.reasoning,
-        storageProof: storageData.cid,
-        txHash: storageData.txHash,
-        proofUrl: storageData.explorerUrl,
-        timestamp: storageData.timestamp ?? new Date().toISOString(),
-        walletAddress: storageData.walletAddress,
-        proofRegistryAddress: storageData.proofRegistryAddress,
-        proofRegistryTxHash: storageData.proofRegistryTxHash,
-        proofRegistryProofId: storageData.proofRegistryProofId,
-        proofRegistryExplorerUrl: storageData.proofRegistryExplorerUrl,
+        storageProof: storageData?.cid,
+        txHash: storageData?.txHash,
+        proofUrl: storageData?.explorerUrl,
+        timestamp: storageData?.timestamp ?? new Date().toISOString(),
+        walletAddress: storageData?.walletAddress ?? portfolio?.walletAddress,
+        proofRegistryAddress: storageData?.proofRegistryAddress,
+        proofRegistryTxHash: storageData?.proofRegistryTxHash,
+        proofRegistryProofId: storageData?.proofRegistryProofId,
+        proofRegistryExplorerUrl: storageData?.proofRegistryExplorerUrl,
+        proofStatus: storageData?.cid ? "stored" : storageErrorMessage ? "error" : "pending",
+        proofStatusDetail:
+          storageErrorMessage ??
+          storageData?.note,
       };
 
       startTransition(() => {

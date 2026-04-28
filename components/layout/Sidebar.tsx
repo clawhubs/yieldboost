@@ -10,6 +10,7 @@ import {
   Clock3,
   Copy,
   Disc3,
+  ShieldCheck,
   GitBranch,
   Globe,
   Grid2X2,
@@ -38,6 +39,7 @@ import {
   type WalletOption,
 } from "@/lib/browser-wallet";
 import {
+  DEFAULT_WALLET_ADDRESS,
   getAvailableWalletNetworks,
   isWalletAddress,
   resolveWalletNetworkKey,
@@ -68,6 +70,7 @@ const navigation: NavigationItem[] = [
   { href: "/analytics", label: "Analytics", icon: ChartNoAxesCombined },
   { href: "/watchlist", label: "Watchlist", icon: Star, badge: "NEW" },
   { href: "/agents", label: "Agents", icon: Bot },
+  { href: "/judge", label: "Judge", icon: ShieldCheck, badge: "LIVE" },
   { href: "/docs", label: "Docs", icon: BookOpenText },
   { href: "/settings", label: "Settings", icon: Settings2 },
 ];
@@ -382,13 +385,7 @@ export default function Sidebar() {
     setWalletModalOpen(false);
   }
 
-  function commitEdit() {
-    const value = inputVal.trim();
-    if (!isWalletAddress(value)) {
-      setEditing(false);
-      return;
-    }
-
+  function applyWatchWallet(value: string) {
     cleanupProviderListeners();
     providerRef.current = null;
     providerIdRef.current = null;
@@ -400,6 +397,16 @@ export default function Sidebar() {
     setErrorText(null);
     setEditing(false);
     broadcastWalletChange(value, selectedNetwork, null, false);
+  }
+
+  function commitEdit() {
+    const value = inputVal.trim();
+    if (!isWalletAddress(value)) {
+      setEditing(false);
+      return;
+    }
+
+    applyWatchWallet(value);
   }
 
   function disconnectWallet() {
@@ -531,6 +538,39 @@ export default function Sidebar() {
 
           {errorText ? (
             <div className="mt-3 text-[11px] leading-5 text-[#ff9b9b]">{errorText}</div>
+          ) : null}
+
+          {!connected && !isCustomWatchMode ? (
+            <div className="mt-4 rounded-[12px] border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.02)] p-3">
+              <div className="text-[12px] font-medium text-white">
+                Ready for live data or judge review
+              </div>
+              <div className="mt-1 text-[11px] leading-5 text-[#9ca9b6]">
+                Connect a wallet for live execution, or keep the demo moving with a public watch wallet.
+              </div>
+              <div className="mt-3 grid gap-2">
+                <button
+                  type="button"
+                  onClick={() => setWalletModalOpen(true)}
+                  className="glass-accent rounded-[10px] px-3 py-2 text-[11px] font-semibold text-[#22ddd0]"
+                >
+                  Connect wallet
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyWatchWallet(DEFAULT_WALLET_ADDRESS)}
+                  className="glass-inset rounded-[10px] px-3 py-2 text-[11px] font-semibold text-white"
+                >
+                  Use demo watch wallet
+                </button>
+                <Link
+                  href="/judge"
+                  className="glass-inset rounded-[10px] px-3 py-2 text-center text-[11px] font-semibold text-[#d8e0e8] transition hover:border-[rgba(0,201,177,0.25)]"
+                >
+                  Open judge mode
+                </Link>
+              </div>
+            </div>
           ) : null}
 
           {connected || isCustomWatchMode ? (

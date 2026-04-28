@@ -57,7 +57,7 @@ export default function AgentPanel() {
       );
       if (Object.keys(livePortfolio).length === 0) {
         return {
-          error: "No live wallet balance is available yet. Refresh the wallet data first.",
+          error: "No supported live balance is available yet. Connect a wallet or use watch mode with a funded public wallet first.",
           prompt,
         };
       }
@@ -158,7 +158,11 @@ export default function AgentPanel() {
                   {latestResult.optimized_apy}%
                 </p>
                 <p className="mt-3 text-[13px] text-[#dbe4ec]">
-                  Proof synchronized to 0G Storage.
+                  {latestResult.storageProof
+                    ? "Proof synchronized to 0G Storage."
+                    : latestResult.proofStatusDetail
+                      ? `Proof sync blocker: ${latestResult.proofStatusDetail}`
+                      : "Proof write is pending verification."}
                 </p>
               </div>
               <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-[#68ff7a] shadow-[0_0_28px_rgba(104,255,122,0.26)]">
@@ -226,7 +230,7 @@ export default function AgentPanel() {
           <div className="glass-inset rounded-[14px] px-4 py-4">
             <div className="text-[15px] text-white">Ready to execute</div>
             <div className="mt-3 text-[14px] leading-7 text-[#d7e0e8]">
-              Start the optimizer to generate a 0G-backed recommendation and execution proof.
+              Start the optimizer to generate a 0G-backed recommendation and execution proof. If you are reviewing without a browser wallet, switch the sidebar into watch mode with the demo wallet first.
             </div>
             <div className="mt-4 flex items-center gap-2 text-[12px] text-[#22ddd0]">
               <CircleDashed className="h-4 w-4" />

@@ -29,6 +29,19 @@ test("LIVE · Agent/Boost page loads on vercel", async ({ page }) => {
   });
 });
 
+test("LIVE · Judge page loads without wallet", async ({ page }) => {
+  await page.goto(`${LIVE}/judge`, { waitUntil: "networkidle" });
+  await page.waitForTimeout(2000);
+
+  await expect(page.getByTestId("judge-page")).toBeVisible();
+  await expect(page.getByText("Vercel env checklist")).toBeVisible();
+
+  await page.screenshot({
+    path: "test-results/live-02b-judge-page.png",
+    fullPage: true,
+  });
+});
+
 test("LIVE · Proof modal opens on vercel", async ({ page }) => {
   await page.goto(LIVE, { waitUntil: "networkidle" });
   await page.waitForTimeout(2000);
@@ -43,7 +56,7 @@ test("LIVE · Proof modal opens on vercel", async ({ page }) => {
 });
 
 test("LIVE · All sidebar routes reachable (200)", async ({ page }) => {
-  const pages = ["/", "/agent", "/portfolio", "/strategies", "/opportunities", "/history", "/analytics", "/watchlist", "/docs", "/settings"];
+  const pages = ["/", "/agent", "/portfolio", "/strategies", "/opportunities", "/history", "/analytics", "/watchlist", "/agents", "/judge", "/docs", "/settings"];
   const broken: string[] = [];
 
   for (const p of pages) {

@@ -32,6 +32,8 @@ export interface OptimizationResult {
   proofRegistryTxHash?: string;
   proofRegistryProofId?: string;
   proofRegistryExplorerUrl?: string;
+  proofStatus?: "stored" | "error" | "pending";
+  proofStatusDetail?: string;
 }
 
 export interface OptimizationFeedItem {

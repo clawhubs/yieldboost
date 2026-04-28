@@ -2,7 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { ArrowUpRight, Box, Cpu, ShieldCheck } from "lucide-react";
+import { usePortfolio } from "@/hooks/usePortfolio";
 import { useYieldOptimizer } from "@/hooks/useYieldOptimizer";
+import { getWalletNetworkConfig } from "@/lib/wallet";
 
 const whyZeroG = [
   {
@@ -63,6 +65,7 @@ function ImpactLine({
 
 export default function ZeroGStats() {
   const { latestResult } = useYieldOptimizer();
+  const { networkKey } = usePortfolio();
   const [globalStats, setGlobalStats] = useState<{
     hasData: boolean;
     formatted: {
@@ -119,6 +122,7 @@ export default function ZeroGStats() {
     ],
     [latestResult],
   );
+  const explorerBase = getWalletNetworkConfig(networkKey).explorerBase;
 
   return (
     <section
@@ -146,7 +150,7 @@ export default function ZeroGStats() {
         <div className="flex items-center justify-between gap-3">
           <div className="text-[12px] font-medium text-white">0G NETWORK STATS</div>
           <a
-            href="https://chainscan-galileo.0g.ai"
+            href={explorerBase}
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-1 text-[11px] text-[#25d6c6]"

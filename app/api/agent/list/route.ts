@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { ethers } from "ethers";
 import { getStoredProofs } from "@/lib/server/runtime-store";
 import {
+  getServer0GNetworkConfig,
   resolveWalletAddress,
+  resolveWalletNetworkKey,
   sameWalletAddress,
   WALLET_COOKIE_KEY,
+  WALLET_NETWORK_COOKIE_KEY,
 } from "@/lib/wallet";
 
 export const runtime = "nodejs";
@@ -52,6 +55,11 @@ export async function GET(req: NextRequest) {
     const walletAddress = resolveWalletAddress(
       req.nextUrl.searchParams.get("wallet") ?? req.cookies.get(WALLET_COOKIE_KEY)?.value,
     );
+    const networkKey = resolveWalletNetworkKey(
+      req.nextUrl.searchParams.get("network") ??
+        req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value,
+    );
+    const networkConfig = getServer0GNetworkConfig(networkKey);
 
     // Get contract address from env
     const inftAddress = process.env.YIELD_STRATEGY_INFT_ADDRESS;
@@ -73,8 +81,20 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Connect to 0G testnet
-    const provider = new ethers.JsonRpcProvider("https://evmrpc-testnet.0g.ai");
+    if (!networkConfig.rpcUrl) {
+      const strategies = await buildProofFallbackStrategies(walletAddress ?? undefined);
+      return NextResponse.json(
+        {
+          success: true,
+          totalSupply: strategies.length,
+          strategies,
+          source: "proof_fallback",
+          message: `${networkConfig.label} RPC is not configured, so the gallery is using proof-backed history instead.`,
+        },
+      );
+    }
+
+    const provider = new ethers.JsonRpcProvider(networkConfig.rpcUrl);
     const wallet = new ethers.Wallet(privateKey, provider);
 
     // Contract ABI
