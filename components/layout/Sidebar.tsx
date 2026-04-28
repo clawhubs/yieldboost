@@ -523,41 +523,44 @@ export default function Sidebar() {
     const lowerSectionClass = isMobileMode
       ? "mt-4 space-y-3"
       : "mt-4 space-y-3 border-t border-[rgba(255,255,255,0.06)] pt-4";
+    const mobileScrollShellClass =
+      "mt-4 min-h-0 flex-1 overflow-y-auto overscroll-contain pb-6 pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [-webkit-overflow-scrolling:touch]";
 
-    return (
-      <>
-        <div className="min-h-0">
-          <div className={shellCardClass}>
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <BrandLogo />
-                <p className="mt-2.5 text-[12px] text-[#c9d2db]">AI Agent for DeFi Growth</p>
-              </div>
-              {mode === "mobile" ? (
-                <button
-                  type="button"
-                  onClick={() => setMobileNavOpen(false)}
-                  aria-label="Close navigation menu"
-                  className={`${insetButtonClass} flex h-9 w-9 flex-none items-center justify-center text-[#d8e0e8]`}
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              ) : null}
-            </div>
+    const brandCard = (
+      <div className={shellCardClass}>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <BrandLogo />
+            <p className="mt-2.5 text-[12px] text-[#c9d2db]">AI Agent for DeFi Growth</p>
           </div>
-
-          <div className={navigationShellClass}>
-            {isMobileMode ? (
-              <div className="mb-3 px-1 text-[10px] uppercase tracking-[0.16em] text-[#22ddd0]">
-                Menu
-              </div>
-            ) : null}
-            {renderNavigation(mode)}
-          </div>
+          {mode === "mobile" ? (
+            <button
+              type="button"
+              onClick={() => setMobileNavOpen(false)}
+              aria-label="Close navigation menu"
+              className={`${insetButtonClass} flex h-9 w-9 flex-none items-center justify-center text-[#d8e0e8]`}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          ) : null}
         </div>
+      </div>
+    );
 
-        <div className={lowerSectionClass}>
-          <div className={panelCardClass}>
+    const navigationBlock = (
+      <div className={navigationShellClass}>
+        {isMobileMode ? (
+          <div className="mb-3 px-1 text-[10px] uppercase tracking-[0.16em] text-[#22ddd0]">
+            Menu
+          </div>
+        ) : null}
+        {renderNavigation(mode)}
+      </div>
+    );
+
+    const lowerBlock = (
+      <div className={lowerSectionClass}>
+        <div className={panelCardClass}>
             <div className="flex items-center gap-2 text-[13px] font-medium text-white">
               <span
                 className={`inline-flex h-3 w-3 rounded-full shadow-[0_0_14px_rgba(53,213,110,0.55)] ${
@@ -704,28 +707,49 @@ export default function Sidebar() {
             ) : null}
           </div>
 
-          {isMobileMode ? null : (
-            <div className="flex items-center gap-2">
-              {socialIcons.map((Icon, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  className="glass-inset flex h-9 w-9 items-center justify-center rounded-[10px] text-[#d8e0e8] transition hover:border-[rgba(0,201,177,0.25)]"
-                >
-                  <Icon className="h-4 w-4" />
-                </button>
-              ))}
-            </div>
-          )}
+        {isMobileMode ? null : (
+          <div className="flex items-center gap-2">
+            {socialIcons.map((Icon, index) => (
+              <button
+                key={index}
+                type="button"
+                className="glass-inset flex h-9 w-9 items-center justify-center rounded-[10px] text-[#d8e0e8] transition hover:border-[rgba(0,201,177,0.25)]"
+              >
+                <Icon className="h-4 w-4" />
+              </button>
+            ))}
+          </div>
+        )}
 
-          <div className="px-2">
-            <p className="text-[12px] text-[#9daab6]">Powered by</p>
-            <div className="mt-1 flex items-center gap-2 text-[14px] font-semibold text-white">
-              <Disc3 className="h-4 w-4 text-[#1fd8c8]" />
-              0G Chain
-            </div>
+        <div className="px-2">
+          <p className="text-[12px] text-[#9daab6]">Powered by</p>
+          <div className="mt-1 flex items-center gap-2 text-[14px] font-semibold text-white">
+            <Disc3 className="h-4 w-4 text-[#1fd8c8]" />
+            0G Chain
           </div>
         </div>
+      </div>
+    );
+
+    if (isMobileMode) {
+      return (
+        <div className="flex h-full min-h-0 flex-col">
+          {brandCard}
+          <div data-testid="mobile-sidebar-scroll" className={mobileScrollShellClass}>
+            {navigationBlock}
+            {lowerBlock}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <>
+        <div className="min-h-0">
+          {brandCard}
+          {navigationBlock}
+        </div>
+        {lowerBlock}
       </>
     );
   }

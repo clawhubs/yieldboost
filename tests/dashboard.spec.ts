@@ -41,6 +41,20 @@ test("mobile nav opens from the left drawer and keeps judge route reachable", as
 
   await page.getByTestId("mobile-menu-toggle").click();
   await expect(page.getByTestId("mobile-sidebar-drawer")).toBeVisible();
+  await expect(page.getByTestId("mobile-sidebar-scroll")).toBeVisible();
+
+  const scrollContainer = page.getByTestId("mobile-sidebar-scroll");
+  const scrollMetrics = await scrollContainer.evaluate((element) => ({
+    clientHeight: element.clientHeight,
+    scrollHeight: element.scrollHeight,
+  }));
+  expect(scrollMetrics.scrollHeight).toBeGreaterThan(scrollMetrics.clientHeight);
+
+  const afterScrollTop = await scrollContainer.evaluate((element) => {
+    element.scrollTop = element.scrollHeight;
+    return element.scrollTop;
+  });
+  expect(afterScrollTop).toBeGreaterThan(0);
 
   await page.getByTestId("mobile-nav-judge").click();
   await expect(page).toHaveURL(/\/judge$/);
