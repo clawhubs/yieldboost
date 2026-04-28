@@ -109,7 +109,7 @@ export default function DashboardAgentPanel({ live, onOpenProof }: Props) {
       <div className="mt-4 flex items-start gap-3">
         <div className="pt-4"><AgentRail icon={CircleDashed} /></div>
         <div className="glass-inset min-w-0 flex-1 rounded-[14px] px-4 py-4">
-          <div className="text-[15px] text-white">Here&apos;s your optimal strategy:</div>
+          <div className="text-[15px] text-white">{"Here's your optimal strategy:"}</div>
           <div className="mt-3 text-[14px] leading-7 text-[#e6edf3]">
             You can increase your yield by<br />
             <span className="text-[16px] font-semibold text-[#2fe06d]">
@@ -165,7 +165,7 @@ export default function DashboardAgentPanel({ live, onOpenProof }: Props) {
             <CheckCheck className="h-10 w-10 text-[#68ff7a]" />
           </div>
         </div>
-        <div className="mt-2 text-[13px] text-[#dbe4ec]">You&apos;re now earning more!</div>
+        <div className="mt-2 text-[13px] text-[#dbe4ec]">{"You're now earning more!"}</div>
         <button
           type="button"
           data-testid="agent-card-proof"

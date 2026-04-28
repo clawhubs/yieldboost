@@ -981,7 +981,7 @@ export default function DashboardView() {
               </div>
               <div className="min-w-0 flex-1 rounded-[14px] border border-[#1b242d] bg-[#0b1117] px-4 py-4">
                 <div className="text-[15px] text-white">
-                  {streamingText ? "Latest recommendation:" : "Here&apos;s your optimal strategy:"}
+                  {streamingText ? "Latest recommendation:" : "Here's your optimal strategy:"}
                 </div>
                 <div className="mt-3 text-[14px] leading-7 text-[#e6edf3]">
                   {streamingText ? (
