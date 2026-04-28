@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1", "localhost"],
-  webpack: (config, { isServer }) => {
+  webpack: (config) => {
     // Suppress E2B dynamic import warning
     config.module = config.module || {};
     config.module.unknownContextCritical = false;

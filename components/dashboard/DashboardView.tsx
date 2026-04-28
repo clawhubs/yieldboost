@@ -195,7 +195,7 @@ export default function DashboardView() {
         : `Proof anchored to 0G Storage (CID ${latestResult.storageProof?.slice(0, 10) ?? "pending"}…)`,
     ];
     return bullets;
-  }, [latestResult]);
+  }, [latestResult, live.totalPortfolio]);
 
   const liveOpportunities = useMemo(() => {
     if (!latestResult || latestResult.top_protocols.length === 0) return opportunities;
