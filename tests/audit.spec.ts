@@ -75,6 +75,18 @@ test("judge page is reachable without wallet connection", async ({ page }) => {
   await expect(page.getByText("Vercel env checklist")).toBeVisible();
 });
 
+test("judge nav immediately enables demo watch mode for review", async ({ page }) => {
+  await clearWalletState(page);
+  await page.goto(BASE, { waitUntil: "networkidle" });
+
+  await page.getByTestId("nav-judge").click();
+
+  await expect(page).toHaveURL(/\/judge$/);
+  await expect(page.getByTestId("judge-page")).toBeVisible();
+  await expect(page.getByTestId("sidebar")).toContainText("Watch mode");
+  await expect(page.getByTestId("sidebar")).toContainText(/0x8a3c/i);
+});
+
 test("demo watch wallet flow hydrates review data", async ({ page }) => {
   await enableDemoWatchMode(page);
   await page.goto(BASE, { waitUntil: "networkidle" });

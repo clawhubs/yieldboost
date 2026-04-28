@@ -441,6 +441,12 @@ export default function Sidebar() {
     applyDisconnectedState(selectedNetwork);
   }
 
+  function activateJudgeReviewMode() {
+    if (!connected && !isCustomWatchMode) {
+      applyWatchWallet(DEFAULT_WALLET_ADDRESS);
+    }
+  }
+
   function renderNavigation(mode: "desktop" | "mobile") {
     return (
       <nav className="mt-4 flex flex-col gap-2">
@@ -458,6 +464,9 @@ export default function Sidebar() {
                   : `mobile-nav-${label.toLowerCase()}`
               }
               onClick={() => {
+                if (isJudgeEntry) {
+                  activateJudgeReviewMode();
+                }
                 if (mode === "mobile") {
                   setMobileNavOpen(false);
                 }
@@ -633,7 +642,10 @@ export default function Sidebar() {
                 <div className="mt-3 grid gap-2">
                   <Link
                     href="/judge"
-                    onClick={() => setMobileNavOpen(false)}
+                    onClick={() => {
+                      activateJudgeReviewMode();
+                      setMobileNavOpen(false);
+                    }}
                     className="glass-accent rounded-[10px] px-3 py-2 text-center text-[11px] font-semibold text-[#22ddd0]"
                   >
                     Open judge mode
