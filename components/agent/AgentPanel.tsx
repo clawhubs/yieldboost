@@ -40,7 +40,7 @@ function getStepStatus(progress: OptimizationState, step: OptimizationState) {
 }
 
 export default function AgentPanel() {
-  const { portfolio } = usePortfolio();
+  const { portfolio, judgeMode } = usePortfolio();
   const {
     isOptimizing,
     latestResult,
@@ -55,9 +55,15 @@ export default function AgentPanel() {
       const livePortfolio = Object.fromEntries(
         (portfolio?.tokens ?? []).map((token) => [token.symbol, token.valueUSD]),
       );
+      if (judgeMode) {
+        return {
+          error: "Judge mode is read-only. Exit judge mode from the sidebar before running a fresh optimization.",
+          prompt,
+        };
+      }
       if (Object.keys(livePortfolio).length === 0) {
         return {
-          error: "No supported live balance is available yet. Connect a wallet or use watch mode with a funded public wallet first.",
+          error: "No supported live balance is available yet. Connect a wallet or open judge mode if you only need the latest recorded review snapshot.",
           prompt,
         };
       }
@@ -228,13 +234,15 @@ export default function AgentPanel() {
           </div>
         ) : (
           <div className="glass-inset rounded-[14px] px-4 py-4">
-            <div className="text-[15px] text-white">Ready to execute</div>
+            <div className="text-[15px] text-white">{judgeMode ? "Judge snapshot ready" : "Ready to execute"}</div>
             <div className="mt-3 text-[14px] leading-7 text-[#d7e0e8]">
-              Start the optimizer to generate a 0G-backed recommendation and execution proof. If you are reviewing without a browser wallet, switch the sidebar into watch mode with the demo wallet first.
+              {judgeMode
+                ? "Judge mode is read-only. Review the latest stored testnet result here, then exit judge mode from the sidebar if you want to run a fresh optimization as a normal user."
+                : "Start the optimizer to generate a 0G-backed recommendation and execution proof. If you only need the latest recorded review snapshot, open judge mode from the sidebar."}
             </div>
             <div className="mt-4 flex items-center gap-2 text-[12px] text-[#22ddd0]">
               <CircleDashed className="h-4 w-4" />
-              Waiting for user action
+              {judgeMode ? "Read-only review flow" : "Waiting for user action"}
             </div>
           </div>
         )}
@@ -258,11 +266,11 @@ export default function AgentPanel() {
         <button
           type="submit"
           data-testid="execute-btn"
-          disabled={pending || isOptimizing}
+          disabled={judgeMode || pending || isOptimizing}
           className="yb-teal-button inline-flex w-full items-center justify-center gap-2 rounded-[12px] px-5 py-4 text-[16px] font-semibold text-[#071217] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
         >
           <Send className="h-4 w-4" />
-          {pending || isOptimizing ? "Executing Optimization..." : "Execute Optimization"}
+          {pending || isOptimizing ? "Executing Optimization..." : judgeMode ? "Judge snapshot is read-only" : "Execute Optimization"}
         </button>
       </form>
     </section>

@@ -5,6 +5,7 @@ test("dashboard composition renders in no-wallet review mode", async ({ page }) 
     window.localStorage.removeItem("yb_wallet_override");
     window.localStorage.removeItem("yb_wallet_network");
     window.localStorage.removeItem("yb_wallet_provider");
+    window.localStorage.removeItem("yb_judge_mode");
   });
 
   await page.goto("/", { waitUntil: "networkidle" });
@@ -27,6 +28,7 @@ test("mobile nav opens from the left drawer and keeps judge route reachable", as
     window.localStorage.removeItem("yb_wallet_override");
     window.localStorage.removeItem("yb_wallet_network");
     window.localStorage.removeItem("yb_wallet_provider");
+    window.localStorage.removeItem("yb_judge_mode");
   });
 
   await page.setViewportSize({ width: 390, height: 844 });

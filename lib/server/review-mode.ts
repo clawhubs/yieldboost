@@ -1,14 +1,17 @@
 import "server-only";
 
+import { cookies } from "next/headers";
 import {
   DEFAULT_WALLET_ADDRESS,
   getAvailableWalletNetworks,
   getServer0GNetworkConfig,
   getServerDefaultNetworkKey,
+  resolveWalletAddress,
+  WALLET_COOKIE_KEY,
 } from "@/lib/wallet";
 import { getDocsRuntimeStatus } from "@/lib/docs/content";
 import type { StoredProofRecord } from "@/lib/backend-data";
-import { getStoredProofs } from "@/lib/server/runtime-store";
+import { getLatestStoredProofForWallet, getStoredProofs } from "@/lib/server/runtime-store";
 
 type BadgeTone = "teal" | "green" | "amber" | "white";
 type HealthStatus = "live" | "configured" | "partial" | "pending";
@@ -254,7 +257,12 @@ function buildMainnetChecklist({
 export async function getJudgePageData(): Promise<JudgePageData> {
   const runtimeStatus = getDocsRuntimeStatus();
   const proofs = await getStoredProofs();
-  const latestProof = proofs[0] ?? null;
+  const cookieStore = await cookies();
+  const requestedWallet = resolveWalletAddress(cookieStore.get(WALLET_COOKIE_KEY)?.value);
+  const walletScopedProof = requestedWallet
+    ? await getLatestStoredProofForWallet(requestedWallet)
+    : null;
+  const latestProof = walletScopedProof ?? (requestedWallet ? null : proofs[0] ?? null);
   const preferredNetwork = getServerDefaultNetworkKey();
   const preferredConfig = getServer0GNetworkConfig(preferredNetwork);
   const networks = getAvailableWalletNetworks();
@@ -288,9 +296,11 @@ export async function getJudgePageData(): Promise<JudgePageData> {
     },
     {
       label: "Review Wallet",
-      value: DEFAULT_WALLET_ADDRESS,
-      helper: "Can be loaded instantly via watch mode without wallet connection",
-      tone: "white",
+      value: requestedWallet ?? DEFAULT_WALLET_ADDRESS,
+      helper: requestedWallet
+        ? "Judge page is currently scoped to the active wallet in this browser session."
+        : "Judge mode can load the public review wallet instantly without wallet connection.",
+      tone: requestedWallet ? "teal" : "white",
     },
   ];
 
@@ -327,13 +337,15 @@ export async function getJudgePageData(): Promise<JudgePageData> {
         {
           label: "Latest Proof",
           value: "No proof yet",
-          helper: "Judge mode is live, but the runtime store does not have a proof to show yet.",
+          helper: requestedWallet
+            ? "No recorded proof exists yet for the active wallet in this browser session."
+            : "Judge mode is live, but the runtime store does not have a proof to show yet.",
           tone: "amber",
         },
         {
           label: "Review Path",
-          value: "Use watch mode",
-          helper: "Open the demo wallet to show the product without extension setup.",
+          value: "Judge snapshot",
+          helper: "Use the judge route to review the latest recorded testnet result without extension setup.",
           tone: "teal",
         },
         {
@@ -427,7 +439,11 @@ export async function getJudgePageData(): Promise<JudgePageData> {
 
   const blockers: string[] = [];
   if (!latestProof) {
-    blockers.push("No latest runtime proof is available yet, so judge mode can only show readiness and empty-state guidance.");
+    blockers.push(
+      requestedWallet
+        ? "No runtime proof is recorded yet for the active wallet, so judge mode can only show readiness and empty-state guidance."
+        : "No latest runtime proof is available yet, so judge mode can only show readiness and empty-state guidance.",
+    );
   }
   if (!hasValue(readEnv("ZG_MAINNET_STORAGE_URL")) || !hasValue(readEnv("ZG_MAINNET_PRIVATE_KEY"))) {
     blockers.push("Mainnet proof upload is not submission-ready until `ZG_MAINNET_STORAGE_URL` and `ZG_MAINNET_PRIVATE_KEY` are set.");
@@ -452,9 +468,9 @@ export async function getJudgePageData(): Promise<JudgePageData> {
     envChecklist,
     demoFlow: [
       "Open `/judge` for the no-wallet review path.",
-      "Use the `Use demo watch wallet` action in the sidebar to load the public review wallet instantly.",
-      "Visit `/` for the 1-click dashboard flow, `/agent` for the streamed execution panel, `/history` for the proof ledger, and `/agents` for proof-backed strategies.",
-      "If a browser wallet is available, connect it from the sidebar to switch from review mode into normal user flow.",
+      "Judge mode auto-loads the public review wallet behind the scenes when no connected wallet is present.",
+      "Visit `/` for the dashboard snapshot, `/history` for the proof ledger, and `/agents` for proof-backed strategies.",
+      "Exit judge mode from the sidebar whenever you want to return to the normal user flow and run a fresh testnet optimization.",
     ],
     blockers,
     proofCount: proofs.length,

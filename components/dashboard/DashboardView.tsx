@@ -108,7 +108,7 @@ export default function DashboardView() {
   const [alertsOpen, setAlertsOpen] = useState(false);
   const [walletMenuOpen, setWalletMenuOpen] = useState(false);
   const { latestResult, optimize, isOptimizing, progress, streamingText } = useYieldOptimizer();
-  const { portfolio, networkKey, loading } = usePortfolio();
+  const { portfolio, networkKey, loading, judgeMode } = usePortfolio();
   const alertsRef = useRef<HTMLDivElement | null>(null);
   const walletMenuRef = useRef<HTMLDivElement | null>(null);
   const [globalStats, setGlobalStats] = useState<{
@@ -181,7 +181,7 @@ export default function DashboardView() {
     : "wallet connected";
   const walletConnected = Boolean(portfolio?.walletAddress);
   const hasDetectedAssets = Object.keys(livePortfolio).length > 0;
-  const canOptimize = walletConnected && hasDetectedAssets && !loading && !isOptimizing;
+  const canOptimize = !judgeMode && walletConnected && hasDetectedAssets && !loading && !isOptimizing;
   const walletStatusLabel = latestResult
     ? `Live · ${new Date(latestResult.timestamp).toLocaleTimeString()}`
     : portfolio?.source === "wallet_proof_fallback"
@@ -439,10 +439,10 @@ export default function DashboardView() {
                   {isOptimizing ? <CircleDashed className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
                   <div>
                     <div className="text-[14px] font-semibold">
-                      {isOptimizing ? "Optimization Running..." : "Boost My Yield Now"}
+                      {isOptimizing ? "Optimization Running..." : judgeMode ? "Judge Snapshot Active" : "Boost My Yield Now"}
                     </div>
                     <div className="text-[11px] text-[#0b4340]">
-                      {isOptimizing ? "Popup optimizer sedang berjalan" : "1-Click AI Optimization"}
+                      {isOptimizing ? "Popup optimizer sedang berjalan" : judgeMode ? "Read-only review on testnet result" : "1-Click AI Optimization"}
                     </div>
                   </div>
                 </button>
@@ -1005,16 +1005,21 @@ export default function DashboardView() {
                   className="yb-teal-button mt-5 flex w-full items-center justify-center gap-3 rounded-[12px] px-4 py-4 text-[16px] font-semibold text-[#071217]"
                 >
                   {isOptimizing ? <CircleDashed className="h-5 w-5 animate-spin" /> : <Zap className="h-5 w-5" />}
-                  {isOptimizing ? "Optimization In Progress..." : "Execute Optimization"}
+                  {isOptimizing ? "Optimization In Progress..." : judgeMode ? "Judge snapshot is read-only" : "Execute Optimization"}
                 </button>
+                {judgeMode ? (
+                  <div className="mt-3 text-[12px] leading-5 text-[#8eced3]">
+                    Judge mode is read-only. It shows the latest recorded testnet snapshot and proof for review. Exit judge mode from the sidebar to run a fresh optimization as a normal user.
+                  </div>
+                ) : null}
                 {walletConnected && !hasDetectedAssets ? (
                   <div className="mt-3 text-[12px] leading-5 text-[#d3ac62]">
                     Wallet is connected, but the current RPC snapshot only surfaces supported on-chain balances. If the native balance is still zero or assets are not indexed yet, the optimizer will wait for a real position to evaluate.
                   </div>
                 ) : null}
-                {!walletConnected ? (
+                {!walletConnected && !judgeMode ? (
                   <div className="mt-3 text-[12px] leading-5 text-[#8eced3]">
-                    No wallet is connected yet. Use the sidebar to connect normally or switch into watch mode with the demo wallet for judge review.
+                    No wallet is connected yet. Use the sidebar to connect normally or open judge mode for the read-only review snapshot.
                   </div>
                 ) : null}
                 <div className="mt-4 flex items-center justify-end gap-2 text-[11px] text-[#a4b0bc]">

@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import BrandLogo from "@/components/ui/BrandLogo";
 import WalletConnectModal from "@/components/modals/WalletConnectModal";
+import { usePortfolio } from "@/hooks/usePortfolio";
 import {
   getAuthorizedAccounts,
   getInjectedWalletById,
@@ -94,6 +95,7 @@ function clearCookie(name: string) {
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { judgeMode, enterJudgeMode, exitJudgeMode } = usePortfolio();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [walletCopied, setWalletCopied] = useState(false);
   const [walletAddr, setWalletAddr] = useState<string | null>(null);
@@ -442,9 +444,18 @@ export default function Sidebar() {
   }
 
   function activateJudgeReviewMode() {
+    enterJudgeMode();
     if (!connected && !isCustomWatchMode) {
       applyWatchWallet(DEFAULT_WALLET_ADDRESS);
     }
+  }
+
+  function handleExitJudgeMode() {
+    exitJudgeMode();
+    if (!connected) {
+      applyDisconnectedState(selectedNetwork);
+    }
+    setMobileNavOpen(false);
   }
 
   function renderNavigation(mode: "desktop" | "mobile") {
@@ -564,13 +575,13 @@ export default function Sidebar() {
             <div className="flex items-center gap-2 text-[13px] font-medium text-white">
               <span
                 className={`inline-flex h-3 w-3 rounded-full shadow-[0_0_14px_rgba(53,213,110,0.55)] ${
-                  connected ? "bg-[#35d56e]" : "bg-[#f3a441]"
+                  connected ? "bg-[#35d56e]" : judgeMode ? "bg-[#22ddd0]" : "bg-[#f3a441]"
                 }`}
               />
               Account
             </div>
-              <div className={`mt-1 pl-5 text-[12px] ${connected ? "text-[#35d56e]" : "text-[#f3a441]"}`}>
-              {connected ? "Connected" : isCustomWatchMode ? "Watch mode" : "Not connected"}
+              <div className={`mt-1 pl-5 text-[12px] ${connected ? "text-[#35d56e]" : judgeMode || isCustomWatchMode ? "text-[#22ddd0]" : "text-[#f3a441]"}`}>
+              {judgeMode ? "Judge mode" : connected ? "Connected" : isCustomWatchMode ? "Tracked wallet" : "Not connected"}
             </div>
 
             {editing ? (
@@ -612,14 +623,16 @@ export default function Sidebar() {
                   <span className="text-[10px] text-[#9ca9b6]">{walletCopied ? "Copied!" : ""}</span>
                   <Copy className="h-3.5 w-3.5 text-[#9ca9b6]" />
                 </button>
-                <button
-                  type="button"
-                  onClick={startEdit}
-                  title="Use custom watch wallet"
-                  className={`${insetButtonClass} flex h-9 w-9 flex-none items-center justify-center text-[#9ca9b6] transition hover:border-[rgba(0,201,177,0.35)] hover:text-[#22ddd0]`}
-                >
-                  <Pencil className="h-3.5 w-3.5" />
-                </button>
+                {connected ? (
+                  <button
+                    type="button"
+                    onClick={startEdit}
+                    title="Change tracked wallet"
+                    className={`${insetButtonClass} flex h-9 w-9 flex-none items-center justify-center text-[#9ca9b6] transition hover:border-[rgba(0,201,177,0.35)] hover:text-[#22ddd0]`}
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
+                ) : null}
               </div>
             ) : null}
 
@@ -629,9 +642,17 @@ export default function Sidebar() {
                   {shortAddr(activeWalletAddress)}
                 </div>
                 <div className="mt-1 text-[11px] text-[#9ca9b6]">
-                  {connected ? selectedNetworkConfig?.label : "Watch wallet"}
+                  {connected ? selectedNetworkConfig?.label : judgeMode ? "Judge review wallet" : "Tracked wallet"}
                 </div>
-                {connected ? (
+                {judgeMode ? (
+                  <button
+                    type="button"
+                    onClick={handleExitJudgeMode}
+                    className="mt-3 rounded-[10px] border border-[rgba(34,221,208,0.22)] bg-[rgba(34,221,208,0.08)] px-3 py-2 text-[11px] font-semibold text-[#9ff7f0] transition hover:border-[rgba(34,221,208,0.36)]"
+                  >
+                    Exit judge mode
+                  </button>
+                ) : connected ? (
                   <button
                     type="button"
                     onClick={disconnectWallet}
@@ -653,10 +674,10 @@ export default function Sidebar() {
                   Start here for hackathon review
                 </div>
                 <div className="mt-1 text-[11px] leading-5 text-[#9ca9b6]">
-                  Tap `Judge` in the menu to start demo watch mode instantly. Connect a wallet only if the judge needs the full live flow.
+                  Tap `Judge` in the menu to open the read-only judge snapshot instantly. Exit judge mode whenever you want to return to the normal wallet flow.
                 </div>
                 <div className="mt-3 rounded-[10px] border border-[rgba(34,221,208,0.2)] bg-[rgba(34,221,208,0.08)] px-3 py-2 text-[11px] font-medium text-[#9ff7f0]">
-                  Judge nav auto-starts review mode
+                  Judge nav auto-loads the public review wallet
                 </div>
                 <div className="mt-2 grid gap-2">
                   <button
@@ -668,16 +689,6 @@ export default function Sidebar() {
                     className={`${insetButtonClass} px-3 py-2 text-[11px] font-semibold text-white`}
                   >
                     Connect wallet
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileNavOpen(false);
-                      applyWatchWallet(DEFAULT_WALLET_ADDRESS);
-                    }}
-                    className={`${insetButtonClass} px-3 py-2 text-[11px] font-semibold text-white`}
-                  >
-                    Use demo watch wallet
                   </button>
                 </div>
               </div>
@@ -779,11 +790,15 @@ export default function Sidebar() {
               </div>
             </div>
             <div className="min-w-0 text-right">
-              <div className={`text-[10px] uppercase tracking-[0.12em] ${connected ? "text-[#35d56e]" : isCustomWatchMode ? "text-[#22ddd0]" : "text-[#9ca9b6]"}`}>
-                {connected ? "Connected" : isCustomWatchMode ? "Watch mode" : "Review mode"}
+              <div className={`text-[10px] uppercase tracking-[0.12em] ${connected ? "text-[#35d56e]" : judgeMode || isCustomWatchMode ? "text-[#22ddd0]" : "text-[#9ca9b6]"}`}>
+                {judgeMode ? "Judge mode" : connected ? "Connected" : isCustomWatchMode ? "Tracked wallet" : "Review mode"}
               </div>
               <div className="max-w-[132px] truncate text-[12px] text-[#d8e0e8]">
-                {connected || isCustomWatchMode ? shortAddr(activeWalletAddress) : "Judge-first flow"}
+                {judgeMode && activeWalletAddress
+                  ? shortAddr(activeWalletAddress)
+                  : connected || isCustomWatchMode
+                    ? shortAddr(activeWalletAddress)
+                    : "Judge-first flow"}
               </div>
             </div>
           </div>

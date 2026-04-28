@@ -18,7 +18,10 @@ import {
   buildOptimizationSnapshot,
 } from "@/lib/optimizations";
 import {
+  type WalletChangeDetail,
+  JUDGE_MODE_COOKIE_KEY,
   type WalletNetworkKey,
+  JUDGE_MODE_STORAGE_KEY,
   WALLET_CHANGE_EVENT,
   WALLET_NETWORK_STORAGE_KEY,
   WALLET_OVERRIDE_STORAGE_KEY,
@@ -42,6 +45,9 @@ interface PortfolioContextValue {
   portfolio: PortfolioResponse | null;
   loading: boolean;
   networkKey: WalletNetworkKey;
+  judgeMode: boolean;
+  enterJudgeMode: () => void;
+  exitJudgeMode: () => void;
   refreshPortfolio: (
     walletAddress?: string,
     networkKey?: WalletNetworkKey,
@@ -91,11 +97,28 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const [portfolio, setPortfolio] = useState<PortfolioResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [networkKey, setNetworkKey] = useState<WalletNetworkKey>("testnet");
+  const [judgeMode, setJudgeMode] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizations, setOptimizations] = useState<OptimizationResult[]>([]);
   const [streamingText, setStreamingText] = useState("");
   const [progress, setProgress] = useState<OptimizationState>("analyzing");
   const [latestResult, setLatestResult] = useState<OptimizationResult | null>(null);
+
+  const enterJudgeMode = useCallback(() => {
+    setJudgeMode(true);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(JUDGE_MODE_STORAGE_KEY, "true");
+      document.cookie = `${JUDGE_MODE_COOKIE_KEY}=true; path=/; max-age=31536000; SameSite=Lax`;
+    }
+  }, []);
+
+  const exitJudgeMode = useCallback(() => {
+    setJudgeMode(false);
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(JUDGE_MODE_STORAGE_KEY);
+      document.cookie = `${JUDGE_MODE_COOKIE_KEY}=; path=/; max-age=0; SameSite=Lax`;
+    }
+  }, []);
 
   const refreshPortfolio = useCallback(async (
     walletAddress?: string,
@@ -153,7 +176,12 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
     const initialNetwork = savedNetwork ?? "testnet";
     const initialWallet = isWalletAddress(savedWallet) ? savedWallet : undefined;
+    const initialJudgeMode =
+      typeof window !== "undefined" &&
+      window.localStorage.getItem(JUDGE_MODE_STORAGE_KEY) === "true";
+
     setNetworkKey(initialNetwork);
+    setJudgeMode(Boolean(initialJudgeMode));
     if (initialWallet) {
       void refreshPortfolio(initialWallet, initialNetwork);
     } else {
@@ -192,11 +220,14 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
     function handleWalletChange(event: Event) {
       const detail = (
-        event as CustomEvent<{ walletAddress?: string; networkKey?: WalletNetworkKey }>
+        event as CustomEvent<WalletChangeDetail>
       ).detail;
       const nextNetwork = resolveWalletNetworkKey(detail?.networkKey);
       setNetworkKey(nextNetwork);
       if (detail?.walletAddress) {
+        if (detail.connected) {
+          exitJudgeMode();
+        }
         // Force portfolio refresh on wallet change
         setPortfolio(buildEmptyPortfolio());
         void refreshPortfolio(detail.walletAddress, nextNetwork);
@@ -215,7 +246,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     return () => {
       window.removeEventListener(WALLET_CHANGE_EVENT, handleWalletChange as EventListener);
     };
-  }, [refreshPortfolio]);
+  }, [exitJudgeMode, refreshPortfolio]);
 
   async function optimize(
     portfolioInput: Record<string, number>,
@@ -404,7 +435,15 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
   return (
     <PortfolioContext.Provider
-      value={{ portfolio, loading, networkKey, refreshPortfolio }}
+      value={{
+        portfolio,
+        loading,
+        networkKey,
+        judgeMode,
+        enterJudgeMode,
+        exitJudgeMode,
+        refreshPortfolio,
+      }}
     >
       <YieldOptimizerContext.Provider
         value={{

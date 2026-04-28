@@ -6,6 +6,8 @@ export const WALLET_COOKIE_KEY = "yb_wallet";
 export const WALLET_NETWORK_COOKIE_KEY = "yb_wallet_network";
 export const WALLET_CHANGE_EVENT = "yb:wallet-change";
 export const WALLET_CONNECT_REQUEST_EVENT = "yb:wallet-connect-request";
+export const JUDGE_MODE_COOKIE_KEY = "yb_judge_mode";
+export const JUDGE_MODE_STORAGE_KEY = "yb_judge_mode";
 
 export const WALLET_OVERRIDE_STORAGE_KEY = "yb_wallet_override";
 export const WALLET_NETWORK_STORAGE_KEY = "yb_wallet_network";

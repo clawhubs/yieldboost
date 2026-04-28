@@ -17,6 +17,7 @@ async function clearWalletState(page: import("@playwright/test").Page) {
     window.localStorage.removeItem("yb_wallet_override");
     window.localStorage.removeItem("yb_wallet_network");
     window.localStorage.removeItem("yb_wallet_provider");
+    window.localStorage.removeItem("yb_judge_mode");
   });
 }
 
@@ -41,6 +42,7 @@ async function enableDemoWatchMode(page: import("@playwright/test").Page) {
       window.localStorage.setItem("yb_wallet_override", wallet);
       window.localStorage.setItem("yb_wallet_network", network);
       window.localStorage.removeItem("yb_wallet_provider");
+      window.localStorage.removeItem("yb_judge_mode");
     },
     { wallet: DEMO_WALLET, network: DEMO_NETWORK },
   );
@@ -75,7 +77,7 @@ test("judge page is reachable without wallet connection", async ({ page }) => {
   await expect(page.getByText("Vercel env checklist")).toBeVisible();
 });
 
-test("judge nav immediately enables demo watch mode for review", async ({ page }) => {
+test("judge nav enables read-only judge mode for review", async ({ page }) => {
   await clearWalletState(page);
   await page.goto(BASE, { waitUntil: "networkidle" });
 
@@ -83,8 +85,28 @@ test("judge nav immediately enables demo watch mode for review", async ({ page }
 
   await expect(page).toHaveURL(/\/judge$/);
   await expect(page.getByTestId("judge-page")).toBeVisible();
-  await expect(page.getByTestId("sidebar")).toContainText("Watch mode");
+  await expect(page.getByTestId("sidebar")).toContainText("Judge mode");
   await expect(page.getByTestId("sidebar")).toContainText(/0x8a3c/i);
+  await expect(page.getByRole("button", { name: "Exit judge mode" })).toBeVisible();
+
+  await page.getByRole("link", { name: "Open dashboard" }).click();
+  await expect(page).toHaveURL(BASE);
+  await expect(page.getByTestId("boost-yield-cta")).toBeDisabled();
+  await expect(page.getByTestId("boost-yield-cta")).toContainText("Judge Snapshot Active");
+});
+
+test("judge mode can be exited back to the normal no-wallet flow", async ({ page }) => {
+  await clearWalletState(page);
+  await page.goto(BASE, { waitUntil: "networkidle" });
+
+  await page.getByTestId("nav-judge").click();
+  await expect(page.getByTestId("sidebar")).toContainText("Judge mode");
+
+  await page.getByRole("button", { name: "Exit judge mode" }).click();
+
+  await expect(page.getByTestId("sidebar")).not.toContainText("Judge mode");
+  await expect(page.getByTestId("sidebar")).toContainText("Not connected");
+  await expect(page.getByTestId("sidebar")).not.toContainText(/0x8a3c/i);
 });
 
 test("mobile optimization modal stays scrollable and below full-screen takeover", async ({ page }) => {
@@ -160,16 +182,16 @@ test("mobile optimization modal stays scrollable and below full-screen takeover"
   await optimizeResponse;
 });
 
-test("demo watch wallet flow hydrates review data", async ({ page }) => {
+test("seeded demo wallet hydrates normal testnet data", async ({ page }) => {
   await enableDemoWatchMode(page);
   await page.goto(BASE, { waitUntil: "networkidle" });
 
-  await expect(page.getByTestId("sidebar")).toContainText(/Watch mode|Connected/);
+  await expect(page.getByTestId("sidebar")).toContainText(/Tracked wallet|Connected/);
   await expect(page.getByTestId("sidebar")).toContainText(/0x8a3c/i);
   await expect(page.getByTestId("boost-yield-cta")).toBeEnabled({ timeout: 30_000 });
 });
 
-test("1-click optimize writes a real proof from the demo watch wallet", async ({ page }) => {
+test("1-click optimize writes a real proof from the demo wallet", async ({ page }) => {
   await enableDemoWatchMode(page);
   await page.goto(BASE, { waitUntil: "networkidle" });
 
@@ -259,7 +281,7 @@ test("proof modal stays honest when no live proof tx exists", async ({ page }) =
   await expect(page.getByTestId("open-0g-explorer")).toHaveCount(0);
 });
 
-test("proof modal, history, agents, and judge routes stay accessible after watch-mode hydration", async ({
+test("proof modal, history, agents, and judge routes stay accessible after demo-wallet hydration", async ({
   page,
 }) => {
   await grantClipboard(page);

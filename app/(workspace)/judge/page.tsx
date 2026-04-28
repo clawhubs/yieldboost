@@ -72,7 +72,7 @@ export default async function JudgePage() {
               Review YieldBoost in one clean pass.
             </h1>
             <p className="mt-3 max-w-2xl text-[15px] leading-7 text-[#9daab6]">
-              YieldBoost AI finds a better low-risk yield route, shows the decision clearly, and anchors proof data into the 0G stack. This page keeps the judge story short and moves the operational detail lower.
+              YieldBoost AI finds a better low-risk yield route, shows the decision clearly, and anchors proof data into the 0G stack. This page is the read-only judging snapshot for the latest recorded testnet result.
             </p>
             <p className="mt-4 text-[13px] text-[#d8e1e8]">{data.runtimeLabel}</p>
           </div>
@@ -138,8 +138,8 @@ export default async function JudgePage() {
             <div className="mt-4 grid gap-[10px] md:grid-cols-3">
               {[
                 {
-                  title: "1-click optimization",
-                  body: "User opens the app, loads a wallet or public watch wallet, and runs one optimize action.",
+                  title: "Recorded testnet result",
+                  body: "Judge mode is focused on the latest recorded testnet proof and result, not on asking the reviewer to rerun the full flow.",
                 },
                 {
                   title: "AI recommendation",
@@ -235,7 +235,7 @@ export default async function JudgePage() {
                   ))}
                 </div>
                 <div className="mt-4 rounded-[12px] border border-[rgba(34,221,208,0.18)] bg-[rgba(34,221,208,0.06)] px-3 py-3 text-[12px] leading-6 text-[#d9eef0]">
-                  Review wallet: <span className="break-all text-white">{data.statusCards[3]?.value}</span>
+                  Snapshot wallet: <span className="break-all text-white">{data.statusCards[3]?.value}</span>
                 </div>
               </div>
             </div>
