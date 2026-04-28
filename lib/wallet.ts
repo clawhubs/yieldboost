@@ -42,6 +42,28 @@ export interface Server0GNetworkConfig extends WalletNetworkConfig {
   proofRegistryAddress?: string;
 }
 
+const DEFAULT_TESTNET_STORAGE_URL =
+  "https://indexer-storage-testnet-turbo.0g.ai";
+
+function normalizeStorageUrl(
+  key: WalletNetworkKey,
+  value: string | undefined,
+) {
+  const trimmed = value?.trim();
+  if (!trimmed) {
+    return key === "testnet" ? DEFAULT_TESTNET_STORAGE_URL : undefined;
+  }
+
+  if (
+    key === "testnet" &&
+    /(^https?:\/\/)?(indexer-storage\.0g\.ai|indexer-storage-testnet-standard\.0g\.ai)\/?$/i.test(trimmed)
+  ) {
+    return DEFAULT_TESTNET_STORAGE_URL;
+  }
+
+  return trimmed;
+}
+
 function parseChainId(value: string | undefined, fallback?: number) {
   if (!value) return fallback;
 
@@ -109,8 +131,10 @@ function getNetworkConfigs() {
         process.env.NEXT_PUBLIC_0G_TESTNET_CHAIN_NAME ?? "0G Galileo Testnet",
       chainId: testnetChainId,
       rpcUrl: "https://evmrpc-testnet.0g.ai",
-      storageUrl:
+      storageUrl: normalizeStorageUrl(
+        "testnet",
         process.env.ZG_STORAGE_URL ?? process.env.NEXT_PUBLIC_ZG_STORAGE,
+      ),
       explorerBase:
         process.env.NEXT_PUBLIC_0G_EXPLORER_BASE_URL ??
         "https://chainscan-galileo.0g.ai",
@@ -162,4 +186,20 @@ export function isWalletAddress(value: string | null | undefined) {
 
 export function resolveWalletAddress(value: string | null | undefined) {
   return isWalletAddress(value) ? value : undefined;
+}
+
+export function normalizeWalletAddress(value: string | null | undefined) {
+  return typeof value === "string" && isWalletAddress(value)
+    ? value.toLowerCase()
+    : undefined;
+}
+
+export function sameWalletAddress(
+  left: string | null | undefined,
+  right: string | null | undefined,
+) {
+  const normalizedLeft = normalizeWalletAddress(left);
+  const normalizedRight = normalizeWalletAddress(right);
+
+  return Boolean(normalizedLeft && normalizedRight && normalizedLeft === normalizedRight);
 }

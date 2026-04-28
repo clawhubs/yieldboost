@@ -55,6 +55,25 @@ function joinNotes(...notes: Array<string | undefined>) {
   return values.length ? values.join(",") : undefined;
 }
 
+function getStorageUrlCandidates(
+  networkKey: WalletNetworkKey,
+  configuredUrl: string | undefined,
+) {
+  const candidates =
+    networkKey === "testnet"
+      ? [
+          configuredUrl,
+          "https://indexer-storage-testnet-turbo.0g.ai",
+          "https://indexer-storage-testnet-standard.0g.ai",
+        ]
+      : [configuredUrl];
+
+  return candidates.filter(
+    (value, index, items): value is string =>
+      Boolean(value) && items.indexOf(value) === index,
+  );
+}
+
 export async function POST(req: NextRequest) {
   const payload = (await req.json()) as {
     decision?: unknown;
@@ -108,27 +127,65 @@ export async function POST(req: NextRequest) {
     try {
       const provider = new JsonRpcProvider(config.rpcUrl);
       const signer = new Wallet(config.privateKey, provider);
-      const indexer = new Indexer(config.storageUrl);
-      
-      console.log("0G Storage upload starting...");
-      console.log("Storage URL:", config.storageUrl);
-      console.log("RPC URL:", config.rpcUrl);
-      
-      const [uploadResult, uploadError] = await indexer.upload(file, config.rpcUrl, signer);
+      const storageUrlCandidates = getStorageUrlCandidates(
+        networkKey,
+        config.storageUrl,
+      );
 
-      if (uploadError) {
-        console.error("0G Storage upload error:", uploadError);
+      console.log("0G Storage upload starting...");
+      console.log("Storage URL candidates:", storageUrlCandidates);
+      console.log("RPC URL:", config.rpcUrl);
+
+      let uploadResult:
+        | {
+            txHash: string;
+            rootHash: string;
+          }
+        | {
+            txHashes: string[];
+            rootHashes: string[];
+          }
+        | null = null;
+      let lastUploadError: unknown = null;
+
+      for (const storageUrl of storageUrlCandidates) {
+        try {
+          const indexer = new Indexer(storageUrl);
+          const [nextUploadResult, uploadError] = await indexer.upload(
+            file,
+            config.rpcUrl,
+            signer,
+          );
+
+          if (uploadError) {
+            lastUploadError = uploadError;
+            console.error(`0G Storage upload error via ${storageUrl}:`, uploadError);
+            continue;
+          }
+
+          uploadResult = nextUploadResult;
+          console.log(`0G Storage upload success via ${storageUrl}:`, uploadResult);
+          break;
+        } catch (error) {
+          lastUploadError = error;
+          console.error(`0G Storage upload threw via ${storageUrl}:`, error);
+        }
+      }
+
+      if (!uploadResult) {
+        const message =
+          lastUploadError instanceof Error
+            ? lastUploadError.message
+            : "0G storage upload failed across all configured endpoints.";
+
         return NextResponse.json(
           {
             success: false,
-            error: uploadError.message,
-            details: uploadError,
+            error: message,
           },
           { status: 502 },
         );
       }
-      
-      console.log("0G Storage upload success:", uploadResult);
 
       const txHash =
         "txHash" in uploadResult ? uploadResult.txHash : uploadResult.txHashes[0];

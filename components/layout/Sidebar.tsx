@@ -102,6 +102,8 @@ export default function Sidebar() {
 
   const providerRef = useRef<InjectedProvider | null>(null);
   const providerIdRef = useRef<string | null>(null);
+  const walletAddrRef = useRef<string | null>(null);
+  const selectedNetworkRef = useRef<WalletNetworkKey>("testnet");
   const listenersRef = useRef<{
     accountsChanged: (...args: unknown[]) => void;
     chainChanged: (...args: unknown[]) => void;
@@ -114,6 +116,14 @@ export default function Sidebar() {
   );
   const isCustomWatchMode = !connected && Boolean(walletAddr);
   const activeWalletAddress = walletAddr ?? "";
+
+  useEffect(() => {
+    walletAddrRef.current = walletAddr;
+  }, [walletAddr]);
+
+  useEffect(() => {
+    selectedNetworkRef.current = selectedNetwork;
+  }, [selectedNetwork]);
 
   const broadcastWalletChange = useCallback((
     nextWalletAddress: string | null | undefined,
@@ -176,7 +186,7 @@ export default function Sidebar() {
         accounts.find((item): item is string => typeof item === "string") ?? null;
 
       if (!nextAccount || !isWalletAddress(nextAccount)) {
-        applyDisconnectedState(selectedNetwork);
+        applyDisconnectedState(selectedNetworkRef.current);
         return;
       }
 
@@ -185,7 +195,7 @@ export default function Sidebar() {
       setErrorText(null);
       localStorage.setItem(WALLET_OVERRIDE_STORAGE_KEY, nextAccount);
       localStorage.setItem(WALLET_PROVIDER_STORAGE_KEY, providerId);
-      broadcastWalletChange(nextAccount, selectedNetwork, providerName, true);
+      broadcastWalletChange(nextAccount, selectedNetworkRef.current, providerName, true);
     };
 
     const chainChanged = (chainIdValue: unknown) => {
@@ -200,11 +210,19 @@ export default function Sidebar() {
       setSelectedNetwork(matchedNetwork);
       localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, matchedNetwork);
       setCookie(WALLET_NETWORK_COOKIE_KEY, matchedNetwork);
-      broadcastWalletChange(walletAddr, matchedNetwork, providerName, true);
+      const nextWalletAddress =
+        walletAddrRef.current ??
+        localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY);
+
+      if (!nextWalletAddress || !isWalletAddress(nextWalletAddress)) {
+        return;
+      }
+
+      broadcastWalletChange(nextWalletAddress, matchedNetwork, providerName, true);
     };
 
     const disconnect = () => {
-      applyDisconnectedState(selectedNetwork);
+      applyDisconnectedState(selectedNetworkRef.current);
     };
 
     provider.on?.("accountsChanged", accountsChanged);
@@ -214,7 +232,7 @@ export default function Sidebar() {
     providerRef.current = provider;
     providerIdRef.current = providerId;
     listenersRef.current = { accountsChanged, chainChanged, disconnect };
-  }, [applyDisconnectedState, broadcastWalletChange, cleanupProviderListeners, selectedNetwork, walletAddr]);
+  }, [applyDisconnectedState, broadcastWalletChange, cleanupProviderListeners]);
 
   useEffect(() => {
     function refreshWalletOptions() {

@@ -11,6 +11,7 @@ import {
   buildSettingsResponse,
   getDefaultSettingsState,
 } from "@/lib/backend-data";
+import { sameWalletAddress } from "@/lib/wallet";
 
 const PROOFS_KEY = "yieldboost:proofs";
 const SETTINGS_KEY = "yieldboost:settings";
@@ -129,6 +130,13 @@ export async function getStoredProofByCid(
 export async function getLatestStoredProof(): Promise<StoredProofRecord | null> {
   const proofs = await getStoredProofs();
   return proofs[0] ?? null;
+}
+
+export async function getLatestStoredProofForWallet(
+  walletAddress: string,
+): Promise<StoredProofRecord | null> {
+  const proofs = await getStoredProofs();
+  return proofs.find((proof) => sameWalletAddress(proof.walletAddress, walletAddress)) ?? null;
 }
 
 export async function getSettingsState(): Promise<SettingsState> {

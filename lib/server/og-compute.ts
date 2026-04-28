@@ -18,12 +18,63 @@ export interface ComputeResult {
   text: string;
   attestation?: TEEAttestation;
   provider: "0g-tee" | "fallback";
+  error?: string;
 }
 
 // Type for the broker instance (inferred from SDK)
 type ZGBroker = Awaited<ReturnType<typeof createZGComputeNetworkBroker>>;
 
 let brokerInstance: ZGBroker | null = null;
+const MIN_INFERENCE_SUBACCOUNT_FUND = BigInt(10 ** 18);
+
+function extractErrorMessage(error: unknown) {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  if (typeof error === "object" && error !== null && "shortMessage" in error) {
+    const shortMessage = (error as { shortMessage?: unknown }).shortMessage;
+    if (typeof shortMessage === "string" && shortMessage.length > 0) {
+      return shortMessage;
+    }
+  }
+
+  return String(error);
+}
+
+async function ensureInferenceSubAccount(
+  broker: ZGBroker,
+  providerAddress: string,
+  wallet: ethers.Wallet,
+) {
+  try {
+    await broker.inference.getAccount(providerAddress);
+    return;
+  } catch (error) {
+    const message = extractErrorMessage(error);
+    if (!/AccountNotExists|Account does not exist|Sub-account not found/i.test(message)) {
+      throw error;
+    }
+  }
+
+  const provider = wallet.provider;
+  const nativeBalance = provider
+    ? await provider.getBalance(wallet.address)
+    : BigInt(0);
+
+  if (nativeBalance < MIN_INFERENCE_SUBACCOUNT_FUND) {
+    throw new Error(
+      `0G Compute wallet ${wallet.address} needs at least 1.0 0G to initialize the inference sub-account. Current balance: ${ethers.formatUnits(nativeBalance, 18)} 0G.`,
+    );
+  }
+
+  console.log("0G Compute: Creating inference sub-account with initial 1.0 0G funding...");
+  await broker.ledger.transferFund(
+    providerAddress,
+    "inference",
+    MIN_INFERENCE_SUBACCOUNT_FUND,
+  );
+}
 
 /**
  * Initialize 0G Compute broker
@@ -81,19 +132,34 @@ export async function runTEEInference(
     return {
       text: "",
       provider: "fallback",
+      error: "Broker not available",
     };
   }
 
   const providerAddress = process.env.ZG_COMPUTE_PROVIDER_ADDRESS;
+  const privateKey = process.env.ZG_LEDGER_PRIVATE_KEY;
   if (!providerAddress) {
     console.warn("0G Compute: Missing ZG_COMPUTE_PROVIDER_ADDRESS");
     return {
       text: "",
       provider: "fallback",
+      error: "Missing compute provider address",
+    };
+  }
+  if (!privateKey) {
+    return {
+      text: "",
+      provider: "fallback",
+      error: "Missing ledger private key",
     };
   }
 
   try {
+    const provider = new ethers.JsonRpcProvider("https://evmrpc-testnet.0g.ai");
+    const wallet = new ethers.Wallet(privateKey, provider);
+
+    await ensureInferenceSubAccount(broker, providerAddress, wallet);
+
     console.log(`0G Compute: Getting service metadata for provider ${providerAddress}`);
 
     // Get service metadata
@@ -133,10 +199,12 @@ export async function runTEEInference(
     });
 
     if (!response.ok) {
-      console.error(`0G Compute: Inference request failed with status ${response.status}`);
+      const responseBody = await response.text();
+      console.error(`0G Compute: Inference request failed with status ${response.status}`, responseBody);
       return {
         text: "",
         provider: "fallback",
+        error: `Inference HTTP ${response.status}: ${responseBody.slice(0, 240)}`,
       };
     }
 
@@ -161,9 +229,11 @@ export async function runTEEInference(
     };
   } catch (error) {
     console.error("0G Compute: Inference error", error);
+    const message = extractErrorMessage(error);
     return {
       text: "",
       provider: "fallback",
+      error: message,
     };
   }
 }

@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { JsonRpcProvider } from "ethers";
 import { createDecisionSummary } from "@/lib/backend-data";
 import { type OptimizationResult } from "@/lib/optimizations";
-import { getLatestStoredProof } from "@/lib/server/runtime-store";
+import { getLatestStoredProofForWallet } from "@/lib/server/runtime-store";
 import {
   getServer0GNetworkConfig,
   resolveWalletAddress,
   resolveWalletNetworkKey,
+  sameWalletAddress,
   WALLET_COOKIE_KEY,
   WALLET_NETWORK_COOKIE_KEY,
 } from "@/lib/wallet";
@@ -28,13 +29,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: true, data: null });
   }
 
-  const storedProof = await getLatestStoredProof();
+  const storedProof = await getLatestStoredProofForWallet(requestedWallet);
 
   if (!storedProof) {
     return NextResponse.json({ success: true, data: null });
   }
 
-  if (storedProof.walletAddress && storedProof.walletAddress !== requestedWallet) {
+  if (
+    storedProof.walletAddress &&
+    !sameWalletAddress(storedProof.walletAddress, requestedWallet)
+  ) {
     return NextResponse.json({ success: true, data: null });
   }
 

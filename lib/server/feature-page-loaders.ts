@@ -1,6 +1,6 @@
 import "server-only";
 
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import type {
   AnalyticsResponse,
   HistoryResponse,
@@ -10,7 +10,9 @@ import type {
   StrategiesResponse,
   WatchlistResponse,
 } from "@/lib/backend-data";
+import { buildWatchlistFromState } from "@/lib/backend-data";
 import { featurePageConfigs } from "@/lib/feature-pages";
+import { getLivePortfolioSnapshot } from "@/lib/server/live-portfolio";
 import {
   mapAnalyticsApiToFeatureConfig,
   mapHistoryApiToFeatureConfig,
@@ -20,6 +22,14 @@ import {
   mapStrategiesApiToFeatureConfig,
   mapWatchlistApiToFeatureConfig,
 } from "@/lib/server/feature-page-mappers";
+import { getSettingsState, getStoredProofs } from "@/lib/server/runtime-store";
+import {
+  resolveWalletAddress,
+  resolveWalletNetworkKey,
+  sameWalletAddress,
+  WALLET_COOKIE_KEY,
+  WALLET_NETWORK_COOKIE_KEY,
+} from "@/lib/wallet";
 
 function stripTrailingSlash(value: string) {
   return value.endsWith("/") ? value.slice(0, -1) : value;
@@ -53,8 +63,15 @@ async function fetchRouteJson<T>(path: string) {
     throw new Error(`Unable to resolve app URL for ${path}`);
   }
 
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore
+    .getAll()
+    .map((entry) => `${entry.name}=${entry.value}`)
+    .join("; ");
+
   const response = await fetch(`${appUrl}${path}`, {
     cache: "no-store",
+    headers: cookieHeader ? { cookie: cookieHeader } : undefined,
   });
 
   if (!response.ok) {
@@ -115,7 +132,24 @@ export async function getAnalyticsPageConfig() {
 
 export async function getWatchlistPageConfig() {
   try {
-    const data = await fetchRouteJson<WatchlistResponse>("/api/watchlist");
+    const cookieStore = await cookies();
+    const walletAddress = resolveWalletAddress(cookieStore.get(WALLET_COOKIE_KEY)?.value);
+    const networkKey = resolveWalletNetworkKey(
+      cookieStore.get(WALLET_NETWORK_COOKIE_KEY)?.value,
+    );
+    const [portfolio, settings, proofs] = await Promise.all([
+      getLivePortfolioSnapshot(walletAddress, networkKey),
+      getSettingsState(),
+      getStoredProofs(),
+    ]);
+    const scopedProofs = walletAddress
+      ? proofs.filter((proof) => sameWalletAddress(proof.walletAddress, walletAddress))
+      : [];
+    const data: WatchlistResponse = buildWatchlistFromState(
+      scopedProofs,
+      settings,
+      portfolio,
+    );
     return mapWatchlistApiToFeatureConfig(data);
   } catch {
     return featurePageConfigs.watchlist;

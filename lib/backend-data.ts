@@ -18,6 +18,9 @@ export interface PortfolioResponse {
   walletAddress?: string;
   source?: string;
   latestTxHash?: string;
+  displayTotal?: number;
+  displayUnit?: string;
+  displayLabel?: string;
 }
 
 export interface PortfolioSummaryResponse {
@@ -272,10 +275,17 @@ function round(value: number, digits = 2) {
   return Math.round(value * multiplier) / multiplier;
 }
 
+function roundDisplayValue(value: number) {
+  return round(value, Math.abs(value) > 0 && Math.abs(value) < 1 ? 6 : 2);
+}
+
 function formatCurrency(value: number) {
+  const isWhole = value % 1 === 0;
+  const useHighPrecision = Math.abs(value) > 0 && Math.abs(value) < 1;
+
   return `$${value.toLocaleString("en-US", {
-    maximumFractionDigits: value % 1 === 0 ? 0 : 2,
-    minimumFractionDigits: value % 1 === 0 ? 0 : 2,
+    maximumFractionDigits: isWhole ? 0 : useHighPrecision ? 6 : 2,
+    minimumFractionDigits: isWhole ? 0 : useHighPrecision ? 2 : 2,
   })}`;
 }
 
@@ -327,11 +337,15 @@ export function getMockPortfolio(): PortfolioResponse {
 export function getPortfolioValueMap(
   portfolio?: PortfolioResponse,
 ) {
-  const tokens = portfolio?.tokens ?? portfolioTokens;
+  const tokens = portfolio ? portfolio.tokens : portfolioTokens;
 
   return Object.fromEntries(
     tokens.map((token) => [token.symbol, token.valueUSD]),
   ) as Record<string, number>;
+}
+
+function hasWalletContext(portfolio?: PortfolioResponse) {
+  return Boolean(portfolio?.walletAddress);
 }
 
 function createOptimizationResultFromProof(
@@ -376,31 +390,55 @@ function createOptimizationResultFromProof(
 
 function getActiveSnapshot(
   proofs: StoredProofRecord[] = [],
-  portfolio: PortfolioResponse = getMockPortfolio(),
+  portfolio?: PortfolioResponse,
 ) {
   if (proofs[0]) {
     return createOptimizationResultFromProof(proofs[0]);
   }
 
-  return buildOptimizationSnapshot(getPortfolioValueMap(portfolio));
+  return buildOptimizationSnapshot(getPortfolioValueMap(portfolio ?? { tokens: [], totalUSD: 0, currentAPY: 0 }));
 }
 
 function getPortfolioBreakdown(portfolio: PortfolioResponse) {
   const total = portfolio.totalUSD || 0;
 
-  return (portfolio.tokens.length > 0 ? portfolio.tokens : getMockPortfolio().tokens).map((token) => ({
+  return portfolio.tokens.map((token) => ({
     ...token,
     pct: total > 0 ? round((token.valueUSD / total) * 100, 1) : 0,
   }));
 }
 
 export function buildPortfolioSummaryFromPortfolio(
-  portfolio: PortfolioResponse = getMockPortfolio(),
+  portfolio: PortfolioResponse,
   proofs: StoredProofRecord[] = [],
 ): PortfolioSummaryResponse {
+  if (!hasWalletContext(portfolio)) {
+    return {
+      hero: {
+        totalPortfolio: 0,
+        idleCapital: 0,
+        syncPct: 0,
+        trackedPositions: 0,
+      },
+      allocation: [],
+      positions: [],
+      health: {
+        diversification: "Connect wallet to load live allocation data",
+        slippageBudget: "Unavailable until wallet is connected",
+        riskProfile: "Awaiting live wallet context",
+      },
+      reviewerNotes: {
+        syncStatus: "Wallet disconnected",
+        nextTrigger: "Connect wallet to read portfolio state",
+        proofMode: "Proof data is hidden until a wallet is active",
+      },
+    };
+  }
+
   const snapshot = getActiveSnapshot(proofs, portfolio);
   const breakdown = getPortfolioBreakdown(portfolio);
   const topTokens = breakdown.slice(0, 4);
+  const usesNativeDisplay = portfolio.displayUnit === "0G";
   const idleCapital = round(
     proofs[0]
       ? Math.max(
@@ -413,10 +451,10 @@ export function buildPortfolioSummaryFromPortfolio(
 
   return {
     hero: {
-      totalPortfolio: round(portfolio.totalUSD || snapshot.totalPortfolio, 2),
-      idleCapital,
-      syncPct: proofs[0] ? 100 : portfolio.tokens.length > 0 ? 98.4 : 92,
-      trackedPositions: Math.max(portfolio.tokens.length, 1),
+      totalPortfolio: roundDisplayValue(portfolio.totalUSD || snapshot.totalPortfolio),
+      idleCapital: roundDisplayValue(idleCapital),
+      syncPct: proofs[0] ? 100 : portfolio.tokens.length > 0 ? 98.4 : 0,
+      trackedPositions: portfolio.tokens.length,
     },
     allocation: topTokens.map((token, index) => ({
       symbol: token.symbol,
@@ -460,12 +498,16 @@ export function buildPortfolioSummaryFromPortfolio(
           ? `Healthy across ${topTokens.length} tracked assets`
           : "Concentrated wallet, consider diversification",
       slippageBudget: "0.8% max for auto execution",
-      riskProfile: `${snapshot.riskProfile} with capital preservation bias`,
+      riskProfile: usesNativeDisplay
+        ? `${snapshot.riskProfile} with native 0G wallet balance from RPC`
+        : `${snapshot.riskProfile} with capital preservation bias`,
     },
     reviewerNotes: {
       syncStatus: proofs[0]
         ? "Latest optimization anchored to 0G Storage"
-        : "Wallet snapshot available for the next optimization run",
+        : usesNativeDisplay
+          ? "Wallet snapshot mirrors the native 0G RPC balance"
+          : "Wallet snapshot available for the next optimization run",
       nextTrigger:
         idleCapital > 0
           ? `Optimize once idle capital exceeds ${formatCurrency(idleCapital)}`
@@ -940,8 +982,41 @@ export function getMockAnalytics(): AnalyticsResponse {
 
 export function buildAnalyticsFromProofs(
   proofs: StoredProofRecord[],
-  portfolio: PortfolioResponse = getMockPortfolio(),
+  portfolio: PortfolioResponse,
 ): AnalyticsResponse {
+  if (!hasWalletContext(portfolio)) {
+    return {
+      hero: {
+        avgApyLift: "+0.00%",
+        avgExecution: "0.00s",
+        computeJobs: "0",
+        uptime: "Standby",
+      },
+      overview: [
+        { label: "Gross Yield Lift", value: "+0.00%", note: "Connect wallet to load live analytics" },
+        { label: "Net Gain After Fees", value: "$0", note: "No active wallet context" },
+        { label: "Risk Compression", value: "0%", note: "No route selected" },
+        { label: "Proof Completion", value: "0%", note: "No wallet-connected proof history" },
+      ],
+      matrix: [
+        { metric: "APY Improvement", current: "0.00%", benchmark: "0.00%", direction: "Flat", state: "standby" },
+        { metric: "Execution Time", current: "0.00s", benchmark: "0.00s", direction: "Flat", state: "standby" },
+        { metric: "Proof Coverage", current: "0%", benchmark: "0%", direction: "Flat", state: "standby" },
+        { metric: "Risk Deviation", current: "Standby", benchmark: "Standby", direction: "Flat", state: "standby" },
+      ],
+      efficiency: {
+        computeEfficiency: "Connect wallet to start analytics",
+        storageFootprint: "No wallet-connected proof snapshots",
+        explorerCoverage: "Explorer links appear after a live run",
+      },
+      modelConfidence: {
+        averageConfidence: "0% until wallet is connected",
+        fallbackUsage: "Standby",
+        userExplainability: "Reasoning stream appears during live optimization",
+      },
+    };
+  }
+
   const snapshot = getActiveSnapshot(proofs, portfolio);
   const totalRuns = proofs.length;
   const averageLift =
@@ -1113,8 +1188,31 @@ export function getMockWatchlist(): WatchlistResponse {
 export function buildWatchlistFromState(
   proofs: StoredProofRecord[],
   settings: SettingsState = getDefaultSettingsState(),
-  portfolio: PortfolioResponse = getMockPortfolio(),
+  portfolio: PortfolioResponse,
 ): WatchlistResponse {
+  if (!hasWalletContext(portfolio)) {
+    return {
+      hero: {
+        watchedPools: 0,
+        hotSignals: 0,
+        idleCandidates: 0,
+        alertsToday: 0,
+      },
+      protocolsUnderWatch: [],
+      alerts: [],
+      conditions: {
+        yieldDelta: "Connect wallet to enable monitoring",
+        liquidityGuard: `Will use ${settings.maxSlippage} once wallet is active`,
+        proofPreference: "Proof-first routing resumes after wallet connect",
+      },
+      quickActions: {
+        promoteToOpportunity: "Unavailable while disconnected",
+        sendToAgent: "Connect wallet first",
+        archiveSignal: "No live signals to archive",
+      },
+    };
+  }
+
   const snapshot = getActiveSnapshot(proofs, portfolio);
   const breakdown = getPortfolioBreakdown(portfolio);
   const hotSignals = Math.min(7, Math.max(1, snapshot.top_protocols.length + (proofs.length > 0 ? 2 : 1)));
@@ -1274,8 +1372,31 @@ export function buildSettingsResponse(
 export function buildStrategiesFromState(
   proofs: StoredProofRecord[],
   settings: SettingsState = getDefaultSettingsState(),
-  portfolio: PortfolioResponse = getMockPortfolio(),
+  portfolio: PortfolioResponse,
 ): StrategiesResponse {
+  if (!hasWalletContext(portfolio)) {
+    return {
+      hero: {
+        liveStrategies: 0,
+        avgConfidence: 0,
+        simulatedRoutes: 0,
+        guardrailsActive: 0,
+      },
+      stack: [],
+      templates: [],
+      guardrails: {
+        maxSlippage: `${settings.maxSlippage} per route`,
+        riskEscalation: "Standby until wallet is connected",
+        proofRequirement: "Unavailable while disconnected",
+      },
+      queue: {
+        queuedTemplates: "0 waiting for review",
+        autoEligible: "0 can run immediately",
+        needsManualReview: "0 need confirmation",
+      },
+    };
+  }
+
   const snapshot = getActiveSnapshot(proofs, portfolio);
   const breakdown = getPortfolioBreakdown(portfolio);
   const liveStrategies = Math.max(1, snapshot.top_protocols.length + breakdown.length);
@@ -1357,20 +1478,41 @@ export function buildStrategiesFromState(
 export function buildOpportunitiesFromState(
   proofs: StoredProofRecord[],
   settings: SettingsState = getDefaultSettingsState(),
-  portfolio: PortfolioResponse = getMockPortfolio(),
+  portfolio: PortfolioResponse,
 ): OpportunitiesResponse {
+  if (!hasWalletContext(portfolio)) {
+    return {
+      hero: {
+        topEstimatedApy: 0,
+        signalsMonitored: 0,
+        opportunitiesReady: 0,
+        proofEligiblePct: 0,
+      },
+      rankedHighlights: [],
+      board: [],
+      selectionLogic: {
+        momentumWeight: "Standby until wallet is connected",
+        riskFilter: `Will enforce ${settings.riskProfile.toLowerCase()} posture after connect`,
+        proofGate: "No live route evaluation while disconnected",
+      },
+      executionReadiness: {
+        autoExecutable: "0 routes ready right now",
+        manualReview: "0 routes need review",
+        slippageWindow: `0.0% to ${settings.maxSlippage}`,
+      },
+    };
+  }
+
   const snapshot = getActiveSnapshot(proofs, portfolio);
-  const protocols = snapshot.top_protocols.length > 0 ? snapshot.top_protocols : [
-    { name: snapshot.recommended, apy: snapshot.optimized_apy, risk: "medium" as const },
-  ];
+  const protocols = snapshot.top_protocols;
   const ready = protocols.filter((protocol) => protocol.risk !== "high").length;
 
   return {
     hero: {
-      topEstimatedApy: Math.max(...protocols.map((protocol) => protocol.apy)),
+      topEstimatedApy: protocols.length > 0 ? Math.max(...protocols.map((protocol) => protocol.apy)) : 0,
       signalsMonitored: Math.max(4, portfolio.tokens.length * 6),
       opportunitiesReady: ready,
-      proofEligiblePct: 100,
+      proofEligiblePct: protocols.length > 0 ? 100 : 0,
     },
     rankedHighlights: [
       {

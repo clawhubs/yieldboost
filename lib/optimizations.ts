@@ -93,6 +93,10 @@ export function createYieldSeries(current: number, optimized: number, points = 3
 }
 
 export function buildNarrative(result: OptimizationResult, prompt?: string) {
+  if (result.totalPortfolio <= 0 || result.top_protocols.length === 0) {
+    return "Wallet connected, but no supported on-chain balances were detected yet. Fund the wallet with native 0G or add supported assets before running a real optimization pass.";
+  }
+
   const instruction = prompt ? `Request: ${prompt}. ` : "";
   return `${instruction}YieldBoost rerouted idle stablecoin and 0G exposure into SaucerSwap LP, high-yield 0G staking, and a safer BONZO rebalance. Estimated APY rises to ${result.optimized_apy}% with moderated slippage, diversified protocol exposure, and proof anchored to 0G Compute plus 0G Storage.`;
 }
@@ -101,13 +105,38 @@ export function buildOptimizationSnapshot(
   portfolioInput?: Record<string, number>,
   prompt?: string,
 ): OptimizationResult {
+  const hasExplicitPortfolio = portfolioInput !== undefined;
   const portfolio = portfolioSchema.parse(portfolioInput ?? DEFAULT_PORTFOLIO);
-  const totalPortfolio =
-    Object.values(portfolio).reduce((sum, value) => sum + value, 0) || 24570.25;
+  const totalPortfolio = round(
+    Object.values(portfolio).reduce((sum, value) => sum + value, 0),
+    2,
+  );
+
+  if (hasExplicitPortfolio && totalPortfolio <= 0) {
+    const emptySnapshot: OptimizationResult = {
+      current_apy: 0,
+      optimized_apy: 0,
+      yield_increase: 0,
+      yield_increase_pct: 0,
+      top_protocols: [],
+      recommended: "Fund wallet / add supported assets",
+      confidence: 0,
+      timestamp: new Date().toISOString(),
+      executionSeconds: 0.42,
+      estimatedAnnualGain: 0,
+      totalPortfolio: 0,
+      riskProfile: "Low",
+    };
+
+    emptySnapshot.reasoning = buildNarrative(emptySnapshot, promptSchema.parse(prompt));
+    return emptySnapshot;
+  }
+
+  const normalizedTotalPortfolio = totalPortfolio || 24570.25;
 
   const currentApy = 12.38;
   const optimizedApy = 23.84;
-  const estimatedAnnualGain = round(totalPortfolio * 0.0959, 2);
+  const estimatedAnnualGain = round(normalizedTotalPortfolio * 0.0959, 2);
 
   const snapshot: OptimizationResult = {
     current_apy: currentApy,
@@ -124,7 +153,7 @@ export function buildOptimizationSnapshot(
     timestamp: new Date().toISOString(),
     executionSeconds: 8.42,
     estimatedAnnualGain,
-    totalPortfolio: round(totalPortfolio, 2),
+    totalPortfolio: normalizedTotalPortfolio,
     riskProfile: "Moderate",
   };
 

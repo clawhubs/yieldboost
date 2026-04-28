@@ -35,6 +35,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 const ProofModal = lazy(() => import("@/components/modals/ProofModal"));
+const OptimizationLoadingModal = lazy(() => import("@/components/modals/OptimizationLoadingModal"));
 const HeroChart = lazy(() => import("@/components/dashboard/HeroChart"));
 import { useYieldOptimizer } from "@/hooks/useYieldOptimizer";
 import { usePortfolio } from "@/hooks/usePortfolio";
@@ -91,13 +92,23 @@ const footerItems = [
 const EXPLORER_BASE = "https://chainscan-galileo.0g.ai";
 const walletNetworks = getAvailableWalletNetworks();
 
+function formatPortfolioMetricValue(value: number, unit?: string) {
+  const isNativeBalance = unit === "0G";
+  const formatted = value.toLocaleString("en-US", {
+    minimumFractionDigits: value > 0 && value < 1 ? 6 : 0,
+    maximumFractionDigits: value > 0 && value < 1 ? 6 : 2,
+  });
+
+  return isNativeBalance ? `${formatted} ${unit}` : `$${formatted}`;
+}
+
 export default function DashboardView() {
   const [proofOpen, setProofOpen] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [alertsOpen, setAlertsOpen] = useState(false);
   const [walletMenuOpen, setWalletMenuOpen] = useState(false);
   const { latestResult, optimize, isOptimizing, progress, streamingText } = useYieldOptimizer();
-  const { portfolio, networkKey } = usePortfolio();
+  const { portfolio, networkKey, loading } = usePortfolio();
   const alertsRef = useRef<HTMLDivElement | null>(null);
   const walletMenuRef = useRef<HTMLDivElement | null>(null);
   const [globalStats, setGlobalStats] = useState<{
@@ -165,7 +176,20 @@ export default function DashboardView() {
     [portfolio],
   );
 
-  const canOptimize = Object.keys(livePortfolio).length > 0 && !isOptimizing;
+  const portfolioWalletLabel = portfolio?.walletAddress
+    ? `${portfolio.walletAddress.slice(0, 6)}...${portfolio.walletAddress.slice(-4)}`
+    : "wallet connected";
+  const walletConnected = Boolean(portfolio?.walletAddress);
+  const hasDetectedAssets = Object.keys(livePortfolio).length > 0;
+  const canOptimize = walletConnected && hasDetectedAssets && !loading && !isOptimizing;
+  const walletStatusLabel = latestResult
+    ? `Live · ${new Date(latestResult.timestamp).toLocaleTimeString()}`
+    : hasDetectedAssets
+      ? `Wallet live · ${portfolioWalletLabel}`
+      : walletConnected
+        ? "Wallet connected · no supported balance detected"
+        : "Awaiting live wallet data";
+  const walletStatusTone = latestResult || hasDetectedAssets ? "text-[#22e070]" : "text-[#d9a441]";
 
   async function runDashboardOptimization() {
     if (!canOptimize) return;
@@ -182,6 +206,12 @@ export default function DashboardView() {
     const confidence = latestResult?.confidence ?? 0;
     return { totalPortfolio, currentApy, optimizedApy, yieldIncreasePct, estimatedAnnualGain, confidence };
   }, [latestResult, portfolio]);
+  const portfolioMetricValue = formatPortfolioMetricValue(
+    live.totalPortfolio,
+    portfolio?.displayUnit,
+  );
+  const portfolioMetricLabel =
+    portfolio?.displayUnit === "0G" ? "TOTAL 0G BALANCE" : "TOTAL PORTFOLIO VALUE";
 
   const liveDecisions = useMemo(() => {
     if (!latestResult) return decisionItems as readonly string[];
@@ -189,13 +219,13 @@ export default function DashboardView() {
     const bullets: string[] = [
       `${latestResult.recommended} selected with ${latestResult.confidence}% confidence`,
       `APY lift ${latestResult.current_apy}% → ${latestResult.optimized_apy}% (+${latestResult.yield_increase_pct}%)`,
-      `Projected annual gain +$${gain} on $${live.totalPortfolio.toLocaleString()} portfolio`,
+      `Projected annual gain +$${gain} on ${portfolioMetricValue} portfolio`,
       latestResult.proofRegistryProofId
         ? `ProofRegistry entry #${latestResult.proofRegistryProofId} recorded on 0G Galileo`
         : `Proof anchored to 0G Storage (CID ${latestResult.storageProof?.slice(0, 10) ?? "pending"}…)`,
     ];
     return bullets;
-  }, [latestResult, live.totalPortfolio]);
+  }, [latestResult, portfolioMetricValue]);
 
   const liveOpportunities = useMemo(() => {
     if (!latestResult || latestResult.top_protocols.length === 0) return opportunities;
@@ -208,9 +238,6 @@ export default function DashboardView() {
     }));
   }, [latestResult]);
 
-  const portfolioWalletLabel = portfolio?.walletAddress
-    ? `${portfolio.walletAddress.slice(0, 6)}...${portfolio.walletAddress.slice(-4)}`
-    : "wallet connected";
   const activeNetwork = walletNetworks.find((item) => item.key === networkKey) ?? walletNetworks[0];
 
   const statusTimeLabel = latestResult
@@ -257,6 +284,7 @@ export default function DashboardView() {
     { label: "Done", key: "done" },
   ] as const;
   const activeProgressIndex = progressSteps.findIndex((step) => step.key === progress);
+  const showOptimizationModal = isOptimizing || progress === "done";
 
   return (
     <>
@@ -403,14 +431,17 @@ export default function DashboardView() {
                   data-testid="boost-yield-cta"
                   onClick={() => void runDashboardOptimization()}
                   disabled={!canOptimize}
+                  aria-busy={isOptimizing}
                   className="yb-teal-button flex h-[46px] min-w-[248px] items-center justify-center gap-3 rounded-[12px] px-5 text-left text-[#051015]"
                 >
-                  <Zap className="h-4 w-4" />
+                  {isOptimizing ? <CircleDashed className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
                   <div>
                     <div className="text-[14px] font-semibold">
-                      {isOptimizing ? "Optimizing..." : "Boost My Yield Now"}
+                      {isOptimizing ? "Optimization Running..." : "Boost My Yield Now"}
                     </div>
-                    <div className="text-[11px] text-[#0b4340]">1-Click AI Optimization</div>
+                    <div className="text-[11px] text-[#0b4340]">
+                      {isOptimizing ? "Popup optimizer sedang berjalan" : "1-Click AI Optimization"}
+                    </div>
                   </div>
                 </button>
               </div>
@@ -428,10 +459,8 @@ export default function DashboardView() {
                     ) : (
                       <>
                         <span className={`h-1.5 w-1.5 rounded-full ${portfolio?.tokens?.length ? "bg-[#22e070]" : "bg-[#d9a441]"}`} />
-                        <span className={portfolio?.tokens?.length ? "text-[#22e070]" : "text-[#d9a441]"}>
-                          {portfolio?.tokens?.length
-                            ? `Wallet live · ${portfolioWalletLabel}`
-                            : "Awaiting live wallet data"}
+                        <span className={walletStatusTone}>
+                          {walletStatusLabel}
                         </span>
                       </>
                     )}
@@ -558,7 +587,7 @@ export default function DashboardView() {
                 {[
                   {
                     label: "TOTAL PORTFOLIO VALUE",
-                    value: `$${live.totalPortfolio.toLocaleString()}`,
+                    value: portfolioMetricValue,
                     change: portfolio?.tokens?.length ? `Wallet live · ${portfolioWalletLabel}` : "Waiting for wallet sync",
                     icon: Wallet2,
                     accent: false,
@@ -601,7 +630,7 @@ export default function DashboardView() {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <div className="text-[11px] uppercase tracking-[0.04em] text-[#a7b3be]">
-                        {item.label}
+                        {index === 0 ? portfolioMetricLabel : item.label}
                       </div>
                       <div className="mt-2 text-[22px] font-semibold text-white">{item.value}</div>
                       {item.change ? (
@@ -964,11 +993,17 @@ export default function DashboardView() {
                   data-testid="execute-btn"
                   onClick={() => void runDashboardOptimization()}
                   disabled={!canOptimize}
+                  aria-busy={isOptimizing}
                   className="yb-teal-button mt-5 flex w-full items-center justify-center gap-3 rounded-[12px] px-4 py-4 text-[16px] font-semibold text-[#071217]"
                 >
-                  <Zap className="h-5 w-5" />
-                  {isOptimizing ? "Executing Optimization..." : "Execute Optimization"}
+                  {isOptimizing ? <CircleDashed className="h-5 w-5 animate-spin" /> : <Zap className="h-5 w-5" />}
+                  {isOptimizing ? "Optimization In Progress..." : "Execute Optimization"}
                 </button>
+                {walletConnected && !hasDetectedAssets ? (
+                  <div className="mt-3 text-[12px] leading-5 text-[#d3ac62]">
+                    Wallet testnet sudah connect, tapi app saat ini baru mendeteksi balance on-chain yang didukung dari snapshot RPC. Jika saldo native 0G masih 0 atau token belum terindeks, hasil real optimize belum punya posisi untuk dihitung.
+                  </div>
+                ) : null}
                 <div className="mt-4 flex items-center justify-end gap-2 text-[11px] text-[#a4b0bc]">
                   <span>{statusTimeLabel}</span>
                   <CheckCheck className="h-4 w-4 text-[#25d6c6]" />
@@ -1041,6 +1076,16 @@ export default function DashboardView() {
           </aside>
         </div>
       </section>
+
+      <Suspense fallback={null}>
+        <OptimizationLoadingModal
+          open={showOptimizationModal}
+          progress={progress}
+          streamingText={streamingText}
+          walletLabel={portfolio?.walletAddress ? portfolioWalletLabel : "Wallet not connected"}
+          portfolioValue={portfolioMetricValue}
+        />
+      </Suspense>
 
       <Suspense fallback={null}>
         <ProofModal
