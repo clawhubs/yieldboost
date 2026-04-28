@@ -128,6 +128,17 @@ ZG_MAINNET_PROOF_REGISTRY_ADDRESS=<mainnet_registry_contract>
 4. Point `ZG_NETWORK_KEY=mainnet` only after the previous steps are complete.
 5. Set the final `YIELD_STRATEGY_INFT_ADDRESS` in the mainnet deployment environment if agent contract mode is required.
 
+### Builder Funding Note
+
+Recorded exactly as provided by the builder for future mainnet prep:
+
+- `0.01 OG (1 OG)` for mainnet contract deployment:
+  - `ProofRegistry`
+  - `YieldStrategyINFT`
+- `3 OG` for mainnet TEE broker setup for Track 2 (`Agentic Trading Arena`)
+- The TEE broker is required for Sealed Inference and private execution on mainnet.
+- Without `3 OG`, contracts can still be deployed, but the mainnet TEE broker cannot be set up for private execution.
+
 ## Local Run
 
 ```bash
