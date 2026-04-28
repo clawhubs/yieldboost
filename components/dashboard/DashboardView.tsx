@@ -898,10 +898,21 @@ export default function DashboardView() {
                   <ShieldCheck className="h-4 w-4" />
                   Secured by 0G. Verified by Zero-Knowledge.
                 </div>
+                <div className="mt-3 grid grid-cols-2 gap-2 border-t border-[rgba(255,255,255,0.06)] pt-3 md:hidden">
+                  {footerItems.map((item) => (
+                    <div
+                      key={item.label}
+                      className="flex items-center justify-center gap-2 rounded-[11px] border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] px-3 py-2 text-[11px] text-[#d7dfe7]"
+                    >
+                      <item.icon className="h-4 w-4 text-[#d7dfe7]" />
+                      {item.label}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
-            <div className="yb-card rounded-[14px] px-4 py-3">
+            <div className="hidden yb-card rounded-[14px] px-4 py-3 md:block">
               <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                 {footerItems.map((item) => (
                   <div key={item.label} className="flex items-center justify-center gap-2 text-[12px] text-[#d7dfe7]">

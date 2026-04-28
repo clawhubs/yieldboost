@@ -116,15 +116,26 @@ export default function DashboardEcosystem() {
             <ImpactLine path="M8 24C18 23 23 21 32 18C40 16 46 19 55 15C63 11 71 8 80 12C88 15 93 18 100 9" />
             <ImpactLine path="M8 23C17 18 26 12 36 15C45 18 52 24 61 20C70 16 77 9 86 12C92 14 96 17 100 10" />
           </div>
-          <div className="mt-3 flex items-center gap-2 border-t border-[rgba(255,255,255,0.06)] pt-3 text-[11px] text-[#2fe06d]">
-            <ShieldCheck className="h-4 w-4" />
-            Secured by 0G. Verified by Zero-Knowledge.
-          </div>
+        <div className="mt-3 flex items-center gap-2 border-t border-[rgba(255,255,255,0.06)] pt-3 text-[11px] text-[#2fe06d]">
+          <ShieldCheck className="h-4 w-4" />
+          Secured by 0G. Verified by Zero-Knowledge.
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-2 border-t border-[rgba(255,255,255,0.06)] pt-3 md:hidden">
+          {footerItems.map((item) => (
+            <div
+              key={item.label}
+              className="flex items-center justify-center gap-2 rounded-[11px] border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] px-3 py-2 text-[11px] text-[#d7dfe7]"
+            >
+              <item.icon className="h-4 w-4 text-[#d7dfe7]" />
+              {item.label}
+            </div>
+          ))}
         </div>
       </div>
+    </div>
 
       {/* Footer trust bar */}
-      <div className="yb-card rounded-[14px] px-4 py-3">
+      <div className="hidden yb-card rounded-[14px] px-4 py-3 md:block">
         <div className="grid gap-3 md:grid-cols-4">
           {footerItems.map((item) => (
             <div key={item.label} className="flex items-center justify-center gap-2 text-[12px] text-[#d7dfe7]">
