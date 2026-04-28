@@ -3,14 +3,19 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Copy, ExternalLink, X, ShieldCheck } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { createProofDetails } from "@/lib/optimizations";
 
 interface ProofModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   cid?: string;
   txHash?: string;
+  explorerUrl?: string;
+  timestamp?: string;
   walletAddress?: string;
+  proofRegistryAddress?: string;
+  proofRegistryTxHash?: string;
+  proofRegistryProofId?: string;
+  proofRegistryExplorerUrl?: string;
   decision?: {
     current_apy: number;
     optimized_apy: number;
@@ -20,11 +25,11 @@ interface ProofModalProps {
 }
 
 interface ProofPayload {
-  cid: string;
-  txHash: string;
-  block: number;
-  timestamp: string;
-  explorerUrl: string;
+  cid?: string;
+  txHash?: string;
+  block?: number;
+  timestamp?: string;
+  explorerUrl?: string;
   walletAddress?: string;
   proofRegistryAddress?: string;
   proofRegistryTxHash?: string;
@@ -42,16 +47,26 @@ function shorten(value: string) {
   return `${value.slice(0, 10)}...${value.slice(-8)}`;
 }
 
-const EXPLORER_BASE =
-  process.env.NEXT_PUBLIC_0G_EXPLORER_BASE_URL ??
-  "https://chainscan-galileo.0g.ai";
+function buildExplorerHref(url?: string, txHash?: string) {
+  if (!url || !txHash) return null;
+  const normalized = url.trim();
+  if (!normalized) return null;
+  if (normalized.includes(txHash)) return normalized;
+  return `${normalized.replace(/\/$/, "")}/tx/${txHash}`;
+}
 
 export default function ProofModal({
   open,
   onOpenChange,
   cid,
   txHash,
+  explorerUrl,
+  timestamp,
   walletAddress,
+  proofRegistryAddress,
+  proofRegistryTxHash,
+  proofRegistryProofId,
+  proofRegistryExplorerUrl,
   decision,
 }: ProofModalProps) {
   const [copied, setCopied] = useState<"tx" | "cid" | "registryTx" | "registryAddress" | null>(null);
@@ -66,12 +81,16 @@ export default function ProofModal({
     let cancelled = false;
 
     async function loadProof() {
+      if (!cid) {
+        setProof(null);
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
 
       try {
-        const endpoint = cid
-          ? `/api/0g/proof?cid=${encodeURIComponent(cid)}`
-          : "/api/0g/proof";
+        const endpoint = `/api/0g/proof?cid=${encodeURIComponent(cid)}`;
         const response = await fetch(endpoint, { cache: "no-store" });
 
         if (!response.ok) {
@@ -109,27 +128,66 @@ export default function ProofModal({
     window.setTimeout(() => setCopied(null), 1400);
   }
 
-  const fallbackProof = useMemo<ProofPayload>(() => {
-    const generated = createProofDetails();
+  const seededProof = useMemo<ProofPayload | null>(() => {
+    const hasAnySeed =
+      Boolean(cid) ||
+      Boolean(txHash) ||
+      Boolean(explorerUrl) ||
+      Boolean(walletAddress) ||
+      Boolean(proofRegistryAddress) ||
+      Boolean(proofRegistryTxHash) ||
+      Boolean(proofRegistryProofId) ||
+      Boolean(proofRegistryExplorerUrl) ||
+      Boolean(timestamp);
+
+    if (!hasAnySeed) {
+      return null;
+    }
 
     return {
-      cid: cid ?? generated.cid,
-      txHash: txHash ?? generated.txHash,
-      block: generated.blockNumber,
-      timestamp: generated.timestamp,
-      explorerUrl: generated.explorerUrl || EXPLORER_BASE,
+      cid,
+      txHash,
+      timestamp,
+      explorerUrl,
       walletAddress,
+      proofRegistryAddress,
+      proofRegistryTxHash,
+      proofRegistryProofId,
+      proofRegistryExplorerUrl,
     };
-  }, [cid, txHash, walletAddress]);
+  }, [
+    cid,
+    explorerUrl,
+    proofRegistryAddress,
+    proofRegistryExplorerUrl,
+    proofRegistryProofId,
+    proofRegistryTxHash,
+    timestamp,
+    txHash,
+    walletAddress,
+  ]);
 
-  const activeProof = proof ?? fallbackProof;
+  const activeProof = proof ?? seededProof;
+  const explorerHref = buildExplorerHref(activeProof?.explorerUrl, activeProof?.txHash);
+  const proofRegistryHref = buildExplorerHref(
+    activeProof?.proofRegistryExplorerUrl,
+    activeProof?.proofRegistryTxHash,
+  );
+  const hasLiveVerificationHandle = Boolean(activeProof?.txHash || activeProof?.cid);
+  const statusMessage = loading
+    ? "Loading proof details from 0G..."
+    : proof
+      ? "Fetched from the live proof endpoint."
+      : hasLiveVerificationHandle
+        ? "Showing the latest proof data already captured in the app."
+        : "No live proof is available yet.";
 
   return (
     <AnimatePresence>
       {open ? (
         <motion.div
           data-testid="proof-modal"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-3 backdrop-blur-md sm:p-4"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/55 p-0 backdrop-blur-md sm:items-center sm:p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -141,7 +199,7 @@ export default function ProofModal({
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.2 }}
             onClick={(event) => event.stopPropagation()}
-            className="surface-panel teal-ring relative flex max-h-[calc(100vh-1.5rem)] w-full max-w-2xl flex-col overflow-hidden rounded-[24px] p-4 sm:max-h-[calc(100vh-2rem)] sm:rounded-[28px] sm:p-5 md:p-6"
+            className="surface-panel teal-ring relative flex max-h-[88vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-[24px] p-4 sm:max-h-[calc(100vh-2rem)] sm:rounded-[28px] sm:p-5 md:p-6"
           >
             <div className="sticky top-0 z-10 -mx-4 -mt-4 border-b border-white/8 bg-[rgba(3,6,9,0.92)] px-4 py-4 backdrop-blur-md sm:-mx-5 sm:-mt-5 sm:px-5 md:-mx-6 md:-mt-6 md:px-6">
               <div className="flex items-start justify-between gap-4">
@@ -153,7 +211,7 @@ export default function ProofModal({
                     Verifiable optimization receipt
                   </h2>
                   <p className="mt-2 text-sm text-[var(--text-muted)]">
-                    {loading ? "Loading proof details from 0G..." : activeProof ? "Fetched from the live proof endpoint." : "No live proof is available yet."}
+                    {statusMessage}
                   </p>
                 </div>
 
@@ -218,7 +276,7 @@ export default function ProofModal({
                       Block Number
                     </p>
                     <p className="mt-2 text-xl font-semibold text-white">
-                      {activeProof?.block ?? "Unavailable"}
+                      {typeof activeProof?.block === "number" ? activeProof.block : "Unavailable"}
                     </p>
                   </div>
                   <div className="surface-inset rounded-[20px] p-4 sm:rounded-[22px]">
@@ -226,12 +284,23 @@ export default function ProofModal({
                       Timestamp
                     </p>
                     <p className="mt-2 break-words text-lg font-semibold text-white sm:text-xl">
-                      {activeProof
+                      {activeProof?.timestamp
                         ? new Date(activeProof.timestamp).toLocaleString()
                         : "Unavailable"}
                     </p>
                   </div>
                 </div>
+
+                {!loading && !explorerHref ? (
+                  <div className="rounded-[20px] border border-[rgba(246,193,102,0.22)] bg-[rgba(246,193,102,0.06)] p-4 sm:rounded-[24px]">
+                    <p className="text-xs uppercase tracking-[0.18em] text-[#f6c166]">
+                      Explorer receipt unavailable
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-[#f3db9f]">
+                      This run does not have a real 0G tx hash yet, so the app will not send you to a fallback explorer page.
+                    </p>
+                  </div>
+                ) : null}
 
                 {activeProof?.walletAddress ? (
                   <div className="rounded-[20px] border border-white/8 bg-[rgba(255,255,255,0.02)] p-4 sm:rounded-[24px]">
@@ -353,10 +422,10 @@ export default function ProofModal({
                       </div>
                     </div>
 
-                    {activeProof.proofRegistryExplorerUrl ? (
+                    {proofRegistryHref ? (
                       <div className="mt-4">
                         <a
-                          href={activeProof.proofRegistryExplorerUrl}
+                          href={proofRegistryHref}
                           target="_blank"
                           rel="noreferrer"
                           className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:border-[var(--border-strong)] hover:text-[var(--accent-teal)]"
@@ -373,16 +442,18 @@ export default function ProofModal({
 
             <div className="sticky bottom-0 z-10 -mx-4 -mb-4 mt-4 border-t border-white/8 bg-[rgba(3,6,9,0.92)] px-4 py-4 backdrop-blur-md sm:-mx-5 sm:-mb-5 sm:px-5 md:-mx-6 md:-mb-6 md:px-6">
               <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <a
-                  href={activeProof?.explorerUrl ?? EXPLORER_BASE}
-                  target="_blank"
-                  rel="noreferrer"
-                  data-testid="open-0g-explorer"
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#00c9b1,#13d4ff)] px-5 py-3 text-sm font-semibold text-slate-950 transition hover:brightness-110 sm:w-auto"
-                >
-                  View on 0G Explorer
-                  <ExternalLink className="h-4 w-4" />
-                </a>
+                {explorerHref ? (
+                  <a
+                    href={explorerHref}
+                    target="_blank"
+                    rel="noreferrer"
+                    data-testid="open-0g-explorer"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#00c9b1,#13d4ff)] px-5 py-3 text-sm font-semibold text-slate-950 transition hover:brightness-110 sm:w-auto"
+                  >
+                    View on 0G Explorer
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                ) : null}
                 <button
                   type="button"
                   onClick={async () => {

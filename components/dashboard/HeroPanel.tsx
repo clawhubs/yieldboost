@@ -314,7 +314,7 @@ export default function HeroPanel({
               onClick={onOpenProof}
               className="mt-5 inline-flex items-center gap-2 rounded-full border border-[var(--border-strong)] px-4 py-3 text-sm font-semibold text-[var(--accent-teal)]"
             >
-              View on Explorer
+              Open proof details
               <ArrowUpRight className="h-4 w-4" />
             </button>
           </div>

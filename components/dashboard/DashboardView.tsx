@@ -1072,7 +1072,7 @@ export default function DashboardView() {
                 onClick={() => setProofOpen(true)}
                 className="mt-5 flex w-full items-center justify-center gap-2 rounded-[12px] border border-[#1a5b56] px-4 py-3 text-[14px] font-medium text-[#22ddd0]"
               >
-                View on Explorer →
+                Open proof details
               </button>
               <div className="mt-4 flex items-center justify-end gap-2 text-[11px] text-[#a4b0bc]">
                 <span>{statusTimeLabel}</span>
@@ -1106,7 +1106,13 @@ export default function DashboardView() {
           onOpenChange={setProofOpen}
           cid={latestResult?.storageProof}
           txHash={latestResult?.txHash}
+          explorerUrl={latestResult?.proofUrl}
+          timestamp={latestResult?.timestamp}
           walletAddress={latestResult?.walletAddress}
+          proofRegistryAddress={latestResult?.proofRegistryAddress}
+          proofRegistryTxHash={latestResult?.proofRegistryTxHash}
+          proofRegistryProofId={latestResult?.proofRegistryProofId}
+          proofRegistryExplorerUrl={latestResult?.proofRegistryExplorerUrl}
           decision={latestResult ? {
             current_apy: latestResult.current_apy,
             optimized_apy: latestResult.optimized_apy,

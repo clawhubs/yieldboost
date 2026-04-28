@@ -408,9 +408,11 @@ export async function getJudgePageData(): Promise<JudgePageData> {
       status: latestProof ? "live" : "configured",
       detail: latestProof
         ? "Judge mode exposes the latest tx, proof registry tx, and public wallet path directly."
-        : "Explorer bases are configured per network even before a fresh proof exists.",
-      href: latestExplorer ?? testnetConfig.explorerBase,
-      meta: `${testnetConfig.label}: ${testnetConfig.explorerBase}`,
+        : "Explorer bases are configured per network, but judge mode will only link out after a real proof tx exists.",
+      href: latestExplorer,
+      meta: latestProof
+        ? `${testnetConfig.label}: latest tx ready`
+        : `${testnetConfig.label} explorer base configured`,
     },
     {
       title: "Mainnet Path",

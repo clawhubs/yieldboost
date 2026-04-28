@@ -364,7 +364,12 @@ export default function AgentGallery() {
           }}
           cid={selectedStrategy?.storageProof ?? selectedStrategy?.encryptedUri}
           txHash={selectedStrategy?.txHash ?? selectedStrategy?.contentHash}
+          explorerUrl={selectedStrategy?.proofUrl ?? undefined}
+          timestamp={selectedStrategy?.timestamp}
           walletAddress={selectedStrategy?.owner}
+          proofRegistryTxHash={selectedStrategy?.proofRegistryTxHash ?? undefined}
+          proofRegistryProofId={selectedStrategy?.proofRegistryProofId ?? undefined}
+          proofRegistryExplorerUrl={selectedStrategy?.proofRegistryExplorerUrl ?? undefined}
           decision={
             selectedStrategy
               ? {

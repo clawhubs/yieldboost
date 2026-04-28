@@ -87,6 +87,79 @@ test("judge nav immediately enables demo watch mode for review", async ({ page }
   await expect(page.getByTestId("sidebar")).toContainText(/0x8a3c/i);
 });
 
+test("mobile optimization modal stays scrollable and below full-screen takeover", async ({ page }) => {
+  await enableDemoWatchMode(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+
+  const optimizationHeader = JSON.stringify({
+    current_apy: 4.2,
+    optimized_apy: 8.7,
+    yield_increase: 220,
+    yield_increase_pct: 107,
+    top_protocols: [{ name: "SaucerSwap LP", apy: 24.18, risk: "medium" }],
+    recommended: "SaucerSwap LP",
+    confidence: 91,
+    executionSeconds: 6.4,
+    estimatedAnnualGain: 220,
+    totalPortfolio: 1200,
+    reasoning: "Testing mobile optimize modal sizing.",
+    riskProfile: "Moderate",
+  });
+
+  await page.route("**/api/agent/optimize", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 700));
+    await route.fulfill({
+      status: 200,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "X-Optimization-Result": optimizationHeader,
+      },
+      body: '0:"Testing mobile optimize modal sizing."\\n',
+    });
+  });
+  await page.route("**/api/0g/store", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 700));
+    await route.fulfill({
+      status: 503,
+      contentType: "application/json",
+      body: JSON.stringify({ error: "Proof sync blocked for responsive modal test" }),
+    });
+  });
+
+  await page.goto(BASE, { waitUntil: "networkidle" });
+
+  const optimizeButton = page.getByTestId("boost-yield-cta");
+  await expect(optimizeButton).toBeEnabled({ timeout: 30_000 });
+  const optimizeResponse = page.waitForResponse(
+    (response) =>
+      response.url().includes("/api/agent/optimize") &&
+      response.request().method() === "POST",
+  );
+  await optimizeButton.click();
+
+  const dialog = page.getByTestId("optimization-loading-dialog");
+  await expect(dialog).toBeVisible();
+  const dialogBox = await dialog.boundingBox();
+  expect(dialogBox).not.toBeNull();
+  expect(dialogBox!.height).toBeLessThan(844);
+
+  const scroll = page.getByTestId("optimization-loading-scroll");
+  await expect(scroll).toBeVisible();
+  const scrollMetrics = await scroll.evaluate((element) => ({
+    clientHeight: element.clientHeight,
+    scrollHeight: element.scrollHeight,
+  }));
+  expect(scrollMetrics.scrollHeight).toBeGreaterThan(scrollMetrics.clientHeight);
+
+  const afterScrollTop = await scroll.evaluate((element) => {
+    element.scrollTop = element.scrollHeight;
+    return element.scrollTop;
+  });
+  expect(afterScrollTop).toBeGreaterThan(0);
+
+  await optimizeResponse;
+});
+
 test("demo watch wallet flow hydrates review data", async ({ page }) => {
   await enableDemoWatchMode(page);
   await page.goto(BASE, { waitUntil: "networkidle" });
@@ -119,6 +192,71 @@ test("1-click optimize writes a real proof from the demo watch wallet", async ({
     page.getByText(/Proof stored as|proof sync is blocked|proof sync blocker/i),
   ).toBeVisible({ timeout: 60_000 });
   await expect(page.getByTestId("view-proof-banner")).toBeVisible();
+});
+
+test("proof modal stays honest when no live proof tx exists", async ({ page }) => {
+  await enableDemoWatchMode(page);
+
+  const optimizationHeader = JSON.stringify({
+    current_apy: 4.2,
+    optimized_apy: 8.7,
+    yield_increase: 220,
+    yield_increase_pct: 107,
+    top_protocols: [{ name: "SaucerSwap LP", apy: 24.18, risk: "medium" }],
+    recommended: "SaucerSwap LP",
+    confidence: 91,
+    executionSeconds: 6.4,
+    estimatedAnnualGain: 220,
+    totalPortfolio: 1200,
+    reasoning: "Testing honest proof fallback behavior.",
+    riskProfile: "Moderate",
+  });
+
+  await page.route("**/api/agent/optimize", async (route) => {
+    await route.fulfill({
+      status: 200,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "X-Optimization-Result": optimizationHeader,
+      },
+      body: '0:"Testing honest proof fallback behavior."\\n',
+    });
+  });
+  await page.route("**/api/0g/store", async (route) => {
+    await route.fulfill({
+      status: 503,
+      contentType: "application/json",
+      body: JSON.stringify({ error: "Proof sync blocked for honesty test" }),
+    });
+  });
+  await page.route("**/api/0g/proof*", async (route) => {
+    await route.fulfill({
+      status: 404,
+      contentType: "application/json",
+      body: JSON.stringify({ success: false, error: "No live proof available yet" }),
+    });
+  });
+
+  await page.goto(BASE, { waitUntil: "networkidle" });
+  const storageResponse = page.waitForResponse(
+    (response) =>
+      response.url().includes("/api/0g/store") &&
+      response.request().method() === "POST",
+  );
+  await page.getByTestId("boost-yield-cta").click();
+  await storageResponse;
+
+  await expect(
+    page.getByTestId("proof-banner").getByText(/Proof sync blocked for honesty test/i),
+  ).toBeVisible({
+    timeout: 60_000,
+  });
+  await page.getByTestId("agent-card-proof").first().click();
+
+  await expect(page.getByTestId("proof-modal")).toBeVisible();
+  await expect(page.getByText("No live proof is available yet.")).toBeVisible();
+  await expect(page.getByText(/will not send you to a fallback explorer page/i)).toBeVisible();
+  await expect(page.getByTestId("open-0g-explorer")).toHaveCount(0);
 });
 
 test("proof modal, history, agents, and judge routes stay accessible after watch-mode hydration", async ({

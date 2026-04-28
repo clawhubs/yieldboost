@@ -172,7 +172,7 @@ export default function DashboardAgentPanel({ live, onOpenProof }: Props) {
           onClick={onOpenProof}
           className="glass-accent mt-5 flex w-full items-center justify-center gap-2 rounded-[12px] px-4 py-3 text-[14px] font-medium text-[#22ddd0] transition hover:border-[rgba(0,201,177,0.4)]"
         >
-          View on Explorer →
+          Open proof details
         </button>
         <div className="mt-4 flex items-center justify-end gap-2 text-[11px] text-[#a4b0bc]">
           <span>10:32 AM</span>
