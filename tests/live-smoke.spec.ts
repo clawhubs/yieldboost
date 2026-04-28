@@ -34,6 +34,11 @@ test("LIVE · Judge page loads without wallet", async ({ page }) => {
   await page.waitForTimeout(2000);
 
   await expect(page.getByTestId("judge-page")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Exit judge mode" }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "Open latest tx" }).first()).toHaveAttribute(
+    "href",
+    /https:\/\/chainscan-galileo\.0g\.ai\/tx\//,
+  );
   await expect(page.getByText("Vercel env checklist")).toBeVisible();
 
   await page.screenshot({
