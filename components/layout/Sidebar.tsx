@@ -559,6 +559,22 @@ export default function Sidebar() {
             </button>
           ) : null}
         </div>
+        {mode === "mobile" && judgeMode ? (
+          <div className="mt-4 rounded-[14px] border border-[rgba(34,221,208,0.22)] bg-[rgba(34,221,208,0.08)] px-3 py-3">
+            <div className="text-[10px] uppercase tracking-[0.16em] text-[#9ff7f0]">Judge mode active</div>
+            <div className="mt-1 text-[12px] leading-5 text-[#d9eef0]">
+              Return to the normal wallet flow anytime from here.
+            </div>
+            <button
+              type="button"
+              data-testid="mobile-exit-judge-mode"
+              onClick={handleExitJudgeMode}
+              className="mt-3 w-full rounded-[11px] border border-[rgba(34,221,208,0.24)] bg-[linear-gradient(180deg,rgba(34,221,208,0.22)_0%,rgba(17,183,191,0.12)_100%)] px-3 py-2.5 text-[12px] font-semibold text-[#eafffd]"
+            >
+              Exit judge mode
+            </button>
+          </div>
+        ) : null}
       </div>
     );
 

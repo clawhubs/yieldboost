@@ -68,3 +68,21 @@ test("mobile nav opens from the left drawer and keeps judge route reachable", as
     fullPage: true,
   });
 });
+
+test("mobile judge drawer exposes a visible exit action", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.removeItem("yb_wallet_override");
+    window.localStorage.removeItem("yb_wallet_network");
+    window.localStorage.removeItem("yb_wallet_provider");
+    window.localStorage.removeItem("yb_judge_mode");
+  });
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/judge", { waitUntil: "networkidle" });
+
+  await page.getByTestId("mobile-menu-toggle").click();
+  await expect(page.getByTestId("mobile-exit-judge-mode")).toBeVisible();
+
+  await page.getByTestId("mobile-exit-judge-mode").click();
+  await expect(page).toHaveURL("/");
+});

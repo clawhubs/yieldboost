@@ -62,6 +62,9 @@ export default async function JudgePage() {
   const reviewWalletCard = data.statusCards.find((card) => card.label === "Review Wallet");
   const proofStoreCard = data.statusCards.find((card) => card.label === "Proof Store");
   const latestProofHistoryCard = data.latestProofCards.find((card) => card.label === "Proof History");
+  const proofStoreValue = proofStoreCard?.value?.includes(".artifacts/runtime-store.json")
+    ? "Recorded review snapshot"
+    : proofStoreCard?.value ?? "Recorded review snapshot";
   const quickReviewPoints = [
     "Open `/judge` as the submission entry point to see the latest wallet result first.",
     "Follow the latest tx link and the CID to verify the current testnet proof externally.",
@@ -73,8 +76,8 @@ export default async function JudgePage() {
     <section data-testid="judge-page" className="space-y-[10px] p-[10px]">
       <JudgeModeBootstrap />
       <header className="yb-card rounded-[18px] px-5 py-5">
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-          <div className="max-w-3xl">
+        <div className="mx-auto max-w-5xl">
+          <div className="flex flex-col items-center text-center">
             <div className="glass-accent inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-[#22ddd0]">
               <ShieldCheck className="h-3.5 w-3.5" />
               Judge Mode
@@ -82,10 +85,10 @@ export default async function JudgePage() {
             <h1 className="mt-3 font-[family-name:var(--font-display)] text-[30px] font-semibold leading-[1.08] text-white md:text-[40px]">
               Start here for the hackathon review.
             </h1>
-            <p className="mt-3 max-w-2xl text-[15px] leading-7 text-[#9daab6]">
+            <p className="mt-3 max-w-3xl text-[15px] leading-7 text-[#9daab6]">
               YieldBoost AI finds a better low-risk yield route, shows the decision clearly, and keeps the latest wallet proof ready for external verification. This page stays read-only so a judge can inspect the current result without rerunning the flow.
             </p>
-            <div className="mt-4 grid gap-[10px] md:grid-cols-3">
+            <div className="mt-5 grid w-full gap-[10px] md:grid-cols-3">
               {[
                 {
                   title: "What to look at",
@@ -106,12 +109,13 @@ export default async function JudgePage() {
                 </div>
               ))}
             </div>
-          </div>
-
-          <div className="xl:w-[400px]">
-            <div className="yb-soft-card rounded-[16px] px-4 py-4">
-              <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Quick routes</div>
-              <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+            <div className="mt-5 w-full max-w-3xl rounded-[20px] border border-[rgba(34,221,208,0.18)] bg-[linear-gradient(180deg,rgba(34,221,208,0.10)_0%,rgba(255,255,255,0.02)_100%)] px-4 py-5 shadow-[0_22px_48px_rgba(0,0,0,0.26)]">
+              <div className="text-[11px] uppercase tracking-[0.18em] text-[#9ff7f0]">Submission entry point</div>
+              <div className="mt-2 text-[24px] font-semibold text-white">Open `/judge` first</div>
+              <div className="mt-2 text-[13px] leading-6 text-[#d9eef0]">
+                This is the direct review route for judges. The normal user flow stays available, and `Exit judge mode` remains in the sidebar.
+              </div>
+              <div className="mt-4 grid gap-2 sm:grid-cols-2">
                 <Link
                   href="/"
                   className="yb-teal-button inline-flex items-center justify-center gap-2 rounded-[12px] px-4 py-3 text-[14px] font-semibold text-[#071217]"
@@ -137,13 +141,10 @@ export default async function JudgePage() {
                   Open agents
                 </Link>
               </div>
-              <div className="mt-4 rounded-[12px] border border-[rgba(34,221,208,0.18)] bg-[rgba(34,221,208,0.06)] px-3 py-3 text-[12px] leading-6 text-[#d9eef0]">
-                Direct submission link: <span className="text-white">`/judge`</span>. Exit stays available from the sidebar anytime.
-              </div>
             </div>
+            <p className="mt-5 text-[13px] text-[#d8e1e8]">{data.runtimeLabel}</p>
           </div>
         </div>
-        <p className="mt-5 text-[13px] text-[#d8e1e8]">{data.runtimeLabel}</p>
       </header>
 
       <div className="grid gap-[10px] xl:grid-cols-[minmax(0,1fr)_360px]">
@@ -226,7 +227,7 @@ export default async function JudgePage() {
                   <div className="glass-inset rounded-[12px] px-3 py-3">
                     <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Proof store</div>
                     <div className={`mt-1 text-[14px] font-semibold ${toneClass(proofStoreCard?.tone)}`}>
-                      {proofStoreCard?.value ?? "Proof store"}
+                      {proofStoreValue}
                     </div>
                     <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">{proofStoreCard?.helper}</div>
                   </div>
