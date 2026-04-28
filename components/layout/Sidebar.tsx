@@ -640,13 +640,19 @@ export default function Sidebar() {
               </div>
             ) : null}
 
-            {connected || isCustomWatchMode ? (
+            {connected || isCustomWatchMode || judgeMode ? (
               <div className={`mt-3 p-3 ${softInsetClass}`}>
                 <div className="text-[12px] font-medium text-white">
-                  {shortAddr(activeWalletAddress)}
+                  {activeWalletAddress ? shortAddr(activeWalletAddress) : judgeMode ? "Review wallet loading..." : "No wallet selected"}
                 </div>
                 <div className="mt-1 text-[11px] text-[#9ca9b6]">
-                  {connected ? selectedNetworkConfig?.label : judgeMode ? "Judge review wallet" : "Tracked wallet"}
+                  {connected
+                    ? selectedNetworkConfig?.label
+                    : judgeMode
+                      ? activeWalletAddress
+                        ? "Judge review wallet"
+                        : "Judge snapshot is bootstrapping the review wallet"
+                      : "Tracked wallet"}
                 </div>
                 {judgeMode ? (
                   <button
@@ -675,15 +681,28 @@ export default function Sidebar() {
             {!connected && !isCustomWatchMode ? (
               <div className={`mt-4 p-3 ${softInsetClass}`}>
                 <div className="text-[12px] font-medium text-white">
-                  Start here for hackathon review
+                  {judgeMode ? "Judge snapshot active" : "Start here for hackathon review"}
                 </div>
                 <div className="mt-1 text-[11px] leading-5 text-[#9ca9b6]">
-                  Tap `Judge` in the menu to open the read-only review snapshot instantly. Return to the normal wallet flow anytime from the sidebar.
+                  {judgeMode
+                    ? "You are in the read-only judging path. Exit here anytime to return to the normal user flow."
+                    : "Tap `Judge` in the menu to open the read-only review snapshot instantly. Return to the normal wallet flow anytime from the sidebar."}
                 </div>
                 <div className="mt-3 rounded-[10px] border border-[rgba(34,221,208,0.2)] bg-[rgba(34,221,208,0.08)] px-3 py-2 text-[11px] font-medium text-[#9ff7f0]">
-                  Judge entry auto-loads the public review wallet
+                  {judgeMode
+                    ? "Judge entry auto-loads the public review wallet"
+                    : "Judge entry auto-loads the public review wallet"}
                 </div>
                 <div className="mt-2 grid gap-2">
+                  {judgeMode ? (
+                    <button
+                      type="button"
+                      onClick={handleExitJudgeMode}
+                      className="rounded-[10px] border border-[rgba(34,221,208,0.22)] bg-[rgba(34,221,208,0.08)] px-3 py-2 text-[11px] font-semibold text-[#9ff7f0] transition hover:border-[rgba(34,221,208,0.36)]"
+                    >
+                      Exit judge mode
+                    </button>
+                  ) : null}
                   <button
                     type="button"
                     onClick={() => {
