@@ -293,7 +293,7 @@ export default function DashboardView() {
       <section className="animate-fade-in-up p-[10px] md:h-full">
         <div className="grid gap-[10px] xl:grid-cols-[minmax(0,1fr)_336px]">
           <div className="min-w-0 space-y-[10px]">
-            <header className="flex flex-col gap-3 rounded-[18px] border border-[#141c23] bg-[#060c11] px-5 py-4 md:flex-row md:items-center md:justify-between">
+            <header className="flex flex-col gap-3 rounded-[18px] border border-[#141c23] bg-[#060c11] px-4 py-4 sm:px-5 md:flex-row md:items-center md:justify-between">
               <div>
                 <div className="text-[13px] font-semibold text-white">GM, Builder! 👋</div>
                 <div className="mt-1 text-[12px] text-[#9daab6]">
@@ -301,12 +301,12 @@ export default function DashboardView() {
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2">
-                <div ref={walletMenuRef} className="relative">
+              <div className="flex w-full flex-wrap items-center gap-2 md:w-auto">
+                <div ref={walletMenuRef} className="relative flex-1 sm:flex-none">
                   <button
                     type="button"
                     onClick={() => setWalletMenuOpen((open) => !open)}
-                    className="flex h-[46px] items-center gap-3 rounded-[12px] border border-[#1b242d] bg-[#0a1117] px-4 text-left transition hover:border-[#2ad7c8]/40"
+                    className="flex h-[46px] w-full min-w-0 items-center gap-3 rounded-[12px] border border-[#1b242d] bg-[#0a1117] px-4 text-left transition hover:border-[#2ad7c8]/40 sm:w-auto sm:min-w-[220px]"
                   >
                     <Wallet2 className="h-4 w-4 text-[#d9e1e8]" />
                     <div>
@@ -319,7 +319,7 @@ export default function DashboardView() {
                   </button>
 
                   {walletMenuOpen ? (
-                    <div className="absolute right-0 top-[54px] z-20 w-[220px] rounded-[16px] border border-[#17313a] bg-[#081117] p-2 shadow-[0_18px_44px_rgba(0,0,0,0.45)]">
+                    <div className="absolute right-0 top-[54px] z-20 w-full min-w-[220px] rounded-[16px] border border-[#17313a] bg-[#081117] p-2 shadow-[0_18px_44px_rgba(0,0,0,0.45)] sm:w-[220px]">
                       <div className="px-2 pb-2 pt-1 text-[11px] uppercase tracking-[0.12em] text-[#87a0ad]">
                         Choose Network
                       </div>
@@ -380,7 +380,7 @@ export default function DashboardView() {
                   {alertsOpen ? (
                     <div
                       data-testid="optimization-notification-panel"
-                      className="absolute right-0 top-[54px] z-20 w-[320px] rounded-[16px] border border-[#17313a] bg-[#081117] p-3 shadow-[0_18px_44px_rgba(0,0,0,0.45)]"
+                      className="absolute right-0 top-[54px] z-20 w-[min(320px,calc(100vw-32px))] rounded-[16px] border border-[#17313a] bg-[#081117] p-3 shadow-[0_18px_44px_rgba(0,0,0,0.45)] sm:w-[320px]"
                     >
                       <div className="flex items-start justify-between gap-3 rounded-[12px] border border-[#16353a] bg-[linear-gradient(135deg,rgba(34,221,208,0.12),rgba(8,17,23,0.96))] p-3">
                         <div className="flex gap-3">
@@ -434,7 +434,7 @@ export default function DashboardView() {
                   onClick={() => void runDashboardOptimization()}
                   disabled={!canOptimize}
                   aria-busy={isOptimizing}
-                  className="yb-teal-button flex h-[46px] min-w-[248px] items-center justify-center gap-3 rounded-[12px] px-5 text-left text-[#051015]"
+                  className="yb-teal-button flex h-[46px] w-full items-center justify-center gap-3 rounded-[12px] px-5 text-left text-[#051015] sm:w-auto sm:min-w-[248px]"
                 >
                   {isOptimizing ? <CircleDashed className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
                   <div>
@@ -475,8 +475,8 @@ export default function DashboardView() {
                     Autonomous. On-chain. Profitable.
                   </p>
 
-                  <div className="mt-6 grid grid-cols-2 gap-5">
-                    <div className="border-r border-[#182028] pr-4">
+                  <div className="mt-6 grid gap-5 sm:grid-cols-2">
+                    <div className="sm:border-r sm:border-[#182028] sm:pr-4">
                       <div className="text-[11px] uppercase tracking-[0.08em] text-[#a9b5c0]">
                         Estimated Yield Increase
                       </div>
@@ -576,7 +576,7 @@ export default function DashboardView() {
                   type="button"
                   onClick={() => setProofOpen(true)}
                   data-testid="view-proof-banner"
-                  className="flex items-center gap-3 rounded-[14px] border border-[#173832] bg-[#081313] px-4 py-3 text-left"
+                  className="flex w-full items-center gap-3 rounded-[14px] border border-[#173832] bg-[#081313] px-4 py-3 text-left xl:w-auto"
                 >
                   <div className="flex h-11 w-11 items-center justify-center rounded-[12px] border border-[#214d45] text-[#26ddd0]">
                     <ShieldCheck className="h-5 w-5" />
@@ -676,7 +676,7 @@ export default function DashboardView() {
                     <div className="mt-1 text-[11px] text-[#d5dde6]">AI Projected APY</div>
                   </div>
                 </div>
-                <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
+                <div className="mt-3 grid gap-2 text-[11px] sm:grid-cols-3">
                   <div className="rounded-[10px] bg-[#0d1811] p-2 text-[#2fe06d]">+{live.yieldIncreasePct}%<div className="mt-1 text-[#cad4dd]">Improve</div></div>
                   <div className="rounded-[10px] bg-[#0d1811] p-2 text-[#2fe06d]">+${live.estimatedAnnualGain.toLocaleString()}<div className="mt-1 text-[#cad4dd]">More per year</div></div>
                   <div className="rounded-[10px] bg-[#0d1811] p-2 text-[#2fe06d]">Lower<div className="mt-1 text-[#cad4dd]">Risk</div></div>
@@ -866,7 +866,7 @@ export default function DashboardView() {
 	                  </div>
                   <a href={activeExplorerBase} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[11px] text-[#25d6c6]">View on 0G Explorer <ExternalLink className="h-3 w-3" /></a>
                 </div>
-                <div className="mt-4 grid grid-cols-3 gap-3">
+                <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
                   {chainStats.map((item) => (
                     <div key={item.label}>
                       <div className="text-[10px] text-[#9faab6]">{item.label}</div>
@@ -881,7 +881,7 @@ export default function DashboardView() {
 	                  <div className="text-[12px] font-medium text-white">0G ECOSYSTEM IMPACT (30D)</div>
 	                  <div className="text-[10px] text-[#6b7a87]">source: optimizer activity and proof history</div>
 	                </div>
-                <div className="mt-4 grid grid-cols-3 gap-5">
+                <div className="mt-4 grid grid-cols-2 gap-5 sm:grid-cols-3">
                   {impactStats.map((item) => (
                     <div key={item.label}>
                       <div className="text-[10px] text-[#9faab6]">{item.label}</div>
@@ -889,7 +889,7 @@ export default function DashboardView() {
                     </div>
                   ))}
                 </div>
-                <div className="mt-4 grid grid-cols-3 gap-5">
+                <div className="mt-4 grid gap-5 sm:grid-cols-3">
                   <ImpactBars />
                   <ImpactLine path="M8 24C18 23 23 21 32 18C40 16 46 19 55 15C63 11 71 8 80 12C88 15 93 18 100 9" />
                   <ImpactLine path="M8 23C17 18 26 12 36 15C45 18 52 24 61 20C70 16 77 9 86 12C92 14 96 17 100 10" />
@@ -902,7 +902,7 @@ export default function DashboardView() {
             </div>
 
             <div className="yb-card rounded-[14px] px-4 py-3">
-              <div className="grid gap-3 md:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                 {footerItems.map((item) => (
                   <div key={item.label} className="flex items-center justify-center gap-2 text-[12px] text-[#d7dfe7]">
                     <item.icon className="h-4 w-4 text-[#d7dfe7]" />
@@ -1055,10 +1055,10 @@ export default function DashboardView() {
                 Optimization Complete! 🎉
               </div>
               <div className="mt-3 text-[14px] text-[#ebf2f8]">Your new APY is now</div>
-              <div className="mt-2 flex items-center justify-between gap-4">
-                <div className="text-[64px] font-semibold leading-none text-[#68ff7a]">{live.optimizedApy}%</div>
-                <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-[#68ff7a] shadow-[0_0_28px_rgba(104,255,122,0.26)]">
-                  <CheckCheck className="h-10 w-10 text-[#68ff7a]" />
+              <div className="mt-2 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="text-[48px] font-semibold leading-none text-[#68ff7a] sm:text-[64px]">{live.optimizedApy}%</div>
+                <div className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-[#68ff7a] shadow-[0_0_28px_rgba(104,255,122,0.26)] sm:h-24 sm:w-24">
+                  <CheckCheck className="h-8 w-8 text-[#68ff7a] sm:h-10 sm:w-10" />
                 </div>
               </div>
               <div className="mt-2 text-[13px] text-[#dbe4ec]">
@@ -1080,7 +1080,7 @@ export default function DashboardView() {
               </div>
             </div>
 
-            <div className="mt-5 flex items-end justify-between gap-3 px-1">
+            <div className="mt-5 flex flex-col gap-3 px-1 sm:flex-row sm:items-end sm:justify-between">
               <div className="text-[13px] text-[#d5dde6]">
                 Built on 0G. Built for the Future.
               </div>

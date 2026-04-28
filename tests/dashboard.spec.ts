@@ -21,3 +21,34 @@ test("dashboard composition renders in no-wallet review mode", async ({ page }) 
     fullPage: true,
   });
 });
+
+test("mobile nav opens from the left drawer and keeps judge route reachable", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.removeItem("yb_wallet_override");
+    window.localStorage.removeItem("yb_wallet_network");
+    window.localStorage.removeItem("yb_wallet_provider");
+  });
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/", { waitUntil: "networkidle" });
+
+  await expect(page.getByTestId("mobile-menu-toggle")).toBeVisible();
+
+  const horizontalOverflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(horizontalOverflow).toBeLessThanOrEqual(1);
+
+  await page.getByTestId("mobile-menu-toggle").click();
+  await expect(page.getByTestId("mobile-sidebar-drawer")).toBeVisible();
+
+  await page.getByTestId("mobile-nav-judge").click();
+  await expect(page).toHaveURL(/\/judge$/);
+  await expect(page.getByTestId("judge-page")).toBeVisible();
+  await expect(page.getByTestId("mobile-sidebar-drawer")).toHaveCount(0);
+
+  await page.screenshot({
+    path: "test-results/dashboard-mobile-drawer.png",
+    fullPage: true,
+  });
+});

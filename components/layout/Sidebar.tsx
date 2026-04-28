@@ -18,11 +18,13 @@ import {
   Image,
   MessageCircleMore,
   Package2,
+  PanelLeft,
   Pencil,
   BriefcaseBusiness,
   Settings2,
   Star,
   Wallet2,
+  X,
   Boxes,
   Zap,
   Bot,
@@ -92,6 +94,7 @@ function clearCookie(name: string) {
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [walletCopied, setWalletCopied] = useState(false);
   const [walletAddr, setWalletAddr] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
@@ -119,6 +122,7 @@ export default function Sidebar() {
   );
   const isCustomWatchMode = !connected && Boolean(walletAddr);
   const activeWalletAddress = walletAddr ?? "";
+  const activeNavigationItem = navigation.find((item) => item.href === pathname) ?? navigation[0];
 
   useEffect(() => {
     walletAddrRef.current = walletAddr;
@@ -127,6 +131,30 @@ export default function Sidebar() {
   useEffect(() => {
     selectedNetworkRef.current = selectedNetwork;
   }, [selectedNetwork]);
+
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setMobileNavOpen(false);
+      }
+    }
+
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [mobileNavOpen]);
 
   const broadcastWalletChange = useCallback((
     nextWalletAddress: string | null | undefined,
@@ -413,223 +441,327 @@ export default function Sidebar() {
     applyDisconnectedState(selectedNetwork);
   }
 
-  return (
-    <aside
-      data-testid="sidebar"
-      className="yb-card w-full border-b px-[10px] py-[10px] md:sticky md:top-0 md:h-screen md:w-[242px] md:flex-none md:overflow-y-auto md:border-b-0 md:border-r"
-    >
-      <div className="min-h-0">
-        <div className="glass-inset rounded-[18px] px-4 py-4">
-          <BrandLogo />
-          <p className="mt-2.5 text-[12px] text-[#c9d2db]">AI Agent for DeFi Growth</p>
-        </div>
+  function renderNavigation(mode: "desktop" | "mobile") {
+    return (
+      <nav className="mt-4 flex flex-col gap-2">
+        {navigation.map(({ href, icon: Icon, label, badge }) => {
+          const active = pathname === href;
+          const isJudgeEntry = href === "/judge";
 
-        <nav className="mt-4 flex gap-2 overflow-x-auto pb-2 md:flex-col md:overflow-visible md:pb-0">
-          {navigation.map(({ href, icon: Icon, label, badge }) => {
-            const active = pathname === href;
-            const isJudgeEntry = href === "/judge";
-
-            return (
-              <Link
-                key={href}
-                href={href}
-                data-testid={`nav-${label.toLowerCase()}`}
-                className={`flex min-w-fit items-center gap-3 rounded-[14px] border px-4 py-[11px] text-[13px] font-medium transition md:min-w-0 ${
-                  active
-                    ? "border-[rgba(0,201,177,0.28)] bg-[rgba(0,201,177,0.10)] text-white shadow-[inset_0_0_0_1px_rgba(0,201,177,0.14),0_0_20px_rgba(0,201,177,0.06)]"
-                    : isJudgeEntry
-                      ? "border-[rgba(0,201,177,0.18)] bg-[linear-gradient(180deg,rgba(0,201,177,0.12)_0%,rgba(255,255,255,0.03)_100%)] text-white hover:border-[rgba(0,201,177,0.32)] hover:bg-[rgba(0,201,177,0.10)]"
+          return (
+            <Link
+              key={href}
+              href={href}
+              data-testid={
+                mode === "desktop"
+                  ? `nav-${label.toLowerCase()}`
+                  : `mobile-nav-${label.toLowerCase()}`
+              }
+              onClick={() => {
+                if (mode === "mobile") {
+                  setMobileNavOpen(false);
+                }
+              }}
+              className={`flex min-w-0 items-center gap-3 rounded-[14px] border px-4 py-[11px] text-[13px] font-medium transition ${
+                active
+                  ? "border-[rgba(0,201,177,0.28)] bg-[rgba(0,201,177,0.10)] text-white shadow-[inset_0_0_0_1px_rgba(0,201,177,0.14),0_0_20px_rgba(0,201,177,0.06)]"
+                  : isJudgeEntry
+                    ? "border-[rgba(0,201,177,0.18)] bg-[linear-gradient(180deg,rgba(0,201,177,0.12)_0%,rgba(255,255,255,0.03)_100%)] text-white hover:border-[rgba(0,201,177,0.32)] hover:bg-[rgba(0,201,177,0.10)]"
                     : "border-transparent text-[#f4f7fb] hover:border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.04)]"
-                }`}
-              >
-                <Icon
-                  className={`h-4 w-4 ${
-                    active || isJudgeEntry ? "text-[#1fd8c8]" : "text-[#f4f7fb]"
-                  }`}
-                />
-                <span>{label}</span>
-                {badge ? (
-                  <span
-                    className={`ml-auto rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] ${
-                      isJudgeEntry
-                        ? "border-[rgba(34,221,208,0.24)] bg-[rgba(34,221,208,0.10)] text-[#7ef7ef]"
-                        : "border-[#12453f] text-[#25d6c6]"
-                    }`}
-                  >
-                    {badge}
-                  </span>
-                ) : null}
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
-
-      <div className="mt-4 space-y-3 border-t border-[rgba(255,255,255,0.06)] pt-4 md:mt-4">
-        <div className="glass-inset rounded-[18px] p-4">
-          <div className="flex items-center gap-2 text-[13px] font-medium text-white">
-            <span
-              className={`inline-flex h-3 w-3 rounded-full shadow-[0_0_14px_rgba(53,213,110,0.55)] ${
-                connected ? "bg-[#35d56e]" : "bg-[#f3a441]"
               }`}
-            />
-            Account
-          </div>
-          <div className={`mt-1 pl-5 text-[12px] ${connected ? "text-[#35d56e]" : "text-[#f3a441]"}`}>
-                  {connected ? "Connected" : isCustomWatchMode ? "Watch mode" : "Not connected"}
-          </div>
-
-          {editing ? (
-            <div className="mt-4 flex items-center gap-2">
-              <input
-                autoFocus
-                value={inputVal}
-                onChange={(event) => setInputVal(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") commitEdit();
-                  if (event.key === "Escape") setEditing(false);
-                }}
-                placeholder="0x..."
-                className="glass-inset flex-1 rounded-[10px] border-[rgba(37,214,198,0.4)] px-3 py-2 text-[12px] text-[#d8e0e8] outline-none"
+            >
+              <Icon
+                className={`h-4 w-4 ${
+                  active || isJudgeEntry ? "text-[#1fd8c8]" : "text-[#f4f7fb]"
+                }`}
               />
-              <button
-                type="button"
-                onClick={commitEdit}
-                className="glass-accent rounded-[10px] px-3 py-2 text-[11px] font-semibold text-[#22ddd0]"
-              >
-                OK
-              </button>
-            </div>
-          ) : connected || isCustomWatchMode ? (
-            <div className="mt-4 flex items-center gap-2">
-              <button
-                type="button"
-                onClick={async () => {
-                  await navigator.clipboard.writeText(activeWalletAddress);
-                  setWalletCopied(true);
-                  window.setTimeout(() => setWalletCopied(false), 1400);
-                }}
-                className="glass-inset flex flex-1 items-center justify-between rounded-[12px] px-3 py-3 text-[13px] text-[#d8e0e8] transition hover:border-[rgba(0,201,177,0.35)]"
-              >
-                <div className="flex items-center gap-3">
-                  <Wallet2 className="h-4 w-4 text-[#d8e0e8]" />
-                  <span>{shortAddr(activeWalletAddress)}</span>
-                </div>
-                <span className="text-[10px] text-[#9ca9b6]">{walletCopied ? "Copied!" : ""}</span>
-                <Copy className="h-3.5 w-3.5 text-[#9ca9b6]" />
-              </button>
-              <button
-                type="button"
-                onClick={startEdit}
-                title="Use custom watch wallet"
-                className="glass-inset flex h-9 w-9 flex-none items-center justify-center rounded-[10px] text-[#9ca9b6] transition hover:border-[rgba(0,201,177,0.35)] hover:text-[#22ddd0]"
-              >
-                <Pencil className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          ) : null}
+              <span>{label}</span>
+              {badge ? (
+                <span
+                  className={`ml-auto rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] ${
+                    isJudgeEntry
+                      ? "border-[rgba(34,221,208,0.24)] bg-[rgba(34,221,208,0.10)] text-[#7ef7ef]"
+                      : "border-[#12453f] text-[#25d6c6]"
+                  }`}
+                >
+                  {badge}
+                </span>
+              ) : null}
+            </Link>
+          );
+        })}
+      </nav>
+    );
+  }
 
-          {connected || isCustomWatchMode ? (
-            <div className="mt-3 rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-3">
-              <div className="text-[12px] font-medium text-white">
-                {shortAddr(activeWalletAddress)}
+  function renderSidebarContent(mode: "desktop" | "mobile") {
+    return (
+      <>
+        <div className="min-h-0">
+          <div className="glass-inset rounded-[18px] px-4 py-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <BrandLogo />
+                <p className="mt-2.5 text-[12px] text-[#c9d2db]">AI Agent for DeFi Growth</p>
               </div>
-              <div className="mt-1 text-[11px] text-[#9ca9b6]">
-                {connected ? selectedNetworkConfig?.label : "Watch wallet"}
-              </div>
-              {connected ? (
+              {mode === "mobile" ? (
                 <button
                   type="button"
-                  onClick={disconnectWallet}
-                  className="mt-3 rounded-[10px] border border-[rgba(255,255,255,0.08)] px-3 py-2 text-[11px] font-semibold text-white transition hover:border-[rgba(255,255,255,0.18)]"
+                  onClick={() => setMobileNavOpen(false)}
+                  aria-label="Close navigation menu"
+                  className="glass-inset flex h-9 w-9 flex-none items-center justify-center rounded-[10px] text-[#d8e0e8]"
                 >
-                  Disconnect
+                  <X className="h-4 w-4" />
                 </button>
               ) : null}
             </div>
-          ) : null}
+          </div>
 
-          {errorText ? (
-            <div className="mt-3 text-[11px] leading-5 text-[#ff9b9b]">{errorText}</div>
-          ) : null}
+          {renderNavigation(mode)}
+        </div>
 
-          {!connected && !isCustomWatchMode ? (
-            <div className="mt-4 rounded-[12px] border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.02)] p-3">
-              <div className="text-[12px] font-medium text-white">
-                Start here for hackathon review
-              </div>
-              <div className="mt-1 text-[11px] leading-5 text-[#9ca9b6]">
-                Open Judge Mode first for the shortest product walkthrough, then jump into wallet or demo flow only when needed.
-              </div>
-              <div className="mt-3 grid gap-2">
-                <Link
-                  href="/judge"
-                  className="glass-accent rounded-[10px] px-3 py-2 text-center text-[11px] font-semibold text-[#22ddd0]"
-                >
-                  Open judge mode
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => setWalletModalOpen(true)}
-                  className="glass-inset rounded-[10px] px-3 py-2 text-[11px] font-semibold text-white"
-                >
-                  Connect wallet
-                </button>
-                <button
-                  type="button"
-                  onClick={() => applyWatchWallet(DEFAULT_WALLET_ADDRESS)}
-                  className="glass-inset rounded-[10px] px-3 py-2 text-[11px] font-semibold text-white"
-                >
-                  Use demo watch wallet
-                </button>
-              </div>
+        <div className="mt-4 space-y-3 border-t border-[rgba(255,255,255,0.06)] pt-4">
+          <div className="glass-inset rounded-[18px] p-4">
+            <div className="flex items-center gap-2 text-[13px] font-medium text-white">
+              <span
+                className={`inline-flex h-3 w-3 rounded-full shadow-[0_0_14px_rgba(53,213,110,0.55)] ${
+                  connected ? "bg-[#35d56e]" : "bg-[#f3a441]"
+                }`}
+              />
+              Account
             </div>
-          ) : null}
+            <div className={`mt-1 pl-5 text-[12px] ${connected ? "text-[#35d56e]" : "text-[#f3a441]"}`}>
+              {connected ? "Connected" : isCustomWatchMode ? "Watch mode" : "Not connected"}
+            </div>
 
-          {connected || isCustomWatchMode ? (
-            <>
-              <div className="mt-4 flex items-center gap-3 text-[13px] text-[#e5edf5]">
-                <Gift className="h-4 w-4 text-[#f3a441]" />
-                <span>Refer friends → Earn YA0G</span>
+            {editing ? (
+              <div className="mt-4 flex items-center gap-2">
+                <input
+                  autoFocus
+                  value={inputVal}
+                  onChange={(event) => setInputVal(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") commitEdit();
+                    if (event.key === "Escape") setEditing(false);
+                  }}
+                  placeholder="0x..."
+                  className="glass-inset flex-1 rounded-[10px] border-[rgba(37,214,198,0.4)] px-3 py-2 text-[12px] text-[#d8e0e8] outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={commitEdit}
+                  className="glass-accent rounded-[10px] px-3 py-2 text-[11px] font-semibold text-[#22ddd0]"
+                >
+                  OK
+                </button>
               </div>
-
-              <div className="mt-4">
-                <p className="text-[14px] text-[#27de6b]">15 YA0G</p>
-                <p className="mt-1 text-[13px] text-[#d9e2ea]">pending rewards</p>
+            ) : connected || isCustomWatchMode ? (
+              <div className="mt-4 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(activeWalletAddress);
+                    setWalletCopied(true);
+                    window.setTimeout(() => setWalletCopied(false), 1400);
+                  }}
+                  className="glass-inset flex flex-1 items-center justify-between rounded-[12px] px-3 py-3 text-[13px] text-[#d8e0e8] transition hover:border-[rgba(0,201,177,0.35)]"
+                >
+                  <div className="flex items-center gap-3">
+                    <Wallet2 className="h-4 w-4 text-[#d8e0e8]" />
+                    <span>{shortAddr(activeWalletAddress)}</span>
+                  </div>
+                  <span className="text-[10px] text-[#9ca9b6]">{walletCopied ? "Copied!" : ""}</span>
+                  <Copy className="h-3.5 w-3.5 text-[#9ca9b6]" />
+                </button>
+                <button
+                  type="button"
+                  onClick={startEdit}
+                  title="Use custom watch wallet"
+                  className="glass-inset flex h-9 w-9 flex-none items-center justify-center rounded-[10px] text-[#9ca9b6] transition hover:border-[rgba(0,201,177,0.35)] hover:text-[#22ddd0]"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </button>
               </div>
+            ) : null}
 
+            {connected || isCustomWatchMode ? (
+              <div className="mt-3 rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-3">
+                <div className="text-[12px] font-medium text-white">
+                  {shortAddr(activeWalletAddress)}
+                </div>
+                <div className="mt-1 text-[11px] text-[#9ca9b6]">
+                  {connected ? selectedNetworkConfig?.label : "Watch wallet"}
+                </div>
+                {connected ? (
+                  <button
+                    type="button"
+                    onClick={disconnectWallet}
+                    className="mt-3 rounded-[10px] border border-[rgba(255,255,255,0.08)] px-3 py-2 text-[11px] font-semibold text-white transition hover:border-[rgba(255,255,255,0.18)]"
+                  >
+                    Disconnect
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+
+            {errorText ? (
+              <div className="mt-3 text-[11px] leading-5 text-[#ff9b9b]">{errorText}</div>
+            ) : null}
+
+            {!connected && !isCustomWatchMode ? (
+              <div className="mt-4 rounded-[12px] border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.02)] p-3">
+                <div className="text-[12px] font-medium text-white">
+                  Start here for hackathon review
+                </div>
+                <div className="mt-1 text-[11px] leading-5 text-[#9ca9b6]">
+                  Open Judge Mode first for the shortest product walkthrough, then jump into wallet or demo flow only when needed.
+                </div>
+                <div className="mt-3 grid gap-2">
+                  <Link
+                    href="/judge"
+                    onClick={() => setMobileNavOpen(false)}
+                    className="glass-accent rounded-[10px] px-3 py-2 text-center text-[11px] font-semibold text-[#22ddd0]"
+                  >
+                    Open judge mode
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileNavOpen(false);
+                      setWalletModalOpen(true);
+                    }}
+                    className="glass-inset rounded-[10px] px-3 py-2 text-[11px] font-semibold text-white"
+                  >
+                    Connect wallet
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileNavOpen(false);
+                      applyWatchWallet(DEFAULT_WALLET_ADDRESS);
+                    }}
+                    className="glass-inset rounded-[10px] px-3 py-2 text-[11px] font-semibold text-white"
+                  >
+                    Use demo watch wallet
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
+            {connected || isCustomWatchMode ? (
+              <>
+                <div className="mt-4 flex items-center gap-3 text-[13px] text-[#e5edf5]">
+                  <Gift className="h-4 w-4 text-[#f3a441]" />
+                  <span>Refer friends → Earn YA0G</span>
+                </div>
+
+                <div className="mt-4">
+                  <p className="text-[14px] text-[#27de6b]">15 YA0G</p>
+                  <p className="mt-1 text-[13px] text-[#d9e2ea]">pending rewards</p>
+                </div>
+
+                <button
+                  type="button"
+                  data-testid="claim-rewards"
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-[11px] bg-[linear-gradient(180deg,#1fd7ce_0%,#11b7bf_100%)] px-4 py-3 text-[14px] font-medium text-[#081116]"
+                >
+                  Claim Now
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </>
+            ) : null}
+          </div>
+
+          <div className="flex items-center gap-2">
+            {socialIcons.map((Icon, index) => (
+              <button
+                key={index}
+                type="button"
+                className="glass-inset flex h-9 w-9 items-center justify-center rounded-[10px] text-[#d8e0e8] transition hover:border-[rgba(0,201,177,0.25)]"
+              >
+                <Icon className="h-4 w-4" />
+              </button>
+            ))}
+          </div>
+
+          <div className="px-2">
+            <p className="text-[12px] text-[#9daab6]">Powered by</p>
+            <div className="mt-1 flex items-center gap-2 text-[14px] font-semibold text-white">
+              <Disc3 className="h-4 w-4 text-[#1fd8c8]" />
+              0G Chain
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div className="sticky top-0 z-40 px-[10px] pt-[10px] md:hidden">
+        <div className="yb-card rounded-[18px] px-3 py-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
               <button
                 type="button"
-                data-testid="claim-rewards"
-                className="mt-4 flex w-full items-center justify-center gap-2 rounded-[11px] bg-[linear-gradient(180deg,#1fd7ce_0%,#11b7bf_100%)] px-4 py-3 text-[14px] font-medium text-[#081116]"
+                data-testid="mobile-menu-toggle"
+                aria-expanded={mobileNavOpen}
+                aria-controls="mobile-sidebar-drawer"
+                aria-label="Open navigation menu"
+                onClick={() => setMobileNavOpen(true)}
+                className="glass-accent flex h-10 w-10 flex-none items-center justify-center rounded-[12px] text-[#22ddd0]"
               >
-                Claim Now
-                <ArrowRight className="h-4 w-4" />
+                <PanelLeft className="h-4 w-4" />
               </button>
-            </>
-          ) : null}
-        </div>
-
-        <div className="flex items-center gap-2">
-          {socialIcons.map((Icon, index) => (
-            <button
-              key={index}
-              type="button"
-              className="glass-inset flex h-9 w-9 items-center justify-center rounded-[10px] text-[#d8e0e8] transition hover:border-[rgba(0,201,177,0.25)]"
-            >
-              <Icon className="h-4 w-4" />
-            </button>
-          ))}
-        </div>
-
-        <div className="px-2">
-          <p className="text-[12px] text-[#9daab6]">Powered by</p>
-          <div className="mt-1 flex items-center gap-2 text-[14px] font-semibold text-white">
-            <Disc3 className="h-4 w-4 text-[#1fd8c8]" />
-            0G Chain
+              <div className="min-w-0">
+                <div className="text-[10px] uppercase tracking-[0.16em] text-[#22ddd0]">Navigation</div>
+                <div className="truncate text-[14px] font-semibold text-white">
+                  {activeNavigationItem.label}
+                </div>
+              </div>
+            </div>
+            <div className="min-w-0 text-right">
+              <div className={`text-[10px] uppercase tracking-[0.12em] ${connected ? "text-[#35d56e]" : isCustomWatchMode ? "text-[#22ddd0]" : "text-[#9ca9b6]"}`}>
+                {connected ? "Connected" : isCustomWatchMode ? "Watch mode" : "Review mode"}
+              </div>
+              <div className="max-w-[132px] truncate text-[12px] text-[#d8e0e8]">
+                {connected || isCustomWatchMode ? shortAddr(activeWalletAddress) : "Judge-first flow"}
+              </div>
+            </div>
           </div>
         </div>
       </div>
+
+      {mobileNavOpen ? (
+        <button
+          type="button"
+          aria-label="Close navigation menu"
+          onClick={() => setMobileNavOpen(false)}
+          className="fixed inset-0 z-40 bg-[rgba(2,6,12,0.72)] backdrop-blur-sm md:hidden"
+        />
+      ) : null}
+
+      {mobileNavOpen ? (
+        <aside
+          id="mobile-sidebar-drawer"
+          data-testid="mobile-sidebar-drawer"
+          className="fixed inset-y-0 left-0 z-50 w-[min(88vw,320px)] px-[10px] py-[10px] md:hidden"
+        >
+          <div className="yb-card flex h-full flex-col overflow-y-auto px-[10px] py-[10px]">
+            {renderSidebarContent("mobile")}
+          </div>
+        </aside>
+      ) : null}
+
+      <aside
+        data-testid="sidebar"
+        className="hidden md:sticky md:top-0 md:block md:h-screen md:w-[242px] md:flex-none md:overflow-y-auto"
+      >
+        <div className="yb-card min-h-full px-[10px] py-[10px] md:border-r">
+          {renderSidebarContent("desktop")}
+        </div>
+      </aside>
+
       <WalletConnectModal
         open={walletModalOpen}
         onOpenChange={setWalletModalOpen}
@@ -638,7 +770,7 @@ export default function Sidebar() {
         network={selectedNetworkConfig}
         connectingId={connectingId}
       />
-    </aside>
+    </>
   );
 }
 
