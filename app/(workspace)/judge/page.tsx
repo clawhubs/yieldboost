@@ -154,42 +154,6 @@ export default async function JudgePage() {
                 <Bot className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="text-[22px] font-semibold text-white">What the product does</h2>
-                <p className="mt-1 text-[13px] text-[#9faab6]">
-                  The shortest story a judge needs before opening a deeper route.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-4 grid gap-[10px] md:grid-cols-3">
-              {[
-                {
-                  title: "Recorded wallet snapshot",
-                  body: "Judge mode stays focused on the latest recorded testnet proof and wallet snapshot, not on asking the reviewer to rerun the full flow.",
-                },
-                {
-                  title: "AI recommendation",
-                  body: "YieldBoost compares current APY vs projected APY, explains the route, and keeps fallback behavior transparent.",
-                },
-                {
-                  title: "0G verification path",
-                  body: "Result metadata can flow through 0G Compute, 0G Storage, and optional ProofRegistry anchoring.",
-                },
-              ].map((item) => (
-                <div key={item.title} className="glass-inset rounded-[14px] px-4 py-4">
-                  <div className="text-[14px] font-semibold text-white">{item.title}</div>
-                  <div className="mt-2 text-[13px] leading-6 text-[#d6dee6]">{item.body}</div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="yb-card rounded-[18px] px-5 py-5">
-            <div className="flex items-center gap-3">
-              <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
-                <Bot className="h-5 w-5" />
-              </div>
-              <div>
                 <h2 className="text-[22px] font-semibold text-white">Latest proof and wallet snapshot</h2>
                 <p className="mt-1 text-[13px] text-[#9faab6]">
                   The current result for the active judge wallet, with proof and links kept visible in one place.
