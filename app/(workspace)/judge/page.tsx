@@ -1,8 +1,8 @@
 import Link from "next/link";
 import {
   ArrowUpRight,
-  Boxes,
   Bot,
+  Boxes,
   CheckCircle2,
   ExternalLink,
   Link2,
@@ -46,6 +46,18 @@ function envStatusClass(status: "set" | "missing" | "optional") {
 
 export default async function JudgePage() {
   const data = await getJudgePageData();
+  const primaryComponents = data.components.filter((component) =>
+    ["0G Storage", "0G Compute Network", "ProofRegistry"].includes(component.title),
+  );
+  const supportingComponents = data.components.filter((component) =>
+    !["0G Storage", "0G Compute Network", "ProofRegistry"].includes(component.title),
+  );
+  const mainnetPriority = data.mainnetChecklist.slice(0, 3);
+  const missingEnv = data.envChecklist.filter((item) => item.status === "missing");
+  const envPreview = missingEnv.slice(0, 6);
+  const blockersPreview = data.blockers.slice(0, 3);
+  const proofRegistryValue =
+    data.latestProof?.proofRegistryAddress ?? "Placeholder: set ProofRegistry env for the active network";
 
   return (
     <section data-testid="judge-page" className="space-y-[10px] p-[10px]">
@@ -57,15 +69,15 @@ export default async function JudgePage() {
               Judge Mode
             </div>
             <h1 className="mt-3 font-[family-name:var(--font-display)] text-[30px] font-semibold leading-[1.08] text-white md:text-[40px]">
-              Review the full YieldBoost story without connecting a wallet.
+              Review YieldBoost in one clean pass.
             </h1>
             <p className="mt-3 max-w-2xl text-[15px] leading-7 text-[#9daab6]">
-              YieldBoost AI scans wallet state, recommends a low-risk yield route, and stores verifiable output on 0G. This page is wired to the same runtime store, proof history, and environment status used by the app itself.
+              YieldBoost AI finds a better low-risk yield route, shows the decision clearly, and anchors proof data into the 0G stack. This page keeps the judge story short and moves the operational detail lower.
             </p>
             <p className="mt-4 text-[13px] text-[#d8e1e8]">{data.runtimeLabel}</p>
           </div>
 
-          <div className="grid gap-2 sm:grid-cols-2 xl:w-[430px]">
+          <div className="grid gap-2 sm:grid-cols-2 xl:w-[400px]">
             <Link
               href="/"
               className="yb-teal-button inline-flex items-center justify-center gap-2 rounded-[12px] px-4 py-3 text-[14px] font-semibold text-[#071217]"
@@ -108,8 +120,44 @@ export default async function JudgePage() {
         </div>
       </header>
 
-      <div className="grid gap-[10px] xl:grid-cols-[minmax(0,1.15fr)_390px]">
+      <div className="grid gap-[10px] xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-[10px]">
+          <section className="yb-card rounded-[18px] px-5 py-5">
+            <div className="flex items-center gap-3">
+              <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
+                <Bot className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="text-[22px] font-semibold text-white">What the product does</h2>
+                <p className="mt-1 text-[13px] text-[#9faab6]">
+                  The shortest story a judge needs before opening any deeper route.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-[10px] md:grid-cols-3">
+              {[
+                {
+                  title: "1-click optimization",
+                  body: "User opens the app, loads a wallet or public watch wallet, and runs one optimize action.",
+                },
+                {
+                  title: "AI recommendation",
+                  body: "YieldBoost compares current APY vs projected APY, explains the route, and keeps fallback behavior transparent.",
+                },
+                {
+                  title: "0G verification path",
+                  body: "Result metadata can flow through 0G Compute, 0G Storage, and optional ProofRegistry anchoring.",
+                },
+              ].map((item) => (
+                <div key={item.title} className="glass-inset rounded-[14px] px-4 py-4">
+                  <div className="text-[14px] font-semibold text-white">{item.title}</div>
+                  <div className="mt-2 text-[13px] leading-6 text-[#d6dee6]">{item.body}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+
           <section className="yb-card rounded-[18px] px-5 py-5">
             <div className="flex items-center gap-3">
               <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
@@ -118,7 +166,7 @@ export default async function JudgePage() {
               <div>
                 <h2 className="text-[22px] font-semibold text-white">Latest proof and result</h2>
                 <p className="mt-1 text-[13px] text-[#9faab6]">
-                  Pulled from the active runtime store, not a static mock card.
+                  Live runtime data when available, honest empty state when not.
                 </p>
               </div>
             </div>
@@ -140,38 +188,38 @@ export default async function JudgePage() {
             <div className="mt-5 grid gap-[10px] lg:grid-cols-[minmax(0,1fr)_290px]">
               <div className="glass-inset rounded-[16px] px-4 py-4">
                 <div className="text-[12px] font-medium text-white">Verification payload</div>
-                <div className="mt-4 space-y-3 text-[13px] text-[#d8e1e8]">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Storage CID</span>
-                    <span className="break-all">{data.latestProof?.cid ?? "No proof recorded yet"}</span>
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  <div>
+                    <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Storage CID</div>
+                    <div className="mt-1 break-all text-[13px] text-[#d8e1e8]">
+                      {data.latestProof?.cid ?? "No proof recorded yet"}
+                    </div>
                   </div>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Explorer Link</span>
+                  <div>
+                    <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Contract / placeholder</div>
+                    <div className="mt-1 break-all text-[13px] text-[#d8e1e8]">{proofRegistryValue}</div>
+                  </div>
+                  <div>
+                    <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Explorer</div>
                     {data.latestProof?.explorerUrl ? (
                       <a
                         href={data.latestProof.explorerUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-2 text-[#22ddd0]"
+                        className="mt-1 inline-flex items-center gap-2 text-[13px] text-[#22ddd0]"
                       >
                         Open latest tx
                         <ExternalLink className="h-3.5 w-3.5" />
                       </a>
                     ) : (
-                      <span className="text-[#d6dee6]">No explorer URL yet</span>
+                      <div className="mt-1 text-[13px] text-[#d6dee6]">No explorer URL yet</div>
                     )}
                   </div>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Contract Address</span>
-                    <span className="break-all">
-                      {data.latestProof?.proofRegistryAddress ?? "Placeholder: set ProofRegistry env for the active network"}
-                    </span>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Reasoning</span>
-                    <span className="leading-6 text-[#d6dee6]">
+                  <div>
+                    <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Reasoning snapshot</div>
+                    <div className="mt-1 text-[13px] leading-6 text-[#d6dee6]">
                       {data.latestProof?.decision.reasoning ?? "No stored reasoning available yet."}
-                    </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -201,30 +249,26 @@ export default async function JudgePage() {
               <div>
                 <h2 className="text-[22px] font-semibold text-white">0G components in use</h2>
                 <p className="mt-1 text-[13px] text-[#9faab6]">
-                  Current status of storage, compute, registry, explorer, and agent contract paths.
+                  The three components most judges usually ask about first.
                 </p>
               </div>
             </div>
 
-            <div className="mt-4 grid gap-[10px] md:grid-cols-2">
-              {data.components.map((component) => (
+            <div className="mt-4 grid gap-[10px] md:grid-cols-3">
+              {primaryComponents.map((component) => (
                 <div key={component.title} className="glass-inset rounded-[16px] px-4 py-4">
                   <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="text-[15px] font-semibold text-white">{component.title}</div>
-                      <div className="mt-2 text-[13px] leading-6 text-[#d6dee6]">
-                        {component.detail}
-                      </div>
-                    </div>
+                    <div className="text-[15px] font-semibold text-white">{component.title}</div>
                     <span
                       className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] ${statusBadgeClass(component.status)}`}
                     >
-                      {component.status === "live" ? "live" : component.status}
+                      {component.status}
                     </span>
                   </div>
+                  <div className="mt-3 text-[13px] leading-6 text-[#d6dee6]">{component.detail}</div>
                   {component.address ? (
-                    <div className="mt-3 text-[12px] text-[#d8e1e8]">
-                      Address: <span className="break-all text-white">{component.address}</span>
+                    <div className="mt-3 break-all text-[12px] text-[#d8e1e8]">
+                      {component.address}
                     </div>
                   ) : null}
                   {component.meta ? (
@@ -244,6 +288,27 @@ export default async function JudgePage() {
                 </div>
               ))}
             </div>
+
+            {supportingComponents.length > 0 ? (
+              <div className="mt-4 rounded-[14px] border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.02)] px-4 py-4">
+                <div className="text-[12px] font-medium text-white">Supporting paths</div>
+                <div className="mt-3 grid gap-3 md:grid-cols-3">
+                  {supportingComponents.map((component) => (
+                    <div key={component.title}>
+                      <div className="flex items-center gap-2">
+                        <div className="text-[13px] font-medium text-white">{component.title}</div>
+                        <span
+                          className={`rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] ${statusBadgeClass(component.status)}`}
+                        >
+                          {component.status}
+                        </span>
+                      </div>
+                      <div className="mt-2 text-[12px] leading-6 text-[#9faab6]">{component.detail}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </section>
         </div>
 
@@ -254,13 +319,13 @@ export default async function JudgePage() {
                 <Link2 className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="text-[18px] font-semibold text-white">Mainnet cutover</h2>
-                <p className="mt-1 text-[13px] text-[#8ea1af]">What is already code-ready vs. what still needs envs or deployment.</p>
+                <h2 className="text-[18px] font-semibold text-white">Next steps for mainnet</h2>
+                <p className="mt-1 text-[13px] text-[#8ea1af]">Three things to finish before saying mainnet-ready.</p>
               </div>
             </div>
 
             <div className="mt-4 space-y-3">
-              {data.mainnetChecklist.map((item) => (
+              {mainnetPriority.map((item) => (
                 <div key={item.label} className="glass-inset rounded-[14px] px-4 py-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="text-[14px] font-medium text-white">{item.label}</div>
@@ -277,18 +342,46 @@ export default async function JudgePage() {
           </section>
 
           <section className="yb-card rounded-[18px] px-5 py-5">
-            <div className="flex items-center gap-3">
-              <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
-                <Wallet2 className="h-5 w-5" />
-              </div>
-              <div>
-                <h2 className="text-[18px] font-semibold text-white">Vercel env checklist</h2>
-                <p className="mt-1 text-[13px] text-[#8ea1af]">Only includes variables that the app currently reads.</p>
-              </div>
+            <h2 className="text-[18px] font-semibold text-white">Current blockers</h2>
+            <div className="mt-4 space-y-3">
+              {blockersPreview.length > 0 ? (
+                blockersPreview.map((item) => (
+                  <div key={item} className="rounded-[14px] border border-[rgba(246,193,102,0.22)] bg-[rgba(246,193,102,0.06)] px-4 py-4 text-[12px] leading-6 text-[#f0d9a4]">
+                    {item}
+                  </div>
+                ))
+              ) : (
+                <div className="rounded-[14px] border border-[rgba(47,224,109,0.24)] bg-[rgba(47,224,109,0.08)] px-4 py-4 text-[12px] leading-6 text-[#7cff90]">
+                  No blocking infra gap is currently detected from the active environment snapshot.
+                </div>
+              )}
             </div>
+          </section>
+
+          <details className="yb-card rounded-[18px] px-5 py-5 [&_summary::-webkit-details-marker]:hidden">
+            <summary className="flex cursor-pointer items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex items-center gap-3">
+                  <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
+                    <Wallet2 className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-[18px] font-semibold text-white">Vercel env checklist</h2>
+                    <p className="mt-1 text-[13px] text-[#8ea1af]">
+                      {missingEnv.length > 0
+                        ? `${missingEnv.length} env masih missing di jalur readiness sekarang.`
+                        : "No missing env detected in the current snapshot."}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <span className="rounded-full border border-[rgba(255,255,255,0.08)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#d7e0e8]">
+                Expand
+              </span>
+            </summary>
 
             <div className="mt-4 space-y-3">
-              {data.envChecklist.map((item) => (
+              {envPreview.map((item) => (
                 <div key={item.name} className="glass-inset rounded-[14px] px-4 py-4">
                   <div className="flex items-start justify-between gap-3">
                     <code className="text-[12px] text-white">{item.name}</code>
@@ -303,24 +396,7 @@ export default async function JudgePage() {
                 </div>
               ))}
             </div>
-          </section>
-
-          <section className="yb-card rounded-[18px] px-5 py-5">
-            <h2 className="text-[18px] font-semibold text-white">Open blockers</h2>
-            <div className="mt-4 space-y-3">
-              {data.blockers.length > 0 ? (
-                data.blockers.map((item) => (
-                  <div key={item} className="rounded-[14px] border border-[rgba(246,193,102,0.22)] bg-[rgba(246,193,102,0.06)] px-4 py-4 text-[12px] leading-6 text-[#f0d9a4]">
-                    {item}
-                  </div>
-                ))
-              ) : (
-                <div className="rounded-[14px] border border-[rgba(47,224,109,0.24)] bg-[rgba(47,224,109,0.08)] px-4 py-4 text-[12px] leading-6 text-[#7cff90]">
-                  No blocking infra gap is currently detected from the active environment snapshot.
-                </div>
-              )}
-            </div>
-          </section>
+          </details>
         </aside>
       </div>
     </section>
