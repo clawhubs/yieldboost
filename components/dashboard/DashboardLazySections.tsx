@@ -1,4 +1,4 @@
-import { Users, DollarSign, Activity, Gauge, ShieldCheck, Database, Shield, Plane, Wallet2, Bell, Zap, Check, ChevronDown, Grid2X2, CheckCheck, HeartHandshake, MessageCircleMore, Lock, UserRound, Bot, Box, CircleDashed, Clock3, Cpu, Disc3, Expand, Globe, Sparkles, Copy, ExternalLink, LucideIcon } from "lucide-react";
+import { LucideIcon, Users } from "lucide-react";
 
 export function MiniSpark({ color = "#2cf0dd" }: { color?: string }) {
   return (
