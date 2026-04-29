@@ -20,6 +20,7 @@
 
 <p align="center">
   <a href="#why-this-matters">Why it matters</a> •
+  <a href="#hackathon-track-alignment">Track alignment</a> •
   <a href="#fast-judge-review">Fast judge review</a> •
   <a href="#architecture">Architecture</a> •
   <a href="#0g-native-data-flow">0G data flow</a> •
@@ -50,6 +51,24 @@ YieldBoost AI is designed around **verifiable AI**, not just recommendation UX:
 - The judge can open `/judge` first and inspect the latest wallet snapshot in read-only mode.
 
 That combination is the project's strongest differentiator for a hackathon review setting.
+
+## Hackathon Track Alignment
+
+YieldBoost AI is positioned first and foremost for **Track 2: Agentic Trading Arena (Verifiable Finance)**.
+
+Why this is the strongest fit:
+
+- The core product is an **AI yield optimizer** for Web3 portfolios.
+- The live implementation turns each optimization run into a **verifiable finance artifact** through **0G Storage** and optional **ProofRegistry** anchoring.
+- The compute path is built around **0G Compute** with a TEE-oriented inference route when credentials are available.
+- `/judge` reduces review friction by exposing the latest proof-backed result without requiring wallet connection or faucet setup.
+
+Secondary alignment:
+
+- **Track 1: Agentic Infrastructure & OpenClaw Lab** because the repo includes an agent-style orchestration path, proof ledger, and contract-backed strategy extension flow.
+- **Track 5: Privacy & Sovereign Infrastructure** as a supporting angle because the architecture already incorporates TEE-oriented compute, proof persistence, and auditable execution surfaces.
+
+The submission story, however, is clearest when framed as **verifiable DeFi intelligence on 0G**, which is why Track 2 is the primary category for this project.
 
 ## Showcase
 
