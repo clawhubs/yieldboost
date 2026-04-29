@@ -193,6 +193,33 @@ function applyStorageProofEvent(
   );
 }
 
+function scheduleFollowUpProofRefresh(
+  scopeKey: string,
+  walletAddress: string,
+  networkKey: WalletNetworkKey,
+  activeScopeRef: { current: string },
+  refreshPortfolio: (
+    walletAddress?: string,
+    networkKey?: WalletNetworkKey,
+  ) => Promise<PortfolioResponse | null>,
+  hydrateLatest: (walletAddress: string, nextNetwork: WalletNetworkKey) => Promise<void>,
+) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  for (const delayMs of [1500, 4500, 9000]) {
+    window.setTimeout(() => {
+      if (activeScopeRef.current !== scopeKey) {
+        return;
+      }
+
+      void refreshPortfolio(walletAddress, networkKey);
+      void hydrateLatest(walletAddress, networkKey);
+    }, delayMs);
+  }
+}
+
 export function AppDataProvider({ children }: { children: ReactNode }) {
   const [portfolio, setPortfolio] = useState<PortfolioResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -383,6 +410,14 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       activeScopeRef.current = resolvedScopeKey;
       void refreshPortfolio(resolvedWalletAddress, networkKey);
       void hydrateLatest(resolvedWalletAddress, networkKey);
+      scheduleFollowUpProofRefresh(
+        resolvedScopeKey,
+        resolvedWalletAddress,
+        networkKey,
+        activeScopeRef,
+        refreshPortfolio,
+        hydrateLatest,
+      );
     }
 
     return nextResult;

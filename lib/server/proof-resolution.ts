@@ -1,7 +1,16 @@
 import "server-only";
 
+import { randomUUID } from "node:crypto";
+import { promises as fs } from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { Contract, JsonRpcProvider, type EventLog } from "ethers";
-import type { StoredDecisionPayload, StoredProofRecord } from "@/lib/backend-data";
+import { Indexer } from "@0gfoundation/0g-ts-sdk";
+import type {
+  StoredDecisionPayload,
+  StoredPortfolioSnapshot,
+  StoredProofRecord,
+} from "@/lib/backend-data";
 import {
   getServer0GNetworkConfig,
   sameWalletAddress,
@@ -33,6 +42,89 @@ function parseProofTimestamp(value: string | undefined) {
   if (!value) return 0;
   const parsed = Date.parse(value);
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function sameProofIdentity(
+  left: StoredProofRecord | null | undefined,
+  right: StoredProofRecord | null | undefined,
+) {
+  if (!left || !right) return false;
+
+  return Boolean(
+    (left.cid && right.cid && left.cid === right.cid) ||
+      (left.txHash && right.txHash && left.txHash === right.txHash) ||
+      (left.proofRegistryTxHash &&
+        right.proofRegistryTxHash &&
+        left.proofRegistryTxHash === right.proofRegistryTxHash) ||
+      (left.proofRegistryProofId &&
+        right.proofRegistryProofId &&
+        left.proofRegistryProofId === right.proofRegistryProofId),
+  );
+}
+
+function mergeProofRecords(
+  liveProof: StoredProofRecord,
+  storedProof: StoredProofRecord | null | undefined,
+) {
+  if (!storedProof) {
+    return liveProof;
+  }
+
+  return {
+    ...liveProof,
+    decision: {
+      ...liveProof.decision,
+      ...storedProof.decision,
+      current_apy: liveProof.decision.current_apy,
+      optimized_apy: liveProof.decision.optimized_apy,
+    },
+    walletAddress: storedProof.walletAddress ?? liveProof.walletAddress,
+    portfolioSnapshot: storedProof.portfolioSnapshot ?? liveProof.portfolioSnapshot,
+    note: storedProof.note ?? liveProof.note,
+    teeProvider: storedProof.teeProvider ?? liveProof.teeProvider,
+    teeModel: storedProof.teeModel ?? liveProof.teeModel,
+    teeChatId: storedProof.teeChatId ?? liveProof.teeChatId,
+    teeVerified: storedProof.teeVerified ?? liveProof.teeVerified,
+    llmProvider: storedProof.llmProvider ?? liveProof.llmProvider,
+  } satisfies StoredProofRecord;
+}
+
+async function readProofPayloadFromStorage(
+  cid: string,
+  networkKey: WalletNetworkKey,
+) {
+  const config = getServer0GNetworkConfig(networkKey);
+  if (!config.storageUrl) {
+    return null;
+  }
+
+  const tempFile = path.join(os.tmpdir(), `yieldboost-proof-read-${randomUUID()}.json`);
+
+  try {
+    const indexer = new Indexer(config.storageUrl);
+    const downloadError = await indexer.download(cid, tempFile, false);
+    if (downloadError) {
+      return null;
+    }
+
+    const raw = await fs.readFile(tempFile, "utf8");
+    const parsed = JSON.parse(raw) as {
+      decision?: StoredDecisionPayload;
+      portfolioSnapshot?: StoredPortfolioSnapshot;
+      walletAddress?: string;
+      teeProvider?: string;
+      teeModel?: string;
+      teeChatId?: string;
+      teeVerified?: boolean;
+      llmProvider?: string;
+    };
+
+    return parsed;
+  } catch {
+    return null;
+  } finally {
+    await fs.rm(tempFile, { force: true }).catch(() => undefined);
+  }
 }
 
 function compareProofRecency(left: StoredProofRecord | null, right: StoredProofRecord | null) {
@@ -75,17 +167,17 @@ function buildDecisionFromLiveProof(
   return {
     current_apy: currentApy,
     optimized_apy: optimizedApy,
-    yield_increase: previous?.yield_increase ?? yieldIncrease,
-    yield_increase_pct: previous?.yield_increase_pct ?? yieldIncreasePct,
+    yield_increase: apySignatureMatches ? previous?.yield_increase : yieldIncrease,
+    yield_increase_pct: apySignatureMatches ? previous?.yield_increase_pct : yieldIncreasePct,
     recommended: apySignatureMatches
-      ? previous.recommended
-      : previous?.recommended ?? "Latest on-chain proof",
-    confidence: apySignatureMatches ? previous.confidence : previous?.confidence ?? 0,
-    executionSeconds: apySignatureMatches ? previous.executionSeconds : previous?.executionSeconds,
+      ? previous?.recommended ?? "Latest on-chain proof"
+      : "Latest on-chain proof",
+    confidence: apySignatureMatches ? previous?.confidence ?? 0 : 0,
+    executionSeconds: apySignatureMatches ? previous?.executionSeconds : undefined,
     estimatedAnnualGain: apySignatureMatches
-      ? previous.estimatedAnnualGain
-      : previous?.estimatedAnnualGain ?? yieldIncrease,
-    totalPortfolio: apySignatureMatches ? previous.totalPortfolio : previous?.totalPortfolio,
+      ? previous?.estimatedAnnualGain
+      : yieldIncrease,
+    totalPortfolio: apySignatureMatches ? previous?.totalPortfolio : undefined,
     reasoning: apySignatureMatches
       ? previous.reasoning
       : "Hydrated from the latest on-chain ProofRegistry event because the runtime proof store has not caught up yet.",
@@ -148,7 +240,7 @@ async function getLatestLiveProofFromRegistry(
       // Keep the registry block when the storage receipt is unavailable.
     }
 
-    return {
+    const liveProof: StoredProofRecord = {
       cid: String(latestLog.args.cid),
       txHash: storageTxHash,
       blockNumber,
@@ -157,36 +249,48 @@ async function getLatestLiveProofFromRegistry(
       explorerUrl: `${config.explorerBase.replace(/\/$/, "")}/tx/${storageTxHash}`,
       decision: buildDecisionFromLiveProof(currentApy, optimizedApy, storedProof?.decision),
       walletAddress,
-      portfolioSnapshot:
-        storedProof && sameWalletAddress(storedProof.walletAddress, walletAddress)
-          ? storedProof.portfolioSnapshot
-          : undefined,
+      portfolioSnapshot: undefined,
       proofRegistryAddress: config.proofRegistryAddress,
       proofRegistryTxHash: latestLog.transactionHash,
       proofRegistryProofId: latestLog.args.proofId.toString(),
       proofRegistryExplorerUrl: `${config.explorerBase.replace(/\/$/, "")}/tx/${latestLog.transactionHash}`,
       note: "live_registry_fallback",
-      teeProvider:
-        storedProof && sameWalletAddress(storedProof.walletAddress, walletAddress)
-          ? storedProof.teeProvider
-          : undefined,
-      teeModel:
-        storedProof && sameWalletAddress(storedProof.walletAddress, walletAddress)
-          ? storedProof.teeModel
-          : undefined,
-      teeChatId:
-        storedProof && sameWalletAddress(storedProof.walletAddress, walletAddress)
-          ? storedProof.teeChatId
-          : undefined,
-      teeVerified:
-        storedProof && sameWalletAddress(storedProof.walletAddress, walletAddress)
-          ? storedProof.teeVerified
-          : undefined,
-      llmProvider:
-        storedProof && sameWalletAddress(storedProof.walletAddress, walletAddress)
-          ? storedProof.llmProvider
-          : undefined,
+      teeProvider: undefined,
+      teeModel: undefined,
+      teeChatId: undefined,
+      teeVerified: undefined,
+      llmProvider: undefined,
     };
+
+    if (
+      storedProof &&
+      sameWalletAddress(storedProof.walletAddress, walletAddress) &&
+      sameProofIdentity(storedProof, liveProof)
+    ) {
+      return mergeProofRecords(liveProof, storedProof);
+    }
+
+    const storagePayload = await readProofPayloadFromStorage(liveProof.cid, networkKey);
+    if (storagePayload) {
+      return {
+        ...liveProof,
+        decision: {
+          ...liveProof.decision,
+          ...storagePayload.decision,
+          current_apy: liveProof.decision.current_apy,
+          optimized_apy: liveProof.decision.optimized_apy,
+        },
+        walletAddress: storagePayload.walletAddress ?? liveProof.walletAddress,
+        portfolioSnapshot: storagePayload.portfolioSnapshot,
+        teeProvider: storagePayload.teeProvider,
+        teeModel: storagePayload.teeModel,
+        teeChatId: storagePayload.teeChatId,
+        teeVerified: storagePayload.teeVerified,
+        llmProvider: storagePayload.llmProvider,
+      };
+    }
+
+    return liveProof;
   } catch {
     return null;
   }
@@ -204,6 +308,10 @@ export async function resolveLatestProofForWallet(
   const liveProof = await getLatestLiveProofFromRegistry(walletAddress, networkKey, storedProof);
   if (!liveProof) {
     return storedProof;
+  }
+
+  if (sameProofIdentity(storedProof, liveProof)) {
+    return mergeProofRecords(liveProof, storedProof);
   }
 
   return compareProofRecency(liveProof, storedProof) >= 0 ? liveProof : storedProof;
@@ -270,7 +378,7 @@ export async function resolveProofHistoryForWalletAcrossNetworks(
     );
 
     if (duplicateIndex >= 0) {
-      mergedProofs[duplicateIndex] = proof;
+      mergedProofs[duplicateIndex] = mergeProofRecords(proof, mergedProofs[duplicateIndex]);
     } else {
       mergedProofs.push(proof);
     }

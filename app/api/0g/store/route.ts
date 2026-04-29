@@ -131,9 +131,17 @@ export async function POST(req: NextRequest) {
       tempFile,
       JSON.stringify(
         {
-          ...decision,
           appId: "yieldboost-ai",
           timestamp,
+          networkKey,
+          walletAddress: walletAddress ?? undefined,
+          decision,
+          portfolioSnapshot,
+          teeProvider: payload.teeProvider,
+          teeModel: payload.teeModel,
+          teeChatId: payload.teeChatId,
+          teeVerified: payload.teeVerified,
+          llmProvider: payload.llmProvider,
         },
         null,
         2,

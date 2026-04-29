@@ -100,6 +100,43 @@ function buildPortfolioFromProof(
   };
 }
 
+function mergeLiveNativeBalance(
+  portfolio: PortfolioResponse,
+  nativeBalance: number,
+  source: PortfolioResponse["source"],
+  displayLabel?: string,
+): PortfolioResponse {
+  const exactNativeBalance = round(nativeBalance, 6);
+  if (exactNativeBalance <= 0) {
+    return portfolio;
+  }
+
+  const isNativeSnapshot =
+    portfolio.displayUnit === "0G" ||
+    portfolio.tokens.length === 0 ||
+    portfolio.tokens.every((token) => token.symbol === "0G");
+
+  if (!isNativeSnapshot) {
+    return portfolio;
+  }
+
+  return {
+    ...portfolio,
+    source,
+    tokens: [
+      {
+        symbol: "0G",
+        amount: exactNativeBalance,
+        valueUSD: exactNativeBalance,
+      },
+    ],
+    totalUSD: exactNativeBalance,
+    displayTotal: exactNativeBalance,
+    displayUnit: "0G",
+    displayLabel: displayLabel ?? portfolio.displayLabel ?? "Native 0G balance",
+  };
+}
+
 export async function getLivePortfolioSnapshot(
   walletAddressInput?: string | null,
   networkKey: WalletNetworkKey = "testnet",
@@ -125,13 +162,6 @@ export async function getLivePortfolioSnapshot(
     ? buildPortfolioFromProof(latestProof, walletAddress)
     : null;
 
-  if (options.preferProofSnapshot && proofBackedPortfolio) {
-    return {
-      ...proofBackedPortfolio,
-      source: "wallet_judge_snapshot",
-    };
-  }
-
   let nativeBalance = 0;
   let source = "wallet_rpc_unavailable";
 
@@ -145,15 +175,31 @@ export async function getLivePortfolioSnapshot(
     }
   }
 
+  if (options.preferProofSnapshot && proofBackedPortfolio) {
+    return mergeLiveNativeBalance(
+      {
+        ...proofBackedPortfolio,
+        source: "wallet_judge_snapshot",
+      },
+      nativeBalance,
+      "wallet_judge_snapshot",
+      "Latest judge wallet balance",
+    );
+  }
+
   const shouldUseProofFallback =
     nativeBalance <= 0 &&
     Boolean(proofBackedPortfolio);
 
   if (shouldUseProofFallback && proofBackedPortfolio) {
-    return {
-      ...proofBackedPortfolio,
-      source: "wallet_proof_fallback",
-    };
+    return mergeLiveNativeBalance(
+      {
+        ...proofBackedPortfolio,
+        source: "wallet_proof_fallback",
+      },
+      nativeBalance,
+      "wallet_proof_fallback",
+    );
   }
 
   const exactNativeBalance = round(nativeBalance, 6);

@@ -13,6 +13,7 @@ import {
   resolveLatestProofForWalletAcrossNetworks,
   resolveProofHistoryForWalletAcrossNetworks,
 } from "@/lib/server/proof-resolution";
+import { getLivePortfolioSnapshot } from "@/lib/server/live-portfolio";
 import {
   getComputeLedgerPrivateKey,
   getComputeProviderAddress,
@@ -119,6 +120,15 @@ function formatSnapshotValue(proof: StoredProofRecord | null) {
   }
 
   return "Pending";
+}
+
+function formatPortfolioSnapshotValue(value: number | undefined, unit: string | undefined) {
+  if (typeof value !== "number" || value <= 0) {
+    return null;
+  }
+
+  const rounded = value > 0 && value < 1 ? value.toFixed(4) : value.toFixed(2);
+  return unit ? `${rounded} ${unit}` : `$${rounded}`;
 }
 
 function toHealthStatus(value: boolean): HealthStatus {
@@ -348,6 +358,11 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   const preferredNetwork = getServerDefaultNetworkKey();
   const latestProof = await resolveLatestProofForWalletAcrossNetworks(reviewWallet);
   const scopedProofs = await resolveProofHistoryForWalletAcrossNetworks(reviewWallet);
+  const judgePortfolio = await getLivePortfolioSnapshot(
+    reviewWallet,
+    latestProof?.networkKey ?? preferredNetwork,
+    { preferProofSnapshot: true },
+  );
   const preferredConfig = getServer0GNetworkConfig(preferredNetwork);
   const computeProviderAddress = getComputeProviderAddress(preferredNetwork);
   const computeLedgerPrivateKey = getComputeLedgerPrivateKey(preferredNetwork);
@@ -405,8 +420,13 @@ export async function getJudgePageData(): Promise<JudgePageData> {
         },
         {
           label: "Snapshot Value",
-          value: formatSnapshotValue(latestProof),
+          value:
+            formatPortfolioSnapshotValue(
+              judgePortfolio.displayTotal,
+              judgePortfolio.displayUnit,
+            ) ?? formatSnapshotValue(latestProof),
           helper:
+            judgePortfolio.displayLabel ??
             latestProof.portfolioSnapshot?.displayLabel ??
             "Wallet snapshot pinned from the latest recorded proof.",
           tone: "white",
