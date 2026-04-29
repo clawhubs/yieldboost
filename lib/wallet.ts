@@ -239,3 +239,10 @@ export function sameWalletAddress(
 
   return Boolean(normalizedLeft && normalizedRight && normalizedLeft === normalizedRight);
 }
+
+export function getJudgeScopedWalletAddress(
+  walletAddress: string | null | undefined,
+  judgeMode: boolean,
+) {
+  return judgeMode ? DEFAULT_WALLET_ADDRESS : resolveWalletAddress(walletAddress);
+}

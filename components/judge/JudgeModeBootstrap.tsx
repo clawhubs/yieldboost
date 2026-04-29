@@ -12,6 +12,7 @@ import {
   WALLET_NETWORK_COOKIE_KEY,
   WALLET_NETWORK_STORAGE_KEY,
   WALLET_OVERRIDE_STORAGE_KEY,
+  WALLET_PROVIDER_STORAGE_KEY,
 } from "@/lib/wallet";
 
 function setCookie(name: string, value: string) {
@@ -19,7 +20,7 @@ function setCookie(name: string, value: string) {
 }
 
 export default function JudgeModeBootstrap() {
-  const { portfolio, networkKey, enterJudgeMode } = usePortfolio();
+  const { networkKey, enterJudgeMode } = usePortfolio();
   const bootstrappedRef = useRef(false);
 
   useEffect(() => {
@@ -33,21 +34,12 @@ export default function JudgeModeBootstrap() {
     const preferredNetwork = resolveWalletNetworkKey(
       window.localStorage.getItem(WALLET_NETWORK_STORAGE_KEY) ?? networkKey,
     );
-    const existingWallet =
-      portfolio?.walletAddress ??
-      window.localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY) ??
-      null;
 
     window.localStorage.setItem(JUDGE_MODE_STORAGE_KEY, "true");
     setCookie(JUDGE_MODE_COOKIE_KEY, "true");
     window.localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, preferredNetwork);
     setCookie(WALLET_NETWORK_COOKIE_KEY, preferredNetwork);
-
-    if (existingWallet) {
-      setCookie(WALLET_COOKIE_KEY, existingWallet);
-      return;
-    }
-
+    window.localStorage.removeItem(WALLET_PROVIDER_STORAGE_KEY);
     window.localStorage.setItem(WALLET_OVERRIDE_STORAGE_KEY, DEFAULT_WALLET_ADDRESS);
     setCookie(WALLET_COOKIE_KEY, DEFAULT_WALLET_ADDRESS);
 
@@ -60,7 +52,7 @@ export default function JudgeModeBootstrap() {
         },
       }),
     );
-  }, [enterJudgeMode, networkKey, portfolio?.walletAddress]);
+  }, [enterJudgeMode, networkKey]);
 
   return null;
 }

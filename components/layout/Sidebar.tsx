@@ -45,6 +45,7 @@ import {
   DEFAULT_WALLET_ADDRESS,
   getAvailableWalletNetworks,
   isWalletAddress,
+  JUDGE_MODE_STORAGE_KEY,
   resolveWalletNetworkKey,
   type WalletNetworkKey,
   WALLET_CHANGE_EVENT,
@@ -285,8 +286,19 @@ export default function Sidebar() {
 
     const savedProviderId = localStorage.getItem(WALLET_PROVIDER_STORAGE_KEY);
     const savedWallet = localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY);
+    const savedJudgeMode = localStorage.getItem(JUDGE_MODE_STORAGE_KEY) === "true";
 
     void (async () => {
+      if (savedJudgeMode) {
+        setWalletAddr(DEFAULT_WALLET_ADDRESS);
+        setConnected(false);
+        setErrorText(null);
+        localStorage.removeItem(WALLET_PROVIDER_STORAGE_KEY);
+        localStorage.setItem(WALLET_OVERRIDE_STORAGE_KEY, DEFAULT_WALLET_ADDRESS);
+        broadcastWalletChange(DEFAULT_WALLET_ADDRESS, savedNetwork, null, false);
+        return;
+      }
+
       async function restoreAuthorizedWallet(
         providerId: string,
         networkKey: WalletNetworkKey,
@@ -335,6 +347,12 @@ export default function Sidebar() {
 
   useEffect(() => {
     function handleWalletConnectRequest(event: Event) {
+      if (window.localStorage.getItem(JUDGE_MODE_STORAGE_KEY) === "true") {
+        setWalletModalOpen(false);
+        setErrorText("Judge mode is hard-locked to the demo wallet. Exit judge mode first to connect your own wallet.");
+        return;
+      }
+
       const detail = (event as CustomEvent<{ networkKey?: WalletNetworkKey }>).detail;
       const nextNetwork = resolveWalletNetworkKey(detail?.networkKey);
       setSelectedNetwork(nextNetwork);
@@ -358,6 +376,12 @@ export default function Sidebar() {
   }, []);
 
   async function connectWallet(option: WalletOption) {
+    if (judgeMode) {
+      setWalletModalOpen(false);
+      setErrorText("Judge mode is hard-locked to the demo wallet. Exit judge mode first to connect your own wallet.");
+      return;
+    }
+
     setConnectingId(option.id);
     setWalletModalOpen(false);
     setErrorText(null);
@@ -446,9 +470,7 @@ export default function Sidebar() {
 
   function activateJudgeReviewMode() {
     enterJudgeMode();
-    if (!connected && !isCustomWatchMode) {
-      applyWatchWallet(DEFAULT_WALLET_ADDRESS);
-    }
+    applyWatchWallet(DEFAULT_WALLET_ADDRESS);
   }
 
   function handleExitJudgeMode() {
@@ -722,12 +744,16 @@ export default function Sidebar() {
                   <button
                     type="button"
                     onClick={() => {
+                      if (judgeMode) {
+                        setErrorText("Judge mode is hard-locked to the demo wallet. Exit judge mode first to connect your own wallet.");
+                        return;
+                      }
                       setMobileNavOpen(false);
                       setWalletModalOpen(true);
                     }}
                     className={`${insetButtonClass} px-3 py-2 text-[11px] font-semibold text-white`}
                   >
-                    Connect wallet
+                    {judgeMode ? "Judge wallet locked" : "Connect wallet"}
                   </button>
                 </div>
               </div>

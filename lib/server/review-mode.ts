@@ -4,6 +4,8 @@ import { cookies } from "next/headers";
 import {
   DEFAULT_WALLET_ADDRESS,
   getAvailableWalletNetworks,
+  getJudgeScopedWalletAddress,
+  JUDGE_MODE_COOKIE_KEY,
   getServer0GNetworkConfig,
   getServerDefaultNetworkKey,
   getYieldStrategyInftAddress,
@@ -347,8 +349,9 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   const runtimeStatus = getDocsRuntimeStatus();
   const proofs = await getStoredProofs();
   const cookieStore = await cookies();
+  const judgeMode = cookieStore.get(JUDGE_MODE_COOKIE_KEY)?.value === "true";
   const requestedWallet = resolveWalletAddress(cookieStore.get(WALLET_COOKIE_KEY)?.value);
-  const reviewWallet = requestedWallet ?? DEFAULT_WALLET_ADDRESS;
+  const reviewWallet = getJudgeScopedWalletAddress(requestedWallet, judgeMode) ?? DEFAULT_WALLET_ADDRESS;
   const walletScopedProof = await getLatestStoredProofForWallet(reviewWallet);
   const latestProof = walletScopedProof;
   const scopedProofs = proofs.filter((proof) =>

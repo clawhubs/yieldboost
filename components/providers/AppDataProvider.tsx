@@ -18,6 +18,7 @@ import {
   buildOptimizationSnapshot,
 } from "@/lib/optimizations";
 import {
+  DEFAULT_WALLET_ADDRESS,
   type WalletChangeDetail,
   JUDGE_MODE_COOKIE_KEY,
   type WalletNetworkKey,
@@ -177,10 +178,14 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         : undefined;
 
     const initialNetwork = savedNetwork ?? "testnet";
-    const initialWallet = isWalletAddress(savedWallet) ? savedWallet : undefined;
     const initialJudgeMode =
       typeof window !== "undefined" &&
       window.localStorage.getItem(JUDGE_MODE_STORAGE_KEY) === "true";
+    const initialWallet = initialJudgeMode
+      ? DEFAULT_WALLET_ADDRESS
+      : isWalletAddress(savedWallet)
+        ? savedWallet
+        : undefined;
 
     setNetworkKey(initialNetwork);
     setJudgeMode(Boolean(initialJudgeMode));
