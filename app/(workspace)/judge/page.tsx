@@ -75,8 +75,8 @@ export default async function JudgePage() {
   const projectProfiles = [
     {
       label: "GitHub",
-      href: "https://github.com/clawhubs",
-      sublabel: "clawhubs",
+      href: "https://github.com/clawhubs/yieldboost",
+      sublabel: "clawhubs/yieldboost",
       icon: GitBranch,
     },
     {

@@ -39,7 +39,10 @@ Acces Key and token
 # local artifacts
 .artifacts/*
 !.artifacts/runtime-store.json
-test-results
+test-results/*
+!test-results/
+!test-results/*.png
+test-results/.last-run.json
 Plan/
 memory/daily/
 
