@@ -6,11 +6,13 @@ import {
   getServer0GNetworkConfig,
   getServerDefaultNetworkKey,
   getYieldStrategyInftAddress,
-  sameWalletAddress,
 } from "@/lib/wallet";
 import { getDocsRuntimeStatus } from "@/lib/docs/content";
 import type { StoredProofRecord } from "@/lib/backend-data";
-import { getLatestStoredProofForWallet, getStoredProofs } from "@/lib/server/runtime-store";
+import {
+  resolveLatestProofForWalletAcrossNetworks,
+  resolveProofHistoryForWalletAcrossNetworks,
+} from "@/lib/server/proof-resolution";
 import {
   getComputeLedgerPrivateKey,
   getComputeProviderAddress,
@@ -342,14 +344,10 @@ function buildMainnetChecklist({
 
 export async function getJudgePageData(): Promise<JudgePageData> {
   const runtimeStatus = getDocsRuntimeStatus();
-  const proofs = await getStoredProofs();
   const reviewWallet = DEFAULT_WALLET_ADDRESS;
-  const walletScopedProof = await getLatestStoredProofForWallet(reviewWallet);
-  const latestProof = walletScopedProof;
-  const scopedProofs = proofs.filter((proof) =>
-    sameWalletAddress(proof.walletAddress, reviewWallet),
-  );
   const preferredNetwork = getServerDefaultNetworkKey();
+  const latestProof = await resolveLatestProofForWalletAcrossNetworks(reviewWallet);
+  const scopedProofs = await resolveProofHistoryForWalletAcrossNetworks(reviewWallet);
   const preferredConfig = getServer0GNetworkConfig(preferredNetwork);
   const computeProviderAddress = getComputeProviderAddress(preferredNetwork);
   const computeLedgerPrivateKey = getComputeLedgerPrivateKey(preferredNetwork);

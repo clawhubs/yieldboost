@@ -18,7 +18,7 @@ const SETTINGS_KEY = "yieldboost:settings";
 const MAX_PROOFS = 50;
 const LOCAL_STORE_PATH = path.join(process.cwd(), ".artifacts", "runtime-store.json");
 
-function isKvConfigured() {
+export function isRuntimeStoreKvConfigured() {
   return Boolean(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
 }
 
@@ -106,7 +106,7 @@ async function loadLocalStore(): Promise<RuntimeStore> {
 export async function recordStoredProof(
   record: StoredProofRecord,
 ): Promise<StoredProofRecord> {
-  if (isKvConfigured()) {
+  if (isRuntimeStoreKvConfigured()) {
     try {
       const existing = await kv.lrange<StoredProofRecord>(PROOFS_KEY, 0, MAX_PROOFS - 1);
       const filtered = (existing ?? []).filter((item) => item.cid !== record.cid);
@@ -132,7 +132,7 @@ export async function recordStoredProof(
 }
 
 export async function getStoredProofs(): Promise<StoredProofRecord[]> {
-  if (isKvConfigured()) {
+  if (isRuntimeStoreKvConfigured()) {
     try {
       const items = await kv.lrange<StoredProofRecord>(PROOFS_KEY, 0, MAX_PROOFS - 1);
       return sortProofsNewestFirst(items ?? []);
@@ -163,7 +163,7 @@ export async function getLatestStoredProofForWallet(
 }
 
 export async function getSettingsState(): Promise<SettingsState> {
-  if (isKvConfigured()) {
+  if (isRuntimeStoreKvConfigured()) {
     try {
       const stored = await kv.get<SettingsState>(SETTINGS_KEY);
       if (stored) return { ...stored };
@@ -183,7 +183,7 @@ export async function updateSettingsState(
 ): Promise<SettingsState> {
   const current = await getSettingsState();
   const next = { ...current, ...patch };
-  if (isKvConfigured()) {
+  if (isRuntimeStoreKvConfigured()) {
     try {
       await kv.set(SETTINGS_KEY, next);
       return next;

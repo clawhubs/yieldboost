@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createDecisionSummary } from "@/lib/backend-data";
 import { type OptimizationResult } from "@/lib/optimizations";
-import { getLatestStoredProofForWallet } from "@/lib/server/runtime-store";
+import { resolveLatestProofForWallet } from "@/lib/server/proof-resolution";
 import {
+  resolveWalletNetworkKey,
   resolveWalletAddress,
   sameWalletAddress,
   WALLET_COOKIE_KEY,
+  WALLET_NETWORK_COOKIE_KEY,
 } from "@/lib/wallet";
 
 export const dynamic = "force-dynamic";
@@ -21,11 +23,15 @@ export async function GET(req: NextRequest) {
   const requestedWallet = resolveWalletAddress(
     req.nextUrl.searchParams.get("wallet") ?? req.cookies.get(WALLET_COOKIE_KEY)?.value,
   );
+  const networkKey = resolveWalletNetworkKey(
+    req.nextUrl.searchParams.get("network") ??
+      req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value,
+  );
   if (!requestedWallet) {
     return NextResponse.json({ success: true, data: null });
   }
 
-  const storedProof = await getLatestStoredProofForWallet(requestedWallet);
+  const storedProof = await resolveLatestProofForWallet(requestedWallet, networkKey);
 
   if (!storedProof) {
     return NextResponse.json({ success: true, data: null });

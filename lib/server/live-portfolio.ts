@@ -11,7 +11,7 @@ import {
   type WalletNetworkKey,
   resolveWalletAddress,
 } from "@/lib/wallet";
-import { getLatestStoredProofForWallet } from "@/lib/server/runtime-store";
+import { resolveLatestProofForWallet } from "@/lib/server/proof-resolution";
 
 function round(value: number, digits = 6) {
   const multiplier = 10 ** digits;
@@ -120,7 +120,7 @@ export async function getLivePortfolioSnapshot(
     };
   }
   const rpcUrl = getServer0GNetworkConfig(networkKey).rpcUrl;
-  const latestProof = await getLatestStoredProofForWallet(walletAddress);
+  const latestProof = await resolveLatestProofForWallet(walletAddress, networkKey);
   const proofBackedPortfolio = latestProof
     ? buildPortfolioFromProof(latestProof, walletAddress)
     : null;
