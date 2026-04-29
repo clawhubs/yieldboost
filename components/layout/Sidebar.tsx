@@ -42,6 +42,7 @@ import {
   type WalletOption,
 } from "@/lib/browser-wallet";
 import {
+  DEFAULT_WALLET_ADDRESS,
   getAvailableWalletNetworks,
   isWalletAddress,
   JUDGE_MODE_STORAGE_KEY,
@@ -123,8 +124,8 @@ export default function Sidebar() {
     () => availableNetworks.find((network) => network.key === selectedNetwork) ?? availableNetworks[0],
     [selectedNetwork],
   );
-  const isCustomWatchMode = !connected && Boolean(walletAddr);
-  const activeWalletAddress = walletAddr ?? "";
+  const isCustomWatchMode = !judgeMode && !connected && Boolean(walletAddr);
+  const activeWalletAddress = judgeMode ? DEFAULT_WALLET_ADDRESS : walletAddr ?? "";
   const activeNavigationItem = navigation.find((item) => item.href === pathname) ?? navigation[0];
 
   useEffect(() => {
@@ -195,6 +196,9 @@ export default function Sidebar() {
   }, []);
 
   const applyDisconnectedState = useCallback((nextNetwork: WalletNetworkKey) => {
+    const judgeModeActive =
+      typeof window !== "undefined" &&
+      window.localStorage.getItem(JUDGE_MODE_STORAGE_KEY) === "true";
     cleanupProviderListeners();
     providerRef.current = null;
     providerIdRef.current = null;
@@ -204,7 +208,12 @@ export default function Sidebar() {
     setConnected(false);
     setWalletAddr(null);
     setErrorText(null);
-    broadcastWalletChange(undefined, nextNetwork, null, false);
+    broadcastWalletChange(
+      judgeModeActive ? DEFAULT_WALLET_ADDRESS : undefined,
+      nextNetwork,
+      judgeModeActive ? "Judge demo wallet" : null,
+      false,
+    );
   }, [broadcastWalletChange, cleanupProviderListeners]);
 
   const attachProviderListeners = useCallback((
@@ -458,11 +467,19 @@ export default function Sidebar() {
 
   function activateJudgeReviewMode() {
     enterJudgeMode();
+    broadcastWalletChange(
+      DEFAULT_WALLET_ADDRESS,
+      selectedNetwork,
+      "Judge demo wallet",
+      false,
+    );
   }
 
   function handleExitJudgeMode() {
     exitJudgeMode();
-    if (!connected) {
+    if (connected && walletAddrRef.current && isWalletAddress(walletAddrRef.current)) {
+      broadcastWalletChange(walletAddrRef.current, selectedNetwork, null, true);
+    } else {
       applyDisconnectedState(selectedNetwork);
     }
     setMobileNavOpen(false);
@@ -604,12 +621,12 @@ export default function Sidebar() {
             <div className="flex items-center gap-2 text-[13px] font-medium text-white">
               <span
                 className={`inline-flex h-3 w-3 rounded-full shadow-[0_0_14px_rgba(53,213,110,0.55)] ${
-                  connected ? "bg-[#35d56e]" : judgeMode ? "bg-[#22ddd0]" : "bg-[#f3a441]"
+                  judgeMode ? "bg-[#22ddd0]" : connected ? "bg-[#35d56e]" : "bg-[#f3a441]"
                 }`}
               />
               Account
             </div>
-              <div className={`mt-1 pl-5 text-[12px] ${connected ? "text-[#35d56e]" : judgeMode || isCustomWatchMode ? "text-[#22ddd0]" : "text-[#f3a441]"}`}>
+              <div className={`mt-1 pl-5 text-[12px] ${judgeMode ? "text-[#22ddd0]" : connected ? "text-[#35d56e]" : isCustomWatchMode ? "text-[#22ddd0]" : "text-[#f3a441]"}`}>
               {judgeMode ? "Judge mode" : connected ? "Connected" : isCustomWatchMode ? "Tracked wallet" : "Not connected"}
             </div>
 

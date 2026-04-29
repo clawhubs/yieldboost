@@ -19,6 +19,7 @@ import {
   buildOptimizationSnapshot,
 } from "@/lib/optimizations";
 import {
+  DEFAULT_WALLET_ADDRESS,
   type WalletChangeDetail,
   JUDGE_MODE_COOKIE_KEY,
   type WalletNetworkKey,
@@ -262,7 +263,11 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     const initialJudgeMode =
       typeof window !== "undefined" &&
       window.localStorage.getItem(JUDGE_MODE_STORAGE_KEY) === "true";
-    const initialWallet = isWalletAddress(savedWallet) ? savedWallet : undefined;
+    const initialWallet = initialJudgeMode
+      ? DEFAULT_WALLET_ADDRESS
+      : isWalletAddress(savedWallet)
+        ? savedWallet
+        : undefined;
     activeScopeRef.current = buildWalletScopeKey(initialWallet, initialNetwork);
 
     setNetworkKey(initialNetwork);
@@ -284,12 +289,17 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       const detail = (
         event as CustomEvent<WalletChangeDetail>
       ).detail;
+      const judgeModeActive =
+        typeof window !== "undefined" &&
+        window.localStorage.getItem(JUDGE_MODE_STORAGE_KEY) === "true";
       const nextNetwork = resolveWalletNetworkKey(detail?.networkKey);
-      const nextWalletAddress = detail?.walletAddress;
+      const nextWalletAddress = judgeModeActive
+        ? DEFAULT_WALLET_ADDRESS
+        : detail?.walletAddress;
       activeScopeRef.current = buildWalletScopeKey(nextWalletAddress, nextNetwork);
       setNetworkKey(nextNetwork);
       if (nextWalletAddress) {
-        if (detail.connected) {
+        if (detail.connected && !judgeModeActive) {
           exitJudgeMode();
         }
         // Force portfolio refresh on wallet change

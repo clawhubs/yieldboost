@@ -3,9 +3,11 @@
 import { useEffect } from "react";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import {
+  DEFAULT_WALLET_ADDRESS,
   JUDGE_MODE_COOKIE_KEY,
   JUDGE_MODE_STORAGE_KEY,
   resolveWalletNetworkKey,
+  WALLET_COOKIE_KEY,
   WALLET_NETWORK_COOKIE_KEY,
   WALLET_NETWORK_STORAGE_KEY,
 } from "@/lib/wallet";
@@ -15,7 +17,7 @@ function setCookie(name: string, value: string) {
 }
 
 export default function JudgeModeBootstrap() {
-  const { networkKey, enterJudgeMode, exitJudgeMode } = usePortfolio();
+  const { networkKey, enterJudgeMode } = usePortfolio();
 
   useEffect(() => {
     enterJudgeMode();
@@ -26,13 +28,11 @@ export default function JudgeModeBootstrap() {
 
     window.localStorage.setItem(JUDGE_MODE_STORAGE_KEY, "true");
     setCookie(JUDGE_MODE_COOKIE_KEY, "true");
+    setCookie(WALLET_COOKIE_KEY, DEFAULT_WALLET_ADDRESS);
     window.localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, preferredNetwork);
     setCookie(WALLET_NETWORK_COOKIE_KEY, preferredNetwork);
 
-    return () => {
-      exitJudgeMode();
-    };
-  }, [enterJudgeMode, exitJudgeMode, networkKey]);
+  }, [enterJudgeMode, networkKey]);
 
   return null;
 }
