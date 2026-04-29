@@ -55,10 +55,10 @@ That combination is the project's strongest differentiator for a hackathon revie
 <table>
   <tr>
     <td width="50%">
-      <img src="./.artifacts/current-dashboard.png" alt="YieldBoost AI dashboard" />
+      <img src="./public/readme/dashboard.png" alt="YieldBoost AI dashboard" />
     </td>
     <td width="50%">
-      <img src="./test-results/live-02b-judge-page.png" alt="YieldBoost AI judge mode" />
+      <img src="./public/readme/judge-mode.png" alt="YieldBoost AI judge mode" />
     </td>
   </tr>
   <tr>
@@ -165,7 +165,7 @@ It does three important things:
 This is the UX decision that makes YieldBoost AI unusually judge-friendly: the verification path is short, visible, and does not depend on extension setup.
 
 <p align="center">
-  <img src="./test-results/live-03-proof-modal.png" alt="Proof modal" width="820" />
+  <img src="./public/readme/proof-modal.png" alt="Proof modal" width="820" />
 </p>
 
 <p align="center"><em>Proof modal showing the storage-backed verification layer exposed to the reviewer.</em></p>
