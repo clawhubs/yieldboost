@@ -5,7 +5,7 @@ import {
   Boxes,
   CheckCircle2,
   ExternalLink,
-  Github,
+  GitBranch,
   Link2,
   ShieldCheck,
   Wallet2,
@@ -77,7 +77,7 @@ export default async function JudgePage() {
       label: "GitHub",
       href: "https://github.com/clawhubs",
       sublabel: "clawhubs",
-      icon: Github,
+      icon: GitBranch,
     },
     {
       label: "X",
