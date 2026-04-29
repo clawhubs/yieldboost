@@ -1,18 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import {
-  DEFAULT_WALLET_ADDRESS,
   JUDGE_MODE_COOKIE_KEY,
   JUDGE_MODE_STORAGE_KEY,
   resolveWalletNetworkKey,
-  WALLET_CHANGE_EVENT,
-  WALLET_COOKIE_KEY,
   WALLET_NETWORK_COOKIE_KEY,
   WALLET_NETWORK_STORAGE_KEY,
-  WALLET_OVERRIDE_STORAGE_KEY,
-  WALLET_PROVIDER_STORAGE_KEY,
 } from "@/lib/wallet";
 
 function setCookie(name: string, value: string) {
@@ -20,15 +15,9 @@ function setCookie(name: string, value: string) {
 }
 
 export default function JudgeModeBootstrap() {
-  const { networkKey, enterJudgeMode } = usePortfolio();
-  const bootstrappedRef = useRef(false);
+  const { networkKey, enterJudgeMode, exitJudgeMode } = usePortfolio();
 
   useEffect(() => {
-    if (bootstrappedRef.current) {
-      return;
-    }
-    bootstrappedRef.current = true;
-
     enterJudgeMode();
 
     const preferredNetwork = resolveWalletNetworkKey(
@@ -39,20 +28,11 @@ export default function JudgeModeBootstrap() {
     setCookie(JUDGE_MODE_COOKIE_KEY, "true");
     window.localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, preferredNetwork);
     setCookie(WALLET_NETWORK_COOKIE_KEY, preferredNetwork);
-    window.localStorage.removeItem(WALLET_PROVIDER_STORAGE_KEY);
-    window.localStorage.setItem(WALLET_OVERRIDE_STORAGE_KEY, DEFAULT_WALLET_ADDRESS);
-    setCookie(WALLET_COOKIE_KEY, DEFAULT_WALLET_ADDRESS);
 
-    window.dispatchEvent(
-      new CustomEvent(WALLET_CHANGE_EVENT, {
-        detail: {
-          walletAddress: DEFAULT_WALLET_ADDRESS,
-          networkKey: preferredNetwork,
-          connected: false,
-        },
-      }),
-    );
-  }, [enterJudgeMode, networkKey]);
+    return () => {
+      exitJudgeMode();
+    };
+  }, [enterJudgeMode, exitJudgeMode, networkKey]);
 
   return null;
 }

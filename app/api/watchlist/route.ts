@@ -3,7 +3,6 @@ import { buildWatchlistFromState } from "@/lib/backend-data";
 import { getLivePortfolioSnapshot } from "@/lib/server/live-portfolio";
 import { getSettingsState, getStoredProofs } from "@/lib/server/runtime-store";
 import {
-  getJudgeScopedWalletAddress,
   JUDGE_MODE_COOKIE_KEY,
   resolveWalletAddress,
   resolveWalletNetworkKey,
@@ -14,10 +13,7 @@ import {
 
 export async function GET(req: NextRequest) {
   const judgeMode = req.cookies.get(JUDGE_MODE_COOKIE_KEY)?.value === "true";
-  const walletAddress = getJudgeScopedWalletAddress(
-    resolveWalletAddress(req.cookies.get(WALLET_COOKIE_KEY)?.value),
-    judgeMode,
-  );
+  const walletAddress = resolveWalletAddress(req.cookies.get(WALLET_COOKIE_KEY)?.value);
   const networkKey = resolveWalletNetworkKey(
     req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value,
   );

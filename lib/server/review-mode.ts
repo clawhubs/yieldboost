@@ -1,17 +1,12 @@
 import "server-only";
 
-import { cookies } from "next/headers";
 import {
   DEFAULT_WALLET_ADDRESS,
   getAvailableWalletNetworks,
-  getJudgeScopedWalletAddress,
-  JUDGE_MODE_COOKIE_KEY,
   getServer0GNetworkConfig,
   getServerDefaultNetworkKey,
   getYieldStrategyInftAddress,
-  resolveWalletAddress,
   sameWalletAddress,
-  WALLET_COOKIE_KEY,
 } from "@/lib/wallet";
 import { getDocsRuntimeStatus } from "@/lib/docs/content";
 import type { StoredProofRecord } from "@/lib/backend-data";
@@ -348,10 +343,7 @@ function buildMainnetChecklist({
 export async function getJudgePageData(): Promise<JudgePageData> {
   const runtimeStatus = getDocsRuntimeStatus();
   const proofs = await getStoredProofs();
-  const cookieStore = await cookies();
-  const judgeMode = cookieStore.get(JUDGE_MODE_COOKIE_KEY)?.value === "true";
-  const requestedWallet = resolveWalletAddress(cookieStore.get(WALLET_COOKIE_KEY)?.value);
-  const reviewWallet = getJudgeScopedWalletAddress(requestedWallet, judgeMode) ?? DEFAULT_WALLET_ADDRESS;
+  const reviewWallet = DEFAULT_WALLET_ADDRESS;
   const walletScopedProof = await getLatestStoredProofForWallet(reviewWallet);
   const latestProof = walletScopedProof;
   const scopedProofs = proofs.filter((proof) =>
@@ -394,10 +386,8 @@ export async function getJudgePageData(): Promise<JudgePageData> {
     {
       label: "Review Wallet",
       value: reviewWallet,
-      helper: requestedWallet
-        ? "Judge page is currently scoped to the active wallet in this browser session."
-        : "Judge mode defaults to the public review wallet when no wallet is active.",
-      tone: requestedWallet ? "teal" : "white",
+      helper: "Judge mode is hard-locked to the public demo wallet for consistent review.",
+      tone: "teal",
     },
   ];
 
@@ -434,9 +424,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
         {
           label: "Latest Proof",
           value: "No proof yet",
-          helper: requestedWallet
-            ? "No recorded proof exists yet for the active wallet in this browser session."
-            : "Judge mode is live, but the runtime store does not have a proof to show yet.",
+          helper: "Judge mode is live, but the runtime store does not have a proof for the demo wallet yet.",
           tone: "amber",
         },
         {
@@ -539,9 +527,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   const blockers: string[] = [];
   if (!latestProof) {
     blockers.push(
-      requestedWallet
-        ? "No runtime proof is recorded yet for the active wallet, so judge mode can only show readiness and empty-state guidance."
-        : "No latest runtime proof is available yet, so judge mode can only show readiness and empty-state guidance.",
+      "No latest runtime proof is available yet for the demo wallet, so judge mode can only show readiness and empty-state guidance.",
     );
   }
   if (!hasValue(readEnv("ZG_MAINNET_STORAGE_URL")) || !hasValue(readEnv("ZG_MAINNET_PRIVATE_KEY"))) {

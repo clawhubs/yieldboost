@@ -24,7 +24,6 @@ import {
 } from "@/lib/server/feature-page-mappers";
 import { getSettingsState, getStoredProofs } from "@/lib/server/runtime-store";
 import {
-  getJudgeScopedWalletAddress,
   JUDGE_MODE_COOKIE_KEY,
   resolveWalletAddress,
   resolveWalletNetworkKey,
@@ -136,10 +135,7 @@ export async function getWatchlistPageConfig() {
   try {
     const cookieStore = await cookies();
     const judgeMode = cookieStore.get(JUDGE_MODE_COOKIE_KEY)?.value === "true";
-    const walletAddress = getJudgeScopedWalletAddress(
-      resolveWalletAddress(cookieStore.get(WALLET_COOKIE_KEY)?.value),
-      judgeMode,
-    );
+    const walletAddress = resolveWalletAddress(cookieStore.get(WALLET_COOKIE_KEY)?.value);
     const networkKey = resolveWalletNetworkKey(
       cookieStore.get(WALLET_NETWORK_COOKIE_KEY)?.value,
     );

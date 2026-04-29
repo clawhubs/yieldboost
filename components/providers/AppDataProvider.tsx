@@ -6,6 +6,7 @@ import {
   startTransition,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -18,7 +19,6 @@ import {
   buildOptimizationSnapshot,
 } from "@/lib/optimizations";
 import {
-  DEFAULT_WALLET_ADDRESS,
   type WalletChangeDetail,
   JUDGE_MODE_COOKIE_KEY,
   type WalletNetworkKey,
@@ -109,6 +109,13 @@ function getClientActiveWalletAddress(fallback?: string): string | undefined {
   return isWalletAddress(fallback) ? fallback : undefined;
 }
 
+function buildWalletScopeKey(
+  walletAddress?: string,
+  networkKey: WalletNetworkKey = "testnet",
+) {
+  return walletAddress ? `${walletAddress.toLowerCase()}::${networkKey}` : `disconnected::${networkKey}`;
+}
+
 export function AppDataProvider({ children }: { children: ReactNode }) {
   const [portfolio, setPortfolio] = useState<PortfolioResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -119,6 +126,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const [streamingText, setStreamingText] = useState("");
   const [progress, setProgress] = useState<OptimizationState>("analyzing");
   const [latestResult, setLatestResult] = useState<OptimizationResult | null>(null);
+  const activeScopeRef = useRef(buildWalletScopeKey(undefined, "testnet"));
+  const portfolioRequestIdRef = useRef(0);
+  const latestRequestIdRef = useRef(0);
 
   const enterJudgeMode = useCallback(() => {
     setJudgeMode(true);
@@ -140,10 +150,18 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     walletAddress?: string,
     networkKeyInput: WalletNetworkKey = networkKey,
   ) => {
+    const scopeKey = buildWalletScopeKey(walletAddress, networkKeyInput);
+    const requestId = ++portfolioRequestIdRef.current;
+
     if (!walletAddress) {
       const emptyPortfolio = buildEmptyPortfolio();
-      setPortfolio(emptyPortfolio);
-      setLoading(false);
+      if (
+        activeScopeRef.current === scopeKey &&
+        portfolioRequestIdRef.current === requestId
+      ) {
+        setPortfolio(emptyPortfolio);
+        setLoading(false);
+      }
       return emptyPortfolio;
     }
 
@@ -164,17 +182,32 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       }
 
       const nextPortfolio = (await response.json()) as PortfolioResponse;
-      setPortfolio(nextPortfolio);
+      if (
+        activeScopeRef.current === scopeKey &&
+        portfolioRequestIdRef.current === requestId
+      ) {
+        setPortfolio(nextPortfolio);
+      }
       return nextPortfolio;
     } catch {
       const emptyPortfolio: PortfolioResponse = {
         ...buildEmptyPortfolio(walletAddress),
         source: `wallet_unavailable_${networkKeyInput}`,
       };
-      setPortfolio(emptyPortfolio);
+      if (
+        activeScopeRef.current === scopeKey &&
+        portfolioRequestIdRef.current === requestId
+      ) {
+        setPortfolio(emptyPortfolio);
+      }
       return emptyPortfolio;
     } finally {
-      setLoading(false);
+      if (
+        activeScopeRef.current === scopeKey &&
+        portfolioRequestIdRef.current === requestId
+      ) {
+        setLoading(false);
+      }
     }
   }, [networkKey]);
 
@@ -182,6 +215,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     walletAddress: string,
     nextNetwork: WalletNetworkKey,
   ) => {
+    const scopeKey = buildWalletScopeKey(walletAddress, nextNetwork);
+    const requestId = ++latestRequestIdRef.current;
+
     try {
       const params = new URLSearchParams({
         network: nextNetwork,
@@ -192,6 +228,12 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       });
       if (!response.ok) return;
       const data = (await response.json()) as { data?: OptimizationResult | null };
+      if (
+        activeScopeRef.current !== scopeKey ||
+        latestRequestIdRef.current !== requestId
+      ) {
+        return;
+      }
       if (data.data) {
         setLatestResult(data.data);
         setOptimizations([data.data]);
@@ -220,11 +262,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     const initialJudgeMode =
       typeof window !== "undefined" &&
       window.localStorage.getItem(JUDGE_MODE_STORAGE_KEY) === "true";
-    const initialWallet = initialJudgeMode
-      ? DEFAULT_WALLET_ADDRESS
-      : isWalletAddress(savedWallet)
-        ? savedWallet
-        : undefined;
+    const initialWallet = isWalletAddress(savedWallet) ? savedWallet : undefined;
+    activeScopeRef.current = buildWalletScopeKey(initialWallet, initialNetwork);
 
     setNetworkKey(initialNetwork);
     setJudgeMode(Boolean(initialJudgeMode));
@@ -246,15 +285,17 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         event as CustomEvent<WalletChangeDetail>
       ).detail;
       const nextNetwork = resolveWalletNetworkKey(detail?.networkKey);
+      const nextWalletAddress = detail?.walletAddress;
+      activeScopeRef.current = buildWalletScopeKey(nextWalletAddress, nextNetwork);
       setNetworkKey(nextNetwork);
-      if (detail?.walletAddress) {
+      if (nextWalletAddress) {
         if (detail.connected) {
           exitJudgeMode();
         }
         // Force portfolio refresh on wallet change
         setPortfolio(buildEmptyPortfolio());
-        void refreshPortfolio(detail.walletAddress, nextNetwork);
-        void hydrateLatest(detail.walletAddress, nextNetwork);
+        void refreshPortfolio(nextWalletAddress, nextNetwork);
+        void hydrateLatest(nextWalletAddress, nextNetwork);
         return;
       }
 
@@ -453,6 +494,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       }
 
       const resolvedWalletAddress = storageData?.walletAddress ?? activeWalletAddress;
+      const resolvedScopeKey = buildWalletScopeKey(resolvedWalletAddress, networkKey);
 
       const nextResult: OptimizationResult = {
         ...fallbackResult,
@@ -480,6 +522,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       });
 
       if (storageData?.cid && resolvedWalletAddress) {
+        activeScopeRef.current = resolvedScopeKey;
         void refreshPortfolio(resolvedWalletAddress, networkKey);
         void hydrateLatest(resolvedWalletAddress, networkKey);
       }

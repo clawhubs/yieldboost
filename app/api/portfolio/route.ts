@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getLivePortfolioSnapshot } from "@/lib/server/live-portfolio";
 import {
-  getJudgeScopedWalletAddress,
   JUDGE_MODE_COOKIE_KEY,
   resolveWalletAddress,
   resolveWalletNetworkKey,
@@ -13,7 +12,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export async function GET(req: NextRequest) {
-  const requestedWallet = resolveWalletAddress(
+  const walletAddress = resolveWalletAddress(
     req.nextUrl.searchParams.get("wallet") ?? req.cookies.get(WALLET_COOKIE_KEY)?.value,
   );
   const networkKey = resolveWalletNetworkKey(
@@ -21,7 +20,6 @@ export async function GET(req: NextRequest) {
       req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value,
   );
   const judgeMode = req.cookies.get(JUDGE_MODE_COOKIE_KEY)?.value === "true";
-  const walletAddress = getJudgeScopedWalletAddress(requestedWallet, judgeMode);
 
   return NextResponse.json(
     await getLivePortfolioSnapshot(walletAddress, networkKey, {

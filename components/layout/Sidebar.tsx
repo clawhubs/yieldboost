@@ -42,7 +42,6 @@ import {
   type WalletOption,
 } from "@/lib/browser-wallet";
 import {
-  DEFAULT_WALLET_ADDRESS,
   getAvailableWalletNetworks,
   isWalletAddress,
   JUDGE_MODE_STORAGE_KEY,
@@ -286,19 +285,8 @@ export default function Sidebar() {
 
     const savedProviderId = localStorage.getItem(WALLET_PROVIDER_STORAGE_KEY);
     const savedWallet = localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY);
-    const savedJudgeMode = localStorage.getItem(JUDGE_MODE_STORAGE_KEY) === "true";
 
     void (async () => {
-      if (savedJudgeMode) {
-        setWalletAddr(DEFAULT_WALLET_ADDRESS);
-        setConnected(false);
-        setErrorText(null);
-        localStorage.removeItem(WALLET_PROVIDER_STORAGE_KEY);
-        localStorage.setItem(WALLET_OVERRIDE_STORAGE_KEY, DEFAULT_WALLET_ADDRESS);
-        broadcastWalletChange(DEFAULT_WALLET_ADDRESS, savedNetwork, null, false);
-        return;
-      }
-
       async function restoreAuthorizedWallet(
         providerId: string,
         networkKey: WalletNetworkKey,
@@ -470,7 +458,6 @@ export default function Sidebar() {
 
   function activateJudgeReviewMode() {
     enterJudgeMode();
-    applyWatchWallet(DEFAULT_WALLET_ADDRESS);
   }
 
   function handleExitJudgeMode() {
