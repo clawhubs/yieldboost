@@ -96,6 +96,19 @@ function parseStreamingChunk(
   }
 }
 
+function getClientActiveWalletAddress(fallback?: string): string | undefined {
+  if (typeof window === "undefined") {
+    return isWalletAddress(fallback) ? fallback : undefined;
+  }
+
+  const storedWallet = window.localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY);
+  if (isWalletAddress(storedWallet)) {
+    return storedWallet ?? undefined;
+  }
+
+  return isWalletAddress(fallback) ? fallback : undefined;
+}
+
 export function AppDataProvider({ children }: { children: ReactNode }) {
   const [portfolio, setPortfolio] = useState<PortfolioResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -165,6 +178,32 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     }
   }, [networkKey]);
 
+  const hydrateLatest = useCallback(async (
+    walletAddress: string,
+    nextNetwork: WalletNetworkKey,
+  ) => {
+    try {
+      const params = new URLSearchParams({
+        network: nextNetwork,
+        wallet: walletAddress,
+      });
+      const response = await fetch(`/api/agent/latest?${params.toString()}`, {
+        cache: "no-store",
+      });
+      if (!response.ok) return;
+      const data = (await response.json()) as { data?: OptimizationResult | null };
+      if (data.data) {
+        setLatestResult(data.data);
+        setOptimizations([data.data]);
+      } else {
+        setLatestResult(null);
+        setOptimizations([]);
+      }
+    } catch {
+      // Leave the dashboard in its empty-live state until a real run exists.
+    }
+  }, []);
+
   useEffect(() => {
     const savedWallet =
       typeof window !== "undefined"
@@ -196,29 +235,6 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       setLatestResult(null);
       setOptimizations([]);
-    }
-
-    async function hydrateLatest(walletAddress: string, nextNetwork: WalletNetworkKey) {
-      try {
-        const params = new URLSearchParams({
-          network: nextNetwork,
-          wallet: walletAddress,
-        });
-        const response = await fetch(`/api/agent/latest?${params.toString()}`, {
-          cache: "no-store",
-        });
-        if (!response.ok) return;
-        const data = (await response.json()) as { data?: OptimizationResult | null };
-        if (data.data) {
-          setLatestResult(data.data);
-          setOptimizations([data.data]);
-        } else {
-          setLatestResult(null);
-          setOptimizations([]);
-        }
-      } catch {
-        // Leave the dashboard in its empty-live state until a real run exists.
-      }
     }
 
     if (initialWallet) {
@@ -253,7 +269,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     return () => {
       window.removeEventListener(WALLET_CHANGE_EVENT, handleWalletChange as EventListener);
     };
-  }, [exitJudgeMode, refreshPortfolio]);
+  }, [exitJudgeMode, hydrateLatest, refreshPortfolio]);
 
   async function optimize(
     portfolioInput: Record<string, number>,
@@ -334,6 +350,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
             note?: string;
           }
         | null = null;
+      const activeWalletAddress = getClientActiveWalletAddress(portfolio?.walletAddress);
 
       try {
         const storageResponse = await fetch("/api/0g/store", {
@@ -341,7 +358,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             networkKey,
-            walletAddress: portfolio?.walletAddress,
+            walletAddress: activeWalletAddress,
             decision: {
               current_apy:
                 optimizationData.current_apy ?? fallbackResult.current_apy,
@@ -421,7 +438,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
             window.dispatchEvent(
               new CustomEvent(PROOF_STORED_EVENT, {
                 detail: {
-                  walletAddress: storageData.walletAddress ?? portfolio?.walletAddress,
+                  walletAddress: storageData.walletAddress ?? activeWalletAddress,
                   networkKey,
                   recordedAt,
                   cid: storageData.cid,
@@ -435,6 +452,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           error instanceof Error ? error.message : "0G storage request failed";
       }
 
+      const resolvedWalletAddress = storageData?.walletAddress ?? activeWalletAddress;
+
       const nextResult: OptimizationResult = {
         ...fallbackResult,
         ...optimizationData,
@@ -444,7 +463,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         blockNumber: storageData?.blockNumber,
         proofUrl: storageData?.explorerUrl,
         timestamp: storageData?.timestamp ?? new Date().toISOString(),
-        walletAddress: storageData?.walletAddress ?? portfolio?.walletAddress,
+        walletAddress: resolvedWalletAddress,
         proofRegistryAddress: storageData?.proofRegistryAddress,
         proofRegistryTxHash: storageData?.proofRegistryTxHash,
         proofRegistryProofId: storageData?.proofRegistryProofId,
@@ -459,6 +478,11 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         setLatestResult(nextResult);
         setOptimizations((previous) => [nextResult, ...previous].slice(0, 10));
       });
+
+      if (storageData?.cid && resolvedWalletAddress) {
+        void refreshPortfolio(resolvedWalletAddress, networkKey);
+        void hydrateLatest(resolvedWalletAddress, networkKey);
+      }
 
       setProgress("done");
       window.setTimeout(() => setProgress("analyzing"), 2800);

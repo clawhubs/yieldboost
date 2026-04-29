@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { JsonRpcProvider } from "ethers";
 import { createDecisionSummary } from "@/lib/backend-data";
 import { type OptimizationResult } from "@/lib/optimizations";
 import { getLatestStoredProofForWallet } from "@/lib/server/runtime-store";
 import {
-  getServer0GNetworkConfig,
   resolveWalletAddress,
-  resolveWalletNetworkKey,
   sameWalletAddress,
   WALLET_COOKIE_KEY,
-  WALLET_NETWORK_COOKIE_KEY,
 } from "@/lib/wallet";
 
 export const dynamic = "force-dynamic";
@@ -42,26 +38,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: true, data: null });
   }
 
-  let walletAddress = storedProof.walletAddress ?? requestedWallet;
-
-  const networkKey = resolveWalletNetworkKey(
-    storedProof.networkKey ??
-      req.nextUrl.searchParams.get("network") ??
-      req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value,
-  );
-  const rpcUrl = getServer0GNetworkConfig(networkKey).rpcUrl;
-  if (rpcUrl && storedProof.txHash) {
-    try {
-      const provider = new JsonRpcProvider(rpcUrl);
-      const tx = await provider.getTransaction(storedProof.txHash);
-      if (typeof tx?.from === "string" && tx.from.length > 0) {
-        walletAddress = tx.from;
-      }
-    } catch {
-      // Keep the signer address already stored with the proof.
-    }
-  }
-
   const result: OptimizationResult = {
     current_apy: storedProof.decision.current_apy,
     optimized_apy: storedProof.decision.optimized_apy,
@@ -90,7 +66,7 @@ export async function GET(req: NextRequest) {
     totalPortfolio: storedProof.decision.totalPortfolio ?? 0,
     riskProfile: "Moderate",
     proofUrl: storedProof.explorerUrl,
-    walletAddress: walletAddress ?? undefined,
+    walletAddress: storedProof.walletAddress ?? requestedWallet,
     proofRegistryAddress: storedProof.proofRegistryAddress,
     proofRegistryTxHash: storedProof.proofRegistryTxHash,
     proofRegistryProofId: storedProof.proofRegistryProofId,
