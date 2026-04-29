@@ -42,6 +42,29 @@ function getLocalStore(): RuntimeStore {
   return globalStore.__yieldboostRuntimeStore;
 }
 
+function parseProofTimestamp(value: string | undefined) {
+  if (!value) return 0;
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function sortProofsNewestFirst(proofs: StoredProofRecord[]) {
+  return [...proofs].sort((left, right) => {
+    const timestampDelta =
+      parseProofTimestamp(right.timestamp) - parseProofTimestamp(left.timestamp);
+    if (timestampDelta !== 0) {
+      return timestampDelta;
+    }
+
+    const blockDelta = (right.blockNumber ?? 0) - (left.blockNumber ?? 0);
+    if (blockDelta !== 0) {
+      return blockDelta;
+    }
+
+    return right.txHash.localeCompare(left.txHash);
+  });
+}
+
 async function readLocalStoreFile(): Promise<RuntimeStore | null> {
   try {
     const raw = await fs.readFile(LOCAL_STORE_PATH, "utf8");
@@ -87,7 +110,7 @@ export async function recordStoredProof(
     try {
       const existing = await kv.lrange<StoredProofRecord>(PROOFS_KEY, 0, MAX_PROOFS - 1);
       const filtered = (existing ?? []).filter((item) => item.cid !== record.cid);
-      const next = [record, ...filtered].slice(0, MAX_PROOFS);
+      const next = sortProofsNewestFirst([record, ...filtered]).slice(0, MAX_PROOFS);
       await kv.del(PROOFS_KEY);
       if (next.length > 0) {
         // lpush accepts variadic; push in reverse so head = newest
@@ -99,10 +122,10 @@ export async function recordStoredProof(
     }
   }
   const store = await loadLocalStore();
-  store.proofs = [record, ...store.proofs.filter((item) => item.cid !== record.cid)].slice(
-    0,
-    MAX_PROOFS,
-  );
+  store.proofs = sortProofsNewestFirst([
+    record,
+    ...store.proofs.filter((item) => item.cid !== record.cid),
+  ]).slice(0, MAX_PROOFS);
   globalStore.__yieldboostRuntimeStore = store;
   await writeLocalStoreFile(store);
   return record;
@@ -112,12 +135,12 @@ export async function getStoredProofs(): Promise<StoredProofRecord[]> {
   if (isKvConfigured()) {
     try {
       const items = await kv.lrange<StoredProofRecord>(PROOFS_KEY, 0, MAX_PROOFS - 1);
-      return items ?? [];
+      return sortProofsNewestFirst(items ?? []);
     } catch (error) {
       console.warn("[runtime-store] KV read failed, using local fallback:", error);
     }
   }
-  return [...(await loadLocalStore()).proofs];
+  return sortProofsNewestFirst((await loadLocalStore()).proofs);
 }
 
 export async function getStoredProofByCid(

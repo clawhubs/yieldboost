@@ -1122,6 +1122,7 @@ export default function DashboardView() {
           onOpenChange={setProofOpen}
           cid={latestResult?.storageProof}
           txHash={latestResult?.txHash}
+          blockNumber={latestResult?.blockNumber}
           explorerUrl={latestResult?.proofUrl}
           timestamp={latestResult?.timestamp}
           walletAddress={latestResult?.walletAddress}

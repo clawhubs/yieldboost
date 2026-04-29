@@ -81,6 +81,7 @@ export async function GET(req: NextRequest) {
       createDecisionSummary(storedProof.decision),
     storageProof: storedProof.cid,
     txHash: storedProof.txHash,
+    blockNumber: storedProof.blockNumber,
     timestamp: storedProof.timestamp,
     executionSeconds: storedProof.decision.executionSeconds ?? 8.42,
     estimatedAnnualGain:

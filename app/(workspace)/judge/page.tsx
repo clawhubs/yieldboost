@@ -11,6 +11,7 @@ import {
   Wallet2,
 } from "lucide-react";
 import JudgeModeBootstrap from "@/components/judge/JudgeModeBootstrap";
+import JudgeSnapshotAutoRefresh from "@/components/judge/JudgeSnapshotAutoRefresh";
 import { getJudgePageData } from "@/lib/server/review-mode";
 
 export const dynamic = "force-dynamic";
@@ -66,6 +67,11 @@ export default async function JudgePage() {
   const proofStoreValue = proofStoreCard?.value?.includes(".artifacts/runtime-store.json")
     ? "Recorded review snapshot"
     : proofStoreCard?.value ?? "Recorded review snapshot";
+  const latestExplorerUrl =
+    data.latestProof?.proofRegistryExplorerUrl ?? data.latestProof?.explorerUrl;
+  const latestExplorerLabel = data.latestProof?.proofRegistryExplorerUrl
+    ? "Open ProofRegistry tx"
+    : "Open latest tx";
   const quickReviewPoints = [
     "Open `/judge` as the submission entry point to see the latest wallet result first.",
     "Follow the latest tx link and the CID to verify the current testnet proof externally.",
@@ -90,6 +96,7 @@ export default async function JudgePage() {
   return (
     <section data-testid="judge-page" className="space-y-[10px] p-[10px]">
       <JudgeModeBootstrap />
+      <JudgeSnapshotAutoRefresh />
       <header className="yb-card rounded-[18px] px-5 py-5">
         <div className="mx-auto max-w-5xl">
           <div className="flex flex-col items-center text-center">
@@ -225,14 +232,14 @@ export default async function JudgePage() {
                   </div>
                   <div>
                     <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Explorer</div>
-                    {data.latestProof?.explorerUrl ? (
+                    {latestExplorerUrl ? (
                       <a
-                        href={data.latestProof.explorerUrl}
+                        href={latestExplorerUrl}
                         target="_blank"
                         rel="noreferrer"
                         className="mt-1 inline-flex items-center gap-2 text-[13px] text-[#22ddd0]"
                       >
-                        Open latest tx
+                        {latestExplorerLabel}
                         <ExternalLink className="h-3.5 w-3.5" />
                       </a>
                     ) : (

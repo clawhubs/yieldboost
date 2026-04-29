@@ -9,6 +9,7 @@ interface ProofModalProps {
   onOpenChange: (open: boolean) => void;
   cid?: string;
   txHash?: string;
+  blockNumber?: number;
   explorerUrl?: string;
   timestamp?: string;
   walletAddress?: string;
@@ -60,6 +61,7 @@ export default function ProofModal({
   onOpenChange,
   cid,
   txHash,
+  blockNumber,
   explorerUrl,
   timestamp,
   walletAddress,
@@ -132,6 +134,7 @@ export default function ProofModal({
     const hasAnySeed =
       Boolean(cid) ||
       Boolean(txHash) ||
+      Boolean(blockNumber) ||
       Boolean(explorerUrl) ||
       Boolean(walletAddress) ||
       Boolean(proofRegistryAddress) ||
@@ -147,6 +150,7 @@ export default function ProofModal({
     return {
       cid,
       txHash,
+      block: blockNumber,
       timestamp,
       explorerUrl,
       walletAddress,
@@ -157,6 +161,7 @@ export default function ProofModal({
     };
   }, [
     cid,
+    blockNumber,
     explorerUrl,
     proofRegistryAddress,
     proofRegistryExplorerUrl,
@@ -276,7 +281,9 @@ export default function ProofModal({
                       Block Number
                     </p>
                     <p className="mt-2 text-xl font-semibold text-white">
-                      {typeof activeProof?.block === "number" ? activeProof.block : "Unavailable"}
+                      {typeof activeProof?.block === "number" && activeProof.block > 0
+                        ? activeProof.block
+                        : "Pending receipt"}
                     </p>
                   </div>
                   <div className="surface-inset rounded-[20px] p-4 sm:rounded-[22px]">
@@ -423,7 +430,7 @@ export default function ProofModal({
                     </div>
 
                     {proofRegistryHref ? (
-                      <div className="mt-4">
+                      <div className="mt-4 flex flex-wrap gap-3">
                         <a
                           href={proofRegistryHref}
                           target="_blank"
@@ -431,6 +438,15 @@ export default function ProofModal({
                           className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:border-[var(--border-strong)] hover:text-[var(--accent-teal)]"
                         >
                           View ProofRegistry TX
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                        <a
+                          href="/abi/ProofRegistry.json"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:border-[var(--border-strong)] hover:text-[var(--accent-teal)]"
+                        >
+                          Open Contract ABI
                           <ExternalLink className="h-4 w-4" />
                         </a>
                       </div>

@@ -21,6 +21,7 @@ export interface OptimizationResult {
   reasoning?: string;
   storageProof?: string;
   txHash?: string;
+  blockNumber?: number;
   timestamp: string;
   executionSeconds: number;
   estimatedAnnualGain: number;

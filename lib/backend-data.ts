@@ -383,6 +383,7 @@ function createOptimizationResultFromProof(
     reasoning: proof.decision.reasoning,
     storageProof: proof.cid,
     txHash: proof.txHash,
+    blockNumber: proof.blockNumber,
     timestamp: proof.timestamp,
     executionSeconds: proof.decision.executionSeconds ?? 8.42,
     estimatedAnnualGain:

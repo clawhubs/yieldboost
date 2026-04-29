@@ -22,6 +22,8 @@ import {
   JUDGE_MODE_COOKIE_KEY,
   type WalletNetworkKey,
   JUDGE_MODE_STORAGE_KEY,
+  PROOF_STORED_EVENT,
+  PROOF_STORED_STORAGE_KEY,
   WALLET_CHANGE_EVENT,
   WALLET_NETWORK_STORAGE_KEY,
   WALLET_OVERRIDE_STORAGE_KEY,
@@ -316,6 +318,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         | {
             cid: string;
             txHash: string;
+            blockNumber?: number;
             explorerUrl?: string;
             timestamp?: string;
             walletAddress?: string;
@@ -396,6 +399,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           storageData = (await storageResponse.json()) as {
             cid: string;
             txHash: string;
+            blockNumber?: number;
             explorerUrl?: string;
             timestamp?: string;
             walletAddress?: string;
@@ -405,6 +409,21 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
             proofRegistryExplorerUrl?: string;
             note?: string;
           };
+
+          if (typeof window !== "undefined") {
+            const recordedAt = storageData.timestamp ?? new Date().toISOString();
+            window.localStorage.setItem(PROOF_STORED_STORAGE_KEY, recordedAt);
+            window.dispatchEvent(
+              new CustomEvent(PROOF_STORED_EVENT, {
+                detail: {
+                  walletAddress: storageData.walletAddress ?? portfolio?.walletAddress,
+                  networkKey,
+                  recordedAt,
+                  cid: storageData.cid,
+                },
+              }),
+            );
+          }
         }
       } catch (error) {
         storageErrorMessage =
@@ -417,6 +436,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         reasoning: fullText || optimizationData.reasoning || fallbackResult.reasoning,
         storageProof: storageData?.cid,
         txHash: storageData?.txHash,
+        blockNumber: storageData?.blockNumber,
         proofUrl: storageData?.explorerUrl,
         timestamp: storageData?.timestamp ?? new Date().toISOString(),
         walletAddress: storageData?.walletAddress ?? portfolio?.walletAddress,

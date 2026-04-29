@@ -1,9 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
+import { JsonRpcProvider } from "ethers";
 import { getLatestStoredProof, getStoredProofByCid } from "@/lib/server/runtime-store";
 import { getServer0GNetworkConfig, resolveWalletNetworkKey } from "@/lib/wallet";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+async function resolveBlockNumber(
+  txHash: string | undefined,
+  storedBlockNumber: number | undefined,
+  networkKey: string | undefined,
+) {
+  if (typeof storedBlockNumber === "number" && storedBlockNumber > 0) {
+    return storedBlockNumber;
+  }
+
+  if (!txHash) {
+    return storedBlockNumber;
+  }
+
+  const networkConfig = getServer0GNetworkConfig(resolveWalletNetworkKey(networkKey));
+  if (!networkConfig.rpcUrl) {
+    return storedBlockNumber;
+  }
+
+  try {
+    const provider = new JsonRpcProvider(networkConfig.rpcUrl);
+    const receipt = await provider.getTransactionReceipt(txHash);
+    return receipt?.blockNumber ?? storedBlockNumber;
+  } catch {
+    return storedBlockNumber;
+  }
+}
 
 export async function GET(req: NextRequest) {
   const cid = req.nextUrl.searchParams.get("cid");
@@ -13,12 +41,18 @@ export async function GET(req: NextRequest) {
     : await getLatestStoredProof();
 
   if (storedProof) {
+    const blockNumber = await resolveBlockNumber(
+      storedProof.txHash,
+      storedProof.blockNumber,
+      storedProof.networkKey,
+    );
+
     return NextResponse.json({
       success: true,
       data: {
         cid: storedProof.cid,
         txHash: storedProof.txHash,
-        block: storedProof.blockNumber,
+        block: blockNumber,
         timestamp: storedProof.timestamp,
         networkKey: storedProof.networkKey,
         explorerUrl: storedProof.explorerUrl,
