@@ -62,6 +62,7 @@ const YieldOptimizerContext = createContext<YieldOptimizerContextValue | null>(
   null,
 );
 const PortfolioContext = createContext<PortfolioContextValue | null>(null);
+const LATEST_RESULT_STORAGE_KEY = "yb_latest_result";
 
 function buildEmptyPortfolio(walletAddress?: string): PortfolioResponse {
   return {
@@ -117,6 +118,57 @@ function buildWalletScopeKey(
   return walletAddress ? `${walletAddress.toLowerCase()}::${networkKey}` : `disconnected::${networkKey}`;
 }
 
+function getLatestResultStorageKey(scopeKey: string) {
+  return `${LATEST_RESULT_STORAGE_KEY}:${scopeKey}`;
+}
+
+function parseResultTimestamp(value: string | undefined) {
+  if (!value) return 0;
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function pickNewerResult(
+  left: OptimizationResult | null | undefined,
+  right: OptimizationResult | null | undefined,
+) {
+  if (!left) return right ?? null;
+  if (!right) return left;
+
+  return parseResultTimestamp(left.timestamp) >= parseResultTimestamp(right.timestamp)
+    ? left
+    : right;
+}
+
+function readStoredLatestResult(scopeKey: string) {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(getLatestResultStorageKey(scopeKey));
+    if (!raw) return null;
+    return JSON.parse(raw) as OptimizationResult;
+  } catch {
+    return null;
+  }
+}
+
+function persistLatestResult(scopeKey: string, result: OptimizationResult) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(
+      getLatestResultStorageKey(scopeKey),
+      JSON.stringify(result),
+    );
+  } catch {
+    // Ignore client storage write failures.
+  }
+}
+
 function applyStorageProofEvent(
   networkKey: WalletNetworkKey,
   walletAddress: string | undefined,
@@ -154,6 +206,11 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const activeScopeRef = useRef(buildWalletScopeKey(undefined, "testnet"));
   const portfolioRequestIdRef = useRef(0);
   const latestRequestIdRef = useRef(0);
+  const latestResultRef = useRef<OptimizationResult | null>(null);
+
+  useEffect(() => {
+    latestResultRef.current = latestResult;
+  }, [latestResult]);
 
   async function syncProofRecord({
     activeWalletAddress,
@@ -320,6 +377,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         setOptimizations((previous) => [nextResult, ...previous.filter((item) => item.timestamp !== nextResult.timestamp)].slice(0, 10));
       });
     }
+    persistLatestResult(resolvedScopeKey, nextResult);
 
     if (storageData?.cid && resolvedWalletAddress) {
       activeScopeRef.current = resolvedScopeKey;
@@ -434,9 +492,17 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       ) {
         return;
       }
-      if (data.data) {
-        setLatestResult(data.data);
-        setOptimizations([data.data]);
+      const cachedResult = readStoredLatestResult(scopeKey);
+      const preferredResult = pickNewerResult(
+        pickNewerResult(data.data ?? null, cachedResult),
+        latestResultRef.current?.walletAddress &&
+          buildWalletScopeKey(latestResultRef.current.walletAddress, nextNetwork) === scopeKey
+          ? latestResultRef.current
+          : null,
+      );
+      if (preferredResult) {
+        setLatestResult(preferredResult);
+        setOptimizations([preferredResult]);
       } else {
         setLatestResult(null);
         setOptimizations([]);
@@ -471,16 +537,21 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
     setNetworkKey(initialNetwork);
     setJudgeMode(Boolean(initialJudgeMode));
+    const cachedInitialResult = readStoredLatestResult(activeScopeRef.current);
     if (initialWallet) {
       void refreshPortfolio(initialWallet, initialNetwork);
     } else {
       setPortfolio(buildEmptyPortfolio());
       setLoading(false);
-      setLatestResult(null);
-      setOptimizations([]);
+      setLatestResult(cachedInitialResult);
+      setOptimizations(cachedInitialResult ? [cachedInitialResult] : []);
     }
 
     if (initialWallet) {
+      if (cachedInitialResult) {
+        setLatestResult(cachedInitialResult);
+        setOptimizations([cachedInitialResult]);
+      }
       void hydrateLatest(initialWallet, initialNetwork);
     }
 
@@ -501,8 +572,11 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         if (detail.connected && !judgeModeActive) {
           exitJudgeMode();
         }
+        const cachedResult = readStoredLatestResult(activeScopeRef.current);
         // Force portfolio refresh on wallet change
         setPortfolio(buildEmptyPortfolio());
+        setLatestResult(cachedResult);
+        setOptimizations(cachedResult ? [cachedResult] : []);
         void refreshPortfolio(nextWalletAddress, nextNetwork);
         void hydrateLatest(nextWalletAddress, nextNetwork);
         return;
@@ -528,6 +602,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setIsOptimizing(true);
     setStreamingText("");
     setProgress("analyzing");
+    latestRequestIdRef.current += 1;
+    portfolioRequestIdRef.current += 1;
 
     const fallbackResult = buildOptimizationSnapshot(portfolioInput, prompt);
 
@@ -601,6 +677,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         setLatestResult(nextResult);
         setOptimizations((previous) => [nextResult, ...previous].slice(0, 10));
       });
+      persistLatestResult(optimisticScopeKey, nextResult);
 
       setProgress("done");
       window.setTimeout(() => setProgress("analyzing"), 1200);
