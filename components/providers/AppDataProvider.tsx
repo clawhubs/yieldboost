@@ -117,6 +117,30 @@ function buildWalletScopeKey(
   return walletAddress ? `${walletAddress.toLowerCase()}::${networkKey}` : `disconnected::${networkKey}`;
 }
 
+function applyStorageProofEvent(
+  networkKey: WalletNetworkKey,
+  walletAddress: string | undefined,
+  cid: string,
+  timestamp?: string,
+) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const recordedAt = timestamp ?? new Date().toISOString();
+  window.localStorage.setItem(PROOF_STORED_STORAGE_KEY, recordedAt);
+  window.dispatchEvent(
+    new CustomEvent(PROOF_STORED_EVENT, {
+      detail: {
+        walletAddress,
+        networkKey,
+        recordedAt,
+        cid,
+      },
+    }),
+  );
+}
+
 export function AppDataProvider({ children }: { children: ReactNode }) {
   const [portfolio, setPortfolio] = useState<PortfolioResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -130,6 +154,181 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const activeScopeRef = useRef(buildWalletScopeKey(undefined, "testnet"));
   const portfolioRequestIdRef = useRef(0);
   const latestRequestIdRef = useRef(0);
+
+  async function syncProofRecord({
+    activeWalletAddress,
+    fallbackResult,
+    fullText,
+    llmProvider,
+    networkKey,
+    optimizationData,
+    portfolio,
+    scopeKey,
+    teeAttestation,
+  }: {
+    activeWalletAddress: string | undefined;
+    fallbackResult: OptimizationResult;
+    fullText: string;
+    llmProvider?: string;
+    networkKey: WalletNetworkKey;
+    optimizationData: Partial<OptimizationResult>;
+    portfolio: PortfolioResponse | null;
+    scopeKey: string;
+    teeAttestation?: {
+      chatId: string;
+      isValid: boolean;
+      provider: string;
+      model: string;
+      timestamp: string;
+    };
+  }) {
+    let storageErrorMessage: string | undefined;
+    let storageData:
+      | {
+          cid: string;
+          txHash: string;
+          blockNumber?: number;
+          explorerUrl?: string;
+          timestamp?: string;
+          walletAddress?: string;
+          proofRegistryAddress?: string;
+          proofRegistryTxHash?: string;
+          proofRegistryProofId?: string;
+          proofRegistryExplorerUrl?: string;
+          note?: string;
+        }
+      | null = null;
+
+    try {
+      const storageResponse = await fetch("/api/0g/store", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          networkKey,
+          walletAddress: activeWalletAddress,
+          decision: {
+            current_apy:
+              optimizationData.current_apy ?? fallbackResult.current_apy,
+            optimized_apy:
+              optimizationData.optimized_apy ?? fallbackResult.optimized_apy,
+            yield_increase:
+              optimizationData.yield_increase ?? fallbackResult.yield_increase,
+            yield_increase_pct:
+              optimizationData.yield_increase_pct ??
+              fallbackResult.yield_increase_pct,
+            recommended:
+              optimizationData.recommended ?? fallbackResult.recommended,
+            confidence:
+              optimizationData.confidence ?? fallbackResult.confidence,
+            executionSeconds:
+              optimizationData.executionSeconds ??
+              fallbackResult.executionSeconds,
+            estimatedAnnualGain:
+              optimizationData.estimatedAnnualGain ??
+              fallbackResult.estimatedAnnualGain,
+            totalPortfolio:
+              optimizationData.totalPortfolio ?? fallbackResult.totalPortfolio,
+            reasoning: fullText || optimizationData.reasoning || fallbackResult.reasoning,
+          },
+          portfolioSnapshot: portfolio
+            ? {
+                tokens: portfolio.tokens.map((token) => ({
+                  symbol: token.symbol,
+                  amount: token.amount,
+                  valueUSD: token.valueUSD,
+                })),
+                totalUSD: portfolio.totalUSD,
+                currentAPY: portfolio.currentAPY,
+                displayTotal: portfolio.displayTotal,
+                displayUnit: portfolio.displayUnit,
+                displayLabel: portfolio.displayLabel,
+              }
+            : undefined,
+          teeProvider: teeAttestation?.provider,
+          teeModel: teeAttestation?.model,
+          teeChatId: teeAttestation?.chatId,
+          teeVerified: teeAttestation?.isValid,
+          llmProvider,
+        }),
+      });
+
+      if (!storageResponse.ok) {
+        let message = `Storage failed with status ${storageResponse.status}`;
+        try {
+          const payload = (await storageResponse.json()) as { error?: string };
+          if (payload.error) {
+            message = payload.error;
+          }
+        } catch {
+          // Keep the HTTP status-based message when parsing fails.
+        }
+        storageErrorMessage = message;
+      } else {
+        storageData = (await storageResponse.json()) as {
+          cid: string;
+          txHash: string;
+          blockNumber?: number;
+          explorerUrl?: string;
+          timestamp?: string;
+          walletAddress?: string;
+          proofRegistryAddress?: string;
+          proofRegistryTxHash?: string;
+          proofRegistryProofId?: string;
+          proofRegistryExplorerUrl?: string;
+          note?: string;
+        };
+
+        if (storageData.cid) {
+          applyStorageProofEvent(
+            networkKey,
+            storageData.walletAddress ?? activeWalletAddress,
+            storageData.cid,
+            storageData.timestamp,
+          );
+        }
+      }
+    } catch (error) {
+      storageErrorMessage =
+        error instanceof Error ? error.message : "0G storage request failed";
+    }
+
+    const resolvedWalletAddress = storageData?.walletAddress ?? activeWalletAddress;
+    const resolvedScopeKey = buildWalletScopeKey(resolvedWalletAddress, networkKey);
+    const nextResult: OptimizationResult = {
+      ...fallbackResult,
+      ...optimizationData,
+      reasoning: fullText || optimizationData.reasoning || fallbackResult.reasoning,
+      storageProof: storageData?.cid,
+      txHash: storageData?.txHash,
+      blockNumber: storageData?.blockNumber,
+      proofUrl: storageData?.explorerUrl,
+      timestamp: storageData?.timestamp ?? new Date().toISOString(),
+      walletAddress: resolvedWalletAddress,
+      proofRegistryAddress: storageData?.proofRegistryAddress,
+      proofRegistryTxHash: storageData?.proofRegistryTxHash,
+      proofRegistryProofId: storageData?.proofRegistryProofId,
+      proofRegistryExplorerUrl: storageData?.proofRegistryExplorerUrl,
+      proofStatus: storageData?.cid ? "stored" : storageErrorMessage ? "error" : "pending",
+      proofStatusDetail:
+        storageErrorMessage ??
+        storageData?.note,
+    };
+
+    if (activeScopeRef.current === scopeKey || activeScopeRef.current === resolvedScopeKey) {
+      startTransition(() => {
+        setLatestResult(nextResult);
+        setOptimizations((previous) => [nextResult, ...previous.filter((item) => item.timestamp !== nextResult.timestamp)].slice(0, 10));
+      });
+    }
+
+    if (storageData?.cid && resolvedWalletAddress) {
+      activeScopeRef.current = resolvedScopeKey;
+      void refreshPortfolio(resolvedWalletAddress, networkKey);
+      void hydrateLatest(resolvedWalletAddress, networkKey);
+    }
+
+    return nextResult;
+  }
 
   const enterJudgeMode = useCallback(() => {
     setJudgeMode(true);
@@ -385,145 +584,17 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       setProgress("executing");
       await wait(280);
 
-      let storageErrorMessage: string | undefined;
-      let storageData:
-        | {
-            cid: string;
-            txHash: string;
-            blockNumber?: number;
-            explorerUrl?: string;
-            timestamp?: string;
-            walletAddress?: string;
-            proofRegistryAddress?: string;
-            proofRegistryTxHash?: string;
-            proofRegistryProofId?: string;
-            proofRegistryExplorerUrl?: string;
-            note?: string;
-          }
-        | null = null;
       const activeWalletAddress = getClientActiveWalletAddress(portfolio?.walletAddress);
-
-      try {
-        const storageResponse = await fetch("/api/0g/store", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            networkKey,
-            walletAddress: activeWalletAddress,
-            decision: {
-              current_apy:
-                optimizationData.current_apy ?? fallbackResult.current_apy,
-              optimized_apy:
-                optimizationData.optimized_apy ?? fallbackResult.optimized_apy,
-              yield_increase:
-                optimizationData.yield_increase ?? fallbackResult.yield_increase,
-              yield_increase_pct:
-                optimizationData.yield_increase_pct ??
-                fallbackResult.yield_increase_pct,
-              recommended:
-                optimizationData.recommended ?? fallbackResult.recommended,
-              confidence:
-                optimizationData.confidence ?? fallbackResult.confidence,
-              executionSeconds:
-                optimizationData.executionSeconds ??
-                fallbackResult.executionSeconds,
-              estimatedAnnualGain:
-                optimizationData.estimatedAnnualGain ??
-                fallbackResult.estimatedAnnualGain,
-              totalPortfolio:
-                optimizationData.totalPortfolio ?? fallbackResult.totalPortfolio,
-              reasoning: fullText || optimizationData.reasoning || fallbackResult.reasoning,
-            },
-            portfolioSnapshot: portfolio
-              ? {
-                  tokens: portfolio.tokens.map((token) => ({
-                    symbol: token.symbol,
-                    amount: token.amount,
-                    valueUSD: token.valueUSD,
-                  })),
-                  totalUSD: portfolio.totalUSD,
-                  currentAPY: portfolio.currentAPY,
-                  displayTotal: portfolio.displayTotal,
-                  displayUnit: portfolio.displayUnit,
-                  displayLabel: portfolio.displayLabel,
-                }
-              : undefined,
-            // TEE / 0G Compute metadata
-            teeProvider: teeAttestation?.provider,
-            teeModel: teeAttestation?.model,
-            teeChatId: teeAttestation?.chatId,
-            teeVerified: teeAttestation?.isValid,
-            llmProvider,
-          }),
-        });
-
-        if (!storageResponse.ok) {
-          let message = `Storage failed with status ${storageResponse.status}`;
-          try {
-            const payload = (await storageResponse.json()) as { error?: string };
-            if (payload.error) {
-              message = payload.error;
-            }
-          } catch {
-            // Keep the HTTP status-based message when parsing fails.
-          }
-          storageErrorMessage = message;
-        } else {
-          storageData = (await storageResponse.json()) as {
-            cid: string;
-            txHash: string;
-            blockNumber?: number;
-            explorerUrl?: string;
-            timestamp?: string;
-            walletAddress?: string;
-            proofRegistryAddress?: string;
-            proofRegistryTxHash?: string;
-            proofRegistryProofId?: string;
-            proofRegistryExplorerUrl?: string;
-            note?: string;
-          };
-
-          if (typeof window !== "undefined") {
-            const recordedAt = storageData.timestamp ?? new Date().toISOString();
-            window.localStorage.setItem(PROOF_STORED_STORAGE_KEY, recordedAt);
-            window.dispatchEvent(
-              new CustomEvent(PROOF_STORED_EVENT, {
-                detail: {
-                  walletAddress: storageData.walletAddress ?? activeWalletAddress,
-                  networkKey,
-                  recordedAt,
-                  cid: storageData.cid,
-                },
-              }),
-            );
-          }
-        }
-      } catch (error) {
-        storageErrorMessage =
-          error instanceof Error ? error.message : "0G storage request failed";
-      }
-
-      const resolvedWalletAddress = storageData?.walletAddress ?? activeWalletAddress;
-      const resolvedScopeKey = buildWalletScopeKey(resolvedWalletAddress, networkKey);
+      const optimisticScopeKey = buildWalletScopeKey(activeWalletAddress, networkKey);
 
       const nextResult: OptimizationResult = {
         ...fallbackResult,
         ...optimizationData,
         reasoning: fullText || optimizationData.reasoning || fallbackResult.reasoning,
-        storageProof: storageData?.cid,
-        txHash: storageData?.txHash,
-        blockNumber: storageData?.blockNumber,
-        proofUrl: storageData?.explorerUrl,
-        timestamp: storageData?.timestamp ?? new Date().toISOString(),
-        walletAddress: resolvedWalletAddress,
-        proofRegistryAddress: storageData?.proofRegistryAddress,
-        proofRegistryTxHash: storageData?.proofRegistryTxHash,
-        proofRegistryProofId: storageData?.proofRegistryProofId,
-        proofRegistryExplorerUrl: storageData?.proofRegistryExplorerUrl,
-        proofStatus: storageData?.cid ? "stored" : storageErrorMessage ? "error" : "pending",
-        proofStatusDetail:
-          storageErrorMessage ??
-          storageData?.note,
+        timestamp: new Date().toISOString(),
+        walletAddress: activeWalletAddress,
+        proofStatus: "pending",
+        proofStatusDetail: "Proof sync is running in the background.",
       };
 
       startTransition(() => {
@@ -531,14 +602,21 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         setOptimizations((previous) => [nextResult, ...previous].slice(0, 10));
       });
 
-      if (storageData?.cid && resolvedWalletAddress) {
-        activeScopeRef.current = resolvedScopeKey;
-        void refreshPortfolio(resolvedWalletAddress, networkKey);
-        void hydrateLatest(resolvedWalletAddress, networkKey);
-      }
-
       setProgress("done");
-      window.setTimeout(() => setProgress("analyzing"), 2800);
+      window.setTimeout(() => setProgress("analyzing"), 1200);
+      setIsOptimizing(false);
+
+      void syncProofRecord({
+        activeWalletAddress,
+        fallbackResult,
+        fullText,
+        llmProvider,
+        networkKey,
+        optimizationData,
+        portfolio,
+        scopeKey: optimisticScopeKey,
+        teeAttestation,
+      });
 
       return nextResult;
     } catch (error) {

@@ -6,10 +6,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { Indexer, ZgFile } from "@0gfoundation/0g-ts-sdk";
 import {
   Contract,
-  Interface,
   JsonRpcProvider,
   Wallet,
-  type Log,
 } from "ethers";
 import { z } from "zod";
 import {
@@ -265,27 +263,7 @@ export async function POST(req: NextRequest) {
           proof.proofRegistryTxHash = registryTx.hash;
           proof.proofRegistryExplorerUrl = `${config.explorerBase.replace(/\/$/, "")}/tx/${registryTx.hash}`;
 
-          const registryReceipt = await registryTx.wait();
-          if (registryReceipt) {
-            const iface = new Interface(proofRegistryAbi);
-            const eventLog = registryReceipt.logs.find((log: Log) => {
-              try {
-                const parsed = iface.parseLog(log);
-                return parsed?.name === "ProofRecorded";
-              } catch {
-                return false;
-              }
-            });
-
-            if (eventLog) {
-              const parsed = iface.parseLog(eventLog);
-              if (parsed) {
-                proof.proofRegistryProofId = parsed.args.proofId.toString();
-              }
-            }
-          } else {
-            proof.note = joinNotes(proof.note, "pending_registry_receipt");
-          }
+          proof.note = joinNotes(proof.note, "pending_registry_receipt");
         } catch (error) {
           const message = error instanceof Error ? error.message : "proof_registry_failed";
           proof.note = joinNotes(proof.note, `proof_registry_failed:${message}`);
