@@ -23,6 +23,7 @@
   <a href="#fast-judge-review">Fast judge review</a> •
   <a href="#architecture">Architecture</a> •
   <a href="#0g-native-data-flow">0G data flow</a> •
+  <a href="#mainnet-submission-prep">Mainnet prep</a> •
   <a href="#local-installation">Local setup</a> •
   <a href="#roadmap-ya0g-and-proof-of-optimization">Roadmap</a>
 </p>
@@ -259,8 +260,8 @@ ZG_TESTNET_PROOF_REGISTRY_ADDRESS=<optional_registry_address>
 Optional but recommended:
 
 ```env
-ZG_COMPUTE_PROVIDER_ADDRESS=<0g_compute_provider>
-ZG_LEDGER_PRIVATE_KEY=<broker_or_contract_signer>
+ZG_TESTNET_COMPUTE_PROVIDER_ADDRESS=<testnet_compute_provider>
+ZG_TESTNET_LEDGER_PRIVATE_KEY=<testnet_compute_or_contract_signer>
 YIELD_STRATEGY_INFT_ADDRESS=<optional_inft_contract>
 KV_REST_API_URL=<optional_vercel_kv_url>
 KV_REST_API_TOKEN=<optional_vercel_kv_token>
@@ -295,6 +296,63 @@ npm run deploy:proof-registry
 npm run deploy:inft
 npm run setup:tee-broker
 ```
+
+## Mainnet Submission Prep
+
+This repo is now prepared for a cleaner mainnet cutover. The implementation already supports separate mainnet envs for:
+
+- proof uploads
+- ProofRegistry anchoring
+- INFT contract reads and mints
+- 0G Compute provider selection
+- compute / contract signer separation
+
+### Mainnet env template
+
+Use [`/.env.mainnet.example`](.env.mainnet.example) as the source of truth for production cutover.
+
+The mainnet-specific envs that matter most are:
+
+```env
+ZG_NETWORK_KEY=mainnet
+ZG_MAINNET_RPC_URL=https://evmrpc.0g.ai
+ZG_MAINNET_STORAGE_URL=<mainnet_storage_endpoint>
+ZG_MAINNET_PRIVATE_KEY=<mainnet_storage_signer_private_key>
+ZG_MAINNET_PROOF_REGISTRY_ADDRESS=<mainnet_proof_registry_address>
+ZG_MAINNET_COMPUTE_PROVIDER_ADDRESS=<mainnet_compute_provider_address>
+ZG_MAINNET_LEDGER_PRIVATE_KEY=<mainnet_compute_or_contract_signer_private_key>
+YIELD_STRATEGY_INFT_MAINNET_ADDRESS=<mainnet_yield_strategy_inft_address>
+NEXT_PUBLIC_0G_MAINNET_CHAIN_ID=16661
+NEXT_PUBLIC_0G_MAINNET_EXPLORER_BASE_URL=https://chainscan.0g.ai
+```
+
+### Commands to run after funding lands
+
+```bash
+npm run deploy:proof-registry:mainnet
+npm run deploy:inft:mainnet
+npm run transfer:fund:broker:mainnet
+npm run acknowledge:provider:mainnet
+npm run setup:tee-broker:mainnet
+```
+
+### What to paste into the submission after mainnet deployment
+
+- Mainnet `ProofRegistry` address
+- Mainnet `YieldStrategyINFT` address
+- Mainnet explorer links for both deployed contracts
+- At least one mainnet proof transaction link
+- Judge instruction: open `/judge` first
+
+### Recommended cutover order
+
+1. Fund the mainnet signer wallet.
+2. Fill `.env.local` or Vercel envs from [`.env.mainnet.example`](.env.mainnet.example).
+3. Deploy `ProofRegistry` on mainnet.
+4. Deploy `YieldStrategyINFT` on mainnet.
+5. Fund and acknowledge the mainnet compute provider path.
+6. Switch `ZG_NETWORK_KEY=mainnet`.
+7. Run one real optimization and verify the explorer trail from `/judge`.
 
 ## Repository Pointers
 

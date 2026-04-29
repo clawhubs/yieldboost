@@ -45,6 +45,20 @@ function getEnv(name, fallback) {
   return fallback[name];
 }
 
+function getExplorerBase(network, envLocal) {
+  if (network === "mainnet") {
+    return (
+      getEnv("NEXT_PUBLIC_0G_MAINNET_EXPLORER_BASE_URL", envLocal) ||
+      "https://chainscan.0g.ai"
+    );
+  }
+
+  return (
+    getEnv("NEXT_PUBLIC_0G_EXPLORER_BASE_URL", envLocal) ||
+    "https://chainscan-galileo.0g.ai"
+  );
+}
+
 function findImports(importPath) {
   const candidates = [
     path.join(process.cwd(), importPath),
@@ -116,9 +130,7 @@ async function main() {
     privateKey =
       getEnv("ZG_MAINNET_PRIVATE_KEY", envLocal) ||
       getEnv("ZG_PRIVATE_KEY", envLocal);
-    explorerBase =
-      getEnv("NEXT_PUBLIC_0G_MAINNET_EXPLORER_BASE_URL", envLocal) ||
-      "https://0gscan.com";
+    explorerBase = getExplorerBase(network, envLocal);
     chainId = 16661;
   } else {
     rpcUrl =
@@ -127,9 +139,7 @@ async function main() {
       getEnv("ZG_RPC_URL", envLocal) ||
       "https://evmrpc-testnet.0g.ai";
     privateKey = getEnv("ZG_TESTNET_PRIVATE_KEY", envLocal) || getEnv("ZG_PRIVATE_KEY", envLocal);
-    explorerBase =
-      getEnv("NEXT_PUBLIC_0G_EXPLORER_BASE_URL", envLocal) ||
-      "https://chainscan-galileo.0g.ai";
+    explorerBase = getExplorerBase(network, envLocal);
     chainId = 16602;
   }
 

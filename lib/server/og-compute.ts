@@ -10,6 +10,11 @@ import {
   getServerDefaultNetworkKey,
   type WalletNetworkKey,
 } from "@/lib/wallet";
+import {
+  getComputeLedgerPrivateKey,
+  getComputeProviderAddress,
+  hasComputeCredentials,
+} from "@/lib/server/network-credentials";
 
 export interface TEEAttestation {
   chatId: string;
@@ -84,7 +89,7 @@ async function ensureInferenceSubAccount(
 
 /**
  * Initialize 0G Compute broker
- * Requires ZG_COMPUTE_PROVIDER_ADDRESS and ZG_LEDGER_PRIVATE_KEY in env
+ * Requires network-aware compute envs for the active chain
  */
 async function getBroker(
   networkKey: WalletNetworkKey = getServerDefaultNetworkKey(),
@@ -93,12 +98,14 @@ async function getBroker(
     return brokerInstances[networkKey] ?? null;
   }
 
-  const providerAddress = process.env.ZG_COMPUTE_PROVIDER_ADDRESS;
-  const privateKey = process.env.ZG_LEDGER_PRIVATE_KEY;
+  const providerAddress = getComputeProviderAddress(networkKey);
+  const privateKey = getComputeLedgerPrivateKey(networkKey);
   const networkConfig = getServer0GNetworkConfig(networkKey);
 
   if (!providerAddress || !privateKey) {
-    console.warn("0G Compute: Missing ZG_COMPUTE_PROVIDER_ADDRESS or ZG_LEDGER_PRIVATE_KEY");
+    console.warn(
+      `0G Compute: Missing compute provider or ledger key for ${networkConfig.label}`,
+    );
     return null;
   }
 
@@ -153,11 +160,11 @@ export async function runTEEInference(
     };
   }
 
-  const providerAddress = process.env.ZG_COMPUTE_PROVIDER_ADDRESS;
-  const privateKey = process.env.ZG_LEDGER_PRIVATE_KEY;
+  const providerAddress = getComputeProviderAddress(networkKey);
+  const privateKey = getComputeLedgerPrivateKey(networkKey);
   const networkConfig = getServer0GNetworkConfig(networkKey);
   if (!providerAddress) {
-    console.warn("0G Compute: Missing ZG_COMPUTE_PROVIDER_ADDRESS");
+    console.warn(`0G Compute: Missing compute provider address for ${networkConfig.label}`);
     return {
       text: "",
       provider: "fallback",
@@ -270,16 +277,17 @@ export async function runTEEInference(
  * This transfers 1 OG to the provider as a deposit
  */
 export async function acknowledgeProvider(): Promise<boolean> {
-  const broker = await getBroker();
+  const networkKey = getServerDefaultNetworkKey();
+  const broker = await getBroker(networkKey);
 
   if (!broker) {
     console.warn("0G Compute: Cannot acknowledge provider - broker not initialized");
     return false;
   }
 
-  const providerAddress = process.env.ZG_COMPUTE_PROVIDER_ADDRESS;
+  const providerAddress = getComputeProviderAddress(networkKey);
   if (!providerAddress) {
-    console.warn("0G Compute: Missing ZG_COMPUTE_PROVIDER_ADDRESS");
+    console.warn("0G Compute: Missing compute provider address");
     return false;
   }
 
@@ -301,8 +309,5 @@ export async function acknowledgeProvider(): Promise<boolean> {
  * Check if 0G Compute is properly configured
  */
 export function isComputeConfigured(): boolean {
-  return !!(
-    process.env.ZG_COMPUTE_PROVIDER_ADDRESS &&
-    process.env.ZG_LEDGER_PRIVATE_KEY
-  );
+  return hasComputeCredentials(getServerDefaultNetworkKey());
 }

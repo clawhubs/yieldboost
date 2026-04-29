@@ -6,6 +6,7 @@ import {
   encryptStrategy,
   generateAttestationHash,
 } from "@/lib/server/encryption";
+import { getContractSignerPrivateKey } from "@/lib/server/network-credentials";
 import {
   getYieldStrategyInftAddress,
   getServer0GNetworkConfig,
@@ -42,7 +43,7 @@ export async function POST(req: NextRequest) {
 
     // Get contract addresses from env
     const inftAddress = getYieldStrategyInftAddress(networkKey);
-    const privateKey = process.env.ZG_LEDGER_PRIVATE_KEY || process.env.ZG_PRIVATE_KEY;
+    const privateKey = getContractSignerPrivateKey(networkKey);
 
     if (!inftAddress || !privateKey) {
       return NextResponse.json(

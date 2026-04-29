@@ -212,21 +212,11 @@ function hasValue(value: string | undefined) {
 }
 
 function getLlmMode() {
-  if (process.env.ALIBABA_API_KEY) {
-    return "Alibaba Qwen via DashScope OpenAI-compatible endpoint";
-  }
-
-  if (process.env.OPENAI_API_KEY) {
-    return "OpenAI `gpt-4o-mini` narrative fallback";
-  }
-
   return "Deterministic in-app narrative fallback";
 }
 
 function getComputeMode() {
-  return process.env.E2B_API_KEY
-    ? "Structured optimization snapshot executed in E2B sandbox"
-    : "Deterministic local snapshot without external compute";
+  return "Deterministic local snapshot without external compute";
 }
 
 function getRuntimeStoreMode() {
@@ -254,10 +244,7 @@ export function getDocsRuntimeStatus(): DocsRuntimeStatus {
   const proofMode = mapped.testnet.storageConfigured || mapped.mainnet.storageConfigured
     ? "0G Storage upload path is configured for at least one network"
     : "0G Storage route exists, but upload credentials are still required";
-  const optimizationMode =
-    getComputeMode() === "Structured optimization snapshot executed in E2B sandbox"
-      ? "Live compute-assisted scoring plus streamed narrative"
-      : "UI-ready deterministic scoring with streamed narrative fallback";
+  const optimizationMode = "UI-ready deterministic scoring with streamed narrative fallback";
 
   return {
     demoWallet: DEFAULT_WALLET_ADDRESS,
@@ -358,7 +345,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             tone: "teal",
             title: "Current truth",
             body:
-              "The live, verifiable part of the app today is the proof persistence flow and history trail. Optimization scoring and narrative generation can run through E2B, Alibaba, OpenAI, or deterministic fallbacks depending on the environment.",
+              "The live, verifiable part of the app today is the proof persistence flow and history trail. The runtime path prioritizes 0G-backed proof capture, while optimization scoring and reasoning stay available through deterministic fallback behavior when needed.",
           },
         },
         {
@@ -802,7 +789,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           bullets: [
             "Network configuration is modeled explicitly for testnet and mainnet in the wallet layer.",
             "The proof storage route can upload a JSON proof package through the 0G TypeScript SDK when the active network has RPC, storage URL, and private key configured.",
-            "TEE-verified inference is available via 0G Compute Network when `ZG_COMPUTE_PROVIDER_ADDRESS` and `ZG_LEDGER_PRIVATE_KEY` are configured.",
+            "TEE-verified inference is available via 0G Compute Network when the active network has a compute provider address and ledger signer configured.",
             "The UI consistently surfaces the resulting storage tx hash, explorer link, TEE attestation badge, and optional ProofRegistry transaction.",
             "The current explorer path is built from the configured explorer base and the returned transaction hashes.",
           ],
@@ -815,7 +802,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             "The TEE attestation includes provider address, model identifier, chat ID, and verification status. These metadata are stored alongside the proof record and surfaced in the proof modal with a distinctive green badge.",
           ],
           bullets: [
-            "TEE inference is the highest-priority narrative provider when configured, falling back to Alibaba, OpenAI, or deterministic narrative if unavailable.",
+            "TEE inference is the highest-priority narrative path when configured, falling back to deterministic narrative if unavailable.",
             "The UI displays a 'TEE Verified' badge in the agent panel and proof modal when attestation is present.",
             "TEE metadata (provider, model, chat ID, verification status) is persisted in the stored proof record for audit trails.",
           ],
@@ -823,7 +810,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             tone: "green",
             title: "TEE configuration",
             body:
-              "To enable TEE verification, set `ZG_COMPUTE_PROVIDER_ADDRESS` and `ZG_LEDGER_PRIVATE_KEY` in your environment. The app will automatically use TEE inference when available.",
+              "To enable TEE verification, set the active network's compute provider address and ledger signer envs. The app will automatically use TEE inference when available.",
           },
         },
         {
@@ -856,16 +843,14 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           id: "compute-fallbacks",
           title: "Compute and narrative fallback behavior",
           paragraphs: [
-            "The optimization engine supports multiple inference providers with a clear priority order: 0G Compute (TEE) first, then Alibaba, then OpenAI, then deterministic fallback.",
-            "This ensures the app remains functional even when some providers are unavailable or misconfigured, while still prioritizing TEE-verified inference when possible.",
+            "The optimization engine prioritizes 0G Compute (TEE) when the active network is configured, then falls back to deterministic local narrative when that path is unavailable.",
+            "This keeps the app functional even when compute infrastructure is unavailable, while still prioritizing TEE-verified inference when possible.",
           ],
           table: {
             columns: ["Provider", "Priority", "When active", "What it provides"],
             rows: [
-              ["0G Compute (TEE)", "1 (highest)", "ZG_COMPUTE_PROVIDER_ADDRESS + ZG_LEDGER_PRIVATE_KEY set", "TEE-verified inference with hardware attestation"],
-              ["Alibaba Qwen", "2", "ALIBABA_API_KEY set", "OpenAI-compatible inference via DashScope"],
-              ["OpenAI gpt-4o-mini", "3", "OPENAI_API_KEY set", "OpenAI model as narrative fallback"],
-              ["Deterministic", "4 (lowest)", "Always available", "Built-in narrative templates"],
+              ["0G Compute (TEE)", "1 (highest)", "Active network compute provider + ledger signer set", "TEE-verified inference with hardware attestation"],
+              ["Deterministic", "2", "Always available", "Built-in narrative templates"],
             ],
           },
         },
@@ -880,7 +865,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
                 status.networks.testnet.enabled ? "Configured" : "Missing chain config",
                 status.networks.testnet.storageConfigured ? "Ready" : "Needs envs",
                 status.networks.testnet.proofRegistryConfigured ? "Configured" : "Optional / off",
-                hasValue(process.env.ZG_COMPUTE_PROVIDER_ADDRESS) && hasValue(process.env.ZG_LEDGER_PRIVATE_KEY) ? "Configured" : "Optional / off",
+                "Network-aware envs supported",
                 status.networks.testnet.explorerBase,
               ],
               [
@@ -888,7 +873,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
                 status.networks.mainnet.enabled ? "Configured" : "Optional / off",
                 status.networks.mainnet.storageConfigured ? "Ready" : "Needs envs",
                 status.networks.mainnet.proofRegistryConfigured ? "Configured" : "Optional / off",
-                hasValue(process.env.ZG_COMPUTE_PROVIDER_ADDRESS) && hasValue(process.env.ZG_LEDGER_PRIVATE_KEY) ? "Configured" : "Optional / off",
+                "Network-aware envs supported",
                 status.networks.mainnet.explorerBase,
               ],
             ],
@@ -1301,10 +1286,10 @@ History / proof modal / /api/agent/latest / /api/0g/proof`,
           id: "provider-priority",
           title: "Provider priority and fallback rules",
           bullets: [
-            "Optimization narrative prefers Alibaba when `ALIBABA_API_KEY` exists.",
-            "If Alibaba is unavailable and `OPENAI_API_KEY` exists, the app falls back to OpenAI narrative generation.",
-            "If neither provider is configured, the app still produces a deterministic narrative so the UX does not collapse.",
-            "Structured optimization values can be produced via E2B when `E2B_API_KEY` is present; otherwise the app uses the deterministic snapshot builder.",
+            "Optimization narrative prioritizes 0G Compute when the active network credentials are configured.",
+            "If the compute provider is unavailable, the app still produces a deterministic narrative so the UX does not collapse.",
+            "The snapshot builder stays available locally, which keeps the product usable even before full mainnet cutover.",
+            "This fallback behavior is intentional and is surfaced honestly in the UI.",
           ],
         },
         {

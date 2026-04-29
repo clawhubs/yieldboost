@@ -44,6 +44,14 @@ function getEnv(name, fallback) {
   return fallback[name];
 }
 
+function getProviderAddress(network, envLocal) {
+  return network === "mainnet"
+    ? getEnv("ZG_MAINNET_COMPUTE_PROVIDER_ADDRESS", envLocal) ||
+        getEnv("ZG_COMPUTE_PROVIDER_ADDRESS", envLocal)
+    : getEnv("ZG_TESTNET_COMPUTE_PROVIDER_ADDRESS", envLocal) ||
+        getEnv("ZG_COMPUTE_PROVIDER_ADDRESS", envLocal);
+}
+
 async function setupTEE() {
   const network = process.argv[2] || "testnet";
   const envLocal = readEnvFile(path.join(process.cwd(), ".env.local"));
@@ -60,10 +68,10 @@ async function setupTEE() {
         getEnv("ZG_LEDGER_PRIVATE_KEY", envLocal)
       : getEnv("ZG_TESTNET_LEDGER_PRIVATE_KEY", envLocal) ||
         getEnv("ZG_LEDGER_PRIVATE_KEY", envLocal);
-  const providerAddress = getEnv("ZG_COMPUTE_PROVIDER_ADDRESS", envLocal);
+  const providerAddress = getProviderAddress(network, envLocal);
 
   if (!privateKey || !providerAddress) {
-    throw new Error("Missing ZG_LEDGER_PRIVATE_KEY or ZG_COMPUTE_PROVIDER_ADDRESS.");
+    throw new Error("Missing network-aware compute provider address or ledger private key.");
   }
 
   const provider = new ethers.JsonRpcProvider(rpcUrl);

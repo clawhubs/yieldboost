@@ -14,6 +14,11 @@ import {
 import { getDocsRuntimeStatus } from "@/lib/docs/content";
 import type { StoredProofRecord } from "@/lib/backend-data";
 import { getLatestStoredProofForWallet, getStoredProofs } from "@/lib/server/runtime-store";
+import {
+  getComputeLedgerPrivateKey,
+  getComputeProviderAddress,
+  hasComputeCredentials,
+} from "@/lib/server/network-credentials";
 
 type BadgeTone = "teal" | "green" | "amber" | "white";
 type HealthStatus = "live" | "configured" | "partial" | "pending";
@@ -219,15 +224,39 @@ function buildEnvChecklist() {
     },
     {
       name: "ZG_COMPUTE_PROVIDER_ADDRESS",
-      requiredFor: "0G Compute / TEE mode",
+      requiredFor: "Shared compute provider fallback",
       status: hasValue(readEnv("ZG_COMPUTE_PROVIDER_ADDRESS")) ? "set" : "optional",
-      detail: "If missing, optimization explanations fall back to the deterministic local narrative.",
+      detail: "Optional shared fallback when you do not want separate compute provider envs per network.",
+    },
+    {
+      name: "ZG_TESTNET_COMPUTE_PROVIDER_ADDRESS",
+      requiredFor: "Explicit testnet 0G Compute provider",
+      status: hasValue(readEnv("ZG_TESTNET_COMPUTE_PROVIDER_ADDRESS")) ? "set" : "optional",
+      detail: "Recommended if testnet and mainnet will use different provider addresses.",
+    },
+    {
+      name: "ZG_MAINNET_COMPUTE_PROVIDER_ADDRESS",
+      requiredFor: "Explicit mainnet 0G Compute provider",
+      status: hasValue(readEnv("ZG_MAINNET_COMPUTE_PROVIDER_ADDRESS")) ? "set" : "missing",
+      detail: "Recommended for mainnet cutover so compute traffic cannot accidentally reuse a testnet provider.",
     },
     {
       name: "ZG_LEDGER_PRIVATE_KEY",
-      requiredFor: "0G Compute / agent contract signer",
+      requiredFor: "Shared compute / agent signer fallback",
       status: hasValue(readEnv("ZG_LEDGER_PRIVATE_KEY")) ? "set" : "optional",
-      detail: "Also used by the agent NFT contract routes when available.",
+      detail: "Optional shared fallback when you do not want separate signers per network.",
+    },
+    {
+      name: "ZG_TESTNET_LEDGER_PRIVATE_KEY",
+      requiredFor: "Explicit testnet compute / agent signer",
+      status: hasValue(readEnv("ZG_TESTNET_LEDGER_PRIVATE_KEY")) ? "set" : "optional",
+      detail: "Recommended when testnet and mainnet will use different compute or contract signers.",
+    },
+    {
+      name: "ZG_MAINNET_LEDGER_PRIVATE_KEY",
+      requiredFor: "Explicit mainnet compute / agent signer",
+      status: hasValue(readEnv("ZG_MAINNET_LEDGER_PRIVATE_KEY")) ? "set" : "missing",
+      detail: "Recommended for mainnet compute setup and as the preferred signer for contract-backed mainnet routes.",
     },
     {
       name: "YIELD_STRATEGY_INFT_ADDRESS",
@@ -261,6 +290,7 @@ function buildMainnetChecklist({
   const hasMainnetRegistry = hasValue(readEnv("ZG_MAINNET_PROOF_REGISTRY_ADDRESS"));
   const hasMainnetChainId = hasValue(readEnv("NEXT_PUBLIC_0G_MAINNET_CHAIN_ID"));
   const hasMainnetExplorer = hasValue(readEnv("NEXT_PUBLIC_0G_MAINNET_EXPLORER_BASE_URL"));
+  const hasMainnetCompute = hasComputeCredentials("mainnet");
   const hasInft =
     hasValue(readEnv("YIELD_STRATEGY_INFT_MAINNET_ADDRESS")) ||
     hasValue(readEnv("YIELD_STRATEGY_INFT_ADDRESS"));
@@ -289,10 +319,12 @@ function buildMainnetChecklist({
     },
     {
       label: "0G Compute alignment",
-      status: usingMainnet ? "configured" : "partial",
-      detail: usingMainnet
-        ? "Server-side compute and contract helpers follow `ZG_NETWORK_KEY=mainnet`."
-        : "Server-side helpers are now network-aware, but the current environment is still pointed at testnet.",
+      status: hasMainnetCompute ? (usingMainnet ? "configured" : "partial") : "pending",
+      detail: hasMainnetCompute
+        ? usingMainnet
+          ? "Server-side compute and contract helpers are ready to follow `ZG_NETWORK_KEY=mainnet`."
+          : "Mainnet compute credentials are present, and server-side helpers are already network-aware for a later cutover."
+        : "Set `ZG_MAINNET_COMPUTE_PROVIDER_ADDRESS` and `ZG_MAINNET_LEDGER_PRIVATE_KEY` (or shared fallbacks) before mainnet sealed inference is considered ready.",
     },
     {
       label: "Agent NFT contract path",
@@ -324,6 +356,9 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   );
   const preferredNetwork = getServerDefaultNetworkKey();
   const preferredConfig = getServer0GNetworkConfig(preferredNetwork);
+  const computeProviderAddress = getComputeProviderAddress(preferredNetwork);
+  const computeLedgerPrivateKey = getComputeLedgerPrivateKey(preferredNetwork);
+  const computeConfigured = hasComputeCredentials(preferredNetwork);
   const networks = getAvailableWalletNetworks();
   const testnetConfig = networks.find((network) => network.key === "testnet") ?? preferredConfig;
   const mainnetConfig = networks.find((network) => network.key === "mainnet") ?? preferredConfig;
@@ -345,7 +380,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
       label: "Compute Mode",
       value: runtimeStatus.computeMode,
       helper: runtimeStatus.llmMode,
-      tone: hasValue(readEnv("ZG_COMPUTE_PROVIDER_ADDRESS")) ? "teal" : "white",
+      tone: computeConfigured ? "teal" : "white",
     },
     {
       label: "Default Server Network",
@@ -437,13 +472,15 @@ export async function getJudgePageData(): Promise<JudgePageData> {
     },
     {
       title: "0G Compute Network",
-      status: hasValue(readEnv("ZG_COMPUTE_PROVIDER_ADDRESS")) && hasValue(readEnv("ZG_LEDGER_PRIVATE_KEY")) ? "configured" : "partial",
-      detail: hasValue(readEnv("ZG_COMPUTE_PROVIDER_ADDRESS")) && hasValue(readEnv("ZG_LEDGER_PRIVATE_KEY"))
-        ? "TEE-ready provider credentials are present. If the provider is unavailable at runtime, the app still falls back honestly."
-        : "The app will keep working with deterministic narrative fallback until compute provider envs are completed.",
-      meta: hasValue(readEnv("ZG_COMPUTE_PROVIDER_ADDRESS"))
-        ? shorten(readEnv("ZG_COMPUTE_PROVIDER_ADDRESS"), 8)
-        : "Provider address not set",
+      status: computeConfigured ? "configured" : "partial",
+      detail: computeConfigured
+        ? `TEE-ready provider credentials are present for ${preferredConfig.label}. If the provider is unavailable at runtime, the app still falls back honestly.`
+        : `The app will keep working with deterministic narrative fallback until compute provider envs are completed for ${preferredConfig.label}.`,
+      meta: computeProviderAddress
+        ? shorten(computeProviderAddress, 8)
+        : computeLedgerPrivateKey
+          ? "Signer present, provider address missing"
+          : "Provider address not set",
     },
     {
       title: "ProofRegistry",
@@ -509,6 +546,9 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   }
   if (!hasValue(readEnv("ZG_MAINNET_PROOF_REGISTRY_ADDRESS"))) {
     blockers.push("Mainnet ProofRegistry address is still missing, so on-chain verification is not fully cut over.");
+  }
+  if (!hasComputeCredentials("mainnet")) {
+    blockers.push("Mainnet 0G Compute credentials are still incomplete, so sealed inference is not fully prepared for production cutover.");
   }
   if (!getYieldStrategyInftAddress(preferredNetwork)) {
     blockers.push("Agent NFT contract env is not set, so `/agents` relies on proof-backed fallback instead of live contract reads.");
