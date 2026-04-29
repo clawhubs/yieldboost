@@ -5,6 +5,7 @@ import {
   Boxes,
   CheckCircle2,
   ExternalLink,
+  Github,
   Link2,
   ShieldCheck,
   Wallet2,
@@ -70,6 +71,20 @@ export default async function JudgePage() {
     "Follow the latest tx link and the CID to verify the current testnet proof externally.",
     "Jump to `/history` or `/agents` only if you want more context on the same snapshot.",
     "Use `Exit judge mode` in the sidebar anytime to return to the normal wallet flow.",
+  ];
+  const projectProfiles = [
+    {
+      label: "GitHub",
+      href: "https://github.com/clawhubs",
+      sublabel: "clawhubs",
+      icon: Github,
+    },
+    {
+      label: "X",
+      href: "https://x.com/YieldboostAi",
+      sublabel: "@YieldboostAi",
+      icon: ArrowUpRight,
+    },
   ];
 
   return (
@@ -141,6 +156,24 @@ export default async function JudgePage() {
                   Open agents
                 </Link>
               </div>
+            </div>
+            <div className="mt-4 flex w-full max-w-3xl flex-wrap items-center justify-center gap-3">
+              {projectProfiles.map((profile) => {
+                const Icon = profile.icon;
+                return (
+                  <a
+                    key={profile.label}
+                    href={profile.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="glass-inset inline-flex items-center gap-2 rounded-full px-3 py-2 text-[12px] text-[#d8e1e8] transition hover:border-[rgba(34,221,208,0.28)] hover:text-white"
+                  >
+                    <Icon className="h-3.5 w-3.5 text-[#22ddd0]" />
+                    <span className="font-medium">{profile.label}</span>
+                    <span className="text-[#8ea1af]">{profile.sublabel}</span>
+                  </a>
+                );
+              })}
             </div>
             <p className="mt-5 text-[13px] text-[#d8e1e8]">{data.runtimeLabel}</p>
           </div>
@@ -333,6 +366,42 @@ export default async function JudgePage() {
                 </div>
               </div>
             ) : null}
+          </section>
+
+          <section className="yb-card rounded-[18px] px-5 py-5">
+            <div className="flex items-center gap-3">
+              <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="text-[22px] font-semibold text-white">Data safety</h2>
+                <p className="mt-1 text-[13px] text-[#9faab6]">
+                  Kept short on purpose for judges, with deeper notes available in the docs center.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-[10px] md:grid-cols-3">
+              {[
+                {
+                  title: "What is not stored",
+                  body: "The proof flow does not store private keys, seed phrases, or wallet secrets in 0G Storage or the runtime proof ledger.",
+                },
+                {
+                  title: "What is stored",
+                  body: "The app stores optimization output, timestamps, wallet-scoped proof metadata, and the snapshot fields needed to audit the recorded result.",
+                },
+                {
+                  title: "Judge-friendly truth",
+                  body: "This page keeps the security story concise. Open `/docs/wallet-and-security` for the fuller explanation of current boundaries and limitations.",
+                },
+              ].map((item) => (
+                <div key={item.title} className="glass-inset rounded-[16px] px-4 py-4">
+                  <div className="text-[14px] font-semibold text-white">{item.title}</div>
+                  <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">{item.body}</div>
+                </div>
+              ))}
+            </div>
           </section>
         </div>
 

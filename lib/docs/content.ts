@@ -1008,6 +1008,29 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           },
         },
         {
+          id: "0g-storage-data-safety",
+          title: "What the app stores in 0G Storage",
+          paragraphs: [
+            "The proof route writes a compact JSON proof package that is meant to support verification and replay of the optimization result. In the current implementation, this package can include the optimization decision, timestamp, wallet-scoped metadata, and a portfolio snapshot when the client provides it.",
+            "That means the stored record is useful for auditability, but it should be described honestly: it is proof-oriented application data, not zero-knowledge private portfolio storage.",
+          ],
+          table: {
+            columns: ["Data type", "Current behavior", "Why it exists", "What it does not include"],
+            rows: [
+              ["Optimization decision", "Stored", "Lets judges and users inspect the recommended route and APY change later", "Does not include private keys or seed phrases"],
+              ["Wallet-scoped metadata", "Stored", "Keeps proof history tied to the review wallet", "Does not grant signing authority"],
+              ["Portfolio snapshot fields", "Optionally stored", "Helps replay the recorded context behind the proof", "Not a full encrypted vault of wallet history"],
+              ["Secrets and credentials", "Not stored", "Should remain in envs or wallet software only", "Never belongs in proof payloads"],
+            ],
+          },
+          callout: {
+            tone: "green",
+            title: "Security boundary",
+            body:
+              "In the current codebase, the strongest honest claim is that YieldBoost AI stores verifier-friendly proof data while keeping wallet secrets out of the proof flow. It does not yet claim end-to-end encrypted financial privacy for every stored field.",
+          },
+        },
+        {
           id: "network-switch",
           title: "How network switching works",
           paragraphs: [
