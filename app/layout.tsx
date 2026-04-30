@@ -20,12 +20,34 @@ const condensed = Barlow_Condensed({
 });
 
 export const metadata: Metadata = {
-  title: "YiledBoost Ai",
-  description: "Autonomous AI-powered DeFi yield optimization dashboard on 0G.",
+  metadataBase: new URL("https://yieldboost-ai.vercel.app"),
+  title: "YieldBoost AI",
+  description: "Mainnet-first verifiable AI yield optimization on 0G, with judge-friendly proof review and Agent NFT minting.",
   icons: {
     icon: "/ya-icon.png",
     shortcut: "/ya-icon.png",
     apple: "/ya-icon.png",
+  },
+  openGraph: {
+    title: "YieldBoost AI",
+    description: "Mainnet-first verifiable AI yield optimization on 0G, with judge-friendly proof review and Agent NFT minting.",
+    url: "https://yieldboost-ai.vercel.app",
+    siteName: "YieldBoost AI",
+    images: [
+      {
+        url: "/readme/branding/banner.png",
+        width: 1817,
+        height: 606,
+        alt: "YieldBoost AI banner",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "YieldBoost AI",
+    description: "Mainnet-first verifiable AI yield optimization on 0G, with judge-friendly proof review and Agent NFT minting.",
+    images: ["/readme/branding/banner.png"],
   },
 };
 
