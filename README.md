@@ -2,10 +2,6 @@
   <img src="./public/readme/branding/banner.png" alt="YieldBoost AI banner" width="100%" />
 </p>
 
-<p align="center">
-  <img src="./public/readme/branding/logo-mark.svg" alt="YieldBoost AI logo mark" width="112" />
-</p>
-
 <h1 align="center">YieldBoost AI</h1>
 
 <p align="center"><strong>Verifiable yield optimization for Web3 users, with frictionless hackathon audit for judges.</strong></p>
