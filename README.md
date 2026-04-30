@@ -25,6 +25,7 @@
   <a href="#architecture">Architecture</a> •
   <a href="#0g-native-data-flow">0G data flow</a> •
   <a href="#mainnet-submission-prep">Mainnet prep</a> •
+  <a href="./RUNBOOK_MAINNET.md">Mainnet runbook</a> •
   <a href="#local-installation">Local setup</a> •
   <a href="#roadmap-ya0g-and-proof-of-optimization">Roadmap</a>
 </p>
@@ -329,6 +330,8 @@ This repo is now prepared for a cleaner mainnet cutover. The implementation alre
 ### Mainnet env template
 
 Use [`/.env.mainnet.example`](.env.mainnet.example) as the source of truth for production cutover.
+
+For the full command-by-command cutover sequence, use [`RUNBOOK_MAINNET.md`](./RUNBOOK_MAINNET.md).
 
 The mainnet-specific envs that matter most are:
 
