@@ -191,6 +191,10 @@ export default function Sidebar() {
   }, [pathname]);
 
   useEffect(() => {
+    void router.prefetch("/judge");
+  }, [router]);
+
+  useEffect(() => {
     if (!mobileNavOpen) return;
 
     const previousOverflow = document.body.style.overflow;
@@ -678,9 +682,7 @@ export default function Sidebar() {
                 if (isJudgeEntry) {
                   event.preventDefault();
                   activateJudgeReviewMode();
-                  if (pathname === "/judge") {
-                    router.refresh();
-                  } else {
+                  if (pathname !== "/judge") {
                     router.push("/judge");
                   }
                 }

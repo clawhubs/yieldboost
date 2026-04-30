@@ -6,14 +6,15 @@ import {
   getServer0GNetworkConfig,
   getServerDefaultNetworkKey,
   getYieldStrategyInftAddress,
+  sameWalletAddress,
 } from "@/lib/wallet";
 import { getDocsRuntimeStatus } from "@/lib/docs/content";
 import type { StoredProofRecord } from "@/lib/backend-data";
 import {
   resolveLatestProofForWalletAcrossNetworks,
-  resolveProofHistoryForWalletAcrossNetworks,
 } from "@/lib/server/proof-resolution";
 import { getLivePortfolioSnapshot } from "@/lib/server/live-portfolio";
+import { getStoredProofs } from "@/lib/server/runtime-store";
 import {
   getComputeLedgerPrivateKey,
   getComputeProviderAddress,
@@ -377,12 +378,28 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   const reviewWallet = DEFAULT_WALLET_ADDRESS;
   const preferredNetwork = getServerDefaultNetworkKey();
   const latestProof = await resolveLatestProofForWalletAcrossNetworks(reviewWallet);
-  const scopedProofs = await resolveProofHistoryForWalletAcrossNetworks(reviewWallet);
+  const storedProofs = await getStoredProofs();
+  const scopedProofs = storedProofs.filter((proof) =>
+    sameWalletAddress(proof.walletAddress, reviewWallet),
+  );
+  const proofCount = latestProof
+    ? Math.max(
+        scopedProofs.length,
+        scopedProofs.some(
+          (proof) =>
+            proof.cid === latestProof.cid ||
+            proof.txHash === latestProof.txHash ||
+            proof.proofRegistryTxHash === latestProof.proofRegistryTxHash,
+        )
+          ? scopedProofs.length
+          : scopedProofs.length + 1,
+      )
+    : scopedProofs.length;
   const proofNetwork = latestProof?.networkKey ?? preferredNetwork;
   const judgePortfolio = await getLivePortfolioSnapshot(
     reviewWallet,
     proofNetwork,
-    { preferProofSnapshot: true },
+    { preferProofSnapshot: true, latestProof },
   );
   const preferredConfig = getServer0GNetworkConfig(preferredNetwork);
   const computeProviderAddress = getComputeProviderAddress(preferredNetwork);
@@ -422,7 +439,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
       label: "Proof Store",
       value: runtimeStatus.runtimeStore,
       helper: latestProof
-        ? `${scopedProofs.length} recorded proof(s) available for this judge wallet`
+        ? `${proofCount} recorded proof(s) available for this judge wallet`
         : "No runtime proof recorded yet",
       tone: latestProof ? "green" : "amber",
     },
@@ -478,9 +495,9 @@ export async function getJudgePageData(): Promise<JudgePageData> {
         },
         {
           label: "Proof History",
-          value: `${scopedProofs.length} run${scopedProofs.length === 1 ? "" : "s"}`,
+          value: `${proofCount} run${proofCount === 1 ? "" : "s"}`,
           helper: `Latest proof recorded ${formatTime(latestProof.timestamp)}`,
-          tone: scopedProofs.length > 0 ? "green" : "amber",
+          tone: proofCount > 0 ? "green" : "amber",
         },
       ]
     : [
@@ -632,6 +649,6 @@ export async function getJudgePageData(): Promise<JudgePageData> {
       "Use `Exit judge mode` in the sidebar to return to the normal user wallet flow and run a fresh optimization.",
     ],
     blockers,
-    proofCount: scopedProofs.length,
+    proofCount,
   };
 }

@@ -20,6 +20,7 @@ function round(value: number, digits = 6) {
 
 interface LivePortfolioSnapshotOptions {
   preferProofSnapshot?: boolean;
+  latestProof?: StoredProofRecord | null;
 }
 
 function sanitizeSnapshot(
@@ -162,7 +163,10 @@ export async function getLivePortfolioSnapshot(
     };
   }
   const rpcUrl = getServer0GNetworkConfig(networkKey).rpcUrl;
-  const latestProof = await resolveLatestProofForWallet(walletAddress, networkKey);
+  const latestProof =
+    options.latestProof !== undefined
+      ? options.latestProof
+      : await resolveLatestProofForWallet(walletAddress, networkKey);
   const proofBackedPortfolio = latestProof
     ? buildPortfolioFromProof(latestProof, walletAddress)
     : null;

@@ -28,7 +28,7 @@ const proofRegistryAbi = [
 const MAX_BLOCK_LOOKBACK = 1_000_000;
 const BLOCK_SCAN_CHUNK = 50_000;
 const SUPPORTED_NETWORK_KEYS: WalletNetworkKey[] = ["testnet", "mainnet"];
-const LIVE_PROOF_CACHE_TTL_MS = 8_000;
+const LIVE_PROOF_CACHE_TTL_MS = 60_000;
 
 const latestLiveProofCache = new Map<
   string,
