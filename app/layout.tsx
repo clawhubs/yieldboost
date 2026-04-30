@@ -24,9 +24,9 @@ export const metadata: Metadata = {
   title: "YieldBoost AI",
   description: "Mainnet-first verifiable AI yield optimization on 0G, with judge-friendly proof review and Agent NFT minting.",
   icons: {
-    icon: "/ya-icon.png",
-    shortcut: "/ya-icon.png",
-    apple: "/ya-icon.png",
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
   },
   openGraph: {
     title: "YieldBoost AI",

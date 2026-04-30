@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img src="./public/readme/branding/logo-transparent.png" alt="YieldBoost AI transparent logo" width="112" />
+  <img src="./public/readme/branding/logo-mark.svg" alt="YieldBoost AI logo mark" width="112" />
 </p>
 
 <h1 align="center">YieldBoost AI</h1>
