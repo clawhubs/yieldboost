@@ -42,6 +42,7 @@ import { usePortfolio } from "@/hooks/usePortfolio";
 import {
   getAvailableWalletNetworks,
   getWalletNetworkConfig,
+  WALLET_CONNECT_REQUEST_EVENT,
   WALLET_NETWORK_CHANGE_REQUEST_EVENT,
   type WalletNetworkKey,
 } from "@/lib/wallet";
@@ -186,6 +187,19 @@ export default function DashboardView() {
         : "Awaiting live wallet data";
   const walletStatusTone = latestResult || hasDetectedAssets ? "text-[#22e070]" : "text-[#d9a441]";
 
+  function handleWalletButtonClick() {
+    if (!walletConnected && !judgeMode) {
+      window.dispatchEvent(
+        new CustomEvent(WALLET_CONNECT_REQUEST_EVENT, {
+          detail: { networkKey },
+        }),
+      );
+      return;
+    }
+
+    setWalletMenuOpen((open) => !open);
+  }
+
   async function runDashboardOptimization() {
     if (!canOptimize) return;
     await optimize(livePortfolio, "Optimize my portfolio for best yield with low risk");
@@ -299,7 +313,7 @@ export default function DashboardView() {
                 <div ref={walletMenuRef} className="relative flex-1 sm:flex-none">
                   <button
                     type="button"
-                    onClick={() => setWalletMenuOpen((open) => !open)}
+                    onClick={handleWalletButtonClick}
                     className="flex h-[46px] w-full min-w-0 items-center gap-3 rounded-[12px] border border-[#1b242d] bg-[#0a1117] px-4 text-left transition hover:border-[#2ad7c8]/40 sm:w-auto sm:min-w-[220px]"
                   >
                     <Wallet2 className="h-4 w-4 text-[#d9e1e8]" />
