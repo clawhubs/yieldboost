@@ -12,6 +12,7 @@
   <img src="https://img.shields.io/badge/Default%20Network-Mainnet-1f8fff?style=for-the-badge" alt="Default Network Mainnet" />
   <img src="https://img.shields.io/badge/Judge%20Mode-/judge-7c5cff?style=for-the-badge" alt="Judge Mode" />
   <img src="https://img.shields.io/badge/Proof%20Layer-0G%20Storage%20%2B%20ProofRegistry-0f172a?style=for-the-badge" alt="Proof Layer" />
+  <img src="https://img.shields.io/badge/Agent%20NFT-YieldStrategyINFT-00a86b?style=for-the-badge" alt="Agent NFT YieldStrategyINFT" />
   <img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge" alt="Next.js 15" />
 </p>
 
@@ -26,6 +27,7 @@
   <a href="#fast-judge-review">Fast judge review</a> •
   <a href="#architecture">Architecture</a> •
   <a href="#0g-native-data-flow">0G data flow</a> •
+  <a href="#agent-nft-layer">Agent NFT layer</a> •
   <a href="#local-installation">Local setup</a> •
   <a href="#testnet-secondary-path">Testnet secondary path</a> •
   <a href="#roadmap-ya0g-and-proof-of-optimization">Roadmap</a>
@@ -40,6 +42,8 @@ YieldBoost AI is a Next.js application that turns a yield optimization run into 
 - **ProofRegistry** for on-chain anchoring of those stored proofs on the active network.
 
 The result is a product story judges can verify quickly: a user runs an optimization, the app persists the reasoning and decision payload on 0G infrastructure, and `/judge` exposes the latest mainnet review snapshot without requiring wallet connection, faucet setup, or rerunning the flow.
+
+On top of that proof path, YieldBoost AI also ships a **Strategy Agent NFT layer** through `YieldStrategyINFT`, so a verified optimization can be elevated into a portable on-chain strategy artifact instead of remaining only as an off-chain UI event.
 
 ## Mainnet Live Verification
 
@@ -58,6 +62,7 @@ What this means in practice:
 - `mainnet` is the default review path in the live app.
 - `/judge` can still switch between mainnet and testnet when a reviewer wants comparison context.
 - testnet remains available for iteration and fallback, but it is no longer the primary submission narrative.
+- the same live stack also exposes a mainnet `YieldStrategyINFT` contract for strategy-agent minting.
 
 ## Why This Matters
 
@@ -167,6 +172,21 @@ flowchart TD
    - [`/api/history`](app/api/history/route.ts)
    - [`/api/agent/list`](app/api/agent/list/route.ts)
 8. The judge opens [`/judge`](<app/(workspace)/judge/page.tsx>), which surfaces the latest proof, wallet snapshot, explorer links, registry status, and a compact network switcher in one audit-first page.
+
+## Agent NFT Layer
+
+YieldBoost AI is not only storing optimization proofs. It also turns a completed proof-backed strategy into a **Strategy Agent NFT** on 0G mainnet.
+
+- [`contracts/YieldStrategyINFT.sol`](contracts/YieldStrategyINFT.sol) is the on-chain contract for the strategy NFT layer.
+- [`/api/agent/mint`](app/api/agent/mint/route.ts) mints the NFT from a live optimization result, using the connected wallet as the NFT recipient.
+- [`/api/agent/list`](app/api/agent/list/route.ts) reads back minted strategy agents from the contract, with a graceful proof-history fallback when contract mode is unavailable.
+- The NFT payload carries the optimization context: APY delta, strategy reasoning, proof hash references, and attestation-linked metadata.
+
+Why this matters for judging:
+
+- it shows YieldBoost AI is not only a dashboard, but also an **agent identity / strategy ownership layer**
+- it aligns the product with 0G's broader direction around **Agent ID-style composable intelligence**
+- it gives the project a second verifiable asset surface beyond storage proofs and registry anchors
 
 ## What Is Actually Live In This Repo
 
