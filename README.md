@@ -244,20 +244,29 @@ This is the UX decision that makes YieldBoost AI unusually judge-friendly: the v
 
 ### Token / Prompt Efficiency
 
-The current codebase shows **lightweight prompt discipline**, not a full semantic caching stack:
+The active runtime now includes a real efficiency stack, not just short prompts:
 
-- User prompt input is capped at **240 characters** in [`lib/optimizations.ts`](lib/optimizations.ts).
-- The 0G Compute system instruction forces a **short response under 60 words**.
-- The inference request uses **`temperature: 0.2`** and **`max_tokens: 512`**.
-- The UI streams the narrative progressively, then persists the final reasoning text with the proof.
+- **Dedicated prompt compression** in [`lib/server/prompt-compression.ts`](lib/server/prompt-compression.ts):
+  - normalizes noisy user prompts
+  - summarizes the live portfolio into a compact holdings string
+  - rewrites the request into a stable intent-and-constraint format before inference
+- **Semantic cache keys** in [`lib/server/optimization-cache.ts`](lib/server/optimization-cache.ts):
+  - wallet-aware
+  - network-aware
+  - prompt-aware
+  - portfolio-aware
+- **Embedding-based prompt reuse** via Alibaba DashScope `text-embedding-v4` in [`lib/server/alibaba-embeddings.ts`](lib/server/alibaba-embeddings.ts), with similarity matching against recent cached optimization requests for the same wallet/network/asset signature
+- The 0G Compute system instruction still forces a **short response under 60 words**
+- The inference request still uses **`temperature: 0.2`** and **`max_tokens: 512`**
 
-What I did **not** find in the active runtime path:
+In practice, the route now tries:
 
-- No semantic cache layer.
-- No embedding-based prompt reuse.
-- No dedicated prompt compression middleware beyond bounded prompt length and concise model instructions.
+1. exact semantic cache hit  
+2. embedding-based reuse hit  
+3. live 0G Compute inference  
+4. deterministic local fallback
 
-So the honest positioning is: **the app already constrains inference cost, but advanced token-optimization primitives are still future work**.
+So the honest positioning is now: **YieldBoost AI actively reduces repeated token spend and prompt bloat while preserving the same proof-backed output flow**.
 
 ### Implementation Honesty
 
@@ -334,6 +343,11 @@ KV_REST_API_URL=<optional_vercel_kv_url>
 KV_REST_API_TOKEN=<optional_vercel_kv_token>
 UPSTASH_REDIS_REST_URL=<optional_upstash_url>
 UPSTASH_REDIS_REST_TOKEN=<optional_upstash_token>
+ALIBABA_API_KEY=<dashscope_api_key>
+ALIBABA_BASE_URL=https://dashscope-intl.aliyuncs.com/compatible-mode/v1
+ALIBABA_MODEL=qwen3.6-plus-2026-04-02
+ALIBABA_EMBEDDING_MODEL=text-embedding-v4
+ALIBABA_EMBEDDING_DIMENSION=512
 ```
 
 ### 3. Run the app
