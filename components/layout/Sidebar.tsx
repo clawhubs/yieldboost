@@ -48,6 +48,7 @@ import {
   isWalletAddress,
   JUDGE_MODE_STORAGE_KEY,
   resolveWalletNetworkKey,
+  sameWalletAddress,
   type WalletNetworkKey,
   WALLET_CHANGE_EVENT,
   WALLET_CONNECT_REQUEST_EVENT,
@@ -99,7 +100,13 @@ function clearCookie(name: string) {
 export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
-  const { judgeMode, enterJudgeMode, exitJudgeMode } = usePortfolio();
+  const {
+    judgeMode,
+    enterJudgeMode,
+    exitJudgeMode,
+    portfolio,
+    networkKey: activeNetworkKey,
+  } = usePortfolio();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [walletCopied, setWalletCopied] = useState(false);
   const [walletAddr, setWalletAddr] = useState<string | null>(null);
@@ -137,6 +144,40 @@ export default function Sidebar() {
   useEffect(() => {
     selectedNetworkRef.current = selectedNetwork;
   }, [selectedNetwork]);
+
+  useEffect(() => {
+    if (judgeMode) {
+      return;
+    }
+
+    if (activeNetworkKey !== selectedNetworkRef.current) {
+      setSelectedNetwork(activeNetworkKey);
+      selectedNetworkRef.current = activeNetworkKey;
+    }
+
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const providerId = window.localStorage.getItem(WALLET_PROVIDER_STORAGE_KEY);
+    const trackedWallet = window.localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY);
+    const nextWalletAddress = portfolio?.walletAddress;
+
+    if (isWalletAddress(nextWalletAddress)) {
+      const resolvedWalletAddress = nextWalletAddress as string;
+      if (!sameWalletAddress(walletAddrRef.current, resolvedWalletAddress)) {
+        setWalletAddr(resolvedWalletAddress);
+      }
+      setConnected(Boolean(providerId));
+      setErrorText(null);
+      return;
+    }
+
+    if (!providerId && !isWalletAddress(trackedWallet)) {
+      setConnected(false);
+      setWalletAddr(null);
+    }
+  }, [activeNetworkKey, judgeMode, portfolio?.walletAddress]);
 
   useEffect(() => {
     setMobileNavOpen(false);
