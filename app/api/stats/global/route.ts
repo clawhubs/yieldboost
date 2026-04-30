@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 
+import { DEFAULT_WALLET_ADDRESS } from "@/lib/wallet";
+import { type StoredProofRecord } from "@/lib/backend-data";
+import { resolveProofHistoryForWalletAcrossNetworks } from "@/lib/server/proof-resolution";
 import { getStoredProofs } from "@/lib/server/runtime-store";
 
 export const dynamic = "force-dynamic";
@@ -18,8 +21,56 @@ function formatCompactNumber(value: number) {
   return value.toLocaleString("en-US");
 }
 
+function parseTimestamp(value: string | undefined) {
+  if (!value) return 0;
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function compareProofRecency(left: StoredProofRecord, right: StoredProofRecord) {
+  const timestampDelta = parseTimestamp(right.timestamp) - parseTimestamp(left.timestamp);
+  if (timestampDelta !== 0) {
+    return timestampDelta;
+  }
+
+  const blockDelta = (right.blockNumber ?? 0) - (left.blockNumber ?? 0);
+  if (blockDelta !== 0) {
+    return blockDelta;
+  }
+
+  return right.txHash.localeCompare(left.txHash);
+}
+
+function buildProofIdentity(proof: StoredProofRecord) {
+  return (
+    proof.proofRegistryTxHash ||
+    proof.txHash ||
+    proof.cid
+  ).toLowerCase();
+}
+
+function mergeProofSets(...groups: StoredProofRecord[][]) {
+  const merged = new Map<string, StoredProofRecord>();
+
+  for (const group of groups) {
+    for (const proof of group) {
+      const key = buildProofIdentity(proof);
+      const existing = merged.get(key);
+      if (!existing || compareProofRecency(proof, existing) < 0) {
+        merged.set(key, proof);
+      }
+    }
+  }
+
+  return [...merged.values()].sort(compareProofRecency);
+}
+
 export async function GET() {
-  const proofs = await getStoredProofs();
+  const [storedProofs, demoWalletProofs] = await Promise.all([
+    getStoredProofs(),
+    resolveProofHistoryForWalletAcrossNetworks(DEFAULT_WALLET_ADDRESS),
+  ]);
+  const proofs = mergeProofSets(storedProofs, demoWalletProofs);
   const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
 
   const totalTvl = proofs.reduce((sum, p) => sum + (p.decision.totalPortfolio ?? 0), 0);
