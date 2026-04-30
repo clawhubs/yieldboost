@@ -1,5 +1,9 @@
 <p align="center">
-  <img src="./public/ya-logo.png" alt="YieldBoost AI" width="120" />
+  <img src="./public/readme/branding/banner.png" alt="YieldBoost AI banner" width="100%" />
+</p>
+
+<p align="center">
+  <img src="./public/readme/branding/logo-transparent.png" alt="YieldBoost AI transparent logo" width="112" />
 </p>
 
 <h1 align="center">YieldBoost AI</h1>

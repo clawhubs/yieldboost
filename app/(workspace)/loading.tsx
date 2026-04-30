@@ -16,6 +16,12 @@ function LoadingCard({
 export default function WorkspaceLoading() {
   return (
     <section className="space-y-[10px] p-[10px]">
+      <div className="flex items-center justify-center px-2 pt-1">
+        <div className="rounded-full border border-[rgba(34,221,208,0.18)] bg-[rgba(7,16,24,0.78)] px-3 py-1 text-[11px] font-medium uppercase tracking-[0.26em] text-[rgba(137,255,245,0.82)]">
+          Syncing latest proof...
+        </div>
+      </div>
+
       <div className="yb-card animate-pulse rounded-[18px] px-5 py-5">
         <div className="flex flex-col gap-5">
           <div>
