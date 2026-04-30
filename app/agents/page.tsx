@@ -1,4 +1,6 @@
 import { Metadata } from "next";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import AgentGallery from "@/components/agent/AgentGallery";
 
 export const metadata: Metadata = {
@@ -12,6 +14,13 @@ export default function AgentsPage() {
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
+          <Link
+            href="/"
+            className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-[rgba(255,255,255,0.03)] px-3 py-2 text-[12px] text-[#d6dee6] transition hover:border-[rgba(34,221,208,0.28)] hover:text-white"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to dashboard
+          </Link>
           <h1 className="text-[32px] font-semibold text-white sm:text-[40px]">
             Agent Gallery
           </h1>

@@ -1,7 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import {
+  ArrowLeft,
+  ArrowRight,
   ArrowDownWideNarrow,
   Database,
   Filter,
@@ -162,6 +165,22 @@ export default function AgentGallery() {
           <p className="mt-2 text-xs text-[var(--text-muted)]">
             Agent gallery could not load the active proof source.
           </p>
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[rgba(255,255,255,0.03)] px-4 py-2 text-[12px] text-[#d6dee6] transition hover:border-[rgba(34,221,208,0.28)] hover:text-white"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Back to dashboard
+            </Link>
+            <Link
+              href="/agent"
+              className="inline-flex items-center gap-2 rounded-full border border-[rgba(34,221,208,0.18)] bg-[rgba(34,221,208,0.08)] px-4 py-2 text-[12px] text-[#9ff7f0] transition hover:border-[rgba(34,221,208,0.32)] hover:text-white"
+            >
+              Open boost flow
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -170,7 +189,7 @@ export default function AgentGallery() {
   if (strategies.length === 0) {
     return (
       <div className="flex min-h-[400px] items-center justify-center rounded-[28px] border border-[#1a222a] bg-[#070d12]">
-        <div className="text-center">
+        <div className="max-w-md text-center">
           <p className="text-sm text-[var(--text-muted)]">
             {emptyMessage ?? "No agents minted yet"}
           </p>
@@ -179,6 +198,22 @@ export default function AgentGallery() {
               ? "Run a real optimization first so this wallet has proof-backed agent data."
               : "Complete an optimization to mint your first agent"}
           </p>
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[rgba(255,255,255,0.03)] px-4 py-2 text-[12px] text-[#d6dee6] transition hover:border-[rgba(34,221,208,0.28)] hover:text-white"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Back to dashboard
+            </Link>
+            <Link
+              href="/agent"
+              className="inline-flex items-center gap-2 rounded-full border border-[rgba(34,221,208,0.18)] bg-[rgba(34,221,208,0.08)] px-4 py-2 text-[12px] text-[#9ff7f0] transition hover:border-[rgba(34,221,208,0.32)] hover:text-white"
+            >
+              Run optimization first
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
         </div>
       </div>
     );
