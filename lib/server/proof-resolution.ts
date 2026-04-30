@@ -301,7 +301,7 @@ export async function resolveLatestProofForWallet(
   networkKey: WalletNetworkKey,
 ): Promise<StoredProofRecord | null> {
   const storedProof = await getLatestStoredProofForWallet(walletAddress, networkKey);
-  if (isRuntimeStoreKvConfigured()) {
+  if (isRuntimeStoreKvConfigured() && storedProof) {
     return storedProof;
   }
 
