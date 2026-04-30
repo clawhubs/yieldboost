@@ -1,6 +1,7 @@
 import {
   DEFAULT_WALLET_ADDRESS,
   getAvailableWalletNetworks,
+  getDefaultWalletNetworkKey,
   type WalletNetworkKey,
 } from "@/lib/wallet";
 
@@ -245,6 +246,8 @@ export function getDocsRuntimeStatus(): DocsRuntimeStatus {
     ? "0G Storage upload path is configured for at least one network"
     : "0G Storage route exists, but upload credentials are still required";
   const optimizationMode = "UI-ready deterministic scoring with streamed narrative fallback";
+  const defaultNetworkKey = getDefaultWalletNetworkKey();
+  const defaultNetworkLabel = mapped[defaultNetworkKey]?.label ?? "0G Mainnet";
 
   return {
     demoWallet: DEFAULT_WALLET_ADDRESS,
@@ -253,7 +256,7 @@ export function getDocsRuntimeStatus(): DocsRuntimeStatus {
     runtimeStore: getRuntimeStoreMode(),
     optimizationMode,
     proofMode,
-    currentStatusLine: `${mapped.testnet.enabled ? mapped.testnet.label : "Testnet not configured"} is the default workspace path; mainnet remains optional.`,
+    currentStatusLine: `${defaultNetworkLabel} is the active default workspace path, while the judge review can still switch networks on demand.`,
     networks: mapped,
   };
 }
