@@ -97,6 +97,13 @@ function clearCookie(name: string) {
   document.cookie = `${name}=; path=/; max-age=0; SameSite=Lax`;
 }
 
+function hasJudgeModeFlag() {
+  return (
+    typeof window !== "undefined" &&
+    window.localStorage.getItem(JUDGE_MODE_STORAGE_KEY) === "true"
+  );
+}
+
 export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
@@ -270,21 +277,43 @@ export default function Sidebar() {
       const accounts = Array.isArray(accountsValue) ? accountsValue : [];
       const nextAccount =
         accounts.find((item): item is string => typeof item === "string") ?? null;
+      const judgeModeActive = hasJudgeModeFlag();
 
       if (!nextAccount || !isWalletAddress(nextAccount)) {
+        if (judgeModeActive) {
+          cleanupProviderListeners();
+          providerRef.current = null;
+          providerIdRef.current = null;
+          localStorage.removeItem(WALLET_PROVIDER_STORAGE_KEY);
+          localStorage.removeItem(WALLET_OVERRIDE_STORAGE_KEY);
+          setConnected(false);
+          setWalletAddr(null);
+          setErrorText(null);
+          return;
+        }
         applyDisconnectedState(selectedNetworkRef.current);
         return;
       }
 
       setWalletAddr(nextAccount);
-      setConnected(true);
       setErrorText(null);
       localStorage.setItem(WALLET_OVERRIDE_STORAGE_KEY, nextAccount);
       localStorage.setItem(WALLET_PROVIDER_STORAGE_KEY, providerId);
+
+      if (judgeModeActive) {
+        walletAddrRef.current = nextAccount;
+        return;
+      }
+
+      setConnected(true);
       broadcastWalletChange(nextAccount, selectedNetworkRef.current, providerName, true);
     };
 
     const chainChanged = (chainIdValue: unknown) => {
+      if (hasJudgeModeFlag()) {
+        return;
+      }
+
       if (typeof chainIdValue !== "string") return;
 
       const matchedNetwork = inferNetworkKeyFromChainId(
@@ -309,6 +338,15 @@ export default function Sidebar() {
     };
 
     const disconnect = () => {
+      if (hasJudgeModeFlag()) {
+        cleanupProviderListeners();
+        providerRef.current = null;
+        providerIdRef.current = null;
+        localStorage.removeItem(WALLET_PROVIDER_STORAGE_KEY);
+        setConnected(false);
+        setErrorText(null);
+        return;
+      }
       applyDisconnectedState(selectedNetworkRef.current);
     };
 
@@ -579,6 +617,8 @@ export default function Sidebar() {
   }
 
   function activateJudgeReviewMode() {
+    setWalletModalOpen(false);
+    setErrorText(null);
     enterJudgeMode();
     broadcastWalletChange(
       DEFAULT_WALLET_ADDRESS,
@@ -590,10 +630,27 @@ export default function Sidebar() {
 
   function handleExitJudgeMode() {
     exitJudgeMode();
-    if (connected && walletAddrRef.current && isWalletAddress(walletAddrRef.current)) {
-      broadcastWalletChange(walletAddrRef.current, selectedNetwork, null, true);
+    const restoredNetwork = selectedNetworkRef.current;
+    const restoredWallet = walletAddrRef.current ?? localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY);
+    const restoredProviderId =
+      providerIdRef.current ?? localStorage.getItem(WALLET_PROVIDER_STORAGE_KEY);
+    const restoredProvider = restoredProviderId
+      ? getInjectedWalletById(restoredProviderId)
+      : null;
+
+    if (restoredProvider && restoredWallet && isWalletAddress(restoredWallet)) {
+      setWalletAddr(restoredWallet);
+      setConnected(true);
+      setErrorText(null);
+      attachProviderListeners(restoredProvider.provider, restoredProvider.id, restoredProvider.name);
+      broadcastWalletChange(restoredWallet, restoredNetwork, restoredProvider.name, true);
+    } else if (restoredWallet && isWalletAddress(restoredWallet)) {
+      setWalletAddr(restoredWallet);
+      setConnected(false);
+      setErrorText(null);
+      broadcastWalletChange(restoredWallet, restoredNetwork, null, false);
     } else {
-      applyDisconnectedState(selectedNetwork);
+      applyDisconnectedState(restoredNetwork);
     }
     setMobileNavOpen(false);
     if (pathname === "/judge") {
