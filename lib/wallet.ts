@@ -50,6 +50,7 @@ const DEFAULT_TESTNET_STORAGE_URL =
   "https://indexer-storage-testnet-turbo.0g.ai";
 const DEFAULT_TESTNET_RPC_URL = "https://evmrpc-testnet.0g.ai";
 const DEFAULT_MAINNET_RPC_URL = "https://evmrpc.0g.ai";
+const DEFAULT_MAINNET_STORAGE_URL = "https://indexer-storage-turbo.0g.ai";
 
 function normalizeStorageUrl(
   key: WalletNetworkKey,
@@ -65,6 +66,13 @@ function normalizeStorageUrl(
     /(^https?:\/\/)?(indexer-storage\.0g\.ai|indexer-storage-testnet-standard\.0g\.ai)\/?$/i.test(trimmed)
   ) {
     return DEFAULT_TESTNET_STORAGE_URL;
+  }
+
+  if (
+    key === "mainnet" &&
+    /(^https?:\/\/)?indexer-storage\.0g\.ai\/?$/i.test(trimmed)
+  ) {
+    return DEFAULT_MAINNET_STORAGE_URL;
   }
 
   return trimmed;
@@ -163,9 +171,12 @@ function getNetworkConfigs() {
         process.env.ZG_MAINNET_RPC_URL ??
         process.env.NEXT_PUBLIC_0G_MAINNET_RPC ??
         DEFAULT_MAINNET_RPC_URL,
-      storageUrl:
+      storageUrl: normalizeStorageUrl(
+        "mainnet",
         process.env.ZG_MAINNET_STORAGE_URL ??
-        process.env.NEXT_PUBLIC_0G_MAINNET_STORAGE,
+          process.env.NEXT_PUBLIC_0G_MAINNET_STORAGE ??
+          DEFAULT_MAINNET_STORAGE_URL,
+      ),
       explorerBase:
         process.env.NEXT_PUBLIC_0G_MAINNET_EXPLORER_BASE_URL ??
         "https://chainscan.0g.ai",

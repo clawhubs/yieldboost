@@ -300,7 +300,7 @@ export async function resolveLatestProofForWallet(
   walletAddress: string,
   networkKey: WalletNetworkKey,
 ): Promise<StoredProofRecord | null> {
-  const storedProof = await getLatestStoredProofForWallet(walletAddress);
+  const storedProof = await getLatestStoredProofForWallet(walletAddress, networkKey);
   if (isRuntimeStoreKvConfigured()) {
     return storedProof;
   }
@@ -322,7 +322,8 @@ export async function resolveProofHistoryForWallet(
   networkKey: WalletNetworkKey,
 ) {
   const storedProofs = (await getStoredProofs()).filter((proof) =>
-    sameWalletAddress(proof.walletAddress, walletAddress),
+    sameWalletAddress(proof.walletAddress, walletAddress) &&
+    proof.networkKey === networkKey,
   );
   const latestProof = await resolveLatestProofForWallet(walletAddress, networkKey);
   if (!latestProof) {

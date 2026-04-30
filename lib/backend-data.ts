@@ -324,6 +324,10 @@ function trimProtocolName(protocol: string) {
   return protocol.replace(/\s+(LP|Vault|Pool|Finance|Network|Lending Loop)$/i, "");
 }
 
+function getExplorerLabelForNetwork(networkKey?: WalletNetworkKey) {
+  return networkKey === "mainnet" ? "0G Mainnet" : "0G Galileo";
+}
+
 const portfolioTokens: PortfolioToken[] = [
   { symbol: "ETH", amount: 1.25, valueUSD: 3750 },
   { symbol: "USDC", amount: 500, valueUSD: 500 },
@@ -896,9 +900,9 @@ export function buildHistoryFromProofs(
             ? "Liquidity added"
             : index === 2
               ? "Portfolio analyzed"
-              : "Wallet snapshot",
+            : "Wallet snapshot",
       cid: shortenCid(proof.cid),
-      explorer: "0G Galileo",
+      explorer: getExplorerLabelForNetwork(proof.networkKey),
       state: index === 0 ? "verified" : index === 1 ? "stored" : "indexed",
     })),
     latestOutcome: {

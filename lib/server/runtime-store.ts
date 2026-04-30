@@ -157,9 +157,16 @@ export async function getLatestStoredProof(): Promise<StoredProofRecord | null> 
 
 export async function getLatestStoredProofForWallet(
   walletAddress: string,
+  networkKey?: StoredProofRecord["networkKey"],
 ): Promise<StoredProofRecord | null> {
   const proofs = await getStoredProofs();
-  return proofs.find((proof) => sameWalletAddress(proof.walletAddress, walletAddress)) ?? null;
+  return (
+    proofs.find(
+      (proof) =>
+        sameWalletAddress(proof.walletAddress, walletAddress) &&
+        (!networkKey || proof.networkKey === networkKey),
+    ) ?? null
+  );
 }
 
 export async function getSettingsState(): Promise<SettingsState> {

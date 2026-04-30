@@ -81,7 +81,10 @@ function getStorageUrlCandidates(
           "https://indexer-storage-testnet-turbo.0g.ai",
           "https://indexer-storage-testnet-standard.0g.ai",
         ]
-      : [configuredUrl];
+      : [
+          configuredUrl,
+          "https://indexer-storage-turbo.0g.ai",
+        ];
 
   return candidates.filter(
     (value, index, items): value is string =>

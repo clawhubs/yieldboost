@@ -63,13 +63,18 @@ function buildPortfolioFromProof(
 ): PortfolioResponse | null {
   const snapshot = sanitizeSnapshot(proof.portfolioSnapshot);
   if (snapshot) {
+    const snapshotApy =
+      typeof snapshot.currentAPY === "number" && snapshot.currentAPY > 0
+        ? snapshot.currentAPY
+        : proof.decision.current_apy ?? 0;
+
     return {
       walletAddress,
       source: "wallet_proof_snapshot",
       latestTxHash: proof.txHash,
       tokens: snapshot.tokens,
       totalUSD: snapshot.totalUSD,
-      currentAPY: snapshot.currentAPY,
+      currentAPY: snapshotApy,
       displayTotal: snapshot.displayTotal ?? snapshot.totalUSD,
       displayUnit: snapshot.displayUnit,
       displayLabel: snapshot.displayLabel ?? "Latest recorded wallet snapshot",

@@ -33,10 +33,29 @@ export interface ComputeResult {
 
 // Type for the broker instance (inferred from SDK)
 type ZGBroker = Awaited<ReturnType<typeof createZGComputeNetworkBroker>>;
+type ComputeServiceRow = [
+  string,
+  string,
+  string,
+  bigint | string,
+  bigint | string,
+  bigint | string,
+  string,
+  string,
+  string,
+  string,
+  boolean,
+];
 
 const brokerInstances: Partial<Record<WalletNetworkKey, ZGBroker>> = {};
 const MIN_INFERENCE_SUBACCOUNT_FUND = BigInt(10 ** 18);
 const COMPUTE_REQUEST_TIMEOUT_MS = 15_000;
+const PREFERRED_CHATBOT_MODELS = [
+  "openai/gpt-5.4-mini",
+  "deepseek/deepseek-chat-v3-0324",
+  "zai-org/GLM-5-FP8",
+  "qwen3.6-plus",
+];
 
 function extractErrorMessage(error: unknown) {
   if (error instanceof Error && error.message) {
@@ -85,6 +104,56 @@ async function ensureInferenceSubAccount(
     "inference",
     MIN_INFERENCE_SUBACCOUNT_FUND,
   );
+}
+
+function isServiceNotFoundError(error: unknown) {
+  const message = extractErrorMessage(error);
+  return /Service provider does not exist|ServiceNotExist\(address\)/i.test(message);
+}
+
+function pickPreferredChatbotService(services: ComputeServiceRow[]) {
+  const enabledChatbots = services.filter(
+    (service) => service[1] === "chatbot" && Boolean(service[10]),
+  );
+
+  for (const model of PREFERRED_CHATBOT_MODELS) {
+    const match = enabledChatbots.find((service) => service[6] === model);
+    if (match) {
+      return match;
+    }
+  }
+
+  return enabledChatbots[0];
+}
+
+async function resolveActiveProviderAddress(
+  broker: ZGBroker,
+  networkKey: WalletNetworkKey,
+  configuredAddress: string,
+) {
+  try {
+    await broker.inference.getServiceMetadata(configuredAddress);
+    return configuredAddress;
+  } catch (error) {
+    if (!isServiceNotFoundError(error)) {
+      throw error;
+    }
+  }
+
+  const services = (await broker.inference.listService()) as ComputeServiceRow[];
+  const fallbackService = pickPreferredChatbotService(services);
+
+  if (!fallbackService) {
+    throw new Error(
+      `No enabled chatbot services are currently listed for ${networkKey}.`,
+    );
+  }
+
+  const fallbackAddress = fallbackService[0];
+  console.warn(
+    `0G Compute: Configured provider ${configuredAddress} is unavailable on ${networkKey}; using live service ${fallbackAddress} (${fallbackService[6]}).`,
+  );
+  return fallbackAddress;
 }
 
 /**
@@ -160,10 +229,10 @@ export async function runTEEInference(
     };
   }
 
-  const providerAddress = getComputeProviderAddress(networkKey);
+  const configuredProviderAddress = getComputeProviderAddress(networkKey);
   const privateKey = getComputeLedgerPrivateKey(networkKey);
   const networkConfig = getServer0GNetworkConfig(networkKey);
-  if (!providerAddress) {
+  if (!configuredProviderAddress) {
     console.warn(`0G Compute: Missing compute provider address for ${networkConfig.label}`);
     return {
       text: "",
@@ -190,6 +259,11 @@ export async function runTEEInference(
 
     const provider = new ethers.JsonRpcProvider(networkConfig.rpcUrl);
     const wallet = new ethers.Wallet(privateKey, provider);
+    const providerAddress = await resolveActiveProviderAddress(
+      broker,
+      networkKey,
+      configuredProviderAddress,
+    );
 
     await ensureInferenceSubAccount(broker, providerAddress, wallet);
 

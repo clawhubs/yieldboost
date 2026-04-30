@@ -15,6 +15,73 @@ function getExplorerBase(network) {
   return process.env.NEXT_PUBLIC_0G_EXPLORER_BASE_URL ?? "https://chainscan-galileo.0g.ai";
 }
 
+function resolveImportPath(fromFile, importPath) {
+  const candidates = [
+    path.resolve(path.dirname(fromFile), importPath),
+    path.join(process.cwd(), importPath),
+    path.join(process.cwd(), "node_modules", importPath),
+    path.join(process.cwd(), "contracts", importPath),
+  ];
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  throw new Error(`Unable to resolve import "${importPath}" from ${fromFile}`);
+}
+
+function flattenContract(entryFile) {
+  const visited = new Set();
+  let licenseLine = null;
+  let pragmaLine = null;
+
+  function flattenFile(filePath) {
+    const normalized = path.resolve(filePath);
+    if (visited.has(normalized)) {
+      return "";
+    }
+    visited.add(normalized);
+
+    const source = fs.readFileSync(normalized, "utf8");
+    const lines = source.split(/\r?\n/);
+    let output = "";
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      const importMatch = trimmed.match(/^import\s+["']([^"']+)["'];$/);
+
+      if (importMatch) {
+        const resolved = resolveImportPath(normalized, importMatch[1]);
+        output += `${flattenFile(resolved)}\n`;
+        continue;
+      }
+
+      if (trimmed.startsWith("// SPDX-License-Identifier:")) {
+        if (!licenseLine) {
+          licenseLine = line;
+        }
+        continue;
+      }
+
+      if (trimmed.startsWith("pragma solidity")) {
+        if (!pragmaLine) {
+          pragmaLine = line;
+        }
+        continue;
+      }
+
+      output += `${line}\n`;
+    }
+
+    return output;
+  }
+
+  const body = flattenFile(entryFile).trim();
+  return [licenseLine, pragmaLine, "", body, ""].filter(Boolean).join("\n");
+}
+
 function resolveConstructorEncoding(deployment, verification, network) {
   const deploymentInfo = verification.deployments?.[network] ?? null;
 
@@ -62,7 +129,7 @@ async function main() {
 
   const deployment = readJson(deploymentPath);
   const verification = readJson(verificationPath);
-  const sourceCode = fs.readFileSync(sourcePath, "utf8");
+  const sourceCode = flattenContract(sourcePath);
   const explorerBase = getExplorerBase(network).replace(/\/$/, "");
   const metadataSettings = verification.metadata?.settings ?? {};
   const optimizer = metadataSettings.optimizer ?? verification.optimizer;
@@ -81,8 +148,6 @@ async function main() {
     optimizeRuns: optimizer?.enabled ? optimizer.runs ?? 200 : 0,
     evmVersion: metadataSettings.evmVersion ?? "shanghai",
     constructorArguments,
-    standardJsonInput: verification.standardJsonInput,
-    metadata: verification.metadata,
   };
 
   console.log(`Verifying YieldStrategyINFT on ${network} ChainScan...`);
