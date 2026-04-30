@@ -619,10 +619,12 @@ export default function Sidebar() {
               }
               onClick={(event) => {
                 if (isJudgeEntry) {
+                  event.preventDefault();
                   activateJudgeReviewMode();
                   if (pathname === "/judge") {
-                    event.preventDefault();
                     router.refresh();
+                  } else {
+                    router.push("/judge");
                   }
                 }
                 if (mode === "mobile") {
