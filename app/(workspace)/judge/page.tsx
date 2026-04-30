@@ -68,12 +68,28 @@ export default async function JudgePage() {
       href: "https://github.com/clawhubs/yieldboost",
       sublabel: "clawhubs/yieldboost",
       icon: GitBranch,
+      download: false,
     },
     {
       label: "X",
       href: "https://x.com/YieldboostAi",
       sublabel: "@YieldboostAi",
       icon: ArrowUpRight,
+      download: false,
+    },
+    {
+      label: "Pitch Deck",
+      href: "/pitchdeck/yieldboost-pitchdeck.html",
+      sublabel: "HTML preview",
+      icon: ExternalLink,
+      download: false,
+    },
+    {
+      label: "PDF",
+      href: "/pitchdeck/yieldboost-pitchdeck.pdf",
+      sublabel: "Download deck",
+      icon: ExternalLink,
+      download: true,
     },
   ];
 
@@ -158,6 +174,7 @@ export default async function JudgePage() {
                     href={profile.href}
                     target="_blank"
                     rel="noreferrer"
+                    download={profile.download ? "" : undefined}
                     className="glass-inset inline-flex items-center gap-2 rounded-full px-3 py-2 text-[12px] text-[#d8e1e8] transition hover:border-[rgba(34,221,208,0.28)] hover:text-white"
                   >
                     <Icon className="h-3.5 w-3.5 text-[#22ddd0]" />

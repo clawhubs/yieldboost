@@ -1,0 +1,1152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>YieldBoost AI Pitch Deck</title>
+    <style>
+      @page {
+        size: A4 landscape;
+        margin: 0;
+      }
+
+      :root {
+        --bg: #02070a;
+        --panel: #071017;
+        --panel-2: #0a151e;
+        --line: rgba(82, 255, 239, 0.18);
+        --line-strong: rgba(82, 255, 239, 0.42);
+        --cyan: #22d3ee;
+        --mint: #31f5c8;
+        --green: #4dff8f;
+        --text: #f4f7fb;
+        --muted: #9fb1bd;
+        --soft: rgba(244, 247, 251, 0.07);
+        --danger: #ff7d9d;
+        --shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+        --slide-w: 297mm;
+        --slide-h: 210mm;
+      }
+
+      * {
+        box-sizing: border-box;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          "Plus Jakarta Sans",
+          "Inter",
+          "Segoe UI",
+          system-ui,
+          sans-serif;
+      }
+
+      body {
+        overflow: hidden;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .deck {
+        display: flex;
+        height: 100vh;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-snap-type: x mandatory;
+        scroll-behavior: smooth;
+      }
+
+      .deck::-webkit-scrollbar {
+        height: 10px;
+      }
+
+      .deck::-webkit-scrollbar-track {
+        background: #03080c;
+      }
+
+      .deck::-webkit-scrollbar-thumb {
+        background: linear-gradient(90deg, var(--cyan), var(--mint));
+        border-radius: 999px;
+      }
+
+      .slide {
+        position: relative;
+        flex: 0 0 100vw;
+        height: 100vh;
+        min-width: 100vw;
+        scroll-snap-align: start;
+        display: grid;
+        place-items: center;
+        padding: 22px;
+        overflow: hidden;
+      }
+
+      .sheet {
+        position: relative;
+        width: min(var(--slide-w), calc(100vw - 44px));
+        aspect-ratio: 297 / 210;
+        max-height: calc(100vh - 44px);
+        background:
+          linear-gradient(135deg, rgba(34, 211, 238, 0.12), transparent 36%),
+          radial-gradient(circle at 88% 18%, rgba(49, 245, 200, 0.12), transparent 24%),
+          linear-gradient(180deg, #071017 0%, #03080c 100%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .sheet::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background-image:
+          linear-gradient(120deg, transparent 0 25%, rgba(82, 255, 239, 0.14) 25.2%, transparent 25.6% 100%),
+          linear-gradient(300deg, transparent 0 67%, rgba(82, 255, 239, 0.1) 67.2%, transparent 67.6% 100%);
+        opacity: 0.9;
+      }
+
+      .inner {
+        position: relative;
+        z-index: 2;
+        height: 100%;
+        padding: 38px 44px;
+      }
+
+      .kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 28px;
+        padding: 6px 12px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: #9ff7f0;
+        background: rgba(13, 30, 38, 0.68);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--mint);
+        box-shadow: 0 0 20px rgba(49, 245, 200, 0.85);
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        max-width: 760px;
+        margin-top: 24px;
+        font-size: clamp(48px, 5vw, 76px);
+        line-height: 0.94;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        max-width: 760px;
+        margin-top: 18px;
+        font-size: clamp(36px, 4vw, 58px);
+        line-height: 1;
+        letter-spacing: 0;
+      }
+
+      h3 {
+        font-size: 18px;
+        line-height: 1.2;
+      }
+
+      .lead {
+        max-width: 720px;
+        margin-top: 18px;
+        color: #c7d5dc;
+        font-size: 19px;
+        line-height: 1.55;
+      }
+
+      .cyan {
+        color: var(--cyan);
+      }
+
+      .mint {
+        color: var(--mint);
+      }
+
+      .green {
+        color: var(--green);
+      }
+
+      .grid {
+        display: grid;
+        gap: 14px;
+      }
+
+      .two {
+        grid-template-columns: 1.05fr 0.95fr;
+      }
+
+      .three {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .four {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .card {
+        min-height: 118px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.025)),
+          rgba(7, 16, 23, 0.78);
+        padding: 18px;
+      }
+
+      .card strong {
+        display: block;
+        color: #fff;
+        font-size: 18px;
+        line-height: 1.25;
+      }
+
+      .card span,
+      .mini,
+      .muted {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .metric {
+        border-left: 3px solid var(--cyan);
+      }
+
+      .metric .value {
+        display: block;
+        margin: 6px 0 4px;
+        color: #fff;
+        font-size: 34px;
+        font-weight: 800;
+        line-height: 1;
+      }
+
+      .hero {
+        padding: 0;
+      }
+
+      .hero .banner {
+        position: absolute;
+        inset: 0 0 auto 0;
+        width: 100%;
+        height: 45%;
+        object-fit: cover;
+        opacity: 0.96;
+      }
+
+      .hero .shade {
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(180deg, rgba(2, 7, 10, 0) 0%, rgba(2, 7, 10, 0) 38%, rgba(2, 7, 10, 0.9) 49%, rgba(2, 7, 10, 0.98) 100%),
+          linear-gradient(90deg, rgba(2, 7, 10, 0.16), transparent 60%);
+      }
+
+      .hero .inner {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 330px 48px 48px;
+      }
+
+      .hero h1 {
+        font-size: clamp(44px, 4.8vw, 68px);
+      }
+
+      .hero-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+        align-items: flex-end;
+        margin-top: 34px;
+      }
+
+      .pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .pill {
+        padding: 9px 12px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: #dffdf9;
+        background: rgba(4, 16, 21, 0.76);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .flow {
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-top: 30px;
+      }
+
+      .flow::before {
+        content: "";
+        position: absolute;
+        left: 10%;
+        right: 10%;
+        top: 52px;
+        height: 2px;
+        background: linear-gradient(90deg, var(--cyan), var(--mint), var(--green));
+        opacity: 0.8;
+      }
+
+      .node {
+        position: relative;
+        min-height: 132px;
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(5, 14, 20, 0.86);
+      }
+
+      .node strong {
+        display: block;
+        margin-bottom: 5px;
+        color: #fff;
+        font-size: 17px;
+        line-height: 1.25;
+      }
+
+      .node .mini {
+        display: block;
+      }
+
+      .node::before {
+        content: attr(data-step);
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        margin-bottom: 14px;
+        border-radius: 999px;
+        color: #00100e;
+        background: linear-gradient(135deg, var(--cyan), var(--mint));
+        font-weight: 900;
+      }
+
+      .flow-wide {
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .flow-wide::before {
+        left: 6%;
+        right: 6%;
+      }
+
+      .flow-wide .node {
+        min-height: 156px;
+        padding: 14px;
+      }
+
+      .flow-wide .node strong {
+        font-size: 14px;
+      }
+
+      .split {
+        display: grid;
+        grid-template-columns: 0.92fr 1.08fr;
+        gap: 24px;
+        align-items: center;
+        margin-top: 24px;
+      }
+
+      .screen {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        background: #040b10;
+        min-height: 405px;
+      }
+
+      .screen img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        opacity: 0.9;
+      }
+
+      .browser-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        height: 34px;
+        padding: 0 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .browser-bar i {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.18);
+      }
+
+      .mock-ui {
+        padding: 18px;
+      }
+
+      .mock-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .mock-line {
+        height: 10px;
+        margin-top: 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .mock-hero {
+        min-height: 140px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background:
+          linear-gradient(135deg, rgba(34, 211, 238, 0.18), transparent),
+          rgba(255, 255, 255, 0.03);
+        padding: 18px;
+      }
+
+      .address {
+        display: block;
+        margin-top: 8px;
+        color: #dbeafe;
+        font-family: "SFMono-Regular", "Cascadia Mono", Consolas, monospace;
+        font-size: 11px;
+        line-height: 1.55;
+        word-break: break-all;
+      }
+
+      .chart {
+        position: relative;
+        height: 156px;
+        margin-top: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        background:
+          linear-gradient(180deg, transparent 24%, rgba(255, 255, 255, 0.055) 24.4%, transparent 25%),
+          linear-gradient(180deg, transparent 49%, rgba(255, 255, 255, 0.055) 49.4%, transparent 50%),
+          linear-gradient(180deg, transparent 74%, rgba(255, 255, 255, 0.055) 74.4%, transparent 75%);
+      }
+
+      .chart svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      .pulse {
+        animation: pulse 2.4s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 0.65;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+
+      .footer {
+        position: absolute;
+        left: 44px;
+        right: 44px;
+        bottom: 28px;
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        color: rgba(199, 213, 220, 0.72);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .nav {
+        position: fixed;
+        left: 50%;
+        bottom: 18px;
+        z-index: 10;
+        display: flex;
+        gap: 10px;
+        transform: translateX(-50%);
+        padding: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 999px;
+        background: rgba(3, 8, 12, 0.78);
+        backdrop-filter: blur(14px);
+      }
+
+      .nav button {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(7, 16, 23, 0.9);
+        color: #dffdf9;
+        cursor: pointer;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 800;
+        padding: 10px 14px;
+      }
+
+      .nav button:hover {
+        border-color: var(--line-strong);
+        color: #fff;
+      }
+
+      .slide-no {
+        color: var(--cyan);
+      }
+
+      @media print {
+        html,
+        body {
+          overflow: visible;
+          background: #000;
+        }
+
+        .deck {
+          display: block;
+          height: auto;
+          overflow: visible;
+        }
+
+        .slide {
+          width: 297mm;
+          height: 210mm;
+          min-width: 297mm;
+          padding: 0;
+          page-break-after: always;
+        }
+
+        .sheet {
+          width: 297mm;
+          height: 210mm;
+          max-height: none;
+          border: 0;
+          box-shadow: none;
+          background: linear-gradient(180deg, #071017 0%, #03080c 100%);
+        }
+
+        .sheet::before {
+          display: none;
+        }
+
+        .card,
+        .node,
+        .screen,
+        .mock-hero {
+          background: #071017;
+        }
+
+        .kicker,
+        .pill,
+        .nav button {
+          background: #071017;
+        }
+
+        .hero .banner {
+          height: 45%;
+          opacity: 1;
+        }
+
+        .hero .shade {
+          background: linear-gradient(180deg, transparent 0 40%, #02070a 54%, #02070a 100%);
+        }
+
+        .inner {
+          padding: 10mm 12mm;
+        }
+
+        h1 {
+          font-size: 44pt;
+          line-height: 0.98;
+        }
+
+        h2 {
+          font-size: 34pt;
+          line-height: 1.02;
+        }
+
+        .hero .inner {
+          padding: 92mm 12mm 14mm;
+        }
+
+        .hero h1 {
+          font-size: 38pt;
+          max-width: 170mm;
+        }
+
+        .lead {
+          font-size: 13pt;
+          line-height: 1.42;
+        }
+
+        .card {
+          padding: 11pt;
+          min-height: 26mm;
+        }
+
+        .card strong {
+          font-size: 12pt;
+        }
+
+        .card span,
+        .mini,
+        .muted {
+          font-size: 8.5pt;
+        }
+
+        .metric .value {
+          font-size: 22pt;
+        }
+
+        .node {
+          min-height: 29mm;
+          padding: 10pt;
+        }
+
+        .flow-wide .node {
+          min-height: 34mm;
+        }
+
+        .screen {
+          min-height: 86mm;
+        }
+
+        .nav {
+          display: none;
+        }
+      }
+
+      @media (max-width: 760px) {
+        body {
+          overflow: auto;
+        }
+
+        .deck {
+          display: block;
+          height: auto;
+          overflow: visible;
+          scroll-snap-type: none;
+        }
+
+        .slide {
+          display: block;
+          width: 100%;
+          min-width: 0;
+          height: auto;
+          min-height: 0;
+          padding: 12px;
+          overflow: visible;
+        }
+
+        .sheet {
+          width: 100%;
+          max-height: none;
+          min-height: 0;
+          aspect-ratio: auto;
+          overflow: visible;
+        }
+
+        .inner {
+          height: auto;
+          padding: 22px 18px 28px;
+        }
+
+        h1 {
+          font-size: 36px;
+          line-height: 1.02;
+        }
+
+        h2 {
+          font-size: 30px;
+          line-height: 1.08;
+        }
+
+        .lead {
+          font-size: 15px;
+          line-height: 1.5;
+        }
+
+        .hero .banner {
+          position: relative;
+          height: auto;
+          aspect-ratio: 1817 / 606;
+          display: block;
+        }
+
+        .hero .shade {
+          display: none;
+        }
+
+        .hero .inner {
+          display: block;
+          padding: 22px 18px 28px;
+        }
+
+        .hero h1 {
+          font-size: 34px;
+        }
+
+        .hero-row,
+        .split {
+          display: block;
+        }
+
+        .grid,
+        .two,
+        .three,
+        .four,
+        .flow,
+        .flow-wide,
+        .mock-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .flow::before {
+          display: none;
+        }
+
+        .card,
+        .node,
+        .flow-wide .node {
+          min-height: 0;
+        }
+
+        .screen {
+          min-height: 0;
+          margin-top: 16px;
+        }
+
+        .footer {
+          position: static;
+          margin-top: 24px;
+          padding: 0 18px 18px;
+        }
+
+        .nav {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="deck" id="deck" aria-label="YieldBoost AI pitch deck">
+      <section class="slide">
+        <article class="sheet hero">
+          <img class="banner" src="./yieldboost-pitchdeck-assets/banner-lite.jpg" alt="YieldBoost AI banner" />
+          <div class="shade"></div>
+          <div class="inner">
+            <div class="kicker"><span class="dot"></span>0G Labs Global Hackathon</div>
+            <h1>Verifiable yield optimization for the AI-native Web3.</h1>
+            <p class="lead">
+              Mainnet-first optimizer, 0G proof trail, frictionless judge review, and strategy-agent NFT minting.
+            </p>
+            <div class="hero-row">
+              <div class="pill-row">
+                <span class="pill">0G Mainnet default</span>
+                <span class="pill">0G Storage + ProofRegistry</span>
+                <span class="pill">0G Compute path</span>
+                <span class="pill">YieldStrategyINFT</span>
+              </div>
+              <p class="mini">Live app: yieldboost-ai.vercel.app/judge</p>
+            </div>
+          </div>
+          <div class="footer"><span>YieldBoost AI</span><span class="slide-no">01 / 09</span></div>
+        </article>
+      </section>
+
+      <section class="slide">
+        <article class="sheet">
+          <div class="inner">
+            <div class="kicker"><span class="dot"></span>The DeFi AI trust gap</div>
+            <h2>AI yield advice is easy to generate. It is hard to verify.</h2>
+            <div class="grid three" style="margin-top: 34px">
+              <div class="card">
+                <strong>Opaque AI output</strong>
+                <span>Most dashboards show a recommendation, but not a durable proof trail for what was decided.</span>
+              </div>
+              <div class="card">
+                <strong>Review friction</strong>
+                <span>Hackathon judges should not need a wallet, faucet, or manual rerun just to audit the result.</span>
+              </div>
+              <div class="card">
+                <strong>Strategy ownership</strong>
+                <span>A completed strategy should become a portable artifact, not a temporary UI state.</span>
+              </div>
+            </div>
+            <div class="split">
+              <div>
+                <p class="lead">
+                  YieldBoost AI turns an optimization into a visible chain of custody: compute, storage, registry anchor, and optional Agent NFT.
+                </p>
+              </div>
+              <div class="chart">
+                <svg viewBox="0 0 600 180" role="img" aria-label="Trust curve">
+                  <path d="M28 136 C118 124 138 84 205 102 C260 116 288 44 345 60 C426 82 444 30 572 28" fill="none" stroke="#31f5c8" stroke-width="5" stroke-linecap="round" />
+                  <path d="M28 136 C118 124 138 84 205 102 C260 116 288 44 345 60 C426 82 444 30 572 28 L572 180 L28 180 Z" fill="rgba(49,245,200,0.12)" />
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div class="footer"><span>Problem</span><span class="slide-no">02 / 09</span></div>
+        </article>
+      </section>
+
+      <section class="slide">
+        <article class="sheet">
+          <div class="inner">
+            <div class="kicker"><span class="dot"></span>Product loop</div>
+            <h2>One click produces a strategy, a proof, and a review surface.</h2>
+            <div class="flow">
+              <div class="node" data-step="1">
+                <strong>Connect wallet</strong>
+                <span class="mini">User enters the normal dashboard flow with an active wallet context.</span>
+              </div>
+              <div class="node" data-step="2">
+                <strong>Optimize route</strong>
+                <span class="mini">Portfolio snapshot is compressed and routed through cache, embeddings, and compute.</span>
+              </div>
+              <div class="node" data-step="3">
+                <strong>Anchor proof</strong>
+                <span class="mini">Result is stored through 0G Storage and anchored through ProofRegistry.</span>
+              </div>
+              <div class="node" data-step="4">
+                <strong>Review or mint</strong>
+                <span class="mini">Judge Mode audits the proof. User can mint a Strategy Agent NFT.</span>
+              </div>
+            </div>
+            <div class="grid four" style="margin-top: 28px">
+              <div class="card metric">
+                <span class="mini">Projected APY</span>
+                <span class="value">23.84%</span>
+                <span>latest proof snapshot</span>
+              </div>
+              <div class="card metric">
+                <span class="mini">Confidence</span>
+                <span class="value">96%</span>
+                <span>route scoring</span>
+              </div>
+              <div class="card metric">
+                <span class="mini">Proof coverage</span>
+                <span class="value">100%</span>
+                <span>stored run trail</span>
+              </div>
+              <div class="card metric">
+                <span class="mini">Judge wallet</span>
+                <span class="value" style="font-size: 20px">0x8a3c...</span>
+                <span>read-only demo wallet</span>
+              </div>
+            </div>
+          </div>
+          <div class="footer"><span>Solution</span><span class="slide-no">03 / 09</span></div>
+        </article>
+      </section>
+
+      <section class="slide">
+        <article class="sheet">
+          <div class="inner">
+            <div class="kicker"><span class="dot"></span>0G-native architecture</div>
+            <h2>The system is built around a verifiable data path.</h2>
+            <div class="flow flow-wide">
+              <div class="node" data-step="A">
+                <strong>User input</strong>
+                <span class="mini">Wallet + portfolio snapshot</span>
+              </div>
+              <div class="node" data-step="B">
+                <strong>Prompt compression</strong>
+                <span class="mini">Compact intent and constraints</span>
+              </div>
+              <div class="node" data-step="C">
+                <strong>Semantic cache</strong>
+                <span class="mini">Reuse exact wallet/network state</span>
+              </div>
+              <div class="node" data-step="D">
+                <strong>Embedding reuse</strong>
+                <span class="mini">Alibaba text-embedding-v4</span>
+              </div>
+              <div class="node" data-step="E">
+                <strong>0G Compute</strong>
+                <span class="mini">Inference path + verified runtime metadata</span>
+              </div>
+              <div class="node" data-step="F">
+                <strong>0G Storage</strong>
+                <span class="mini">Persist proof payload</span>
+              </div>
+              <div class="node" data-step="G">
+                <strong>ProofRegistry</strong>
+                <span class="mini">On-chain anchor for review</span>
+              </div>
+            </div>
+            <p class="lead">
+              The key design choice: optimization is not just displayed. It becomes a durable, wallet-scoped proof artifact that the judge can inspect without touching user funds.
+            </p>
+          </div>
+          <div class="footer"><span>System flow</span><span class="slide-no">04 / 09</span></div>
+        </article>
+      </section>
+
+      <section class="slide">
+        <article class="sheet">
+          <div class="inner">
+            <div class="kicker"><span class="dot"></span>Judge Mode</div>
+            <h2>Audit-first UX: no wallet, no faucet, no rerun.</h2>
+            <div class="split">
+              <div>
+                <div class="grid" style="gap: 12px">
+                  <div class="card">
+                    <strong>Hard-locked demo wallet</strong>
+                    <span class="address">0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D</span>
+                  </div>
+                  <div class="card">
+                    <strong>Mainnet-first, testnet switchable</strong>
+                    <span>Reviewers can compare networks without leaving the audit page.</span>
+                  </div>
+                  <div class="card">
+                    <strong>Direct explorer path</strong>
+                    <span>Latest storage tx, ProofRegistry anchor, contract addresses, and proof history are surfaced in one place.</span>
+                  </div>
+                </div>
+              </div>
+              <div class="screen">
+                <div class="browser-bar"><i></i><i></i><i></i><span class="mini">/judge</span></div>
+                <div class="mock-ui">
+                  <div class="mock-hero">
+                    <div class="kicker"><span class="dot"></span>Mainnet review</div>
+                    <h3 style="margin-top: 14px">Mainnet review starts here.</h3>
+                    <p class="mini" style="margin-top: 8px">Latest proof-backed snapshot, APY lift, and verification payload.</p>
+                  </div>
+                  <div class="mock-grid" style="margin-top: 12px">
+                    <div class="card metric">
+                      <span class="mini">APY lift</span>
+                      <span class="value" style="font-size: 26px">12.38 -> 23.84%</span>
+                    </div>
+                    <div class="card metric">
+                      <span class="mini">Proof history</span>
+                      <span class="value" style="font-size: 26px">14 runs</span>
+                    </div>
+                  </div>
+                  <div class="mock-line"></div>
+                  <div class="mock-line" style="width: 78%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="footer"><span>Frictionless audit</span><span class="slide-no">05 / 09</span></div>
+        </article>
+      </section>
+
+      <section class="slide">
+        <article class="sheet">
+          <div class="inner">
+            <div class="kicker"><span class="dot"></span>Mainnet evidence</div>
+            <h2>Live contracts and latest proof trail are already on 0G mainnet.</h2>
+            <div class="grid two" style="margin-top: 26px">
+              <div class="card">
+                <strong>ProofRegistry</strong>
+                <span class="address">0x8e63e117E71A80Cfc10fDF375F079e2e29cd7D7D</span>
+                <span class="mini">Anchors proof metadata and emits the reviewable proof event.</span>
+              </div>
+              <div class="card">
+                <strong>YieldStrategyINFT</strong>
+                <span class="address">0xb264D861264B0e4f8fb98A61B7694BA8a3B6BBe3</span>
+                <span class="mini">Mainnet Agent NFT contract for strategy ownership.</span>
+              </div>
+              <div class="card">
+                <strong>Attestation Oracle</strong>
+                <span class="address">0x216E7880D64D94335B583c539802d3e61958d4A2</span>
+                <span class="mini">Allows verified attestation hashes to be registered on-chain.</span>
+              </div>
+              <div class="card">
+                <strong>Latest anchor tx</strong>
+                <span class="address">0xa76f59de764dfb5dcd2fae3e8dff53cb0e213bab89162e7b4de16962309caa9b</span>
+                <span class="mini">Mainnet ProofRegistry transaction linked from the product.</span>
+              </div>
+            </div>
+          </div>
+          <div class="footer"><span>0G mainnet verification</span><span class="slide-no">06 / 09</span></div>
+        </article>
+      </section>
+
+      <section class="slide">
+        <article class="sheet">
+          <div class="inner">
+            <div class="kicker"><span class="dot"></span>Runtime efficiency</div>
+            <h2>Inference is optimized before the system spends compute.</h2>
+            <div class="grid three" style="margin-top: 32px">
+              <div class="card">
+                <strong>Semantic Cache</strong>
+                <span>Scoped by wallet, network, normalized prompt, and portfolio digest before new inference runs.</span>
+              </div>
+              <div class="card">
+                <strong>Embedding Reuse</strong>
+                <span>Alibaba text-embedding-v4 can reuse similar optimization requests for the same wallet and asset signature.</span>
+              </div>
+              <div class="card">
+                <strong>Prompt Compression</strong>
+                <span>The optimizer rewrites noisy input into compact intent, constraints, and portfolio facts.</span>
+              </div>
+            </div>
+            <div class="flow" style="grid-template-columns: repeat(4, 1fr)">
+              <div class="node" data-step="1"><strong>Raw intent</strong><span class="mini">User request + portfolio</span></div>
+              <div class="node" data-step="2"><strong>Compacted prompt</strong><span class="mini">Less noise, same decision context</span></div>
+              <div class="node" data-step="3"><strong>Reuse check</strong><span class="mini">Exact cache or vector similarity</span></div>
+              <div class="node" data-step="4"><strong>Compute only if needed</strong><span class="mini">Preserve 0G proof flow</span></div>
+            </div>
+          </div>
+          <div class="footer"><span>Token efficiency</span><span class="slide-no">07 / 09</span></div>
+        </article>
+      </section>
+
+      <section class="slide">
+        <article class="sheet">
+          <div class="inner">
+            <div class="kicker"><span class="dot"></span>Strategy Agent NFT</div>
+            <h2>Optimization results become ownable agent artifacts.</h2>
+            <div class="split">
+              <div>
+                <p class="lead">
+                  After a proof-backed optimization, the user can mint the strategy through YieldStrategyINFT. The NFT is not the proof itself; it is the portable strategy artifact linked to the verified runtime output.
+                </p>
+                <div class="grid" style="margin-top: 22px">
+                  <div class="card">
+                    <strong>Minted to the connected wallet</strong>
+                    <span>Agent ownership follows the user wallet, not the server signer.</span>
+                  </div>
+                  <div class="card">
+                    <strong>Encrypted metadata</strong>
+                    <span>Strategy metadata is protected with AES-256-GCM at the app runtime layer.</span>
+                  </div>
+                </div>
+              </div>
+              <div class="screen">
+                <div class="browser-bar"><i></i><i></i><i></i><span class="mini">/agents</span></div>
+                <div class="mock-ui">
+                  <div class="card" style="min-height: 320px">
+                    <div class="kicker"><span class="dot"></span>Agent NFT</div>
+                    <h3 style="margin-top: 18px">SaucerSwap LP Strategy Agent</h3>
+                    <p class="mini" style="margin-top: 10px">Confidence 96% | APY 23.84% | Proof-linked mint</p>
+                    <div class="chart">
+                      <svg viewBox="0 0 600 180">
+                        <path d="M36 132 C108 88 158 118 220 74 C286 28 332 88 398 48 C462 12 504 46 568 22" fill="none" stroke="#22d3ee" stroke-width="5" stroke-linecap="round" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="footer"><span>NFT layer</span><span class="slide-no">08 / 09</span></div>
+        </article>
+      </section>
+
+      <section class="slide">
+        <article class="sheet">
+          <div class="inner">
+            <div class="kicker"><span class="dot"></span>Roadmap</div>
+            <h2>From verifiable optimizer to Proof-of-Optimization economy.</h2>
+            <div class="grid three" style="margin-top: 34px">
+              <div class="card">
+                <strong>Phase 1: Mainnet proof product</strong>
+                <span>Live proof trail, Judge Mode, Agent NFT minting, and dual-network review.</span>
+              </div>
+              <div class="card">
+                <strong>Phase 2: $YA0G reward logic</strong>
+                <span>Reward high-quality optimization events backed by ProofRegistry and measurable outcome metadata.</span>
+              </div>
+              <div class="card">
+                <strong>Phase 3: Mining by optimization quality</strong>
+                <span>Proof-of-Optimization weights verified runs by confidence, impact, and durable proof coverage.</span>
+              </div>
+            </div>
+            <div class="flow" style="margin-top: 34px">
+              <div class="node" data-step="1"><strong>Run</strong><span class="mini">User optimizes portfolio</span></div>
+              <div class="node" data-step="2"><strong>Verify</strong><span class="mini">0G Storage + ProofRegistry</span></div>
+              <div class="node" data-step="3"><strong>Own</strong><span class="mini">Mint strategy agent</span></div>
+              <div class="node" data-step="4"><strong>Reward</strong><span class="mini">Future $YA0G mining</span></div>
+            </div>
+            <p class="lead">
+              YieldBoost AI is strongest as a mainnet-live verifiable finance product: AI recommendations with a proof trail judges can inspect in seconds.
+            </p>
+          </div>
+          <div class="footer"><span>Future economy</span><span class="slide-no">09 / 09</span></div>
+        </article>
+      </section>
+    </main>
+
+    <nav class="nav" aria-label="Pitch deck navigation">
+      <button type="button" id="prev">Previous</button>
+      <button type="button" id="next">Next</button>
+      <button type="button" id="print">Print A4</button>
+    </nav>
+
+    <script>
+      const deck = document.getElementById("deck");
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      let index = 0;
+
+      function go(delta) {
+        index = Math.max(0, Math.min(slides.length - 1, index + delta));
+        slides[index].scrollIntoView({ behavior: "smooth", inline: "start" });
+      }
+
+      document.getElementById("prev").addEventListener("click", () => go(-1));
+      document.getElementById("next").addEventListener("click", () => go(1));
+      document.getElementById("print").addEventListener("click", () => window.print());
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowRight" || event.key === "PageDown") go(1);
+        if (event.key === "ArrowLeft" || event.key === "PageUp") go(-1);
+      });
+      deck.addEventListener(
+        "scroll",
+        () => {
+          const nearest = Math.round(deck.scrollLeft / window.innerWidth);
+          index = Math.max(0, Math.min(slides.length - 1, nearest));
+        },
+        { passive: true },
+      );
+    </script>
+  </body>
+</html>
