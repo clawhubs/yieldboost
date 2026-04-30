@@ -576,9 +576,13 @@ export default function Sidebar() {
                   ? `nav-${label.toLowerCase()}`
                   : `mobile-nav-${label.toLowerCase()}`
               }
-              onClick={() => {
+              onClick={(event) => {
                 if (isJudgeEntry) {
                   activateJudgeReviewMode();
+                  if (pathname === "/judge") {
+                    event.preventDefault();
+                    router.refresh();
+                  }
                 }
                 if (mode === "mobile") {
                   setMobileNavOpen(false);
