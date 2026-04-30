@@ -10,6 +10,7 @@ import { getContractSignerPrivateKey } from "@/lib/server/network-credentials";
 import {
   getYieldStrategyInftAddress,
   getServer0GNetworkConfig,
+  resolveWalletAddress,
   resolveWalletNetworkKey,
   WALLET_NETWORK_COOKIE_KEY,
 } from "@/lib/wallet";
@@ -18,6 +19,7 @@ export const runtime = "nodejs";
 
 const mintRequestSchema = z.object({
   portfolio: z.record(z.number()),
+  walletAddress: z.string(),
   decision: z.object({
     current_apy: z.number(),
     optimized_apy: z.number(),
@@ -34,12 +36,23 @@ const mintRequestSchema = z.object({
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { portfolio, decision, storageCid, txHash } = mintRequestSchema.parse(body);
+    const { portfolio, walletAddress, decision, storageCid, txHash } = mintRequestSchema.parse(body);
     const networkKey = resolveWalletNetworkKey(
       req.nextUrl.searchParams.get("network") ??
         req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value,
     );
     const networkConfig = getServer0GNetworkConfig(networkKey);
+    const targetWalletAddress = resolveWalletAddress(walletAddress);
+
+    if (!targetWalletAddress) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "A valid connected wallet address is required to mint the Agent NFT",
+        },
+        { status: 400 },
+      );
+    }
 
     // Get contract addresses from env
     const inftAddress = getYieldStrategyInftAddress(networkKey);
@@ -101,7 +114,7 @@ export async function POST(req: NextRequest) {
 
     // Mint the strategy NFT
     const mintTx = await inftContract.mintStrategy(
-      wallet.address,
+      targetWalletAddress,
       encryptedUri,
       contentHash,
       apyBps,
@@ -118,6 +131,7 @@ export async function POST(req: NextRequest) {
       success: true,
       tokenId: tokenId.toString(),
       txHash: receipt.hash,
+      walletAddress: targetWalletAddress,
       blockNumber: receipt.blockNumber,
       encryptedUri,
       contentHash,

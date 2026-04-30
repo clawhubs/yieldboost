@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Copy, ExternalLink, X, ShieldCheck } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { isWalletAddress, type WalletNetworkKey, WALLET_OVERRIDE_STORAGE_KEY } from "@/lib/wallet";
 
 interface ProofModalProps {
   open: boolean;
@@ -23,6 +24,9 @@ interface ProofModalProps {
     recommended: string;
     reasoning?: string;
   };
+  mintPortfolio?: Record<string, number>;
+  networkKey?: WalletNetworkKey;
+  showMintAction?: boolean;
 }
 
 interface ProofPayload {
@@ -70,10 +74,14 @@ export default function ProofModal({
   proofRegistryProofId,
   proofRegistryExplorerUrl,
   decision,
+  mintPortfolio,
+  networkKey,
+  showMintAction = true,
 }: ProofModalProps) {
   const [copied, setCopied] = useState<"tx" | "cid" | "registryTx" | "registryAddress" | null>(null);
   const [proof, setProof] = useState<ProofPayload | null>(null);
   const [loading, setLoading] = useState(false);
+  const [minting, setMinting] = useState(false);
 
   useEffect(() => {
     if (!open) {
@@ -186,6 +194,23 @@ export default function ProofModal({
       : hasLiveVerificationHandle
         ? "Showing the latest proof data already captured in the app."
         : "No live proof is available yet.";
+
+  const targetWalletAddress = useMemo(() => {
+    if (typeof window !== "undefined") {
+      const connectedWallet = window.localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY);
+      if (isWalletAddress(connectedWallet)) {
+        return connectedWallet;
+      }
+    }
+
+    return isWalletAddress(walletAddress) ? walletAddress : undefined;
+  }, [walletAddress]);
+
+  const canMintAgent =
+    showMintAction &&
+    Boolean(decision) &&
+    Boolean(targetWalletAddress) &&
+    Boolean(mintPortfolio && Object.keys(mintPortfolio).length > 0);
 
   return (
     <AnimatePresence>
@@ -470,39 +495,55 @@ export default function ProofModal({
                     <ExternalLink className="h-4 w-4" />
                   </a>
                 ) : null}
-                <button
-                  type="button"
-                  onClick={async () => {
-                    try {
-                      const response = await fetch("/api/agent/mint", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                          portfolio: {},
-                          decision: decision || {
-                            current_apy: 0,
-                            optimized_apy: 0,
-                            recommended: "test",
-                            reasoning: "test",
-                          },
-                          storageCid: activeProof?.cid,
-                          txHash: activeProof?.txHash,
-                        }),
-                      });
-                      const data = await response.json();
-                      if (data.success) {
-                        alert(`Agent minted! Token ID: ${data.tokenId}`);
-                      } else {
-                        alert(`Mint failed: ${data.error}`);
+                {showMintAction ? (
+                  <button
+                    type="button"
+                    disabled={!canMintAgent || minting}
+                    onClick={async () => {
+                      if (!targetWalletAddress) {
+                        alert("Connect a wallet first to mint this Agent NFT.");
+                        return;
                       }
-                    } catch (error) {
-                      alert(`Mint error: ${error}`);
-                    }
-                  }}
-                  className="inline-flex w-full items-center justify-center rounded-full border border-[rgba(0,201,177,0.3)] bg-[rgba(0,201,177,0.1)] px-5 py-3 text-sm font-semibold text-[#22ddd0] transition hover:border-[rgba(0,201,177,0.5)] hover:bg-[rgba(0,201,177,0.2)] sm:w-auto"
-                >
-                  Mint as Agent
-                </button>
+
+                      if (!decision || !mintPortfolio || Object.keys(mintPortfolio).length === 0) {
+                        alert("A live wallet portfolio is required before this proof can be minted as an Agent NFT.");
+                        return;
+                      }
+
+                      setMinting(true);
+
+                      try {
+                        const response = await fetch(
+                          `/api/agent/mint${networkKey ? `?network=${networkKey}` : ""}`,
+                          {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              portfolio: mintPortfolio,
+                              walletAddress: targetWalletAddress,
+                              decision,
+                              storageCid: activeProof?.cid,
+                              txHash: activeProof?.txHash,
+                            }),
+                          },
+                        );
+                        const data = await response.json();
+                        if (data.success) {
+                          alert(`Agent minted to ${targetWalletAddress}! Token ID: ${data.tokenId}`);
+                        } else {
+                          alert(`Mint failed: ${data.error}`);
+                        }
+                      } catch (error) {
+                        alert(`Mint error: ${error}`);
+                      } finally {
+                        setMinting(false);
+                      }
+                    }}
+                    className="inline-flex w-full items-center justify-center rounded-full border border-[rgba(0,201,177,0.3)] bg-[rgba(0,201,177,0.1)] px-5 py-3 text-sm font-semibold text-[#22ddd0] transition hover:border-[rgba(0,201,177,0.5)] hover:bg-[rgba(0,201,177,0.2)] disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-[rgba(255,255,255,0.04)] disabled:text-[#7c8a96] sm:w-auto"
+                  >
+                    {minting ? "Minting Agent..." : "Mint as Agent"}
+                  </button>
+                ) : null}
                 <button
                   type="button"
                   onClick={() => onOpenChange(false)}

@@ -1144,6 +1144,9 @@ export default function DashboardView() {
           proofRegistryTxHash={latestResult?.proofRegistryTxHash}
           proofRegistryProofId={latestResult?.proofRegistryProofId}
           proofRegistryExplorerUrl={latestResult?.proofRegistryExplorerUrl}
+          mintPortfolio={livePortfolio}
+          networkKey={networkKey}
+          showMintAction={!judgeMode}
           decision={latestResult ? {
             current_apy: latestResult.current_apy,
             optimized_apy: latestResult.optimized_apy,

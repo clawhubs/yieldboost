@@ -405,6 +405,7 @@ export default function AgentGallery() {
           proofRegistryTxHash={selectedStrategy?.proofRegistryTxHash ?? undefined}
           proofRegistryProofId={selectedStrategy?.proofRegistryProofId ?? undefined}
           proofRegistryExplorerUrl={selectedStrategy?.proofRegistryExplorerUrl ?? undefined}
+          showMintAction={false}
           decision={
             selectedStrategy
               ? {
