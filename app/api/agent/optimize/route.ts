@@ -39,12 +39,13 @@ export async function POST(req: NextRequest) {
   const body = (await req.json()) as {
     portfolio?: Record<string, number>;
     prompt?: string;
+    networkKey?: "testnet" | "mainnet";
   };
 
   const portfolio = portfolioSchema.parse(body.portfolio);
   const prompt = body.prompt?.trim();
   const networkKey = resolveWalletNetworkKey(
-    req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value,
+    body.networkKey ?? req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value,
   );
 
   const result = buildOptimizationSnapshot(portfolio, prompt);

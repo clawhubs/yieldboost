@@ -42,7 +42,7 @@ import { usePortfolio } from "@/hooks/usePortfolio";
 import {
   getAvailableWalletNetworks,
   getWalletNetworkConfig,
-  WALLET_CONNECT_REQUEST_EVENT,
+  WALLET_NETWORK_CHANGE_REQUEST_EVENT,
   type WalletNetworkKey,
 } from "@/lib/wallet";
 import { buildStrategyPlan } from "@/components/dashboard/strategy-plan";
@@ -325,7 +325,7 @@ export default function DashboardView() {
                             disabled={!network.enabled}
                             onClick={() => {
                               window.dispatchEvent(
-                                new CustomEvent(WALLET_CONNECT_REQUEST_EVENT, {
+                                new CustomEvent(WALLET_NETWORK_CHANGE_REQUEST_EVENT, {
                                   detail: { networkKey: network.key as WalletNetworkKey },
                                 }),
                               );

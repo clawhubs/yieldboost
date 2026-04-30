@@ -44,12 +44,14 @@ import {
 import {
   DEFAULT_WALLET_ADDRESS,
   getAvailableWalletNetworks,
+  getDefaultWalletNetworkKey,
   isWalletAddress,
   JUDGE_MODE_STORAGE_KEY,
   resolveWalletNetworkKey,
   type WalletNetworkKey,
   WALLET_CHANGE_EVENT,
   WALLET_CONNECT_REQUEST_EVENT,
+  WALLET_NETWORK_CHANGE_REQUEST_EVENT,
   WALLET_COOKIE_KEY,
   WALLET_NETWORK_COOKIE_KEY,
   WALLET_NETWORK_STORAGE_KEY,
@@ -106,14 +108,14 @@ export default function Sidebar() {
   const [walletOptions, setWalletOptions] = useState<WalletOption[]>([]);
   const [walletModalOpen, setWalletModalOpen] = useState(false);
   const [connectingId, setConnectingId] = useState<string | null>(null);
-  const [selectedNetwork, setSelectedNetwork] = useState<WalletNetworkKey>("testnet");
+  const [selectedNetwork, setSelectedNetwork] = useState<WalletNetworkKey>(getDefaultWalletNetworkKey);
   const [connected, setConnected] = useState(false);
   const [errorText, setErrorText] = useState<string | null>(null);
 
   const providerRef = useRef<InjectedProvider | null>(null);
   const providerIdRef = useRef<string | null>(null);
   const walletAddrRef = useRef<string | null>(null);
-  const selectedNetworkRef = useRef<WalletNetworkKey>("testnet");
+  const selectedNetworkRef = useRef<WalletNetworkKey>(getDefaultWalletNetworkKey());
   const listenersRef = useRef<{
     accountsChanged: (...args: unknown[]) => void;
     chainChanged: (...args: unknown[]) => void;
@@ -262,6 +264,7 @@ export default function Sidebar() {
       }
 
       broadcastWalletChange(nextWalletAddress, matchedNetwork, providerName, true);
+      router.refresh();
     };
 
     const disconnect = () => {
@@ -275,7 +278,60 @@ export default function Sidebar() {
     providerRef.current = provider;
     providerIdRef.current = providerId;
     listenersRef.current = { accountsChanged, chainChanged, disconnect };
-  }, [applyDisconnectedState, broadcastWalletChange, cleanupProviderListeners]);
+  }, [applyDisconnectedState, broadcastWalletChange, cleanupProviderListeners, router]);
+
+  const applyNetworkSelection = useCallback(async (
+    nextNetwork: WalletNetworkKey,
+    attemptWalletSwitch = false,
+  ) => {
+    setSelectedNetwork(nextNetwork);
+    selectedNetworkRef.current = nextNetwork;
+    localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, nextNetwork);
+    setCookie(WALLET_NETWORK_COOKIE_KEY, nextNetwork);
+
+    const judgeModeActive =
+      typeof window !== "undefined" &&
+      window.localStorage.getItem(JUDGE_MODE_STORAGE_KEY) === "true";
+    const activeWallet =
+      judgeModeActive
+        ? DEFAULT_WALLET_ADDRESS
+        : walletAddrRef.current ?? localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY);
+    const providerName =
+      providerIdRef.current ? getInjectedWalletById(providerIdRef.current)?.name ?? null : null;
+
+    if (
+      attemptWalletSwitch &&
+      !judgeModeActive &&
+      connected &&
+      providerRef.current &&
+      selectedNetworkConfig?.enabled
+    ) {
+      try {
+        const nextConfig =
+          availableNetworks.find((network) => network.key === nextNetwork) ?? selectedNetworkConfig;
+        if (nextConfig?.enabled) {
+          await switchOrAddNetwork(providerRef.current, nextConfig);
+        }
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Failed to switch wallet network.";
+        setErrorText(message);
+      }
+    }
+
+    if (activeWallet && isWalletAddress(activeWallet)) {
+      broadcastWalletChange(
+        activeWallet,
+        nextNetwork,
+        judgeModeActive ? "Judge demo wallet" : providerName,
+        connected && !judgeModeActive,
+      );
+    } else {
+      broadcastWalletChange(undefined, nextNetwork, null, false);
+    }
+
+    router.refresh();
+  }, [broadcastWalletChange, connected, router, selectedNetworkConfig]);
 
   useEffect(() => {
     function refreshWalletOptions() {
@@ -286,9 +342,10 @@ export default function Sidebar() {
     window.addEventListener("focus", refreshWalletOptions);
     const intervalId = window.setInterval(refreshWalletOptions, 1500);
 
-    const savedNetwork = resolveWalletNetworkKey(
-      localStorage.getItem(WALLET_NETWORK_STORAGE_KEY),
-    );
+    const savedNetworkValue = localStorage.getItem(WALLET_NETWORK_STORAGE_KEY);
+    const savedNetwork = savedNetworkValue
+      ? resolveWalletNetworkKey(savedNetworkValue)
+      : getDefaultWalletNetworkKey();
     setSelectedNetwork(savedNetwork);
     setCookie(WALLET_NETWORK_COOKIE_KEY, savedNetwork);
 
@@ -359,9 +416,20 @@ export default function Sidebar() {
       setErrorText(null);
     }
 
+    function handleWalletNetworkChangeRequest(event: Event) {
+      const detail = (event as CustomEvent<{ networkKey?: WalletNetworkKey }>).detail;
+      const nextNetwork = resolveWalletNetworkKey(detail?.networkKey);
+      setWalletModalOpen(false);
+      void applyNetworkSelection(nextNetwork, true);
+    }
+
     window.addEventListener(
       WALLET_CONNECT_REQUEST_EVENT,
       handleWalletConnectRequest as EventListener,
+    );
+    window.addEventListener(
+      WALLET_NETWORK_CHANGE_REQUEST_EVENT,
+      handleWalletNetworkChangeRequest as EventListener,
     );
 
     return () => {
@@ -369,8 +437,12 @@ export default function Sidebar() {
         WALLET_CONNECT_REQUEST_EVENT,
         handleWalletConnectRequest as EventListener,
       );
+      window.removeEventListener(
+        WALLET_NETWORK_CHANGE_REQUEST_EVENT,
+        handleWalletNetworkChangeRequest as EventListener,
+      );
     };
-  }, []);
+  }, [applyNetworkSelection]);
 
   async function connectWallet(option: WalletOption) {
     if (judgeMode) {

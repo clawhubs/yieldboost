@@ -21,6 +21,7 @@ import {
 import {
   DEFAULT_WALLET_ADDRESS,
   type WalletChangeDetail,
+  getDefaultWalletNetworkKey,
   JUDGE_MODE_COOKIE_KEY,
   type WalletNetworkKey,
   JUDGE_MODE_STORAGE_KEY,
@@ -113,7 +114,7 @@ function getClientActiveWalletAddress(fallback?: string): string | undefined {
 
 function buildWalletScopeKey(
   walletAddress?: string,
-  networkKey: WalletNetworkKey = "testnet",
+  networkKey: WalletNetworkKey = getDefaultWalletNetworkKey(),
 ) {
   return walletAddress ? `${walletAddress.toLowerCase()}::${networkKey}` : `disconnected::${networkKey}`;
 }
@@ -223,14 +224,14 @@ function scheduleFollowUpProofRefresh(
 export function AppDataProvider({ children }: { children: ReactNode }) {
   const [portfolio, setPortfolio] = useState<PortfolioResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [networkKey, setNetworkKey] = useState<WalletNetworkKey>("testnet");
+  const [networkKey, setNetworkKey] = useState<WalletNetworkKey>(getDefaultWalletNetworkKey);
   const [judgeMode, setJudgeMode] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizations, setOptimizations] = useState<OptimizationResult[]>([]);
   const [streamingText, setStreamingText] = useState("");
   const [progress, setProgress] = useState<OptimizationState>("analyzing");
   const [latestResult, setLatestResult] = useState<OptimizationResult | null>(null);
-  const activeScopeRef = useRef(buildWalletScopeKey(undefined, "testnet"));
+  const activeScopeRef = useRef(buildWalletScopeKey(undefined, getDefaultWalletNetworkKey()));
   const portfolioRequestIdRef = useRef(0);
   const latestRequestIdRef = useRef(0);
   const latestResultRef = useRef<OptimizationResult | null>(null);
@@ -552,14 +553,14 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       typeof window !== "undefined"
         ? window.localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY) ?? undefined
         : undefined;
-    const savedNetwork =
+    const savedNetworkValue =
       typeof window !== "undefined"
-        ? resolveWalletNetworkKey(
-            window.localStorage.getItem(WALLET_NETWORK_STORAGE_KEY) ?? undefined,
-          )
+        ? window.localStorage.getItem(WALLET_NETWORK_STORAGE_KEY) ?? undefined
         : undefined;
+    const savedNetwork =
+      savedNetworkValue ? resolveWalletNetworkKey(savedNetworkValue) : undefined;
 
-    const initialNetwork = savedNetwork ?? "testnet";
+    const initialNetwork = savedNetwork ?? getDefaultWalletNetworkKey();
     const initialJudgeMode =
       typeof window !== "undefined" &&
       window.localStorage.getItem(JUDGE_MODE_STORAGE_KEY) === "true";
@@ -649,8 +650,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           "Content-Type": "application/json",
           "X-Wallet-Extension-Bypass": "true",
         },
-        credentials: "omit",
-        body: JSON.stringify({ portfolio: portfolioInput, prompt }),
+        credentials: "same-origin",
+        body: JSON.stringify({ portfolio: portfolioInput, prompt, networkKey }),
       });
 
       if (!response.ok) {

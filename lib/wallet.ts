@@ -6,6 +6,7 @@ export const WALLET_COOKIE_KEY = "yb_wallet";
 export const WALLET_NETWORK_COOKIE_KEY = "yb_wallet_network";
 export const WALLET_CHANGE_EVENT = "yb:wallet-change";
 export const WALLET_CONNECT_REQUEST_EVENT = "yb:wallet-connect-request";
+export const WALLET_NETWORK_CHANGE_REQUEST_EVENT = "yb:wallet-network-change-request";
 export const PROOF_STORED_EVENT = "yb:proof-stored";
 export const JUDGE_MODE_COOKIE_KEY = "yb_judge_mode";
 export const JUDGE_MODE_STORAGE_KEY = "yb_judge_mode";
@@ -192,6 +193,21 @@ export function resolveWalletNetworkKey(
   return value === "mainnet" ? "mainnet" : "testnet";
 }
 
+export function getDefaultWalletNetworkKey(): WalletNetworkKey {
+  const explicitClientDefault = process.env.NEXT_PUBLIC_DEFAULT_NETWORK_KEY;
+  if (explicitClientDefault === "mainnet" || explicitClientDefault === "testnet") {
+    return explicitClientDefault;
+  }
+
+  const serverDefault = process.env.ZG_NETWORK_KEY;
+  if (serverDefault === "mainnet" || serverDefault === "testnet") {
+    return serverDefault;
+  }
+
+  const configs = getNetworkConfigs();
+  return configs.mainnet.enabled ? "mainnet" : "testnet";
+}
+
 export function getWalletNetworkConfig(
   networkKey: WalletNetworkKey,
 ): WalletNetworkConfig {
@@ -209,7 +225,7 @@ export function getServer0GNetworkConfig(
 }
 
 export function getServerDefaultNetworkKey(): WalletNetworkKey {
-  return resolveWalletNetworkKey(process.env.ZG_NETWORK_KEY);
+  return getDefaultWalletNetworkKey();
 }
 
 export function getYieldStrategyInftAddress(

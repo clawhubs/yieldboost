@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import {
   DEFAULT_WALLET_ADDRESS,
+  getDefaultWalletNetworkKey,
   JUDGE_MODE_COOKIE_KEY,
   JUDGE_MODE_STORAGE_KEY,
   resolveWalletNetworkKey,
@@ -22,9 +23,10 @@ export default function JudgeModeBootstrap() {
   useEffect(() => {
     enterJudgeMode();
 
-    const preferredNetwork = resolveWalletNetworkKey(
-      window.localStorage.getItem(WALLET_NETWORK_STORAGE_KEY) ?? networkKey,
-    );
+    const savedNetworkValue = window.localStorage.getItem(WALLET_NETWORK_STORAGE_KEY) ?? undefined;
+    const preferredNetwork = savedNetworkValue
+      ? resolveWalletNetworkKey(savedNetworkValue)
+      : networkKey ?? getDefaultWalletNetworkKey();
 
     window.localStorage.setItem(JUDGE_MODE_STORAGE_KEY, "true");
     setCookie(JUDGE_MODE_COOKIE_KEY, "true");
