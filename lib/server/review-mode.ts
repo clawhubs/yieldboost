@@ -1,16 +1,20 @@
 import "server-only";
 
+import { cookies } from "next/headers";
 import {
   DEFAULT_WALLET_ADDRESS,
   getAvailableWalletNetworks,
   getServer0GNetworkConfig,
   getServerDefaultNetworkKey,
   getYieldStrategyInftAddress,
+  resolveWalletNetworkKey,
   sameWalletAddress,
+  WALLET_NETWORK_COOKIE_KEY,
 } from "@/lib/wallet";
 import { getDocsRuntimeStatus } from "@/lib/docs/content";
 import type { StoredProofRecord } from "@/lib/backend-data";
 import {
+  resolveLatestProofForWallet,
   resolveLatestProofForWalletAcrossNetworks,
 } from "@/lib/server/proof-resolution";
 import { getLivePortfolioSnapshot } from "@/lib/server/live-portfolio";
@@ -377,10 +381,15 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   const runtimeStatus = getDocsRuntimeStatus();
   const reviewWallet = DEFAULT_WALLET_ADDRESS;
   const preferredNetwork = getServerDefaultNetworkKey();
-  const latestProof = await resolveLatestProofForWalletAcrossNetworks(reviewWallet);
+  const cookieStore = await cookies();
+  const reviewNetwork = resolveWalletNetworkKey(
+    cookieStore.get(WALLET_NETWORK_COOKIE_KEY)?.value,
+  );
+  const latestProof = await resolveLatestProofForWallet(reviewWallet, reviewNetwork);
   const storedProofs = await getStoredProofs();
   const scopedProofs = storedProofs.filter((proof) =>
-    sameWalletAddress(proof.walletAddress, reviewWallet),
+    sameWalletAddress(proof.walletAddress, reviewWallet) &&
+    proof.networkKey === reviewNetwork,
   );
   const proofCount = latestProof
     ? Math.max(
@@ -395,7 +404,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
           : scopedProofs.length + 1,
       )
     : scopedProofs.length;
-  const proofNetwork = latestProof?.networkKey ?? preferredNetwork;
+  const proofNetwork = latestProof?.networkKey ?? reviewNetwork;
   const judgePortfolio = await getLivePortfolioSnapshot(
     reviewWallet,
     proofNetwork,
@@ -410,7 +419,11 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   const latestExplorer = trimUrl(latestProof?.explorerUrl);
   const latestRegistryExplorer = trimUrl(latestProof?.proofRegistryExplorerUrl);
   const envChecklist = buildEnvChecklist();
-  const mainnetChecklist = buildMainnetChecklist({ runtimeStatus, latestProof });
+  const latestProofAcrossNetworks = await resolveLatestProofForWalletAcrossNetworks(reviewWallet);
+  const mainnetChecklist = buildMainnetChecklist({
+    runtimeStatus,
+    latestProof: latestProofAcrossNetworks,
+  });
   const efficiencyCards: JudgeStatusCard[] = [
     {
       label: "Semantic Cache",
@@ -463,6 +476,15 @@ export async function getJudgePageData(): Promise<JudgePageData> {
       value: reviewWallet,
       helper: "Judge mode is hard-locked to the public demo wallet for consistent review.",
       tone: "teal",
+    },
+    {
+      label: "Review Network",
+      value: getServer0GNetworkConfig(reviewNetwork).label,
+      helper:
+        reviewNetwork === "mainnet"
+          ? "Judge snapshot is currently scoped to mainnet."
+          : "Judge snapshot is currently scoped to testnet.",
+      tone: reviewNetwork === "mainnet" ? "green" : "teal",
     },
   ];
 
