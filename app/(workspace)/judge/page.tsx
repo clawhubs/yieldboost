@@ -11,6 +11,7 @@ import {
 import JudgeModeBootstrap from "@/components/judge/JudgeModeBootstrap";
 import JudgeNetworkSwitcher from "@/components/judge/JudgeNetworkSwitcher";
 import JudgeSnapshotAutoRefresh from "@/components/judge/JudgeSnapshotAutoRefresh";
+import BrowserTimeLabel from "@/components/judge/BrowserTimeLabel";
 import { getJudgePageData } from "@/lib/server/review-mode";
 
 export const dynamic = "force-dynamic";
@@ -194,7 +195,16 @@ export default async function JudgePage() {
                   <div className={`mt-2 text-[18px] font-semibold ${toneClass(card.tone)}`}>
                     {card.value}
                   </div>
-                  <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">{card.helper}</div>
+                  <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">
+                    {card.label === "Proof History" && data.latestProof?.timestamp ? (
+                      <BrowserTimeLabel
+                        value={data.latestProof.timestamp}
+                        prefix="Latest proof recorded"
+                      />
+                    ) : (
+                      card.helper
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -297,7 +307,11 @@ export default async function JudgePage() {
                     Judge wallet: {reviewWalletCard?.value ?? "Pending wallet"}
                   </div>
                   <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">
-                    {latestProofHistoryCard?.helper ?? "No proof timestamp recorded yet."}
+                    <BrowserTimeLabel
+                      value={data.latestProof?.timestamp}
+                      prefix="Latest proof recorded"
+                      emptyLabel={latestProofHistoryCard?.helper ?? "No proof timestamp recorded yet."}
+                    />
                   </div>
                 </div>
 
