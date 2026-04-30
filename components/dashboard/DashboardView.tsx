@@ -45,6 +45,7 @@ import {
   WALLET_CONNECT_REQUEST_EVENT,
   type WalletNetworkKey,
 } from "@/lib/wallet";
+import { buildStrategyPlan } from "@/components/dashboard/strategy-plan";
 
 import { MiniSpark, ImpactBars, ImpactLine, MetricIcon, AgentSideRail } from "@/components/dashboard/DashboardLazySections";
 
@@ -59,14 +60,6 @@ const opportunities = [
   { name: "Move USDC to SaucerSwap LP",   apy: "24.18%", change: "11.24%", icon: Disc3 },
   { name: "Stake 0G in High-Yield Pool",  apy: "18.65%", change: "6.71%",  icon: Globe },
   { name: "Rebalance BONZO to Earn More", apy: "32.10%", change: "5.66%",  icon: HeartHandshake },
-] as const;
-
-const executionSteps = [
-  "Swapping 1,250 USDC to SAUCE",
-  "Adding liquidity to SaucerSwap LP",
-  "Staking 512.5 0G",
-  "Rebalancing BONZO position",
-  "Finalizing & updating stats",
 ] as const;
 
 const agentChecklist = [
@@ -287,6 +280,7 @@ export default function DashboardView() {
   ] as const;
   const activeProgressIndex = progressSteps.findIndex((step) => step.key === progress);
   const showOptimizationModal = isOptimizing || progress === "done";
+  const strategyPlan = useMemo(() => buildStrategyPlan(latestResult), [latestResult]);
 
   return (
     <>
@@ -828,9 +822,12 @@ export default function DashboardView() {
 	              </div>
 
               <div className="yb-card rounded-[14px] px-4 py-4">
-                <div className="text-[12px] font-medium text-white">EXECUTING STRATEGY...</div>
+                <div className="text-[12px] font-medium text-white">PROPOSED EXECUTION PLAN</div>
+                <div className="mt-1 text-[11px] text-[#9faab6]">
+                  Proof-backed recommendation flow, not an automatic on-chain trade.
+                </div>
                 <div className="mt-4 space-y-2">
-                  {executionSteps.map((item) => (
+                  {strategyPlan.map((item) => (
                     <div key={item} className="flex items-center gap-2 text-[13px] text-[#dce4eb]">
                       <Check className="h-4 w-4 text-[#2fe06d]" />
                       <span>{item}</span>
@@ -1046,10 +1043,13 @@ export default function DashboardView() {
               </div>
               <div className="min-w-0 flex-1 rounded-[14px] border border-[#1b242d] bg-[#0b1117] px-4 py-4">
                 <div className="text-[15px] text-white">
-                  {progress === "done" ? "Strategy executed" : "Executing strategy..."}
+                  {progress === "done" ? "Proof-backed execution plan ready" : "Preparing proof-backed execution plan..."}
+                </div>
+                <div className="mt-1 text-[12px] text-[#9faab6]">
+                  Recommendation summary only. No automatic swap or staking transaction is executed here.
                 </div>
                 <div className="mt-4 space-y-3">
-                  {executionSteps.map((item) => (
+                  {strategyPlan.map((item) => (
                     <div key={item} className="flex items-center gap-3 text-[13px] text-[#d7e0e8]">
                       <Check className="h-4 w-4 text-[#2fe06d]" />
                       {item}

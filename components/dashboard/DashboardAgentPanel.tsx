@@ -13,6 +13,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import type { LiveData } from "./types";
+import { buildStrategyPlan } from "@/components/dashboard/strategy-plan";
 
 const agentChecklist = [
   "Scanning wallet & balances",
@@ -20,14 +21,6 @@ const agentChecklist = [
   "Finding best yield opportunities",
   "Simulating strategies",
   "Checking risk & slippage",
-] as const;
-
-const executionSteps = [
-  "Swapping 1,250 USDC to SAUCE",
-  "Adding liquidity to SaucerSwap LP",
-  "Staking 512.5 0G",
-  "Rebalancing BONZO position",
-  "Finalizing & updating stats",
 ] as const;
 
 function AgentRail({ icon: Icon }: { icon: typeof Activity }) {
@@ -44,6 +37,12 @@ interface Props {
 }
 
 export default function DashboardAgentPanel({ live, onOpenProof }: Props) {
+  const strategyPlan = buildStrategyPlan(null).map((item, index) =>
+    index === 0
+      ? `Score the wallet and target a projected APY of ${live.optimizedApy}% from a ${live.currentApy}% baseline.`
+      : item,
+  );
+
   return (
     <aside data-testid="right-agent-panel" className="yb-card rounded-[18px] p-4">
       {/* Agent Header */}
@@ -123,7 +122,7 @@ export default function DashboardAgentPanel({ live, onOpenProof }: Props) {
             className="yb-teal-button mt-5 flex w-full items-center justify-center gap-3 rounded-[12px] px-4 py-4 text-[16px] font-semibold text-[#071217]"
           >
             <Zap className="h-5 w-5" />
-            Execute Optimization
+            Generate Optimization Plan
           </button>
           <div className="mt-4 flex items-center justify-end gap-2 text-[11px] text-[#a4b0bc]">
             <span>10:31 AM</span>
@@ -132,13 +131,16 @@ export default function DashboardAgentPanel({ live, onOpenProof }: Props) {
         </div>
       </div>
 
-      {/* Executing steps */}
+      {/* Proposed plan */}
       <div className="mt-4 flex items-start gap-3">
         <div className="pt-4"><AgentRail icon={Clock3} /></div>
         <div className="glass-inset min-w-0 flex-1 rounded-[14px] px-4 py-4">
-          <div className="text-[15px] text-white">Executing strategy...</div>
+          <div className="text-[15px] text-white">Proposed execution plan</div>
+          <div className="mt-1 text-[12px] text-[#9faab6]">
+            Recommendation summary only. Manual execution still happens outside this UI.
+          </div>
           <div className="mt-4 space-y-3">
-            {executionSteps.map((item) => (
+            {strategyPlan.map((item) => (
               <div key={item} className="flex items-center gap-3 text-[13px] text-[#d7e0e8]">
                 <Check className="h-4 w-4 text-[#2fe06d]" />
                 {item}

@@ -2,6 +2,7 @@
 
 import { Check, CheckCheck, Copy, ExternalLink, Zap } from "lucide-react";
 import type { OptimizationResult } from "@/lib/optimizations";
+import { buildStrategyPlan } from "@/components/dashboard/strategy-plan";
 
 const EXPLORER_BASE = "https://chainscan-galileo.0g.ai";
 
@@ -11,14 +12,6 @@ const defaultProofs = [
   { hash: "0x9b2...dd49", chain: "0G Newton", age: "15 sec ago" },
 ] as const;
 
-const executionSteps = [
-  "Swapping 1,250 USDC to SAUCE",
-  "Adding liquidity to SaucerSwap LP",
-  "Staking 512.5 0G",
-  "Rebalancing BONZO position",
-  "Finalizing & updating stats",
-] as const;
-
 interface Props {
   latestResult: OptimizationResult | null;
   copiedField: string | null;
@@ -26,6 +19,8 @@ interface Props {
 }
 
 export default function DashboardProofRow({ latestResult, copiedField, copyToClipboard }: Props) {
+  const strategyPlan = buildStrategyPlan(latestResult);
+
   return (
     <div className="grid gap-[10px] xl:grid-cols-[276px_278px_minmax(0,1fr)]">
       {/* Transaction Proof */}
@@ -107,10 +102,10 @@ export default function DashboardProofRow({ latestResult, copiedField, copyToCli
         <div className="text-[12px] font-medium text-white">OPTIMIZATION PROGRESS</div>
         <div className="mt-5 flex items-center justify-between">
           {[
-            { label: "Analyzing", done: true },
-            { label: "Optimizing", done: true },
-            { label: "Executing", active: true, step: "3" },
-            { label: "Done", step: "4" },
+            { label: "Analyze", done: true },
+            { label: "Score", done: true },
+            { label: "Proof Sync", active: true, step: "3" },
+            { label: "Ready", step: "4" },
           ].map((step, index) => (
             <div key={step.label} className="relative flex flex-1 flex-col items-center">
               {index < 3 ? (
@@ -133,15 +128,18 @@ export default function DashboardProofRow({ latestResult, copiedField, copyToCli
         </div>
         <div className="mt-5 flex items-center justify-center gap-2 text-[12px] text-[#d6dee6]">
           <Zap className="h-4 w-4 text-[#f7b24c]" />
-          Executed in 8.42 seconds
+          Optimization computed in {(latestResult?.executionSeconds ?? 8.42).toFixed(2)} seconds
         </div>
       </div>
 
       {/* Executing Strategy */}
       <div className="yb-card rounded-[14px] px-4 py-4">
-        <div className="text-[12px] font-medium text-white">EXECUTING STRATEGY...</div>
+        <div className="text-[12px] font-medium text-white">PROPOSED EXECUTION PLAN</div>
+        <div className="mt-1 text-[11px] text-[#9faab6]">
+          Generated from the latest optimization result and proof state.
+        </div>
         <div className="mt-4 space-y-2">
-          {executionSteps.map((item) => (
+          {strategyPlan.map((item) => (
             <div key={item} className="flex items-center gap-2 text-[13px] text-[#dce4eb]">
               <Check className="h-4 w-4 text-[#2fe06d]" />
               <span>{item}</span>
