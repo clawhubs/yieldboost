@@ -4,7 +4,7 @@
 
 <h1 align="center">YieldBoost AI</h1>
 
-<p align="center"><strong>Verifiable yield optimization for Web3 users, with frictionless hackathon audit for judges.</strong></p>
+<p align="center"><strong>Turn idle crypto balances into verifiable yield routes on 0G, with frictionless hackathon audit for judges.</strong></p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Status-Live-14c784?style=for-the-badge" alt="Status Live" />
@@ -33,9 +33,11 @@
   <a href="#roadmap-ya0g-and-proof-of-optimization">Roadmap</a>
 </p>
 
-> YieldBoost AI is now positioned around a live 0G mainnet proof flow: generate a yield optimization result, persist it through 0G infrastructure, and let a judge verify the latest outcome from `/judge` without wallet friction.
+> YieldBoost AI is now positioned around a live 0G mainnet proof flow: detect underused wallet capital, generate a yield optimization result, persist it through 0G infrastructure, and let a judge verify the latest outcome from `/judge` without wallet friction.
 
-YieldBoost AI is a Next.js application that turns a yield optimization run into an externally reviewable proof trail. The active implementation in this repository is now centered on a **mainnet-first** review path across three 0G primitives:
+YieldBoost AI is a Next.js application that helps Web3 users put idle crypto balances to work. Instead of leaving small or underused token allocations sitting unproductive in a wallet, the app analyzes the portfolio, recommends a better low-risk yield route, and turns that optimization run into an externally reviewable proof trail.
+
+The active implementation in this repository is now centered on a **mainnet-first** review path across three 0G primitives:
 
 - **0G Compute** for TEE-ready inference when provider credentials are configured.
 - **0G Storage** for storing optimization proof payloads.
@@ -70,7 +72,15 @@ What this means in practice:
 
 Most DeFi dashboards can claim "AI". Very few make the output easy to audit.
 
-YieldBoost AI is designed around **verifiable AI**, not just recommendation UX:
+YieldBoost AI is designed around a practical Web3 problem: users often hold crypto balances that are too small, forgotten, or operationally awkward to manage manually. Those idle balances create opportunity cost.
+
+YieldBoost turns that idle capital into an actionable, proof-backed yield route:
+
+- It reads the wallet snapshot and identifies underused balance exposure.
+- It recommends a higher-yield route such as LP, staking, or safer rebalance opportunities based on the active strategy model.
+- It stores the optimization output as a verifiable artifact instead of leaving it as a temporary UI suggestion.
+
+The project is also designed around **verifiable AI**, not just recommendation UX:
 
 - The optimization result is serialized and uploaded through the 0G mainnet storage pipeline by default.
 - The latest run is retained in a runtime proof ledger.

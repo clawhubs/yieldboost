@@ -108,21 +108,21 @@ export default async function JudgePage() {
               Mainnet review starts here.
             </h1>
             <p className="mt-3 max-w-3xl text-[15px] leading-7 text-[#9daab6]">
-              YieldBoost AI finds a better low-risk yield route, shows the decision clearly, and keeps the latest wallet proof ready for external verification. This page stays read-only so a judge can inspect the current result without rerunning the flow.
+              YieldBoost AI turns idle crypto balances into a better low-risk yield route, shows the decision clearly, and keeps the latest wallet proof ready for external verification. This page stays read-only so a judge can inspect the current result without rerunning the flow.
             </p>
             <div className="mt-5 grid w-full gap-[10px] md:grid-cols-3">
               {[
                 {
-                  title: "What to look at",
+                  title: "What it solves",
+                  body: "Idle or underused wallet balances are routed into a clearer yield opportunity instead of sitting unproductive.",
+                },
+                {
+                  title: "What to audit",
                   body: "Latest route, APY lift, snapshot value, and the proof receipt tied to the current judge wallet.",
                 },
                 {
                   title: "What is live",
                   body: "0G Mainnet proof data, explorer links, and ProofRegistry anchoring from the latest recorded run.",
-                },
-                {
-                  title: "What is kept secondary",
-                  body: "Operational readiness, deeper docs, and internal setup checks are intentionally kept out of the first judging screen.",
                 },
               ].map((item) => (
                 <div key={item.title} className="glass-inset rounded-[14px] px-4 py-4">
