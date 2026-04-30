@@ -199,7 +199,7 @@ export default async function JudgePage() {
               ))}
             </div>
 
-            <div className="mt-5 grid gap-[10px] lg:grid-cols-[minmax(0,1fr)_290px]">
+            <div className="mt-5 grid items-start gap-[10px] lg:grid-cols-[minmax(0,1fr)_290px]">
               <div className="glass-inset rounded-[16px] px-4 py-4">
                 <div className="text-[12px] font-medium text-white">Verification payload</div>
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -245,51 +245,68 @@ export default async function JudgePage() {
                       <div className="mt-1 text-[13px] text-[#d6dee6]">No registry tx yet</div>
                     )}
                   </div>
-                  <div>
-                    <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Reasoning snapshot</div>
-                    <div className="mt-1 text-[13px] leading-6 text-[#d6dee6]">
-                      {data.latestProof?.decision.reasoning ?? "No stored reasoning available yet."}
-                    </div>
+                </div>
+                <div className="mt-4">
+                  <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Reasoning snapshot</div>
+                  <div className="mt-2 max-w-4xl text-[13px] leading-7 text-[#d6dee6]">
+                    {data.latestProof?.decision.reasoning ?? "No stored reasoning available yet."}
                   </div>
                 </div>
               </div>
 
-              <div className="yb-soft-card rounded-[16px] px-4 py-4">
-                <div className="text-[12px] font-medium text-white">Judge wallet</div>
-                <div className="mt-3 break-all text-[14px] font-semibold text-white">
-                  {reviewWalletCard?.value ?? "Pending wallet"}
-                </div>
-                <div className="mt-2 text-[12px] leading-6 text-[#9faab6]">
-                  {reviewWalletCard?.helper ?? "Judge mode follows the wallet active in this browser session."}
-                </div>
-                <div className="mt-4 grid gap-3">
-                  <div className="glass-inset rounded-[12px] px-3 py-3">
-                    <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Proof store</div>
-                    <div className={`mt-1 text-[14px] font-semibold ${toneClass(proofStoreCard?.tone)}`}>
-                      {proofStoreValue}
-                    </div>
-                    <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">{proofStoreCard?.helper}</div>
+              <div className="grid gap-3">
+                <div className="yb-soft-card rounded-[16px] px-4 py-4">
+                  <div className="text-[12px] font-medium text-white">Judge wallet</div>
+                  <div className="mt-3 break-all text-[14px] font-semibold text-white">
+                    {reviewWalletCard?.value ?? "Pending wallet"}
                   </div>
-                  <div className="glass-inset rounded-[12px] px-3 py-3">
-                    <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Pinned wallet</div>
-                    <div className="mt-1 break-all text-[13px] text-white">
-                      Judge wallet: {reviewWalletCard?.value ?? "Pending wallet"}
-                    </div>
-                    <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">
-                      {latestProofHistoryCard?.helper ?? "No proof timestamp recorded yet."}
-                    </div>
+                  <div className="mt-2 text-[12px] leading-6 text-[#9faab6]">
+                    {reviewWalletCard?.helper ?? "Judge mode follows the wallet active in this browser session."}
                   </div>
-                  {inftComponent?.address ? (
+                  <div className="mt-4 grid gap-3">
                     <div className="glass-inset rounded-[12px] px-3 py-3">
-                      <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">INFT contract</div>
+                      <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Proof store</div>
+                      <div className={`mt-1 text-[14px] font-semibold ${toneClass(proofStoreCard?.tone)}`}>
+                        {proofStoreValue}
+                      </div>
+                      <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">{proofStoreCard?.helper}</div>
+                    </div>
+                    <div className="glass-inset rounded-[12px] px-3 py-3">
+                      <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Pinned wallet</div>
                       <div className="mt-1 break-all text-[13px] text-white">
-                        {inftComponent.address}
+                        Judge wallet: {reviewWalletCard?.value ?? "Pending wallet"}
                       </div>
                       <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">
-                        Mainnet Agent NFT contract address used by the app.
+                        {latestProofHistoryCard?.helper ?? "No proof timestamp recorded yet."}
                       </div>
                     </div>
-                  ) : null}
+                    {inftComponent?.address ? (
+                      <div className="glass-inset rounded-[12px] px-3 py-3">
+                        <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">INFT contract</div>
+                        <div className="mt-1 break-all text-[13px] text-white">
+                          {inftComponent.address}
+                        </div>
+                        <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">
+                          Mainnet Agent NFT contract address used by the app.
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div className="glass-inset rounded-[16px] px-4 py-4">
+                  <div className="text-[12px] font-medium text-white">Runtime efficiency</div>
+                  <div className="mt-3 grid gap-3">
+                    {data.efficiencyCards.map((card) => (
+                      <div key={card.label} className="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">{card.label}</div>
+                          <div className={`text-[12px] font-semibold ${toneClass(card.tone)}`}>{card.value}</div>
+                        </div>
+                        <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">{card.helper}</div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>

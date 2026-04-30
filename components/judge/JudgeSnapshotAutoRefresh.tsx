@@ -9,7 +9,7 @@ import {
   sameWalletAddress,
 } from "@/lib/wallet";
 
-const REFRESH_INTERVAL_MS = 15000;
+const MIN_REFRESH_GAP_MS = 12000;
 
 function shouldRefreshForWallet(walletAddress: unknown) {
   if (typeof walletAddress !== "string") {
@@ -23,7 +23,15 @@ export default function JudgeSnapshotAutoRefresh() {
   const router = useRouter();
 
   useEffect(() => {
+    let lastRefreshAt = 0;
+
     function refreshJudgeSnapshot() {
+      const now = Date.now();
+      if (now - lastRefreshAt < MIN_REFRESH_GAP_MS) {
+        return;
+      }
+
+      lastRefreshAt = now;
       router.refresh();
     }
 
@@ -50,12 +58,11 @@ export default function JudgeSnapshotAutoRefresh() {
       if (document.visibilityState === "visible") {
         refreshJudgeSnapshot();
       }
-    }, REFRESH_INTERVAL_MS);
+    }, 45000);
 
     window.addEventListener(PROOF_STORED_EVENT, handleProofStored as EventListener);
     window.addEventListener("storage", handleStorage);
     window.addEventListener("focus", refreshJudgeSnapshot);
-    window.addEventListener("pageshow", refreshJudgeSnapshot);
     document.addEventListener("visibilitychange", handleVisibility);
 
     return () => {
@@ -63,7 +70,6 @@ export default function JudgeSnapshotAutoRefresh() {
       window.removeEventListener(PROOF_STORED_EVENT, handleProofStored as EventListener);
       window.removeEventListener("storage", handleStorage);
       window.removeEventListener("focus", refreshJudgeSnapshot);
-      window.removeEventListener("pageshow", refreshJudgeSnapshot);
       document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, [router]);

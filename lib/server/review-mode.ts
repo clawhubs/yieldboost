@@ -57,6 +57,7 @@ export interface JudgePageData {
   statusCards: JudgeStatusCard[];
   latestProof: StoredProofRecord | null;
   latestProofCards: JudgeStatusCard[];
+  efficiencyCards: JudgeStatusCard[];
   components: JudgeComponentStatus[];
   mainnetChecklist: JudgeChecklistItem[];
   envChecklist: JudgeEnvItem[];
@@ -137,6 +138,14 @@ function toHealthStatus(value: boolean): HealthStatus {
 
 function readEnv(name: string) {
   return process.env[name];
+}
+
+function hasAlibabaEmbeddingConfig() {
+  return Boolean(
+    hasValue(readEnv("ALIBABA_API_KEY")) &&
+      hasValue(readEnv("ALIBABA_BASE_URL")) &&
+      hasValue(readEnv("ALIBABA_EMBEDDING_MODEL")),
+  );
 }
 
 function buildEnvChecklist() {
@@ -374,6 +383,28 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   const latestRegistryExplorer = trimUrl(latestProof?.proofRegistryExplorerUrl);
   const envChecklist = buildEnvChecklist();
   const mainnetChecklist = buildMainnetChecklist({ runtimeStatus, latestProof });
+  const efficiencyCards: JudgeStatusCard[] = [
+    {
+      label: "Semantic Cache",
+      value: "Active",
+      helper: "Scoped by wallet, network, normalized prompt, and portfolio digest before new inference runs.",
+      tone: "green",
+    },
+    {
+      label: "Embedding Reuse",
+      value: hasAlibabaEmbeddingConfig() ? "Active" : "Pending",
+      helper: hasAlibabaEmbeddingConfig()
+        ? "Alibaba text-embedding-v4 can reuse similar optimization requests for the same wallet and asset signature."
+        : "Enable Alibaba embedding envs to turn similarity-based reuse on.",
+      tone: hasAlibabaEmbeddingConfig() ? "teal" : "amber",
+    },
+    {
+      label: "Prompt Compression",
+      value: "Enabled",
+      helper: "The optimizer rewrites noisy prompts into a compact intent-and-constraint format before compute.",
+      tone: "teal",
+    },
+  ];
 
   const statusCards: JudgeStatusCard[] = [
     {
@@ -579,6 +610,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
     statusCards,
     latestProof,
     latestProofCards,
+    efficiencyCards,
     components,
     mainnetChecklist,
     envChecklist,
