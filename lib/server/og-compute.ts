@@ -4,7 +4,10 @@
  */
 
 import { ethers } from "ethers";
-import { createZGComputeNetworkBroker } from "@0glabs/0g-serving-broker";
+import {
+  createZGComputeNetworkBroker,
+  InferenceVerifier,
+} from "@0glabs/0g-serving-broker";
 import {
   getServer0GNetworkConfig,
   getServerDefaultNetworkKey,
@@ -22,6 +25,8 @@ export interface TEEAttestation {
   provider: string;
   model: string;
   timestamp: string;
+  verificationMethod: "broker-response-signature";
+  signedTextMatches: boolean;
 }
 
 export interface ComputeResult {
@@ -56,6 +61,14 @@ const PREFERRED_CHATBOT_MODELS = [
   "zai-org/GLM-5-FP8",
   "qwen3.6-plus",
 ];
+
+function normalizeSignedText(text: string) {
+  return text.replace(/\r\n/g, "\n").trim();
+}
+
+function getBrokerBaseUrl(endpoint: string) {
+  return endpoint.replace(/\/v1\/proxy\/?$/, "");
+}
 
 function extractErrorMessage(error: unknown) {
   if (error instanceof Error && error.message) {
@@ -317,18 +330,50 @@ export async function runTEEInference(
     }
 
     const data = await response.json();
+    const chatId = typeof data.id === "string" ? data.id : "";
     const text = data.choices?.[0]?.message?.content || "";
 
     console.log(`0G Compute: Inference completed successfully`);
 
-    // Create TEE attestation (simplified - in production would verify via processResponse)
-    const attestation: TEEAttestation = {
-      chatId: `tee_${Date.now()}`,
-      isValid: true,
-      provider: providerAddress,
-      model,
-      timestamp: new Date().toISOString(),
-    };
+    let attestation: TEEAttestation | undefined;
+    if (chatId) {
+      let signatureVerified = false;
+      let signedTextMatches = false;
+
+      try {
+        const verificationResult = await broker.inference.processResponse(
+          providerAddress,
+          chatId,
+          undefined,
+        );
+        signatureVerified = verificationResult === true;
+      } catch (verificationError) {
+        console.warn("0G Compute: broker response verification failed", verificationError);
+      }
+
+      try {
+        const responseSignature = await InferenceVerifier.fetchSignatureByChatID(
+          getBrokerBaseUrl(endpoint),
+          chatId,
+          model,
+        );
+        signedTextMatches =
+          normalizeSignedText(responseSignature.text) ===
+          normalizeSignedText(text);
+      } catch (signatureLookupError) {
+        console.warn("0G Compute: signature lookup failed", signatureLookupError);
+      }
+
+      attestation = {
+        chatId,
+        isValid: signatureVerified && signedTextMatches,
+        provider: providerAddress,
+        model,
+        timestamp: new Date().toISOString(),
+        verificationMethod: "broker-response-signature",
+        signedTextMatches,
+      };
+    }
 
     return {
       text,

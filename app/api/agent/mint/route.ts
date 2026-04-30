@@ -28,6 +28,16 @@ const mintRequestSchema = z.object({
   }),
   storageCid: z.string().optional(),
   txHash: z.string().optional(),
+  teeAttestation: z
+    .object({
+      chatId: z.string(),
+      provider: z.string(),
+      model: z.string(),
+      timestamp: z.string(),
+      isValid: z.boolean(),
+      verificationMethod: z.string().optional(),
+    })
+    .optional(),
 });
 
 /**
@@ -36,7 +46,14 @@ const mintRequestSchema = z.object({
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { portfolio, walletAddress, decision, storageCid, txHash } = mintRequestSchema.parse(body);
+    const {
+      portfolio,
+      walletAddress,
+      decision,
+      storageCid,
+      txHash,
+      teeAttestation,
+    } = mintRequestSchema.parse(body);
     const networkKey = resolveWalletNetworkKey(
       req.nextUrl.searchParams.get("network") ??
         req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value,
@@ -91,18 +108,28 @@ export async function POST(req: NextRequest) {
       decision,
       storageCid,
       txHash,
+      teeAttestation,
       timestamp: Date.now(),
     });
 
     // Calculate APY in basis points
     const apyBps = Math.round(decision.optimized_apy * 100);
 
-    // Generate attestation hash (if TEE metadata available)
-    const attestationHash = generateAttestationHash(
-      contentHash,
-      Date.now(),
-      "0g-compute"
-    );
+    const attestationHash =
+      teeAttestation?.isValid &&
+      teeAttestation.chatId &&
+      teeAttestation.provider &&
+      teeAttestation.model
+        ? generateAttestationHash({
+            contentHash,
+            timestamp: teeAttestation.timestamp,
+            provider: teeAttestation.provider,
+            model: teeAttestation.model,
+            chatId: teeAttestation.chatId,
+            verified: teeAttestation.isValid,
+            verificationMethod: teeAttestation.verificationMethod,
+          })
+        : ethers.ZeroHash;
 
     // Contract ABI (minimal for minting)
     const inftAbi = [

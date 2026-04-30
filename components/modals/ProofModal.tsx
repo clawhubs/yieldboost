@@ -524,6 +524,23 @@ export default function ProofModal({
                               decision,
                               storageCid: activeProof?.cid,
                               txHash: activeProof?.txHash,
+                              teeAttestation:
+                                activeProof?.teeChatId &&
+                                activeProof?.teeProvider &&
+                                activeProof?.teeModel &&
+                                typeof activeProof?.teeVerified === "boolean"
+                                  ? {
+                                      chatId: activeProof.teeChatId,
+                                      provider: activeProof.teeProvider,
+                                      model: activeProof.teeModel,
+                                      timestamp:
+                                        activeProof.timestamp ??
+                                        new Date().toISOString(),
+                                      isValid: activeProof.teeVerified,
+                                      verificationMethod:
+                                        "broker-response-signature",
+                                    }
+                                  : undefined,
                             }),
                           },
                         );

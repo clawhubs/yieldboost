@@ -268,10 +268,11 @@ In practice, the route now tries:
 
 So the honest positioning is now: **YieldBoost AI actively reduces repeated token spend and prompt bloat while preserving the same proof-backed output flow**.
 
-### Implementation Honesty
+### Integrity Hardening
 
-- The current INFT metadata helper in [`lib/server/encryption.ts`](lib/server/encryption.ts) is a **placeholder** that base64-encodes the payload. It should not be presented as production-grade encryption yet.
-- The current 0G Compute attestation object is **TEE-oriented runtime metadata**, not a full cryptographic verification pipeline.
+- **Agent NFT metadata encryption** now uses **AES-256-GCM** in [`lib/server/encryption.ts`](lib/server/encryption.ts), with a required `STRATEGY_METADATA_ENCRYPTION_KEY` and a backward-compatible decrypt path for earlier base64 test payloads.
+- **0G Compute response validation** now uses the broker verification path in [`lib/server/og-compute.ts`](lib/server/og-compute.ts): the app verifies the returned chat ID through the broker and confirms the signed response body matches the text surfaced in the UI before marking the proof as TEE-verified.
+- **Agent NFT attestation hashes** are now derived from the runtime attestation payload when a verified 0G Compute result is present, rather than from a generic placeholder string.
 
 ## Honest Fallback Design
 
@@ -348,6 +349,7 @@ ALIBABA_BASE_URL=https://dashscope-intl.aliyuncs.com/compatible-mode/v1
 ALIBABA_MODEL=qwen3.6-plus-2026-04-02
 ALIBABA_EMBEDDING_MODEL=text-embedding-v4
 ALIBABA_EMBEDDING_DIMENSION=512
+STRATEGY_METADATA_ENCRYPTION_KEY=<64_hex_or_32_byte_base64_secret>
 ```
 
 ### 3. Run the app
