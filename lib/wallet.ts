@@ -243,6 +243,21 @@ export function getYieldStrategyInftAddress(
   return process.env.YIELD_STRATEGY_INFT_ADDRESS;
 }
 
+export function getYieldStrategyAttestationOracleAddress(
+  value: string | null | undefined,
+) {
+  const networkKey = resolveWalletNetworkKey(value);
+
+  if (networkKey === "mainnet") {
+    return (
+      process.env.YIELD_STRATEGY_ATTESTATION_ORACLE_MAINNET_ADDRESS ??
+      process.env.YIELD_STRATEGY_ATTESTATION_ORACLE_ADDRESS
+    );
+  }
+
+  return process.env.YIELD_STRATEGY_ATTESTATION_ORACLE_ADDRESS;
+}
+
 export function isWalletAddress(value: string | null | undefined) {
   return Boolean(value && /^0x[a-fA-F0-9]{40}$/.test(value));
 }

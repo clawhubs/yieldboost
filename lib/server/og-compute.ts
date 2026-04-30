@@ -52,6 +52,10 @@ type ComputeServiceRow = [
   boolean,
 ];
 
+interface CandidateProvider {
+  address: string;
+}
+
 const brokerInstances: Partial<Record<WalletNetworkKey, ZGBroker>> = {};
 const MIN_INFERENCE_SUBACCOUNT_FUND = BigInt(10 ** 18);
 const COMPUTE_REQUEST_TIMEOUT_MS = 15_000;
@@ -139,6 +143,58 @@ function pickPreferredChatbotService(services: ComputeServiceRow[]) {
   return enabledChatbots[0];
 }
 
+function getOrderedCandidateProviders(
+  services: ComputeServiceRow[],
+  preferredAddress?: string,
+) {
+  const enabledChatbots = services.filter(
+    (service) => service[1] === "chatbot" && Boolean(service[10]),
+  );
+  const ordered: CandidateProvider[] = [];
+  const seen = new Set<string>();
+
+  function push(service: ComputeServiceRow | undefined) {
+    if (!service) return;
+    const address = service[0];
+    if (seen.has(address)) return;
+    seen.add(address);
+    ordered.push({
+      address,
+    });
+  }
+
+  if (preferredAddress) {
+    push(enabledChatbots.find((service) => service[0] === preferredAddress));
+  }
+
+  for (const model of PREFERRED_CHATBOT_MODELS) {
+    push(enabledChatbots.find((service) => service[6] === model));
+  }
+
+  for (const service of enabledChatbots) {
+    push(service);
+  }
+
+  return ordered.slice(0, 4);
+}
+
+async function hasInferenceSubAccount(
+  broker: ZGBroker,
+  providerAddress: string,
+) {
+  try {
+    await broker.inference.getAccount(providerAddress);
+    return true;
+  } catch (error) {
+    const message = extractErrorMessage(error);
+    if (/AccountNotExists|Account does not exist|Sub-account not found/i.test(message)) {
+      return false;
+    }
+
+    throw error;
+  }
+}
+
 async function resolveActiveProviderAddress(
   broker: ZGBroker,
   networkKey: WalletNetworkKey,
@@ -167,6 +223,21 @@ async function resolveActiveProviderAddress(
     `0G Compute: Configured provider ${configuredAddress} is unavailable on ${networkKey}; using live service ${fallbackAddress} (${fallbackService[6]}).`,
   );
   return fallbackAddress;
+}
+
+async function resolveCandidateProviders(
+  broker: ZGBroker,
+  networkKey: WalletNetworkKey,
+  configuredAddress: string,
+) {
+  const services = (await broker.inference.listService()) as ComputeServiceRow[];
+  const preferredAddress = await resolveActiveProviderAddress(
+    broker,
+    networkKey,
+    configuredAddress,
+  );
+
+  return getOrderedCandidateProviders(services, preferredAddress);
 }
 
 /**
@@ -272,113 +343,145 @@ export async function runTEEInference(
 
     const provider = new ethers.JsonRpcProvider(networkConfig.rpcUrl);
     const wallet = new ethers.Wallet(privateKey, provider);
-    const providerAddress = await resolveActiveProviderAddress(
+    const candidateProviders = await resolveCandidateProviders(
       broker,
       networkKey,
       configuredProviderAddress,
     );
+    let lastInferenceError = "No compute providers were available.";
 
-    await ensureInferenceSubAccount(broker, providerAddress, wallet);
-
-    console.log(`0G Compute: Getting service metadata for provider ${providerAddress}`);
-
-    // Get service metadata
-    const { endpoint, model } = await broker.inference.getServiceMetadata(providerAddress);
-    console.log(`0G Compute: Service endpoint ${endpoint}, model ${model}`);
-
-    // Generate auth headers
-    const headers = await broker.inference.getRequestHeaders(providerAddress, JSON.stringify({
-      model,
-      messages: [{ role: "user", content: prompt }],
-    }));
-
-    console.log(`0G Compute: Making inference request`);
-
-    // Make OpenAI-compatible request
-    const response = await fetch(`${endpoint}/chat/completions`, {
-      method: "POST",
-      signal: AbortSignal.timeout(COMPUTE_REQUEST_TIMEOUT_MS),
-      headers: {
-        "Content-Type": "application/json",
-        ...headers,
-      },
-      body: JSON.stringify({
-        model,
-        messages: [
-          {
-            role: "system",
-            content: "You are YieldBoost AI. Reply in under 60 words. Be concise. Mention 0G Compute Network and 0G Storage. Do not include chain-of-thought.",
-          },
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        max_tokens: 512,
-        temperature: 0.2,
-      }),
-    });
-
-    if (!response.ok) {
-      const responseBody = await response.text();
-      console.error(`0G Compute: Inference request failed with status ${response.status}`, responseBody);
-      return {
-        text: "",
-        provider: "fallback",
-        error: `Inference HTTP ${response.status}: ${responseBody.slice(0, 240)}`,
-      };
-    }
-
-    const data = await response.json();
-    const chatId = typeof data.id === "string" ? data.id : "";
-    const text = data.choices?.[0]?.message?.content || "";
-
-    console.log(`0G Compute: Inference completed successfully`);
-
-    let attestation: TEEAttestation | undefined;
-    if (chatId) {
-      let signatureVerified = false;
-      let signedTextMatches = false;
+    for (let index = 0; index < candidateProviders.length; index += 1) {
+      const candidateProvider = candidateProviders[index];
+      const providerAddress = candidateProvider.address;
 
       try {
-        const verificationResult = await broker.inference.processResponse(
-          providerAddress,
-          chatId,
-          undefined,
-        );
-        signatureVerified = verificationResult === true;
-      } catch (verificationError) {
-        console.warn("0G Compute: broker response verification failed", verificationError);
-      }
+        if (index === 0) {
+          await ensureInferenceSubAccount(broker, providerAddress, wallet);
+        } else {
+          const hasAccount = await hasInferenceSubAccount(broker, providerAddress);
+          if (!hasAccount) {
+            console.warn(
+              `0G Compute: Skipping fallback provider ${providerAddress} because no inference sub-account exists for it yet.`,
+            );
+            continue;
+          }
+        }
 
-      try {
-        const responseSignature = await InferenceVerifier.fetchSignatureByChatID(
-          getBrokerBaseUrl(endpoint),
-          chatId,
+        console.log(`0G Compute: Getting service metadata for provider ${providerAddress}`);
+        const { endpoint, model } = await broker.inference.getServiceMetadata(providerAddress);
+        console.log(`0G Compute: Service endpoint ${endpoint}, model ${model}`);
+
+        const requestBody = JSON.stringify({
           model,
-        );
-        signedTextMatches =
-          normalizeSignedText(responseSignature.text) ===
-          normalizeSignedText(text);
-      } catch (signatureLookupError) {
-        console.warn("0G Compute: signature lookup failed", signatureLookupError);
-      }
+          messages: [
+            {
+              role: "system",
+              content: "You are YieldBoost AI. Reply in under 60 words. Be concise. Mention 0G Compute Network and 0G Storage. Do not include chain-of-thought.",
+            },
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+          max_tokens: 512,
+          temperature: 0.2,
+        });
 
-      attestation = {
-        chatId,
-        isValid: signatureVerified && signedTextMatches,
-        provider: providerAddress,
-        model,
-        timestamp: new Date().toISOString(),
-        verificationMethod: "broker-response-signature",
-        signedTextMatches,
-      };
+        const headers = await broker.inference.getRequestHeaders(
+          providerAddress,
+          requestBody,
+        );
+
+        console.log(`0G Compute: Making inference request via ${providerAddress}`);
+        const response = await fetch(`${endpoint}/chat/completions`, {
+          method: "POST",
+          signal: AbortSignal.timeout(COMPUTE_REQUEST_TIMEOUT_MS),
+          headers: {
+            "Content-Type": "application/json",
+            ...headers,
+          },
+          body: requestBody,
+        });
+
+        if (!response.ok) {
+          const responseBody = await response.text();
+          lastInferenceError = `Inference HTTP ${response.status}: ${responseBody.slice(0, 240)}`;
+          console.error(
+            `0G Compute: Inference request failed for provider ${providerAddress} with status ${response.status}`,
+            responseBody,
+          );
+          continue;
+        }
+
+        const data = await response.json();
+        const chatId = typeof data.id === "string" ? data.id : "";
+        const text = data.choices?.[0]?.message?.content || "";
+
+        if (!text) {
+          lastInferenceError = `Provider ${providerAddress} returned an empty response body.`;
+          continue;
+        }
+
+        console.log(`0G Compute: Inference completed successfully`);
+
+        let attestation: TEEAttestation | undefined;
+        if (chatId) {
+          let signatureVerified = false;
+          let signedTextMatches = false;
+
+          try {
+            const verificationResult = await broker.inference.processResponse(
+              providerAddress,
+              chatId,
+              undefined,
+            );
+            signatureVerified = verificationResult === true;
+          } catch (verificationError) {
+            console.warn("0G Compute: broker response verification failed", verificationError);
+          }
+
+          try {
+            const responseSignature = await InferenceVerifier.fetchSignatureByChatID(
+              getBrokerBaseUrl(endpoint),
+              chatId,
+              model,
+            );
+            signedTextMatches =
+              normalizeSignedText(responseSignature.text) ===
+              normalizeSignedText(text);
+          } catch (signatureLookupError) {
+            console.warn("0G Compute: signature lookup failed", signatureLookupError);
+          }
+
+          attestation = {
+            chatId,
+            isValid: signatureVerified && signedTextMatches,
+            provider: providerAddress,
+            model,
+            timestamp: new Date().toISOString(),
+            verificationMethod: "broker-response-signature",
+            signedTextMatches,
+          };
+        }
+
+        return {
+          text,
+          attestation,
+          provider: "0g-tee",
+        };
+      } catch (candidateError) {
+        lastInferenceError = extractErrorMessage(candidateError);
+        console.warn(
+          `0G Compute: candidate provider ${providerAddress} failed`,
+          candidateError,
+        );
+      }
     }
 
     return {
-      text,
-      attestation,
-      provider: "0g-tee",
+      text: "",
+      provider: "fallback",
+      error: lastInferenceError,
     };
   } catch (error) {
     console.error("0G Compute: Inference error", error);

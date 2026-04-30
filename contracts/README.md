@@ -2,7 +2,8 @@
 
 ## Files
 - `YieldStrategyINFT.sol` - Main ERC-7857 compliant Strategy NFT contract
-- `MockOracle.sol` - Mock oracle for TEE verification testing
+- `AttestationRegistryOracle.sol` - On-chain registry for broker-verified attestation hashes
+- `MockOracle.sol` - Mock oracle for local testing only
 
 ## Deployment Options
 
@@ -24,30 +25,37 @@ npx hardhat compile
 npx hardhat deploy --network 0g_testnet
 ```
 
-### Option 3: Direct deployment script (coming soon)
-- `scripts/deploy-inft.cjs` - Will be completed with proper compilation setup
+### Option 3: Direct deployment scripts
+- `scripts/deploy-inft.cjs`
+- `scripts/deploy-attestation-oracle.cjs`
+- `scripts/configure-inft-oracle.cjs`
 
 ## Contract Features
 
 ### YieldStrategyINFT
 - ERC-721 NFT representing yield strategies
 - Encrypted strategy metadata stored on 0G Storage
-- TEE verification via oracle (optional)
+- TEE verification via oracle (optional, now supported by the AttestationRegistryOracle flow)
 - Authorization system for strategy usage
 - APY tracking in basis points
 
+### AttestationRegistryOracle
+- Stores attestation hashes that already passed broker-backed runtime verification
+- Lets `YieldStrategyINFT` mark a minted strategy as `verified=true` on-chain
+- Can be configured after deployment without redeploying the INFT contract
+
 ### MockOracle
-- Simple oracle that always returns true for testing
-- Used for testnet before real TEE oracle is available
+- Simple oracle that always returns true for local testing
+- Not recommended for production or hackathon submission proof
 
 ## Environment Variables Needed
 ```bash
 YIELD_STRATEGY_INFT_ADDRESS=<deployed_contract_address>
-MOCK_ORACLE_ADDRESS=<deployed_oracle_address>
+YIELD_STRATEGY_ATTESTATION_ORACLE_ADDRESS=<deployed_oracle_address>
 ```
 
 ## Next Steps
-1. Deploy contracts to 0G testnet
-2. Save addresses to `.env.local`
-3. Build API routes for minting
-4. Create UI for agent gallery
+1. Deploy `YieldStrategyINFT`
+2. Deploy `AttestationRegistryOracle`
+3. Point the INFT contract to the oracle with `setOracle(...)`
+4. Save the addresses to `.env.local` or Vercel envs

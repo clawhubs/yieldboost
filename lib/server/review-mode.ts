@@ -288,6 +288,12 @@ function buildEnvChecklist() {
       status: hasValue(readEnv("YIELD_STRATEGY_INFT_MAINNET_ADDRESS")) ? "set" : "optional",
       detail: "Recommended once mainnet cutover is active so testnet and mainnet contract addresses do not share one env.",
     },
+    {
+      name: "YIELD_STRATEGY_ATTESTATION_ORACLE_MAINNET_ADDRESS",
+      requiredFor: "On-chain INFT attestation verification",
+      status: hasValue(readEnv("YIELD_STRATEGY_ATTESTATION_ORACLE_MAINNET_ADDRESS")) ? "set" : "optional",
+      detail: "Lets Agent NFT minting register broker-verified attestation hashes on-chain before the INFT contract marks the strategy as verified.",
+    },
   ];
 
   return items;
@@ -312,6 +318,9 @@ function buildMainnetChecklist({
   const hasInft =
     hasValue(readEnv("YIELD_STRATEGY_INFT_MAINNET_ADDRESS")) ||
     hasValue(readEnv("YIELD_STRATEGY_INFT_ADDRESS"));
+  const hasAttestationOracle =
+    hasValue(readEnv("YIELD_STRATEGY_ATTESTATION_ORACLE_MAINNET_ADDRESS")) ||
+    hasValue(readEnv("YIELD_STRATEGY_ATTESTATION_ORACLE_ADDRESS"));
 
   return [
     {
@@ -346,9 +355,11 @@ function buildMainnetChecklist({
     },
     {
       label: "Agent NFT contract path",
-      status: hasInft ? "partial" : "pending",
+      status: hasInft && hasAttestationOracle ? "configured" : hasInft ? "partial" : "pending",
       detail: hasInft
-        ? "Agent routes can use a deployed INFT address, but production cutover still needs the final mainnet contract value in Vercel."
+        ? hasAttestationOracle
+          ? "Agent routes can mint into the live INFT contract and register attestation hashes through the on-chain oracle path."
+          : "Agent routes can use a deployed INFT address, but on-chain attestation verification still needs the oracle address in production envs."
         : "Set `YIELD_STRATEGY_INFT_MAINNET_ADDRESS` (or fall back to `YIELD_STRATEGY_INFT_ADDRESS`) in the mainnet deployment environment.",
     },
     {

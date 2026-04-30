@@ -277,6 +277,8 @@ export interface StoredProofRecord {
   teeModel?: string;
   teeChatId?: string;
   teeVerified?: boolean;
+  teeVerificationMethod?: string;
+  teeSignedTextMatches?: boolean;
   llmProvider?: string;
 }
 

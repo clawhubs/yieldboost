@@ -53,8 +53,10 @@ The current public deployment is now **mainnet-default**.
 | --- | --- |
 | Mainnet `ProofRegistry` | [`0x8e63e117E71A80Cfc10fDF375F079e2e29cd7D7D`](https://chainscan.0g.ai/address/0x8e63e117E71A80Cfc10fDF375F079e2e29cd7D7D) |
 | Mainnet `YieldStrategyINFT` | [`0xb264D861264B0e4f8fb98A61B7694BA8a3B6BBe3`](https://chainscan.0g.ai/address/0xb264D861264B0e4f8fb98A61B7694BA8a3B6BBe3) |
-| Latest 0G Storage tx | [`0xc1b560a3a16d4aa9449d8d99cdfd269b2d3dc80dd273e3f5c27176c04b25f282`](https://chainscan.0g.ai/tx/0xc1b560a3a16d4aa9449d8d99cdfd269b2d3dc80dd273e3f5c27176c04b25f282) |
-| Latest `ProofRegistry` anchor tx | [`0xf3ff727fcbba0922dfecf31ba4b5f962e0fbdf16f921b91c2205da9be92c02a7`](https://chainscan.0g.ai/tx/0xf3ff727fcbba0922dfecf31ba4b5f962e0fbdf16f921b91c2205da9be92c02a7) |
+| Mainnet attestation oracle | [`0x216E7880D64D94335B583c539802d3e61958d4A2`](https://chainscan.0g.ai/address/0x216E7880D64D94335B583c539802d3e61958d4A2) |
+| Latest 0G Storage tx | [`0x4a186175bce710b8e7bdb8f07498ce733efc4f26bb17cba3bffd08dfa3a0f54d`](https://chainscan.0g.ai/tx/0x4a186175bce710b8e7bdb8f07498ce733efc4f26bb17cba3bffd08dfa3a0f54d) |
+| Latest `ProofRegistry` anchor tx | [`0xa76f59de764dfb5dcd2fae3e8dff53cb0e213bab89162e7b4de16962309caa9b`](https://chainscan.0g.ai/tx/0xa76f59de764dfb5dcd2fae3e8dff53cb0e213bab89162e7b4de16962309caa9b) |
+| Latest Agent NFT mint tx | [`0x93c2600f0d576e8512b3d57afe4a495e17446bf91ad8d9e9333cb62bdd2adc19`](https://chainscan.0g.ai/tx/0x93c2600f0d576e8512b3d57afe4a495e17446bf91ad8d9e9333cb62bdd2adc19) |
 | Judge entry point | [`/judge`](https://yieldboost-ai.vercel.app/judge) |
 
 What this means in practice:
@@ -179,6 +181,7 @@ YieldBoost AI is not only storing optimization proofs. It also turns a completed
 
 - [`contracts/YieldStrategyINFT.sol`](contracts/YieldStrategyINFT.sol) is the on-chain contract for the strategy NFT layer.
 - [`/api/agent/mint`](app/api/agent/mint/route.ts) mints the NFT from a live optimization result, using the connected wallet as the NFT recipient.
+- [`contracts/AttestationRegistryOracle.sol`](contracts/AttestationRegistryOracle.sol) now backs the optional on-chain attestation path so broker-verified compute hashes can be registered before minting.
 - [`/api/agent/list`](app/api/agent/list/route.ts) reads back minted strategy agents from the contract, with a graceful proof-history fallback when contract mode is unavailable.
 - The NFT payload carries the optimization context: APY delta, strategy reasoning, proof hash references, and attestation-linked metadata.
 
@@ -273,12 +276,14 @@ So the honest positioning is now: **YieldBoost AI actively reduces repeated toke
 - **Agent NFT metadata encryption** now uses **AES-256-GCM** in [`lib/server/encryption.ts`](lib/server/encryption.ts), with a required `STRATEGY_METADATA_ENCRYPTION_KEY` and a backward-compatible decrypt path for earlier base64 test payloads.
 - **0G Compute response validation** now uses the broker verification path in [`lib/server/og-compute.ts`](lib/server/og-compute.ts): the app verifies the returned chat ID through the broker and confirms the signed response body matches the text surfaced in the UI before marking the proof as TEE-verified.
 - **Agent NFT attestation hashes** are now derived from the runtime attestation payload when a verified 0G Compute result is present, rather than from a generic placeholder string.
+- **On-chain INFT verification** now has a live contract path through [`contracts/AttestationRegistryOracle.sol`](contracts/AttestationRegistryOracle.sol): verified attestation hashes can be registered on-chain before `YieldStrategyINFT` mints, allowing the contract's `verified` flag to reflect oracle state instead of staying permanently disabled.
 
 ## Honest Fallback Design
 
 One of the strongest implementation details here is that the app does not fake liveness:
 
 - If **0G Compute** is unavailable, optimization narration falls back locally.
+- If **0G Compute** falls back locally, Agent NFTs can still mint, but the on-chain `verified` flag remains false because no broker-verified attestation hash exists to register.
 - If **0G Storage** fails, the UI still shows the optimization result but marks proof sync failure honestly.
 - If **ProofRegistry** is not configured, storage still succeeds and the record is marked accordingly.
 - If **Vercel KV** is missing, runtime history falls back to `.artifacts/runtime-store.json`.
@@ -333,6 +338,7 @@ ZG_MAINNET_STORAGE_URL=https://indexer-storage-turbo.0g.ai
 ZG_MAINNET_PRIVATE_KEY=<mainnet_signer_private_key>
 ZG_MAINNET_PROOF_REGISTRY_ADDRESS=0x8e63e117E71A80Cfc10fDF375F079e2e29cd7D7D
 YIELD_STRATEGY_INFT_MAINNET_ADDRESS=0xb264D861264B0e4f8fb98A61B7694BA8a3B6BBe3
+YIELD_STRATEGY_ATTESTATION_ORACLE_MAINNET_ADDRESS=0x216E7880D64D94335B583c539802d3e61958d4A2
 ```
 
 Optional but recommended:
@@ -350,6 +356,7 @@ ALIBABA_MODEL=qwen3.6-plus-2026-04-02
 ALIBABA_EMBEDDING_MODEL=text-embedding-v4
 ALIBABA_EMBEDDING_DIMENSION=512
 STRATEGY_METADATA_ENCRYPTION_KEY=<64_hex_or_32_byte_base64_secret>
+YIELD_STRATEGY_ATTESTATION_ORACLE_MAINNET_ADDRESS=<mainnet_attestation_oracle_address>
 ```
 
 ### 3. Run the app
@@ -377,6 +384,8 @@ npm run test:ui
 ```bash
 npm run deploy:proof-registry:mainnet
 npm run deploy:inft:mainnet
+npm run deploy:attestation-oracle:mainnet
+npm run configure:inft-oracle:mainnet
 npm run setup:tee-broker:mainnet
 ```
 

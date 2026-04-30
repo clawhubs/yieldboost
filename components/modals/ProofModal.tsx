@@ -45,6 +45,8 @@ interface ProofPayload {
   teeModel?: string;
   teeChatId?: string;
   teeVerified?: boolean;
+  teeVerificationMethod?: string;
+  teeSignedTextMatches?: boolean;
   llmProvider?: string;
 }
 
@@ -538,7 +540,7 @@ export default function ProofModal({
                                         new Date().toISOString(),
                                       isValid: activeProof.teeVerified,
                                       verificationMethod:
-                                        "broker-response-signature",
+                                        activeProof.teeVerificationMethod,
                                     }
                                   : undefined,
                             }),

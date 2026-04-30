@@ -9,6 +9,7 @@ import {
 import { getContractSignerPrivateKey } from "@/lib/server/network-credentials";
 import {
   getYieldStrategyInftAddress,
+  getYieldStrategyAttestationOracleAddress,
   getServer0GNetworkConfig,
   resolveWalletAddress,
   resolveWalletNetworkKey,
@@ -73,6 +74,7 @@ export async function POST(req: NextRequest) {
 
     // Get contract addresses from env
     const inftAddress = getYieldStrategyInftAddress(networkKey);
+    const oracleAddress = getYieldStrategyAttestationOracleAddress(networkKey);
     const privateKey = getContractSignerPrivateKey(networkKey);
 
     if (!inftAddress || !privateKey) {
@@ -117,6 +119,7 @@ export async function POST(req: NextRequest) {
 
     const attestationHash =
       teeAttestation?.isValid &&
+      teeAttestation.verificationMethod === "broker-response-signature" &&
       teeAttestation.chatId &&
       teeAttestation.provider &&
       teeAttestation.model
@@ -135,9 +138,32 @@ export async function POST(req: NextRequest) {
     const inftAbi = [
       "function mintStrategy(address to, string encryptedUri, bytes32 contentHash, uint256 apy, bytes32 attestationHash) external returns (uint256)",
       "function totalSupply() external view returns (uint256)",
+      "function oracle() view returns (address)",
+      "function setOracle(address newOracle) external",
+      "function getStrategy(uint256 tokenId) external view returns (tuple(string encryptedUri, bytes32 contentHash, uint256 apy, uint256 timestamp, address creator, bool verified))",
+    ];
+    const oracleAbi = [
+      "function verifyAttestation(bytes32 attestationHash) external view returns (bool)",
+      "function recordAttestation(bytes32 attestationHash) external",
     ];
 
     const inftContract = new ethers.Contract(inftAddress, inftAbi, wallet);
+
+    if (attestationHash !== ethers.ZeroHash && teeAttestation?.isValid && oracleAddress) {
+      const currentOracle = await inftContract.oracle();
+      if (currentOracle.toLowerCase() !== oracleAddress.toLowerCase()) {
+        const setOracleTx = await inftContract.setOracle(oracleAddress);
+        await setOracleTx.wait();
+      }
+
+      const oracleContract = new ethers.Contract(oracleAddress, oracleAbi, wallet);
+      const alreadyVerified = await oracleContract.verifyAttestation(attestationHash);
+
+      if (!alreadyVerified) {
+        const recordAttestationTx = await oracleContract.recordAttestation(attestationHash);
+        await recordAttestationTx.wait();
+      }
+    }
 
     // Mint the strategy NFT
     const mintTx = await inftContract.mintStrategy(
@@ -153,6 +179,7 @@ export async function POST(req: NextRequest) {
     // Get the token ID from the event or total supply
     const totalSupply = await inftContract.totalSupply();
     const tokenId = totalSupply;
+    const strategy = await inftContract.getStrategy(tokenId);
 
     return NextResponse.json({
       success: true,
@@ -163,6 +190,8 @@ export async function POST(req: NextRequest) {
       encryptedUri,
       contentHash,
       apy: decision.optimized_apy,
+      attestationOracleAddress: oracleAddress,
+      verifiedOnChain: Boolean(strategy?.verified),
       explorerUrl: `${networkConfig.explorerBase.replace(/\/$/, "")}/tx/${receipt.hash}`,
     });
   } catch (error) {

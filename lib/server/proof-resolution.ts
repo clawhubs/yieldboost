@@ -1,7 +1,7 @@
 import "server-only";
 
 import { randomUUID } from "node:crypto";
-import { promises as fs } from "node:fs";
+import { readFileSync, promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { Contract, JsonRpcProvider, type EventLog } from "ethers";
@@ -19,7 +19,6 @@ import {
 import {
   getLatestStoredProofForWallet,
   getStoredProofs,
-  isRuntimeStoreKvConfigured,
 } from "@/lib/server/runtime-store";
 
 const proofRegistryAbi = [
@@ -29,6 +28,12 @@ const proofRegistryAbi = [
 const MAX_BLOCK_LOOKBACK = 1_000_000;
 const BLOCK_SCAN_CHUNK = 50_000;
 const SUPPORTED_NETWORK_KEYS: WalletNetworkKey[] = ["testnet", "mainnet"];
+const LIVE_PROOF_CACHE_TTL_MS = 8_000;
+
+const latestLiveProofCache = new Map<
+  string,
+  { fetchedAt: number; proof: StoredProofRecord | null }
+>();
 
 type ProofRegistryLog = Awaited<
   ReturnType<Contract["queryFilter"]>
@@ -42,6 +47,30 @@ function parseProofTimestamp(value: string | undefined) {
   if (!value) return 0;
   const parsed = Date.parse(value);
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function getProofRegistryDeploymentBlock(networkKey: WalletNetworkKey) {
+  try {
+    const artifactFile =
+      networkKey === "mainnet"
+        ? path.join(process.cwd(), ".artifacts", "proof-registry-deployment-mainnet.json")
+        : path.join(process.cwd(), ".artifacts", "proof-registry-deployment.json");
+    const raw = JSON.parse(
+      readFileSync(artifactFile, "utf8"),
+    ) as { blockNumber?: number | null };
+    return typeof raw.blockNumber === "number" && raw.blockNumber > 0
+      ? raw.blockNumber
+      : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function getLatestLiveProofCacheKey(
+  walletAddress: string,
+  networkKey: WalletNetworkKey,
+) {
+  return `${walletAddress.toLowerCase()}::${networkKey}`;
 }
 
 function sameProofIdentity(
@@ -85,6 +114,10 @@ function mergeProofRecords(
     teeModel: storedProof.teeModel ?? liveProof.teeModel,
     teeChatId: storedProof.teeChatId ?? liveProof.teeChatId,
     teeVerified: storedProof.teeVerified ?? liveProof.teeVerified,
+    teeVerificationMethod:
+      storedProof.teeVerificationMethod ?? liveProof.teeVerificationMethod,
+    teeSignedTextMatches:
+      storedProof.teeSignedTextMatches ?? liveProof.teeSignedTextMatches,
     llmProvider: storedProof.llmProvider ?? liveProof.llmProvider,
   } satisfies StoredProofRecord;
 }
@@ -116,6 +149,8 @@ async function readProofPayloadFromStorage(
       teeModel?: string;
       teeChatId?: string;
       teeVerified?: boolean;
+      teeVerificationMethod?: string;
+      teeSignedTextMatches?: boolean;
       llmProvider?: string;
     };
 
@@ -187,6 +222,7 @@ function buildDecisionFromLiveProof(
 async function findLatestRegistryProofLog(
   contract: Contract,
   walletAddress: string,
+  networkKey: WalletNetworkKey,
 ) {
   const provider = contract.runner?.provider;
   if (!provider || typeof provider.getBlockNumber !== "function") {
@@ -194,7 +230,11 @@ async function findLatestRegistryProofLog(
   }
 
   const latestBlock = await provider.getBlockNumber();
-  const minBlock = Math.max(0, latestBlock - MAX_BLOCK_LOOKBACK);
+  const deploymentBlock = getProofRegistryDeploymentBlock(networkKey);
+  const minBlock = Math.max(
+    deploymentBlock > 0 ? deploymentBlock : 0,
+    latestBlock - MAX_BLOCK_LOOKBACK,
+  );
   const filter = contract.filters.ProofRecorded(null, walletAddress);
 
   for (let toBlock = latestBlock; toBlock >= minBlock; toBlock -= BLOCK_SCAN_CHUNK) {
@@ -213,6 +253,12 @@ async function getLatestLiveProofFromRegistry(
   networkKey: WalletNetworkKey,
   storedProof: StoredProofRecord | null,
 ): Promise<StoredProofRecord | null> {
+  const cacheKey = getLatestLiveProofCacheKey(walletAddress, networkKey);
+  const cached = latestLiveProofCache.get(cacheKey);
+  if (cached && Date.now() - cached.fetchedAt < LIVE_PROOF_CACHE_TTL_MS) {
+    return cached.proof;
+  }
+
   const config = getServer0GNetworkConfig(networkKey);
   if (!config.rpcUrl || !config.proofRegistryAddress) {
     return null;
@@ -221,8 +267,9 @@ async function getLatestLiveProofFromRegistry(
   try {
     const provider = new JsonRpcProvider(config.rpcUrl);
     const contract = new Contract(config.proofRegistryAddress, proofRegistryAbi, provider);
-    const latestLog = await findLatestRegistryProofLog(contract, walletAddress);
+    const latestLog = await findLatestRegistryProofLog(contract, walletAddress, networkKey);
     if (!isEventLog(latestLog)) {
+      latestLiveProofCache.set(cacheKey, { fetchedAt: Date.now(), proof: null });
       return null;
     }
 
@@ -259,6 +306,8 @@ async function getLatestLiveProofFromRegistry(
       teeModel: undefined,
       teeChatId: undefined,
       teeVerified: undefined,
+      teeVerificationMethod: undefined,
+      teeSignedTextMatches: undefined,
       llmProvider: undefined,
     };
 
@@ -267,12 +316,14 @@ async function getLatestLiveProofFromRegistry(
       sameWalletAddress(storedProof.walletAddress, walletAddress) &&
       sameProofIdentity(storedProof, liveProof)
     ) {
-      return mergeProofRecords(liveProof, storedProof);
+      const merged = mergeProofRecords(liveProof, storedProof);
+      latestLiveProofCache.set(cacheKey, { fetchedAt: Date.now(), proof: merged });
+      return merged;
     }
 
     const storagePayload = await readProofPayloadFromStorage(liveProof.cid, networkKey);
     if (storagePayload) {
-      return {
+      const hydrated = {
         ...liveProof,
         decision: {
           ...liveProof.decision,
@@ -286,12 +337,18 @@ async function getLatestLiveProofFromRegistry(
         teeModel: storagePayload.teeModel,
         teeChatId: storagePayload.teeChatId,
         teeVerified: storagePayload.teeVerified,
+        teeVerificationMethod: storagePayload.teeVerificationMethod,
+        teeSignedTextMatches: storagePayload.teeSignedTextMatches,
         llmProvider: storagePayload.llmProvider,
       };
+      latestLiveProofCache.set(cacheKey, { fetchedAt: Date.now(), proof: hydrated });
+      return hydrated;
     }
 
+    latestLiveProofCache.set(cacheKey, { fetchedAt: Date.now(), proof: liveProof });
     return liveProof;
   } catch {
+    latestLiveProofCache.set(cacheKey, { fetchedAt: Date.now(), proof: null });
     return null;
   }
 }
@@ -301,10 +358,6 @@ export async function resolveLatestProofForWallet(
   networkKey: WalletNetworkKey,
 ): Promise<StoredProofRecord | null> {
   const storedProof = await getLatestStoredProofForWallet(walletAddress, networkKey);
-  if (isRuntimeStoreKvConfigured() && storedProof) {
-    return storedProof;
-  }
-
   const liveProof = await getLatestLiveProofFromRegistry(walletAddress, networkKey, storedProof);
   if (!liveProof) {
     return storedProof;

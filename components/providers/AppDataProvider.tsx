@@ -265,6 +265,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       provider: string;
       model: string;
       timestamp: string;
+      verificationMethod?: string;
+      signedTextMatches?: boolean;
     };
   }) {
     let storageErrorMessage: string | undefined;
@@ -333,6 +335,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           teeModel: teeAttestation?.model,
           teeChatId: teeAttestation?.chatId,
           teeVerified: teeAttestation?.isValid,
+          teeVerificationMethod: teeAttestation?.verificationMethod,
+          teeSignedTextMatches: teeAttestation?.signedTextMatches,
           llmProvider,
         }),
       });
@@ -673,6 +677,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
             provider: string;
             model: string;
             timestamp: string;
+            verificationMethod?: string;
+            signedTextMatches?: boolean;
           })
         : undefined;
 

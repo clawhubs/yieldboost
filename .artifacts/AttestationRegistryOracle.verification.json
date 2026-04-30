@@ -1,0 +1,569 @@
+{
+  "contractName": "AttestationRegistryOracle",
+  "sourceName": "AttestationRegistryOracle.sol",
+  "compilerVersion": "0.8.24+commit.e11b9ed9.Emscripten.clang",
+  "optimizer": {
+    "enabled": true,
+    "runs": 200
+  },
+  "deployments": {
+    "testnet": null,
+    "mainnet": {
+      "address": "0x216E7880D64D94335B583c539802d3e61958d4A2",
+      "chainId": 16661,
+      "explorerUrl": "https://chainscan.0g.ai/address/0x216E7880D64D94335B583c539802d3e61958d4A2",
+      "transactionHash": "0xdbf93164fa8d71b5a56ec3d22c234b4fbd3cbe4c73886c8412ac9f67fe1bb769",
+      "blockNumber": 31899049,
+      "constructorArgs": [
+        "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D"
+      ],
+      "constructorArgsEncoded": "0x0000000000000000000000008a3c7524aaed081825ac88ec7f4ccecfc583ee7d"
+    }
+  },
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "initialOwner",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnableInvalidOwner",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "OwnableUnauthorizedAccount",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "attestationHash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "verifier",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "verifiedAt",
+          "type": "uint64"
+        }
+      ],
+      "name": "AttestationRecorded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "attestationHash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "verifier",
+          "type": "address"
+        }
+      ],
+      "name": "AttestationRevoked",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "attestationHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getAttestation",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "verified",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint64",
+          "name": "verifiedAt",
+          "type": "uint64"
+        },
+        {
+          "internalType": "address",
+          "name": "verifier",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "attestationHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "recordAttestation",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32[]",
+          "name": "attestationHashes",
+          "type": "bytes32[]"
+        }
+      ],
+      "name": "recordAttestations",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "attestationHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "revokeAttestation",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "attestationHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "verifyAttestation",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "608060405234801561000f575f80fd5b5060405161076338038061076383398101604081905261002e916100bb565b806001600160a01b03811661005c57604051631e4fbdf760e01b81525f600482015260240160405180910390fd5b6100658161006c565b50506100e8565b5f80546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b5f602082840312156100cb575f80fd5b81516001600160a01b03811681146100e1575f80fd5b9392505050565b61066e806100f55f395ff3fe608060405234801561000f575f80fd5b5060043610610085575f3560e01c80638da5cb5b116100585780638da5cb5b146100f0578063a3112a641461010a578063b9b1f0871461019f578063f2fde38b146101b2575f80fd5b806308f46957146100895780634d5e1da6146100c05780636495b822146100d5578063715018a6146100e8575b5f80fd5b6100ab610097366004610571565b5f9081526001602052604090205460ff1690565b60405190151581526020015b60405180910390f35b6100d36100ce366004610571565b6101c5565b005b6100d36100e3366004610571565b610277565b6100d3610395565b5f546040516001600160a01b0390911681526020016100b7565b610170610118366004610571565b5f908152600160209081526040918290208251606081018452905460ff81161515808352610100820467ffffffffffffffff16938301849052600160481b9091046001600160a01b0316919093018190529192909190565b60408051931515845267ffffffffffffffff90921660208401526001600160a01b0316908201526060016100b7565b6100d36101ad366004610588565b6103a8565b6100d36101c03660046105f7565b6104b9565b6101cd6104f6565b5f8181526001602052604090205460ff1661022f5760405162461bcd60e51b815260206004820152601860248201527f4174746573746174696f6e206e6f74207665726966696564000000000000000060448201526064015b60405180910390fd5b5f8181526001602052604080822080546001600160e81b031916905551339183917f59d1b98a5da8bbc1db92f7d8d2e21c3067da65edbe08f4ae23df11487ee4c8b09190a350565b61027f6104f6565b806102cc5760405162461bcd60e51b815260206004820152601860248201527f496e76616c6964206174746573746174696f6e206861736800000000000000006044820152606401610226565b6040805160608101825260018082524267ffffffffffffffff9081166020808501828152338688018181525f8a815296845295889020965187549251965168ffffffffffffffffff1990931690151568ffffffffffffffff00191617610100969095169590950293909317600160481b600160e81b031916600160481b6001600160a01b03909416939093029290921790935592519182529183917f9ced896987f346814b64b714bd4f23dbe3289f9b3f51d0ddaefe1558c58503e1910160405180910390a350565b61039d6104f6565b6103a65f610522565b565b6103b06104f6565b5f5b818110156104b4575f8383838181106103cd576103cd610624565b602002919091013591508190506103e457506104ac565b6040805160608101825260018082524267ffffffffffffffff9081166020808501828152338688018181525f8a815296845295889020965187549251965168ffffffffffffffffff1990931690151568ffffffffffffffff00191617610100969095169590950293909317600160481b600160e81b031916600160481b6001600160a01b03909416939093029290921790935592519182529183917f9ced896987f346814b64b714bd4f23dbe3289f9b3f51d0ddaefe1558c58503e1910160405180910390a3505b6001016103b2565b505050565b6104c16104f6565b6001600160a01b0381166104ea57604051631e4fbdf760e01b81525f6004820152602401610226565b6104f381610522565b50565b5f546001600160a01b031633146103a65760405163118cdaa760e01b8152336004820152602401610226565b5f80546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b5f60208284031215610581575f80fd5b5035919050565b5f8060208385031215610599575f80fd5b823567ffffffffffffffff808211156105b0575f80fd5b818501915085601f8301126105c3575f80fd5b8135818111156105d1575f80fd5b8660208260051b85010111156105e5575f80fd5b60209290920196919550909350505050565b5f60208284031215610607575f80fd5b81356001600160a01b038116811461061d575f80fd5b9392505050565b634e487b7160e01b5f52603260045260245ffdfea26469706673582212200e8eff9e37e886b55b6770d2fde2583600db9ba383c945b367a7b5268a66b34064736f6c63430008180033",
+  "deployedBytecode": "608060405234801561000f575f80fd5b5060043610610085575f3560e01c80638da5cb5b116100585780638da5cb5b146100f0578063a3112a641461010a578063b9b1f0871461019f578063f2fde38b146101b2575f80fd5b806308f46957146100895780634d5e1da6146100c05780636495b822146100d5578063715018a6146100e8575b5f80fd5b6100ab610097366004610571565b5f9081526001602052604090205460ff1690565b60405190151581526020015b60405180910390f35b6100d36100ce366004610571565b6101c5565b005b6100d36100e3366004610571565b610277565b6100d3610395565b5f546040516001600160a01b0390911681526020016100b7565b610170610118366004610571565b5f908152600160209081526040918290208251606081018452905460ff81161515808352610100820467ffffffffffffffff16938301849052600160481b9091046001600160a01b0316919093018190529192909190565b60408051931515845267ffffffffffffffff90921660208401526001600160a01b0316908201526060016100b7565b6100d36101ad366004610588565b6103a8565b6100d36101c03660046105f7565b6104b9565b6101cd6104f6565b5f8181526001602052604090205460ff1661022f5760405162461bcd60e51b815260206004820152601860248201527f4174746573746174696f6e206e6f74207665726966696564000000000000000060448201526064015b60405180910390fd5b5f8181526001602052604080822080546001600160e81b031916905551339183917f59d1b98a5da8bbc1db92f7d8d2e21c3067da65edbe08f4ae23df11487ee4c8b09190a350565b61027f6104f6565b806102cc5760405162461bcd60e51b815260206004820152601860248201527f496e76616c6964206174746573746174696f6e206861736800000000000000006044820152606401610226565b6040805160608101825260018082524267ffffffffffffffff9081166020808501828152338688018181525f8a815296845295889020965187549251965168ffffffffffffffffff1990931690151568ffffffffffffffff00191617610100969095169590950293909317600160481b600160e81b031916600160481b6001600160a01b03909416939093029290921790935592519182529183917f9ced896987f346814b64b714bd4f23dbe3289f9b3f51d0ddaefe1558c58503e1910160405180910390a350565b61039d6104f6565b6103a65f610522565b565b6103b06104f6565b5f5b818110156104b4575f8383838181106103cd576103cd610624565b602002919091013591508190506103e457506104ac565b6040805160608101825260018082524267ffffffffffffffff9081166020808501828152338688018181525f8a815296845295889020965187549251965168ffffffffffffffffff1990931690151568ffffffffffffffff00191617610100969095169590950293909317600160481b600160e81b031916600160481b6001600160a01b03909416939093029290921790935592519182529183917f9ced896987f346814b64b714bd4f23dbe3289f9b3f51d0ddaefe1558c58503e1910160405180910390a3505b6001016103b2565b505050565b6104c16104f6565b6001600160a01b0381166104ea57604051631e4fbdf760e01b81525f6004820152602401610226565b6104f381610522565b50565b5f546001600160a01b031633146103a65760405163118cdaa760e01b8152336004820152602401610226565b5f80546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b5f60208284031215610581575f80fd5b5035919050565b5f8060208385031215610599575f80fd5b823567ffffffffffffffff808211156105b0575f80fd5b818501915085601f8301126105c3575f80fd5b8135818111156105d1575f80fd5b8660208260051b85010111156105e5575f80fd5b60209290920196919550909350505050565b5f60208284031215610607575f80fd5b81356001600160a01b038116811461061d575f80fd5b9392505050565b634e487b7160e01b5f52603260045260245ffdfea26469706673582212200e8eff9e37e886b55b6770d2fde2583600db9ba383c945b367a7b5268a66b34064736f6c63430008180033",
+  "source": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.24;\n\nimport \"@openzeppelin/contracts/access/Ownable.sol\";\n\n/**\n * AttestationRegistryOracle\n *\n * Stores hashes of compute attestations that have already passed broker-backed\n * verification in the app runtime. YieldStrategyINFT can query this contract\n * during minting so the NFT's `verified` flag is anchored to an on-chain oracle\n * decision instead of a placeholder boolean.\n */\ncontract AttestationRegistryOracle is Ownable {\n    struct AttestationRecord {\n        bool verified;\n        uint64 verifiedAt;\n        address verifier;\n    }\n\n    mapping(bytes32 => AttestationRecord) private _attestations;\n\n    event AttestationRecorded(bytes32 indexed attestationHash, address indexed verifier, uint64 verifiedAt);\n    event AttestationRevoked(bytes32 indexed attestationHash, address indexed verifier);\n\n    constructor(address initialOwner) Ownable(initialOwner) {}\n\n    function recordAttestation(bytes32 attestationHash) external onlyOwner {\n        require(attestationHash != bytes32(0), \"Invalid attestation hash\");\n\n        _attestations[attestationHash] = AttestationRecord({\n            verified: true,\n            verifiedAt: uint64(block.timestamp),\n            verifier: msg.sender\n        });\n\n        emit AttestationRecorded(attestationHash, msg.sender, uint64(block.timestamp));\n    }\n\n    function recordAttestations(bytes32[] calldata attestationHashes) external onlyOwner {\n        for (uint256 index = 0; index < attestationHashes.length; index++) {\n            bytes32 attestationHash = attestationHashes[index];\n            if (attestationHash == bytes32(0)) {\n                continue;\n            }\n\n            _attestations[attestationHash] = AttestationRecord({\n                verified: true,\n                verifiedAt: uint64(block.timestamp),\n                verifier: msg.sender\n            });\n\n            emit AttestationRecorded(attestationHash, msg.sender, uint64(block.timestamp));\n        }\n    }\n\n    function revokeAttestation(bytes32 attestationHash) external onlyOwner {\n        require(_attestations[attestationHash].verified, \"Attestation not verified\");\n        delete _attestations[attestationHash];\n        emit AttestationRevoked(attestationHash, msg.sender);\n    }\n\n    function verifyAttestation(bytes32 attestationHash) external view returns (bool) {\n        return _attestations[attestationHash].verified;\n    }\n\n    function getAttestation(bytes32 attestationHash)\n        external\n        view\n        returns (bool verified, uint64 verifiedAt, address verifier)\n    {\n        AttestationRecord memory record = _attestations[attestationHash];\n        return (record.verified, record.verifiedAt, record.verifier);\n    }\n}\n",
+  "standardJsonInput": {
+    "language": "Solidity",
+    "sources": {
+      "AttestationRegistryOracle.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.24;\n\nimport \"@openzeppelin/contracts/access/Ownable.sol\";\n\n/**\n * AttestationRegistryOracle\n *\n * Stores hashes of compute attestations that have already passed broker-backed\n * verification in the app runtime. YieldStrategyINFT can query this contract\n * during minting so the NFT's `verified` flag is anchored to an on-chain oracle\n * decision instead of a placeholder boolean.\n */\ncontract AttestationRegistryOracle is Ownable {\n    struct AttestationRecord {\n        bool verified;\n        uint64 verifiedAt;\n        address verifier;\n    }\n\n    mapping(bytes32 => AttestationRecord) private _attestations;\n\n    event AttestationRecorded(bytes32 indexed attestationHash, address indexed verifier, uint64 verifiedAt);\n    event AttestationRevoked(bytes32 indexed attestationHash, address indexed verifier);\n\n    constructor(address initialOwner) Ownable(initialOwner) {}\n\n    function recordAttestation(bytes32 attestationHash) external onlyOwner {\n        require(attestationHash != bytes32(0), \"Invalid attestation hash\");\n\n        _attestations[attestationHash] = AttestationRecord({\n            verified: true,\n            verifiedAt: uint64(block.timestamp),\n            verifier: msg.sender\n        });\n\n        emit AttestationRecorded(attestationHash, msg.sender, uint64(block.timestamp));\n    }\n\n    function recordAttestations(bytes32[] calldata attestationHashes) external onlyOwner {\n        for (uint256 index = 0; index < attestationHashes.length; index++) {\n            bytes32 attestationHash = attestationHashes[index];\n            if (attestationHash == bytes32(0)) {\n                continue;\n            }\n\n            _attestations[attestationHash] = AttestationRecord({\n                verified: true,\n                verifiedAt: uint64(block.timestamp),\n                verifier: msg.sender\n            });\n\n            emit AttestationRecorded(attestationHash, msg.sender, uint64(block.timestamp));\n        }\n    }\n\n    function revokeAttestation(bytes32 attestationHash) external onlyOwner {\n        require(_attestations[attestationHash].verified, \"Attestation not verified\");\n        delete _attestations[attestationHash];\n        emit AttestationRevoked(attestationHash, msg.sender);\n    }\n\n    function verifyAttestation(bytes32 attestationHash) external view returns (bool) {\n        return _attestations[attestationHash].verified;\n    }\n\n    function getAttestation(bytes32 attestationHash)\n        external\n        view\n        returns (bool verified, uint64 verifiedAt, address verifier)\n    {\n        AttestationRecord memory record = _attestations[attestationHash];\n        return (record.verified, record.verifiedAt, record.verifier);\n    }\n}\n"
+      }
+    },
+    "settings": {
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "metadata"
+          ]
+        }
+      }
+    }
+  },
+  "metadata": {
+    "compiler": {
+      "version": "0.8.24+commit.e11b9ed9"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "initialOwner",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "constructor"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnableInvalidOwner",
+          "type": "error"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "OwnableUnauthorizedAccount",
+          "type": "error"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "attestationHash",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "verifier",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint64",
+              "name": "verifiedAt",
+              "type": "uint64"
+            }
+          ],
+          "name": "AttestationRecorded",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "attestationHash",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "verifier",
+              "type": "address"
+            }
+          ],
+          "name": "AttestationRevoked",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "attestationHash",
+              "type": "bytes32"
+            }
+          ],
+          "name": "getAttestation",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "verified",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint64",
+              "name": "verifiedAt",
+              "type": "uint64"
+            },
+            {
+              "internalType": "address",
+              "name": "verifier",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "owner",
+          "outputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "attestationHash",
+              "type": "bytes32"
+            }
+          ],
+          "name": "recordAttestation",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32[]",
+              "name": "attestationHashes",
+              "type": "bytes32[]"
+            }
+          ],
+          "name": "recordAttestations",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "renounceOwnership",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "attestationHash",
+              "type": "bytes32"
+            }
+          ],
+          "name": "revokeAttestation",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "transferOwnership",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "attestationHash",
+              "type": "bytes32"
+            }
+          ],
+          "name": "verifyAttestation",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        }
+      ],
+      "devdoc": {
+        "errors": {
+          "OwnableInvalidOwner(address)": [
+            {
+              "details": "The owner is not a valid owner account. (eg. `address(0)`)"
+            }
+          ],
+          "OwnableUnauthorizedAccount(address)": [
+            {
+              "details": "The caller account is not authorized to perform an operation."
+            }
+          ]
+        },
+        "kind": "dev",
+        "methods": {
+          "owner()": {
+            "details": "Returns the address of the current owner."
+          },
+          "renounceOwnership()": {
+            "details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner."
+          },
+          "transferOwnership(address)": {
+            "details": "Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner."
+          }
+        },
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "notice": "AttestationRegistryOracle Stores hashes of compute attestations that have already passed broker-backed verification in the app runtime. YieldStrategyINFT can query this contract during minting so the NFT's `verified` flag is anchored to an on-chain oracle decision instead of a placeholder boolean.",
+        "version": 1
+      }
+    },
+    "settings": {
+      "compilationTarget": {
+        "AttestationRegistryOracle.sol": "AttestationRegistryOracle"
+      },
+      "evmVersion": "shanghai",
+      "libraries": {},
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "remappings": []
+    },
+    "sources": {
+      "@openzeppelin/contracts/access/Ownable.sol": {
+        "keccak256": "0xff6d0bb2e285473e5311d9d3caacb525ae3538a80758c10649a4d61029b017bb",
+        "license": "MIT",
+        "urls": [
+          "bzz-raw://8ed324d3920bb545059d66ab97d43e43ee85fd3bd52e03e401f020afb0b120f6",
+          "dweb:/ipfs/QmfEckWLmZkDDcoWrkEvMWhms66xwTLff9DDhegYpvHo1a"
+        ]
+      },
+      "@openzeppelin/contracts/utils/Context.sol": {
+        "keccak256": "0x493033a8d1b176a037b2cc6a04dad01a5c157722049bbecf632ca876224dd4b2",
+        "license": "MIT",
+        "urls": [
+          "bzz-raw://6a708e8a5bdb1011c2c381c9a5cfd8a9a956d7d0a9dc1bd8bcdaf52f76ef2f12",
+          "dweb:/ipfs/Qmax9WHBnVsZP46ZxEMNRQpLQnrdE4dK8LehML1Py8FowF"
+        ]
+      },
+      "AttestationRegistryOracle.sol": {
+        "keccak256": "0x2631b64268e93a73e6d4e03ed0be63b4a685e3dcc09bf0d0035a230a69b115c4",
+        "license": "MIT",
+        "urls": [
+          "bzz-raw://2af17a124d92d2616549bfe65db52df605f798d6516b8c035e6571e44828b954",
+          "dweb:/ipfs/QmXw9njaqssWmYq4LNn86AoNpKvEbRu4gTkePwTtoBqrAq"
+        ]
+      }
+    },
+    "version": 1
+  }
+}

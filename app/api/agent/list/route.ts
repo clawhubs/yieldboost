@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ethers } from "ethers";
 import { getStoredProofs } from "@/lib/server/runtime-store";
 import { getContractSignerPrivateKey } from "@/lib/server/network-credentials";
+import { decryptStrategy } from "@/lib/server/encryption";
 import {
   getYieldStrategyInftAddress,
   getServer0GNetworkConfig,
@@ -102,7 +103,7 @@ export async function GET(req: NextRequest) {
     // Contract ABI
     const inftAbi = [
       "function totalSupply() external view returns (uint256)",
-      "function getStrategy(uint256 tokenId) external view returns (string encryptedUri, bytes32 contentHash, uint256 apy, uint256 timestamp, address creator, bool verified)",
+      "function getStrategy(uint256 tokenId) external view returns (tuple(string encryptedUri, bytes32 contentHash, uint256 apy, uint256 timestamp, address creator, bool verified))",
       "function isAuthorized(uint256 tokenId, address user) external view returns (bool)",
       "function ownerOf(uint256 tokenId) external view returns (address)",
     ];
@@ -119,21 +120,60 @@ export async function GET(req: NextRequest) {
       try {
         const strategy = await inftContract.getStrategy(i);
         const owner = await inftContract.ownerOf(i);
+        if (walletAddress && !sameWalletAddress(owner, walletAddress)) {
+          continue;
+        }
+
+        let decryptedPayload:
+          | {
+              decision?: {
+                current_apy?: number;
+                optimized_apy?: number;
+                yield_increase_pct?: number;
+                estimatedAnnualGain?: number;
+                confidence?: number;
+                recommended?: string;
+                reasoning?: string;
+              };
+              storageCid?: string;
+              txHash?: string;
+            }
+          | null = null;
+
+        try {
+          decryptedPayload = decryptStrategy(strategy.encryptedUri) as {
+            decision?: {
+              current_apy?: number;
+              optimized_apy?: number;
+              yield_increase_pct?: number;
+              estimatedAnnualGain?: number;
+              confidence?: number;
+              recommended?: string;
+              reasoning?: string;
+            };
+            storageCid?: string;
+            txHash?: string;
+          };
+        } catch {
+          decryptedPayload = null;
+        }
         
         strategies.push({
           tokenId: i,
           encryptedUri: strategy.encryptedUri,
           contentHash: strategy.contentHash,
           apy: Number(strategy.apy) / 100, // Convert from basis points
-          currentApy: null,
-          yieldIncreasePct: null,
-          estimatedAnnualGain: null,
-          confidence: null,
-          recommended: null,
-          reasoning: null,
-          storageProof: null,
-          txHash: null,
-          proofUrl: null,
+          currentApy: decryptedPayload?.decision?.current_apy ?? null,
+          yieldIncreasePct: decryptedPayload?.decision?.yield_increase_pct ?? null,
+          estimatedAnnualGain: decryptedPayload?.decision?.estimatedAnnualGain ?? null,
+          confidence: decryptedPayload?.decision?.confidence ?? null,
+          recommended: decryptedPayload?.decision?.recommended ?? null,
+          reasoning: decryptedPayload?.decision?.reasoning ?? null,
+          storageProof: decryptedPayload?.storageCid ?? null,
+          txHash: decryptedPayload?.txHash ?? null,
+          proofUrl: decryptedPayload?.txHash
+            ? `${networkConfig.explorerBase.replace(/\/$/, "")}/tx/${decryptedPayload.txHash}`
+            : null,
           proofRegistryProofId: null,
           proofRegistryTxHash: null,
           proofRegistryExplorerUrl: null,

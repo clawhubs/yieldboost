@@ -103,6 +103,8 @@ export async function POST(req: NextRequest) {
     teeModel?: string;
     teeChatId?: string;
     teeVerified?: boolean;
+    teeVerificationMethod?: string;
+    teeSignedTextMatches?: boolean;
     llmProvider?: string;
   };
   const decision = decisionSchema.parse(payload.decision) as StoredDecisionPayload;
@@ -144,6 +146,8 @@ export async function POST(req: NextRequest) {
           teeModel: payload.teeModel,
           teeChatId: payload.teeChatId,
           teeVerified: payload.teeVerified,
+          teeVerificationMethod: payload.teeVerificationMethod,
+          teeSignedTextMatches: payload.teeSignedTextMatches,
           llmProvider: payload.llmProvider,
         },
         null,
@@ -247,6 +251,8 @@ export async function POST(req: NextRequest) {
         teeModel: payload.teeModel,
         teeChatId: payload.teeChatId,
         teeVerified: payload.teeVerified,
+        teeVerificationMethod: payload.teeVerificationMethod,
+        teeSignedTextMatches: payload.teeSignedTextMatches,
         llmProvider: payload.llmProvider,
       };
 
@@ -303,6 +309,8 @@ export async function POST(req: NextRequest) {
         teeModel: proof.teeModel,
         teeChatId: proof.teeChatId,
         teeVerified: proof.teeVerified,
+        teeVerificationMethod: proof.teeVerificationMethod,
+        teeSignedTextMatches: proof.teeSignedTextMatches,
         llmProvider: proof.llmProvider,
       });
     } finally {

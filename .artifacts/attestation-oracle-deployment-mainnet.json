@@ -1,0 +1,234 @@
+{
+  "contractName": "AttestationRegistryOracle",
+  "address": "0x216E7880D64D94335B583c539802d3e61958d4A2",
+  "network": "mainnet",
+  "chainId": 16661,
+  "rpcUrl": "https://evmrpc.0g.ai",
+  "deployer": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+  "transactionHash": "0xdbf93164fa8d71b5a56ec3d22c234b4fbd3cbe4c73886c8412ac9f67fe1bb769",
+  "blockNumber": 31899049,
+  "explorerUrl": "https://chainscan.0g.ai/address/0x216E7880D64D94335B583c539802d3e61958d4A2",
+  "deployedAt": "2026-04-30T05:53:19.767Z",
+  "constructorArgs": [
+    "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D"
+  ],
+  "constructorArgsEncoded": "0x0000000000000000000000008a3c7524aaed081825ac88ec7f4ccecfc583ee7d",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "initialOwner",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnableInvalidOwner",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "OwnableUnauthorizedAccount",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "attestationHash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "verifier",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "verifiedAt",
+          "type": "uint64"
+        }
+      ],
+      "name": "AttestationRecorded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "attestationHash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "verifier",
+          "type": "address"
+        }
+      ],
+      "name": "AttestationRevoked",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "attestationHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getAttestation",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "verified",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint64",
+          "name": "verifiedAt",
+          "type": "uint64"
+        },
+        {
+          "internalType": "address",
+          "name": "verifier",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "attestationHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "recordAttestation",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32[]",
+          "name": "attestationHashes",
+          "type": "bytes32[]"
+        }
+      ],
+      "name": "recordAttestations",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "attestationHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "revokeAttestation",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "attestationHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "verifyAttestation",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}
