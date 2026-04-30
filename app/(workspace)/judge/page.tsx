@@ -199,98 +199,60 @@ export default async function JudgePage() {
               ))}
             </div>
 
-            <div className="mt-5 grid items-start gap-[10px] lg:grid-cols-[minmax(0,1fr)_290px]">
+            <div className="mt-5 space-y-[10px]">
               <div className="glass-inset rounded-[16px] px-4 py-4">
                 <div className="text-[12px] font-medium text-white">Verification payload</div>
-                <div className="mt-4 grid gap-3 md:grid-cols-2">
-                  <div>
+                <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                  <div className="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3">
                     <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Storage CID</div>
-                    <div className="mt-1 break-all text-[13px] text-[#d8e1e8]">
+                    <div className="mt-2 break-all text-[13px] leading-6 text-[#d8e1e8]">
                       {data.latestProof?.cid ?? "No proof recorded yet"}
                     </div>
                   </div>
-                  <div>
-                    <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Contract / placeholder</div>
-                    <div className="mt-1 break-all text-[13px] text-[#d8e1e8]">{proofRegistryValue}</div>
+                  <div className="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3">
+                    <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">ProofRegistry contract</div>
+                    <div className="mt-2 break-all text-[13px] leading-6 text-[#d8e1e8]">{proofRegistryValue}</div>
                   </div>
-                  <div>
+                  <div className="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3">
                     <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Explorer</div>
                     {latestExplorerUrl ? (
                       <a
                         href={latestExplorerUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="mt-1 inline-flex items-center gap-2 text-[13px] text-[#22ddd0]"
+                        className="mt-2 inline-flex items-center gap-2 text-[13px] text-[#22ddd0]"
                       >
                         {latestExplorerLabel}
                         <ExternalLink className="h-3.5 w-3.5" />
                       </a>
                     ) : (
-                      <div className="mt-1 text-[13px] text-[#d6dee6]">No explorer URL yet</div>
+                      <div className="mt-2 text-[13px] leading-6 text-[#d6dee6]">No explorer URL yet</div>
                     )}
                   </div>
-                  <div>
+                  <div className="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3">
                     <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">ProofRegistry tx</div>
                     {data.latestProof?.proofRegistryExplorerUrl ? (
                       <a
                         href={data.latestProof.proofRegistryExplorerUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="mt-1 inline-flex items-center gap-2 text-[13px] text-[#22ddd0]"
+                        className="mt-2 inline-flex items-center gap-2 text-[13px] text-[#22ddd0]"
                       >
                         Open anchor tx
                         <ExternalLink className="h-3.5 w-3.5" />
                       </a>
                     ) : (
-                      <div className="mt-1 text-[13px] text-[#d6dee6]">No registry tx yet</div>
+                      <div className="mt-2 text-[13px] leading-6 text-[#d6dee6]">No registry tx yet</div>
                     )}
-                  </div>
-                </div>
-                <div className="mt-4">
-                  <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Reasoning snapshot</div>
-                  <div className="mt-2 max-w-4xl text-[13px] leading-7 text-[#d6dee6]">
-                    {data.latestProof?.decision.reasoning ?? "No stored reasoning available yet."}
                   </div>
                 </div>
               </div>
 
-              <div className="grid gap-3">
-                <div className="yb-soft-card rounded-[16px] px-4 py-4">
-                  <div className="text-[12px] font-medium text-white">Judge wallet</div>
-                  <div className="mt-3 break-all text-[14px] font-semibold text-white">
-                    {reviewWalletCard?.value ?? "Pending wallet"}
-                  </div>
-                  <div className="mt-2 text-[12px] leading-6 text-[#9faab6]">
-                    {reviewWalletCard?.helper ?? "Judge mode follows the wallet active in this browser session."}
-                  </div>
-                  <div className="mt-4 grid gap-3">
-                    <div className="glass-inset rounded-[12px] px-3 py-3">
-                      <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Proof store</div>
-                      <div className={`mt-1 text-[14px] font-semibold ${toneClass(proofStoreCard?.tone)}`}>
-                        {proofStoreValue}
-                      </div>
-                      <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">{proofStoreCard?.helper}</div>
-                    </div>
-                    <div className="glass-inset rounded-[12px] px-3 py-3">
-                      <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Pinned wallet</div>
-                      <div className="mt-1 break-all text-[13px] text-white">
-                        Judge wallet: {reviewWalletCard?.value ?? "Pending wallet"}
-                      </div>
-                      <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">
-                        {latestProofHistoryCard?.helper ?? "No proof timestamp recorded yet."}
-                      </div>
-                    </div>
-                    {inftComponent?.address ? (
-                      <div className="glass-inset rounded-[12px] px-3 py-3">
-                        <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">INFT contract</div>
-                        <div className="mt-1 break-all text-[13px] text-white">
-                          {inftComponent.address}
-                        </div>
-                        <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">
-                          Mainnet Agent NFT contract address used by the app.
-                        </div>
-                      </div>
-                    ) : null}
+              <div className="grid gap-[10px] xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+                <div className="glass-inset rounded-[16px] px-4 py-4">
+                  <div className="text-[12px] font-medium text-white">Reasoning snapshot</div>
+                  <div className="mt-3 text-[13px] leading-7 text-[#d6dee6]">
+                    {data.latestProof?.decision.reasoning ?? "No stored reasoning available yet."}
                   </div>
                 </div>
 
@@ -308,6 +270,48 @@ export default async function JudgePage() {
                     ))}
                   </div>
                 </div>
+              </div>
+
+              <div className="grid gap-[10px] md:grid-cols-2 xl:grid-cols-4">
+                <div className="yb-soft-card rounded-[16px] px-4 py-4">
+                  <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Judge wallet</div>
+                  <div className="mt-2 break-all text-[14px] font-semibold text-white">
+                    {reviewWalletCard?.value ?? "Pending wallet"}
+                  </div>
+                  <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">
+                    {reviewWalletCard?.helper ?? "Judge mode follows the wallet active in this browser session."}
+                  </div>
+                </div>
+
+                <div className="glass-inset rounded-[16px] px-4 py-4">
+                  <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Proof store</div>
+                  <div className={`mt-2 text-[14px] font-semibold ${toneClass(proofStoreCard?.tone)}`}>
+                    {proofStoreValue}
+                  </div>
+                  <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">{proofStoreCard?.helper}</div>
+                </div>
+
+                <div className="glass-inset rounded-[16px] px-4 py-4">
+                  <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Pinned wallet</div>
+                  <div className="mt-2 break-all text-[13px] text-white">
+                    Judge wallet: {reviewWalletCard?.value ?? "Pending wallet"}
+                  </div>
+                  <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">
+                    {latestProofHistoryCard?.helper ?? "No proof timestamp recorded yet."}
+                  </div>
+                </div>
+
+                {inftComponent?.address ? (
+                  <div className="glass-inset rounded-[16px] px-4 py-4">
+                    <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">INFT contract</div>
+                    <div className="mt-2 break-all text-[13px] text-white">
+                      {inftComponent.address}
+                    </div>
+                    <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">
+                      Mainnet Agent NFT contract address used by the app.
+                    </div>
+                  </div>
+                ) : null}
               </div>
             </div>
 
