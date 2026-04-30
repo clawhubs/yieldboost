@@ -17,6 +17,8 @@
     "verify:inft:mainnet": "node scripts/verify-yield-strategy-inft-chainscan.cjs mainnet",
     "deploy:inft": "node scripts/deploy-inft.cjs",
     "deploy:inft:mainnet": "node scripts/deploy-inft.cjs mainnet",
+    "vercel:env:sync:production": "node scripts/sync-vercel-production-env.cjs",
+    "vercel:env:print:production": "node scripts/sync-vercel-production-env.cjs --print",
     "setup:tee-broker": "node scripts/setup-tee-broker.cjs",
     "setup:tee-broker:mainnet": "node scripts/setup-tee-broker.cjs mainnet",
     "acknowledge:provider:mainnet": "node scripts/acknowledge-provider.cjs mainnet",

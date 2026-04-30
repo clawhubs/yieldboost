@@ -436,7 +436,7 @@ export default function DashboardView() {
                       {isOptimizing ? "Optimization Running..." : judgeMode ? "Judge Snapshot Active" : "Boost My Yield Now"}
                     </div>
                     <div className="text-[11px] text-[#0b4340]">
-                      {isOptimizing ? "Popup optimizer sedang berjalan" : judgeMode ? "Read-only review on testnet result" : "1-Click AI Optimization"}
+                      {isOptimizing ? "Popup optimizer sedang berjalan" : judgeMode ? "Read-only review on the latest proof-backed result" : "1-Click AI Optimization"}
                     </div>
                   </div>
                 </button>
@@ -1017,7 +1017,7 @@ export default function DashboardView() {
                 </button>
                 {judgeMode ? (
                   <div className="mt-3 text-[12px] leading-5 text-[#8eced3]">
-                    Judge mode is read-only. It shows the latest recorded testnet snapshot and proof for review. Exit judge mode from the sidebar to run a fresh optimization as a normal user.
+                    Judge mode is read-only. It shows the latest recorded proof-backed snapshot and receipt for review. Exit judge mode from the sidebar to run a fresh optimization as a normal user.
                   </div>
                 ) : null}
                 {walletConnected && !hasDetectedAssets ? (

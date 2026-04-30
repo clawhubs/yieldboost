@@ -6,9 +6,7 @@ import {
   CheckCircle2,
   ExternalLink,
   GitBranch,
-  Link2,
   ShieldCheck,
-  Wallet2,
 } from "lucide-react";
 import JudgeModeBootstrap from "@/components/judge/JudgeModeBootstrap";
 import JudgeSnapshotAutoRefresh from "@/components/judge/JudgeSnapshotAutoRefresh";
@@ -37,28 +35,12 @@ function statusBadgeClass(status: "live" | "configured" | "partial" | "pending")
   return "border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-[#d7e0e8]";
 }
 
-function envStatusClass(status: "set" | "missing" | "optional") {
-  if (status === "set") {
-    return "border-[rgba(47,224,109,0.24)] bg-[rgba(47,224,109,0.08)] text-[#68ff7a]";
-  }
-  if (status === "missing") {
-    return "border-[rgba(246,193,102,0.24)] bg-[rgba(246,193,102,0.08)] text-[#f6c166]";
-  }
-  return "border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-[#d7e0e8]";
-}
-
 export default async function JudgePage() {
   const data = await getJudgePageData();
   const primaryComponents = data.components.filter((component) =>
     ["0G Storage", "0G Compute Network", "ProofRegistry"].includes(component.title),
   );
-  const supportingComponents = data.components.filter((component) =>
-    !["0G Storage", "0G Compute Network", "ProofRegistry"].includes(component.title),
-  );
-  const mainnetPriority = data.mainnetChecklist.slice(0, 3);
-  const missingEnv = data.envChecklist.filter((item) => item.status === "missing");
-  const envPreview = missingEnv.slice(0, 6);
-  const blockersPreview = data.blockers.slice(0, 3);
+  const inftComponent = data.components.find((component) => component.title === "Yield Strategy INFT");
   const proofRegistryValue =
     data.latestProof?.proofRegistryAddress ?? "Placeholder: set ProofRegistry env for the active network";
   const reviewWalletCard = data.statusCards.find((card) => card.label === "Review Wallet");
@@ -74,7 +56,7 @@ export default async function JudgePage() {
     : "Open latest tx";
   const quickReviewPoints = [
     "Open `/judge` as the submission entry point to see the latest wallet result first.",
-    "Follow the latest tx link and the CID to verify the current testnet proof externally.",
+    "Follow the latest tx link and the CID to verify the current mainnet proof externally.",
     "Jump to `/history` or `/agents` only if you want more context on the same snapshot.",
     "Use `Exit judge mode` in the sidebar anytime to return to the normal wallet flow.",
   ];
@@ -105,7 +87,7 @@ export default async function JudgePage() {
               Judge Mode
             </div>
             <h1 className="mt-3 font-[family-name:var(--font-display)] text-[30px] font-semibold leading-[1.08] text-white md:text-[40px]">
-              Start here for the hackathon review.
+              Mainnet review starts here.
             </h1>
             <p className="mt-3 max-w-3xl text-[15px] leading-7 text-[#9daab6]">
               YieldBoost AI finds a better low-risk yield route, shows the decision clearly, and keeps the latest wallet proof ready for external verification. This page stays read-only so a judge can inspect the current result without rerunning the flow.
@@ -118,11 +100,11 @@ export default async function JudgePage() {
                 },
                 {
                   title: "What is live",
-                  body: "0G Storage proof data, explorer link, and ProofRegistry anchoring when the latest run produced it.",
+                  body: "0G Mainnet proof data, explorer links, and ProofRegistry anchoring from the latest recorded run.",
                 },
                 {
-                  title: "What is optional",
-                  body: "Mainnet readiness and env audit stay available below, but they do not block the primary judging path.",
+                  title: "What is kept secondary",
+                  body: "Operational readiness, deeper docs, and internal setup checks are intentionally kept out of the first judging screen.",
                 },
               ].map((item) => (
                 <div key={item.title} className="glass-inset rounded-[14px] px-4 py-4">
@@ -187,8 +169,7 @@ export default async function JudgePage() {
         </div>
       </header>
 
-      <div className="grid gap-[10px] xl:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="space-y-[10px]">
+      <div className="space-y-[10px]">
           <section className="yb-card rounded-[18px] px-5 py-5">
             <div className="flex items-center gap-3">
               <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
@@ -247,6 +228,22 @@ export default async function JudgePage() {
                     )}
                   </div>
                   <div>
+                    <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">ProofRegistry tx</div>
+                    {data.latestProof?.proofRegistryExplorerUrl ? (
+                      <a
+                        href={data.latestProof.proofRegistryExplorerUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-1 inline-flex items-center gap-2 text-[13px] text-[#22ddd0]"
+                      >
+                        Open anchor tx
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </a>
+                    ) : (
+                      <div className="mt-1 text-[13px] text-[#d6dee6]">No registry tx yet</div>
+                    )}
+                  </div>
+                  <div>
                     <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Reasoning snapshot</div>
                     <div className="mt-1 text-[13px] leading-6 text-[#d6dee6]">
                       {data.latestProof?.decision.reasoning ?? "No stored reasoning available yet."}
@@ -280,6 +277,17 @@ export default async function JudgePage() {
                       {latestProofHistoryCard?.helper ?? "No proof timestamp recorded yet."}
                     </div>
                   </div>
+                  {inftComponent?.address ? (
+                    <div className="glass-inset rounded-[12px] px-3 py-3">
+                      <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">INFT contract</div>
+                      <div className="mt-1 break-all text-[13px] text-white">
+                        {inftComponent.address}
+                      </div>
+                      <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">
+                        Mainnet Agent NFT contract address used by the app.
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -353,26 +361,6 @@ export default async function JudgePage() {
               ))}
             </div>
 
-            {supportingComponents.length > 0 ? (
-              <div className="mt-4 rounded-[14px] border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.02)] px-4 py-4">
-                <div className="text-[12px] font-medium text-white">Supporting paths</div>
-                <div className="mt-3 grid gap-3 md:grid-cols-3">
-                  {supportingComponents.map((component) => (
-                    <div key={component.title}>
-                      <div className="flex items-center gap-2">
-                        <div className="text-[13px] font-medium text-white">{component.title}</div>
-                        <span
-                          className={`rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] ${statusBadgeClass(component.status)}`}
-                        >
-                          {component.status}
-                        </span>
-                      </div>
-                      <div className="mt-2 text-[12px] leading-6 text-[#9faab6]">{component.detail}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
           </section>
 
           <section className="yb-card rounded-[18px] px-5 py-5">
@@ -410,151 +398,6 @@ export default async function JudgePage() {
               ))}
             </div>
           </section>
-        </div>
-
-        <aside className="space-y-[10px]">
-          <details className="yb-card rounded-[18px] px-5 py-5 [&_summary::-webkit-details-marker]:hidden">
-            <summary className="flex cursor-pointer items-center justify-between gap-3">
-              <div className="min-w-0">
-                <div className="flex items-center gap-3">
-                  <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
-                    <Link2 className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h2 className="text-[18px] font-semibold text-white">Current blockers</h2>
-                    <p className="mt-1 text-[13px] text-[#8ea1af]">
-                      {blockersPreview.length > 0
-                        ? `${blockersPreview.length} item masih perlu perhatian sebelum cutover berikutnya.`
-                        : "No active blocker detected from the current environment snapshot."}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <span className="rounded-full border border-[rgba(255,255,255,0.08)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#d7e0e8]">
-                Expand
-              </span>
-            </summary>
-
-            <div className="mt-4 space-y-3">
-              {blockersPreview.length > 0 ? (
-                blockersPreview.map((item) => (
-                  <div key={item} className="rounded-[14px] border border-[rgba(246,193,102,0.22)] bg-[rgba(246,193,102,0.06)] px-4 py-4 text-[12px] leading-6 text-[#f0d9a4]">
-                    {item}
-                  </div>
-                ))
-              ) : (
-                <div className="rounded-[14px] border border-[rgba(47,224,109,0.24)] bg-[rgba(47,224,109,0.08)] px-4 py-4 text-[12px] leading-6 text-[#7cff90]">
-                  No blocking infra gap is currently detected from the active environment snapshot.
-                </div>
-              )}
-            </div>
-          </details>
-
-          <details className="yb-card rounded-[18px] px-5 py-5 [&_summary::-webkit-details-marker]:hidden">
-            <summary className="flex cursor-pointer items-center justify-between gap-3">
-              <div className="min-w-0">
-                <div className="flex items-center gap-3">
-                  <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
-                    <Link2 className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h2 className="text-[18px] font-semibold text-white">Mainnet readiness</h2>
-                    <p className="mt-1 text-[13px] text-[#8ea1af]">Kept secondary on purpose so the first screen stays focused on the judged result.</p>
-                  </div>
-                </div>
-              </div>
-              <span className="rounded-full border border-[rgba(255,255,255,0.08)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#d7e0e8]">
-                Expand
-              </span>
-            </summary>
-
-            <div className="mt-4 space-y-3">
-              {mainnetPriority.map((item) => (
-                <div key={item.label} className="glass-inset rounded-[14px] px-4 py-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="text-[14px] font-medium text-white">{item.label}</div>
-                    <span
-                      className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] ${statusBadgeClass(item.status)}`}
-                    >
-                      {item.status}
-                    </span>
-                  </div>
-                  <div className="mt-2 text-[12px] leading-6 text-[#9faab6]">{item.detail}</div>
-                </div>
-              ))}
-            </div>
-          </details>
-
-          {supportingComponents.length > 0 ? (
-            <details className="yb-card rounded-[18px] px-5 py-5 [&_summary::-webkit-details-marker]:hidden">
-              <summary className="flex cursor-pointer items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-[18px] font-semibold text-white">Supporting paths</h2>
-                  <p className="mt-1 text-[13px] text-[#8ea1af]">Extra technical context that is no longer pushed into the primary judging view.</p>
-                </div>
-                <span className="rounded-full border border-[rgba(255,255,255,0.08)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#d7e0e8]">
-                  Expand
-                </span>
-              </summary>
-
-              <div className="mt-4 grid gap-3">
-                {supportingComponents.map((component) => (
-                  <div key={component.title} className="glass-inset rounded-[14px] px-4 py-4">
-                    <div className="flex items-center gap-2">
-                      <div className="text-[13px] font-medium text-white">{component.title}</div>
-                      <span
-                        className={`rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] ${statusBadgeClass(component.status)}`}
-                      >
-                        {component.status}
-                      </span>
-                    </div>
-                    <div className="mt-2 text-[12px] leading-6 text-[#9faab6]">{component.detail}</div>
-                  </div>
-                ))}
-              </div>
-            </details>
-          ) : null}
-
-          <details className="yb-card rounded-[18px] px-5 py-5 [&_summary::-webkit-details-marker]:hidden">
-            <summary className="flex cursor-pointer items-center justify-between gap-3">
-              <div className="min-w-0">
-                <div className="flex items-center gap-3">
-                  <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
-                    <Wallet2 className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h2 className="text-[18px] font-semibold text-white">Vercel env checklist</h2>
-                    <p className="mt-1 text-[13px] text-[#8ea1af]">
-                      {missingEnv.length > 0
-                        ? `${missingEnv.length} env masih missing di jalur readiness sekarang.`
-                        : "No missing env detected in the current snapshot."}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <span className="rounded-full border border-[rgba(255,255,255,0.08)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#d7e0e8]">
-                Expand
-              </span>
-            </summary>
-
-            <div className="mt-4 space-y-3">
-              {envPreview.map((item) => (
-                <div key={item.name} className="glass-inset rounded-[14px] px-4 py-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <code className="text-[12px] text-white">{item.name}</code>
-                    <span
-                      className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] ${envStatusClass(item.status)}`}
-                    >
-                      {item.status}
-                    </span>
-                  </div>
-                  <div className="mt-2 text-[12px] text-[#d8e1e8]">{item.requiredFor}</div>
-                  <div className="mt-1 text-[12px] leading-6 text-[#9faab6]">{item.detail}</div>
-                </div>
-              ))}
-            </div>
-          </details>
-        </aside>
       </div>
     </section>
   );

@@ -358,9 +358,10 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   const preferredNetwork = getServerDefaultNetworkKey();
   const latestProof = await resolveLatestProofForWalletAcrossNetworks(reviewWallet);
   const scopedProofs = await resolveProofHistoryForWalletAcrossNetworks(reviewWallet);
+  const proofNetwork = latestProof?.networkKey ?? preferredNetwork;
   const judgePortfolio = await getLivePortfolioSnapshot(
     reviewWallet,
-    latestProof?.networkKey ?? preferredNetwork,
+    proofNetwork,
     { preferProofSnapshot: true },
   );
   const preferredConfig = getServer0GNetworkConfig(preferredNetwork);
@@ -368,7 +369,6 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   const computeLedgerPrivateKey = getComputeLedgerPrivateKey(preferredNetwork);
   const computeConfigured = hasComputeCredentials(preferredNetwork);
   const networks = getAvailableWalletNetworks();
-  const testnetConfig = networks.find((network) => network.key === "testnet") ?? preferredConfig;
   const mainnetConfig = networks.find((network) => network.key === "mainnet") ?? preferredConfig;
   const latestExplorer = trimUrl(latestProof?.explorerUrl);
   const latestRegistryExplorer = trimUrl(latestProof?.proofRegistryExplorerUrl);
@@ -393,7 +393,10 @@ export async function getJudgePageData(): Promise<JudgePageData> {
     {
       label: "Default Server Network",
       value: preferredConfig.label,
-      helper: `Controlled by \`ZG_NETWORK_KEY=${preferredNetwork}\` when you prepare mainnet cutover`,
+      helper:
+        preferredNetwork === "mainnet"
+          ? "Production server runtime is currently pointed at mainnet."
+          : `Controlled by \`ZG_NETWORK_KEY=${preferredNetwork}\` until you cut over production.`,
       tone: preferredNetwork === "mainnet" ? "green" : "teal",
     },
     {
@@ -448,7 +451,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
         {
           label: "Review Path",
           value: "Judge snapshot",
-          helper: "Use the judge route to review the latest recorded testnet result without extension setup or rerunning optimize.",
+          helper: "Use the judge route to review the latest recorded proof-backed result without extension setup or rerunning optimize.",
           tone: "teal",
         },
         {
@@ -470,14 +473,14 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   const components: JudgeComponentStatus[] = [
     {
       title: "0G Storage",
-      status: latestProof ? "live" : toHealthStatus(runtimeStatus.networks.testnet.storageConfigured),
+      status: latestProof ? "live" : toHealthStatus(runtimeStatus.networks[proofNetwork].storageConfigured),
       detail: latestProof
         ? `Latest proof CID ${shorten(latestProof.cid, 12)} is already stored and visible in the runtime ledger.`
-        : runtimeStatus.networks.testnet.storageConfigured
+        : runtimeStatus.networks[proofNetwork].storageConfigured
           ? "Storage write path is configured, but no proof has been recorded in the current runtime yet."
-          : "Storage route exists, but testnet proof upload envs are still incomplete.",
+          : "Storage route exists, but proof upload envs are still incomplete for the active network.",
       href: latestExplorer,
-      meta: latestProof?.txHash ? `TX ${shorten(latestProof.txHash, 12)}` : testnetConfig.storageUrl,
+      meta: latestProof?.txHash ? `TX ${shorten(latestProof.txHash, 12)}` : getServer0GNetworkConfig(proofNetwork).storageUrl,
     },
     {
       title: "0G Compute Network",
@@ -528,14 +531,21 @@ export async function getJudgePageData(): Promise<JudgePageData> {
         : "Explorer bases are configured per network, but judge mode will only link out after a real proof tx exists.",
       href: latestExplorer,
       meta: latestProof
-        ? `${testnetConfig.label}: latest tx ready`
-        : `${testnetConfig.label} explorer base configured`,
+        ? `${getServer0GNetworkConfig(proofNetwork).label}: latest tx ready`
+        : `${getServer0GNetworkConfig(proofNetwork).label} explorer base configured`,
     },
     {
       title: "Mainnet Path",
-      status: runtimeStatus.networks.mainnet.enabled ? "partial" : "pending",
+      status:
+        runtimeStatus.networks.mainnet.enabled && preferredNetwork === "mainnet"
+          ? "live"
+          : runtimeStatus.networks.mainnet.enabled
+            ? "partial"
+            : "pending",
       detail: runtimeStatus.networks.mainnet.enabled
-        ? "Wallet switching and server helpers are mainnet-aware, but final cutover still depends on storage, signer, and registry envs."
+        ? preferredNetwork === "mainnet"
+          ? "Mainnet is now the active default path for server-side proof and review flows."
+          : "Wallet switching and server helpers are mainnet-aware, but final cutover still depends on making mainnet the production default."
         : "Mainnet is intentionally not presented as ready until its public chain metadata is configured.",
       href: mainnetConfig.explorerBase,
       meta: `${mainnetConfig.label} explorer`,
@@ -576,7 +586,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
       "Open `/judge` as the submission entry point.",
       "If there is no active wallet in the browser, judge mode pins the public review wallet automatically.",
       "Open `/`, `/history`, or `/agents` while judge mode is active to inspect the same wallet snapshot and proof history.",
-      "Use `Exit judge mode` in the sidebar to return to the normal user wallet flow and run a fresh testnet optimization.",
+      "Use `Exit judge mode` in the sidebar to return to the normal user wallet flow and run a fresh optimization.",
     ],
     blockers,
     proofCount: scopedProofs.length,

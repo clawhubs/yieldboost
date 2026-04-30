@@ -237,7 +237,7 @@ export default function AgentPanel() {
             <div className="text-[15px] text-white">{judgeMode ? "Judge snapshot ready" : "Ready to execute"}</div>
             <div className="mt-3 text-[14px] leading-7 text-[#d7e0e8]">
               {judgeMode
-                ? "Judge mode is read-only. Review the latest stored testnet result here, then exit judge mode from the sidebar if you want to run a fresh optimization as a normal user."
+                ? "Judge mode is read-only. Review the latest stored proof-backed result here, then exit judge mode from the sidebar if you want to run a fresh optimization as a normal user."
                 : "Start the optimizer to generate a 0G-backed recommendation and execution proof. If you only need the latest recorded review snapshot, open judge mode from the sidebar."}
             </div>
             <div className="mt-4 flex items-center gap-2 text-[12px] text-[#22ddd0]">
