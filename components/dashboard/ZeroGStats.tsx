@@ -123,6 +123,15 @@ export default function ZeroGStats() {
     [latestResult],
   );
   const explorerBase = getWalletNetworkConfig(networkKey).explorerBase;
+  const latestExplorerLink = useMemo(
+    () => latestResult?.proofRegistryExplorerUrl ?? latestResult?.proofUrl ?? explorerBase,
+    [explorerBase, latestResult?.proofRegistryExplorerUrl, latestResult?.proofUrl],
+  );
+  const latestExplorerLabel = latestResult?.proofRegistryExplorerUrl
+    ? "Open latest anchor tx"
+    : latestResult?.proofUrl
+      ? "Open latest proof tx"
+      : "Open 0G Explorer";
 
   return (
     <section
@@ -150,12 +159,12 @@ export default function ZeroGStats() {
         <div className="flex items-center justify-between gap-3">
           <div className="text-[12px] font-medium text-white">0G NETWORK STATS</div>
           <a
-            href={explorerBase}
+            href={latestExplorerLink}
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-1 text-[11px] text-[#25d6c6]"
           >
-            View on 0G Explorer
+            {latestExplorerLabel}
             <ArrowUpRight className="h-3.5 w-3.5" />
           </a>
         </div>

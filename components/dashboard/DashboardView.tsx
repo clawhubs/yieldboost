@@ -223,6 +223,12 @@ export default function DashboardView() {
     portfolio?.displayUnit === "0G" ? "TOTAL 0G BALANCE" : "TOTAL PORTFOLIO VALUE";
   const activeNetwork = walletNetworks.find((item) => item.key === networkKey) ?? walletNetworks[0];
   const activeExplorerBase = getWalletNetworkConfig(networkKey).explorerBase;
+  const latestExplorerLink = latestResult?.proofRegistryExplorerUrl ?? latestResult?.proofUrl ?? activeExplorerBase;
+  const latestExplorerLabel = latestResult?.proofRegistryExplorerUrl
+    ? "Open latest anchor tx"
+    : latestResult?.proofUrl
+      ? "Open latest proof tx"
+      : "Open 0G Explorer";
 
   const liveDecisions = useMemo(() => {
     if (!latestResult) return decisionItems as readonly string[];
@@ -875,7 +881,7 @@ export default function DashboardView() {
 	                    <div className="text-[12px] font-medium text-white">0G CHAIN STATS</div>
 	                    <div className="text-[10px] text-[#6b7a87]">source: live app runtime</div>
 	                  </div>
-                  <a href={activeExplorerBase} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[11px] text-[#25d6c6]">View on 0G Explorer <ExternalLink className="h-3 w-3" /></a>
+                  <a href={latestExplorerLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[11px] text-[#25d6c6]">{latestExplorerLabel} <ExternalLink className="h-3 w-3" /></a>
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
                   {chainStats.map((item) => (
