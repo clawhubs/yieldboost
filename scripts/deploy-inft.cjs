@@ -2,7 +2,13 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const solc = require("solc");
-const { JsonRpcProvider, Wallet, ContractFactory, formatEther } = require("ethers");
+const {
+  AbiCoder,
+  JsonRpcProvider,
+  Wallet,
+  ContractFactory,
+  formatEther,
+} = require("ethers");
 
 function readEnvFile(filePath) {
   const values = {};
@@ -188,6 +194,8 @@ async function main() {
     blockNumber: deploymentReceipt?.blockNumber ?? null,
     explorerUrl: `${explorerBase.replace(/\/$/, "")}/address/${address}`,
     deployedAt: new Date().toISOString(),
+    constructorArgs: [signer.address],
+    constructorArgsEncoded: AbiCoder.defaultAbiCoder().encode(["address"], [signer.address]),
     abi,
   };
 
