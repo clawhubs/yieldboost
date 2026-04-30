@@ -9,6 +9,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Status-Live-14c784?style=for-the-badge" alt="Status Live" />
   <img src="https://img.shields.io/badge/Infrastructure-0G%20Labs-00d2ff?style=for-the-badge" alt="Infrastructure 0G Labs" />
+  <img src="https://img.shields.io/badge/Default%20Network-Mainnet-1f8fff?style=for-the-badge" alt="Default Network Mainnet" />
   <img src="https://img.shields.io/badge/Judge%20Mode-/judge-7c5cff?style=for-the-badge" alt="Judge Mode" />
   <img src="https://img.shields.io/badge/Proof%20Layer-0G%20Storage%20%2B%20ProofRegistry-0f172a?style=for-the-badge" alt="Proof Layer" />
   <img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge" alt="Next.js 15" />
@@ -20,24 +21,43 @@
 
 <p align="center">
   <a href="#why-this-matters">Why it matters</a> •
+  <a href="#mainnet-live-verification">Mainnet verification</a> •
   <a href="#hackathon-track-alignment">Track alignment</a> •
   <a href="#fast-judge-review">Fast judge review</a> •
   <a href="#architecture">Architecture</a> •
   <a href="#0g-native-data-flow">0G data flow</a> •
-  <a href="#mainnet-submission-prep">Mainnet prep</a> •
   <a href="#local-installation">Local setup</a> •
+  <a href="#testnet-secondary-path">Testnet secondary path</a> •
   <a href="#roadmap-ya0g-and-proof-of-optimization">Roadmap</a>
 </p>
 
-> YieldBoost AI is built for a simple but powerful demo story: generate a yield optimization result, persist it through 0G infrastructure, and let a judge verify the latest outcome from `/judge` without wallet friction.
+> YieldBoost AI is now positioned around a live 0G mainnet proof flow: generate a yield optimization result, persist it through 0G infrastructure, and let a judge verify the latest outcome from `/judge` without wallet friction.
 
-YieldBoost AI is a Next.js application that turns a yield optimization run into an externally reviewable proof trail. The active implementation in this repository centers on three 0G primitives:
+YieldBoost AI is a Next.js application that turns a yield optimization run into an externally reviewable proof trail. The active implementation in this repository is now centered on a **mainnet-first** review path across three 0G primitives:
 
 - **0G Compute** for TEE-ready inference when provider credentials are configured.
 - **0G Storage** for storing optimization proof payloads.
-- **ProofRegistry** for optional on-chain anchoring of those stored proofs.
+- **ProofRegistry** for on-chain anchoring of those stored proofs on the active network.
 
-The result is a product story judges can verify quickly: a user runs an optimization, the app persists the reasoning and decision payload, and `/judge` exposes the latest review snapshot without requiring wallet connection, faucet setup, or rerunning the flow.
+The result is a product story judges can verify quickly: a user runs an optimization, the app persists the reasoning and decision payload on 0G infrastructure, and `/judge` exposes the latest mainnet review snapshot without requiring wallet connection, faucet setup, or rerunning the flow.
+
+## Mainnet Live Verification
+
+The current public deployment is now **mainnet-default**.
+
+| Artifact | Value |
+| --- | --- |
+| Mainnet `ProofRegistry` | [`0x8e63e117E71A80Cfc10fDF375F079e2e29cd7D7D`](https://chainscan.0g.ai/address/0x8e63e117E71A80Cfc10fDF375F079e2e29cd7D7D) |
+| Mainnet `YieldStrategyINFT` | [`0xb264D861264B0e4f8fb98A61B7694BA8a3B6BBe3`](https://chainscan.0g.ai/address/0xb264D861264B0e4f8fb98A61B7694BA8a3B6BBe3) |
+| Latest 0G Storage tx | [`0xc1b560a3a16d4aa9449d8d99cdfd269b2d3dc80dd273e3f5c27176c04b25f282`](https://chainscan.0g.ai/tx/0xc1b560a3a16d4aa9449d8d99cdfd269b2d3dc80dd273e3f5c27176c04b25f282) |
+| Latest `ProofRegistry` anchor tx | [`0xf3ff727fcbba0922dfecf31ba4b5f962e0fbdf16f921b91c2205da9be92c02a7`](https://chainscan.0g.ai/tx/0xf3ff727fcbba0922dfecf31ba4b5f962e0fbdf16f921b91c2205da9be92c02a7) |
+| Judge entry point | [`/judge`](https://yieldboost-ai.vercel.app/judge) |
+
+What this means in practice:
+
+- `mainnet` is the default review path in the live app.
+- `/judge` can still switch between mainnet and testnet when a reviewer wants comparison context.
+- testnet remains available for iteration and fallback, but it is no longer the primary submission narrative.
 
 ## Why This Matters
 
@@ -45,10 +65,10 @@ Most DeFi dashboards can claim "AI". Very few make the output easy to audit.
 
 YieldBoost AI is designed around **verifiable AI**, not just recommendation UX:
 
-- The optimization result is serialized and uploaded through the 0G storage pipeline.
+- The optimization result is serialized and uploaded through the 0G mainnet storage pipeline by default.
 - The latest run is retained in a runtime proof ledger.
-- When `ProofRegistry` is configured, the storage result is also anchored on-chain.
-- The judge can open `/judge` first and inspect the latest wallet snapshot in read-only mode.
+- The storage result is also anchored on-chain through `ProofRegistry`.
+- The judge can open `/judge` first, inspect the latest wallet snapshot in read-only mode, and switch networks only if they want secondary context.
 
 That combination is the project's strongest differentiator for a hackathon review setting.
 
@@ -59,7 +79,7 @@ YieldBoost AI is positioned first and foremost for **Track 2: Agentic Trading Ar
 Why this is the strongest fit:
 
 - The core product is an **AI yield optimizer** for Web3 portfolios.
-- The live implementation turns each optimization run into a **verifiable finance artifact** through **0G Storage** and optional **ProofRegistry** anchoring.
+- The live implementation turns each optimization run into a **verifiable finance artifact** through **0G Storage** and **ProofRegistry** anchoring on 0G mainnet.
 - The compute path is built around **0G Compute** with a TEE-oriented inference route when credentials are available.
 - `/judge` reduces review friction by exposing the latest proof-backed result without requiring wallet connection or faucet setup.
 
@@ -93,7 +113,7 @@ The submission story, however, is clearest when framed as **verifiable DeFi inte
 | --- | --- | --- |
 | 1 | Open `/judge` | Starts directly on the audit-first route instead of a wallet setup screen. |
 | 2 | Review latest proof snapshot | Shows route recommendation, APY lift, wallet snapshot, and reasoning in one place. |
-| 3 | Open explorer links | Lets the judge inspect the latest 0G storage tx and ProofRegistry anchor when available. |
+| 3 | Open explorer links | Lets the judge inspect the latest 0G mainnet storage tx and ProofRegistry anchor directly. |
 | 4 | Navigate deeper only if needed | `/history` and `/agents` remain available without breaking the review flow. |
 
 ## Architecture
@@ -146,7 +166,7 @@ flowchart TD
    - [`/api/0g/proof`](app/api/0g/proof/route.ts)
    - [`/api/history`](app/api/history/route.ts)
    - [`/api/agent/list`](app/api/agent/list/route.ts)
-8. The judge opens [`/judge`](<app/(workspace)/judge/page.tsx>), which surfaces the latest proof, wallet snapshot, explorer links, registry status, and environment readiness in one audit-first page.
+8. The judge opens [`/judge`](<app/(workspace)/judge/page.tsx>), which surfaces the latest proof, wallet snapshot, explorer links, registry status, and a compact network switcher in one audit-first page.
 
 ## What Is Actually Live In This Repo
 
@@ -159,10 +179,11 @@ flowchart TD
 
 ### Frictionless Judge Experience
 
-- **`/judge` is the intended submission entry point**.
+- **`/judge` is the intended submission entry point** and defaults to the current mainnet review path.
 - **No wallet connection is required** for review.
 - **No faucet step is required** for the judge to inspect the latest recorded result.
 - **Read-only mode is explicit**: `JudgeModeBootstrap` sets judge mode state, scopes the session to the review wallet, and keeps the main flow non-destructive.
+- **Mainnet is the default review network** while testnet stays available as secondary context from the same page.
 - **The UX is tested** in Playwright, including direct judge entry, cross-page hydration, and judge-mode exit behavior.
 
 ### Agent / INFT Extension Path
@@ -176,10 +197,11 @@ flowchart TD
 
 `/judge` is not a cosmetic dashboard variant. It is a purpose-built audit surface for hackathon evaluation.
 
-It does three important things:
+It does four important things:
 
 - **Bootstraps a review wallet automatically** when no wallet is connected.
 - **Pins the review flow to the latest recorded proof**, so judges see a concrete result first.
+- **Defaults the review path to mainnet**, which matches the current live submission story.
 - **Keeps proof links, CID/root hash, registry status, and snapshot details on one page**, minimizing review friction.
 
 This is the UX decision that makes YieldBoost AI unusually judge-friendly: the verification path is short, visible, and does not depend on extension setup.
@@ -257,11 +279,17 @@ npm install
 
 ### 2. Create `.env.local`
 
-Minimum setup for local judge flow and testnet proof writes:
+Minimum setup for local judge flow and **mainnet-first** proof writes:
 
 ```env
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_DEMO_WALLET_ADDRESS=0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D
+
+NEXT_PUBLIC_0G_MAINNET_CHAIN_ID=16661
+NEXT_PUBLIC_0G_MAINNET_CHAIN_NAME=0G Mainnet
+NEXT_PUBLIC_0G_MAINNET_EXPLORER_BASE_URL=https://chainscan.0g.ai
+NEXT_PUBLIC_0G_MAINNET_RPC=https://evmrpc.0g.ai
+NEXT_PUBLIC_0G_MAINNET_STORAGE=https://indexer-storage-turbo.0g.ai
 
 NEXT_PUBLIC_0G_TESTNET_CHAIN_ID=16602
 NEXT_PUBLIC_0G_TESTNET_CHAIN_NAME=0G Galileo Testnet
@@ -269,19 +297,19 @@ NEXT_PUBLIC_0G_EXPLORER_BASE_URL=https://chainscan-galileo.0g.ai
 NEXT_PUBLIC_ZG_RPC=https://evmrpc-testnet.0g.ai
 NEXT_PUBLIC_ZG_STORAGE=https://indexer-storage-testnet-turbo.0g.ai
 
-ZG_NETWORK_KEY=testnet
-ZG_TESTNET_RPC_URL=https://evmrpc-testnet.0g.ai
-ZG_TESTNET_STORAGE_URL=https://indexer-storage-testnet-turbo.0g.ai
-ZG_TESTNET_PRIVATE_KEY=<testnet_signer_private_key>
-ZG_TESTNET_PROOF_REGISTRY_ADDRESS=<optional_registry_address>
+ZG_NETWORK_KEY=mainnet
+ZG_MAINNET_RPC_URL=https://evmrpc.0g.ai
+ZG_MAINNET_STORAGE_URL=https://indexer-storage-turbo.0g.ai
+ZG_MAINNET_PRIVATE_KEY=<mainnet_signer_private_key>
+ZG_MAINNET_PROOF_REGISTRY_ADDRESS=0x8e63e117E71A80Cfc10fDF375F079e2e29cd7D7D
+YIELD_STRATEGY_INFT_MAINNET_ADDRESS=0xb264D861264B0e4f8fb98A61B7694BA8a3B6BBe3
 ```
 
 Optional but recommended:
 
 ```env
-ZG_TESTNET_COMPUTE_PROVIDER_ADDRESS=<testnet_compute_provider>
-ZG_TESTNET_LEDGER_PRIVATE_KEY=<testnet_compute_or_contract_signer>
-YIELD_STRATEGY_INFT_ADDRESS=<optional_inft_contract>
+ZG_MAINNET_COMPUTE_PROVIDER_ADDRESS=<mainnet_compute_provider>
+ZG_MAINNET_LEDGER_PRIVATE_KEY=<mainnet_compute_or_contract_signer>
 KV_REST_API_URL=<optional_vercel_kv_url>
 KV_REST_API_TOKEN=<optional_vercel_kv_token>
 UPSTASH_REDIS_REST_URL=<optional_upstash_url>
@@ -311,41 +339,46 @@ npm run test:ui
 ### 5. Optional contract / broker scripts
 
 ```bash
-npm run deploy:proof-registry
-npm run deploy:inft
-npm run setup:tee-broker
+npm run deploy:proof-registry:mainnet
+npm run deploy:inft:mainnet
+npm run setup:tee-broker:mainnet
 ```
 
-## Mainnet Submission Prep
+## Testnet Secondary Path
 
-This repo is now prepared for a cleaner mainnet cutover. The implementation already supports separate mainnet envs for:
+Testnet is still available, but it is now a secondary path for:
 
-- proof uploads
-- ProofRegistry anchoring
-- INFT contract reads and mints
-- 0G Compute provider selection
-- compute / contract signer separation
+- iteration
+- comparison during judging
+- fallback demos
+- isolated testing of provider or wallet flows
 
-### Mainnet env template
-
-Use [`/.env.mainnet.example`](.env.mainnet.example) as the source of truth for production cutover.
-
-The mainnet-specific envs that matter most are:
+If you want to run locally against testnet instead:
 
 ```env
-ZG_NETWORK_KEY=mainnet
-ZG_MAINNET_RPC_URL=https://evmrpc.0g.ai
-ZG_MAINNET_STORAGE_URL=<mainnet_storage_endpoint>
-ZG_MAINNET_PRIVATE_KEY=<mainnet_storage_signer_private_key>
-ZG_MAINNET_PROOF_REGISTRY_ADDRESS=<mainnet_proof_registry_address>
-ZG_MAINNET_COMPUTE_PROVIDER_ADDRESS=<mainnet_compute_provider_address>
-ZG_MAINNET_LEDGER_PRIVATE_KEY=<mainnet_compute_or_contract_signer_private_key>
-YIELD_STRATEGY_INFT_MAINNET_ADDRESS=<mainnet_yield_strategy_inft_address>
-NEXT_PUBLIC_0G_MAINNET_CHAIN_ID=16661
-NEXT_PUBLIC_0G_MAINNET_EXPLORER_BASE_URL=https://chainscan.0g.ai
+ZG_NETWORK_KEY=testnet
+ZG_TESTNET_RPC_URL=https://evmrpc-testnet.0g.ai
+ZG_TESTNET_STORAGE_URL=https://indexer-storage-testnet-turbo.0g.ai
+ZG_TESTNET_PRIVATE_KEY=<testnet_signer_private_key>
+ZG_TESTNET_PROOF_REGISTRY_ADDRESS=<optional_testnet_registry>
+ZG_TESTNET_COMPUTE_PROVIDER_ADDRESS=<optional_testnet_compute_provider>
+ZG_TESTNET_LEDGER_PRIVATE_KEY=<optional_testnet_signer>
+YIELD_STRATEGY_INFT_ADDRESS=<optional_testnet_inft_contract>
 ```
 
-### Commands to run after funding lands
+The UI and `/judge` can still switch between mainnet and testnet from the same deployment.
+
+## Mainnet Submission Status
+
+This repository is no longer in “mainnet prep only” mode. The current live state is:
+
+- mainnet `ProofRegistry` deployed
+- mainnet `YieldStrategyINFT` deployed
+- mainnet storage tx and registry anchor already recorded
+- live app defaults to mainnet
+- judge mode can still switch to testnet when needed
+
+Mainnet-related commands remain available for future redeployments or contract updates:
 
 ```bash
 npm run deploy:proof-registry:mainnet
@@ -354,24 +387,6 @@ npm run transfer:fund:broker:mainnet
 npm run acknowledge:provider:mainnet
 npm run setup:tee-broker:mainnet
 ```
-
-### What to paste into the submission after mainnet deployment
-
-- Mainnet `ProofRegistry` address
-- Mainnet `YieldStrategyINFT` address
-- Mainnet explorer links for both deployed contracts
-- At least one mainnet proof transaction link
-- Judge instruction: open `/judge` first
-
-### Recommended cutover order
-
-1. Fund the mainnet signer wallet.
-2. Fill `.env.local` or Vercel envs from [`.env.mainnet.example`](.env.mainnet.example).
-3. Deploy `ProofRegistry` on mainnet.
-4. Deploy `YieldStrategyINFT` on mainnet.
-5. Fund and acknowledge the mainnet compute provider path.
-6. Switch `ZG_NETWORK_KEY=mainnet`.
-7. Run one real optimization and verify the explorer trail from `/judge`.
 
 ## Repository Pointers
 
@@ -404,19 +419,19 @@ The items below are **future roadmap**, not current live functionality in this r
 
 ### Network Evolution
 
-- Upgrade from testnet-centric review mode into full mainnet cutover with separate mainnet storage, signer, registry, and INFT addresses.
+- Keep mainnet as the default public review path while preserving testnet as a secondary environment for experimentation and comparison.
 - Add stronger proof economics around recurring optimization behavior and strategy sharing.
 - Extend the current proof ledger into a richer reputation layer for agents, optimizers, and strategy curators.
 
 ## Closing Position
 
-YieldBoost AI is strongest when presented as a **verifiable optimization product built around 0G infrastructure and judge-friendly audit UX**.
+YieldBoost AI is strongest when presented as a **mainnet-live verifiable optimization product built around 0G infrastructure and judge-friendly audit UX**.
 
 The implementation already proves the essential idea:
 
 - **Compute can be routed through 0G**
-- **proofs can be stored through 0G**
-- **proofs can be anchored on-chain**
+- **proofs can be stored through 0G mainnet**
+- **proofs can be anchored on-chain through ProofRegistry**
 - **judges can review the latest result without wallet friction**
 
 That is a much more compelling hackathon story than a generic AI dashboard, because the output is not only generated, but also reviewable.
