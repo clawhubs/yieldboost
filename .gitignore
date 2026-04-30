@@ -59,3 +59,4 @@ Hakcaton 0G
 # internal QA / automation files
 playwright.config.ts
 tests/
+RUNBOOK_MAINNET.md
