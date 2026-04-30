@@ -9,6 +9,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import JudgeModeBootstrap from "@/components/judge/JudgeModeBootstrap";
+import JudgeNetworkSwitcher from "@/components/judge/JudgeNetworkSwitcher";
 import JudgeSnapshotAutoRefresh from "@/components/judge/JudgeSnapshotAutoRefresh";
 import { getJudgePageData } from "@/lib/server/review-mode";
 
@@ -146,6 +147,7 @@ export default async function JudgePage() {
                 </Link>
               </div>
             </div>
+            <JudgeNetworkSwitcher />
             <div className="mt-4 flex w-full max-w-3xl flex-wrap items-center justify-center gap-3">
               {projectProfiles.map((profile) => {
                 const Icon = profile.icon;
