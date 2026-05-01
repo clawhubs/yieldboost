@@ -79,16 +79,37 @@ function sameProofIdentity(
 ) {
   if (!left || !right) return false;
 
-  return Boolean(
-    (left.cid && right.cid && left.cid === right.cid) ||
-      (left.txHash && right.txHash && left.txHash === right.txHash) ||
-      (left.proofRegistryTxHash &&
-        right.proofRegistryTxHash &&
-        left.proofRegistryTxHash === right.proofRegistryTxHash) ||
-      (left.proofRegistryProofId &&
-        right.proofRegistryProofId &&
-        left.proofRegistryProofId === right.proofRegistryProofId),
+  if (
+    left.proofRegistryTxHash &&
+    right.proofRegistryTxHash &&
+    left.proofRegistryTxHash === right.proofRegistryTxHash
+  ) {
+    return true;
+  }
+
+  if (
+    left.proofRegistryProofId &&
+    right.proofRegistryProofId &&
+    left.proofRegistryProofId === right.proofRegistryProofId &&
+    left.proofRegistryAddress &&
+    right.proofRegistryAddress &&
+    left.proofRegistryAddress.toLowerCase() === right.proofRegistryAddress.toLowerCase()
+  ) {
+    return true;
+  }
+
+  if (left.txHash && right.txHash && left.txHash === right.txHash) {
+    return true;
+  }
+
+  const leftHasRunIdentity = Boolean(
+    left.proofRegistryTxHash || left.proofRegistryProofId || left.txHash,
   );
+  const rightHasRunIdentity = Boolean(
+    right.proofRegistryTxHash || right.proofRegistryProofId || right.txHash,
+  );
+
+  return !leftHasRunIdentity && !rightHasRunIdentity && left.cid === right.cid;
 }
 
 function mergeProofRecords(
@@ -384,10 +405,7 @@ export async function resolveProofHistoryForWallet(
   }
 
   const withoutLatestDuplicate = storedProofs.filter(
-    (proof) =>
-      proof.cid !== latestProof.cid &&
-      proof.txHash !== latestProof.txHash &&
-      proof.proofRegistryTxHash !== latestProof.proofRegistryTxHash,
+    (proof) => !sameProofIdentity(proof, latestProof),
   );
 
   return [latestProof, ...withoutLatestDuplicate].sort(
@@ -425,10 +443,7 @@ export async function resolveProofHistoryForWalletAcrossNetworks(
   for (const proof of liveProofs) {
     if (!proof) continue;
     const duplicateIndex = mergedProofs.findIndex(
-      (item) =>
-        item.cid === proof.cid ||
-        item.txHash === proof.txHash ||
-        item.proofRegistryTxHash === proof.proofRegistryTxHash,
+      (item) => sameProofIdentity(item, proof),
     );
 
     if (duplicateIndex >= 0) {

@@ -65,6 +65,43 @@ function sortProofsNewestFirst(proofs: StoredProofRecord[]) {
   });
 }
 
+function sameStoredProofRun(
+  left: StoredProofRecord,
+  right: StoredProofRecord,
+) {
+  if (
+    left.proofRegistryTxHash &&
+    right.proofRegistryTxHash &&
+    left.proofRegistryTxHash === right.proofRegistryTxHash
+  ) {
+    return true;
+  }
+
+  if (
+    left.proofRegistryProofId &&
+    right.proofRegistryProofId &&
+    left.proofRegistryProofId === right.proofRegistryProofId &&
+    left.proofRegistryAddress &&
+    right.proofRegistryAddress &&
+    left.proofRegistryAddress.toLowerCase() === right.proofRegistryAddress.toLowerCase()
+  ) {
+    return true;
+  }
+
+  if (left.txHash && right.txHash && left.txHash === right.txHash) {
+    return true;
+  }
+
+  const leftHasRunIdentity = Boolean(
+    left.proofRegistryTxHash || left.proofRegistryProofId || left.txHash,
+  );
+  const rightHasRunIdentity = Boolean(
+    right.proofRegistryTxHash || right.proofRegistryProofId || right.txHash,
+  );
+
+  return !leftHasRunIdentity && !rightHasRunIdentity && left.cid === right.cid;
+}
+
 async function readLocalStoreFile(): Promise<RuntimeStore | null> {
   try {
     const raw = await fs.readFile(LOCAL_STORE_PATH, "utf8");
@@ -109,7 +146,7 @@ export async function recordStoredProof(
   if (isRuntimeStoreKvConfigured()) {
     try {
       const existing = await kv.lrange<StoredProofRecord>(PROOFS_KEY, 0, MAX_PROOFS - 1);
-      const filtered = (existing ?? []).filter((item) => item.cid !== record.cid);
+      const filtered = (existing ?? []).filter((item) => !sameStoredProofRun(item, record));
       const next = sortProofsNewestFirst([record, ...filtered]).slice(0, MAX_PROOFS);
       await kv.del(PROOFS_KEY);
       if (next.length > 0) {
@@ -124,7 +161,7 @@ export async function recordStoredProof(
   const store = await loadLocalStore();
   store.proofs = sortProofsNewestFirst([
     record,
-    ...store.proofs.filter((item) => item.cid !== record.cid),
+    ...store.proofs.filter((item) => !sameStoredProofRun(item, record)),
   ]).slice(0, MAX_PROOFS);
   globalStore.__yieldboostRuntimeStore = store;
   await writeLocalStoreFile(store);

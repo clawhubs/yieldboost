@@ -8,7 +8,6 @@ import {
   getServerDefaultNetworkKey,
   getYieldStrategyInftAddress,
   resolveWalletNetworkKey,
-  sameWalletAddress,
   WALLET_NETWORK_COOKIE_KEY,
 } from "@/lib/wallet";
 import { getDocsRuntimeStatus } from "@/lib/docs/content";
@@ -16,9 +15,9 @@ import type { StoredProofRecord } from "@/lib/backend-data";
 import {
   resolveLatestProofForWallet,
   resolveLatestProofForWalletAcrossNetworks,
+  resolveProofHistoryForWallet,
 } from "@/lib/server/proof-resolution";
 import { getLivePortfolioSnapshot } from "@/lib/server/live-portfolio";
-import { getStoredProofs } from "@/lib/server/runtime-store";
 import {
   getComputeLedgerPrivateKey,
   getComputeProviderAddress,
@@ -386,24 +385,8 @@ export async function getJudgePageData(): Promise<JudgePageData> {
     cookieStore.get(WALLET_NETWORK_COOKIE_KEY)?.value,
   );
   const latestProof = await resolveLatestProofForWallet(reviewWallet, reviewNetwork);
-  const storedProofs = await getStoredProofs();
-  const scopedProofs = storedProofs.filter((proof) =>
-    sameWalletAddress(proof.walletAddress, reviewWallet) &&
-    proof.networkKey === reviewNetwork,
-  );
-  const proofCount = latestProof
-    ? Math.max(
-        scopedProofs.length,
-        scopedProofs.some(
-          (proof) =>
-            proof.cid === latestProof.cid ||
-            proof.txHash === latestProof.txHash ||
-            proof.proofRegistryTxHash === latestProof.proofRegistryTxHash,
-        )
-          ? scopedProofs.length
-          : scopedProofs.length + 1,
-      )
-    : scopedProofs.length;
+  const scopedProofs = await resolveProofHistoryForWallet(reviewWallet, reviewNetwork);
+  const proofCount = scopedProofs.length;
   const proofNetwork = latestProof?.networkKey ?? reviewNetwork;
   const judgePortfolio = await getLivePortfolioSnapshot(
     reviewWallet,
