@@ -92,32 +92,34 @@ export default function DocsRichContent({ sections }: DocsRichContentProps) {
           ) : null}
 
           {section.table ? (
-            <div className="mt-5 overflow-hidden rounded-[16px] border border-white/7">
+            <div className="mt-5 overflow-x-auto rounded-[16px] border border-white/7">
               {section.table.caption ? (
                 <div className="bg-[rgba(255,255,255,0.03)] px-4 py-3 text-[12px] text-[#9daab6]">
                   {section.table.caption}
                 </div>
               ) : null}
-              <div
-                className="grid gap-3 bg-[rgba(255,255,255,0.03)] px-4 py-3 text-[10px] uppercase tracking-[0.12em] text-[#8ea1af]"
-                style={{ gridTemplateColumns: `repeat(${section.table.columns.length}, minmax(0, 1fr))` }}
-              >
-                {section.table.columns.map((column) => (
-                  <div key={column}>{column}</div>
-                ))}
-              </div>
-              <div className="divide-y divide-white/6">
-                {section.table.rows.map((row, rowIndex) => (
-                  <div
-                    key={`${section.id}-row-${rowIndex}`}
-                    className="grid gap-3 px-4 py-4 text-[13px] leading-6 text-[#d8e1e8]"
-                    style={{ gridTemplateColumns: `repeat(${section.table!.columns.length}, minmax(0, 1fr))` }}
-                  >
-                    {row.map((cell, cellIndex) => (
-                      <div key={`${section.id}-${rowIndex}-${cellIndex}`}>{cell}</div>
-                    ))}
-                  </div>
-                ))}
+              <div className="min-w-[760px]">
+                <div
+                  className="grid gap-3 bg-[rgba(255,255,255,0.03)] px-4 py-3 text-[10px] uppercase tracking-[0.12em] text-[#8ea1af]"
+                  style={{ gridTemplateColumns: `repeat(${section.table.columns.length}, minmax(0, 1fr))` }}
+                >
+                  {section.table.columns.map((column) => (
+                    <div key={column}>{column}</div>
+                  ))}
+                </div>
+                <div className="divide-y divide-white/6">
+                  {section.table.rows.map((row, rowIndex) => (
+                    <div
+                      key={`${section.id}-row-${rowIndex}`}
+                      className="grid gap-3 px-4 py-4 text-[13px] leading-6 text-[#d8e1e8]"
+                      style={{ gridTemplateColumns: `repeat(${section.table!.columns.length}, minmax(0, 1fr))` }}
+                    >
+                      {row.map((cell, cellIndex) => (
+                        <div key={`${section.id}-${rowIndex}-${cellIndex}`}>{cell}</div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           ) : null}

@@ -39,11 +39,12 @@ export default function DocsHomeView() {
                 Start Here
               </div>
               <h2 className="mt-3 font-[family-name:var(--font-display)] text-[30px] font-semibold leading-[1.08] text-white md:text-[40px]">
-                Docs that explain the product the same way the app behaves.
+                Mainnet-first docs for the live proof flow.
               </h2>
               <p className="mt-3 max-w-2xl text-[15px] leading-7 text-[#9daab6]">
-                Use this hub to onboard users, brief judges, inspect the 0G proof
-                flow, or understand how the Next.js app is wired behind the scenes.
+                Use this hub to brief judges, explain the 0G mainnet proof path,
+                inspect the anti-hallucination guardrails, and understand the Agent
+                NFT + marketplace layer without digging through the code first.
               </p>
             </div>
 
@@ -131,23 +132,23 @@ export default function DocsHomeView() {
               <div className="mt-4 space-y-3">
                 <div className="glass-inset rounded-[14px] px-4 py-4">
                   <p className="text-[11px] uppercase tracking-[0.08em] text-[#8ea1af]">
-                    {status.networks.testnet.label}
+                    {status.networks.mainnet.label}
                   </p>
                   <p className="mt-2 text-[14px] leading-6 text-white">
-                    {status.networks.testnet.storageConfigured
-                      ? "Storage-ready testnet path is configured."
-                      : "Storage route exists but still needs testnet envs."}
+                    {status.networks.mainnet.storageConfigured
+                      ? "Mainnet 0G Storage and proof routes are configured."
+                      : "Mainnet proof route exists but still needs production envs."}
                   </p>
                 </div>
 
                 <div className="glass-inset rounded-[14px] px-4 py-4">
                   <p className="text-[11px] uppercase tracking-[0.08em] text-[#8ea1af]">
-                    {status.networks.mainnet.label}
+                    {status.networks.testnet.label}
                   </p>
                   <p className="mt-2 text-[14px] leading-6 text-white">
-                    {status.networks.mainnet.enabled
-                      ? "Mainnet wallet switching is configured."
-                      : "Mainnet remains optional in the current setup."}
+                    {status.networks.testnet.enabled
+                      ? "Testnet remains available for comparison and fallback review."
+                      : "Testnet metadata is available, but wallet switching needs config."}
                   </p>
                 </div>
               </div>

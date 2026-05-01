@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, ExternalLink } from "lucide-react";
+import DocsBackButton from "@/components/docs/DocsBackButton";
 import DocsRichContent from "@/components/docs/DocsRichContent";
 import DocsShell from "@/components/docs/DocsShell";
 import type { DocNavItem, DocPage } from "@/lib/docs/content";
@@ -24,6 +25,15 @@ export default function DocsPageView({ page, previous, next }: DocsPageViewProps
     >
       <article data-testid="docs-article" className="space-y-[10px]">
         <header className="yb-card rounded-[18px] px-5 py-5">
+          <div className="mb-5 flex flex-wrap gap-3">
+            <DocsBackButton label="Back" />
+            <Link
+              href="/docs"
+              className="glass-inset inline-flex items-center gap-2 rounded-[12px] px-4 py-3 text-[13px] font-medium text-[#d8e1e8] transition hover:border-[rgba(0,201,177,0.25)] hover:text-white"
+            >
+              Docs home
+            </Link>
+          </div>
           <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
             <div className="max-w-3xl">
               <p className="glass-accent inline-flex rounded-full px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-[#22ddd0]">

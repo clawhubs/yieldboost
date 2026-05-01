@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { FileText, Sparkles } from "lucide-react";
+import DocsBackButton from "@/components/docs/DocsBackButton";
 import DocsSidebar from "@/components/docs/DocsSidebar";
 import { getDocsNavigation, getDocsRuntimeStatus } from "@/lib/docs/content";
 
@@ -20,8 +22,9 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
               YieldBoost AI Docs Center
             </h1>
             <p className="mt-3 max-w-2xl text-[15px] leading-7 text-[#9daab6]">
-              Product context, honest integration notes, user walkthroughs, and
-              developer reference for the current state of YieldBoost AI.
+              Mainnet proof flow, Judge Mode, Integrity Auditor, Agent NFT
+              minting, marketplace adoption, and developer reference for the
+              current state of YieldBoost AI.
             </p>
           </div>
 
@@ -40,6 +43,22 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
               <p className="mt-2 text-[15px] font-medium text-white">{status.optimizationMode}</p>
             </div>
           </div>
+        </div>
+
+        <div className="mt-5 flex flex-wrap gap-3">
+          <DocsBackButton label="Back" />
+          <Link
+            href="/"
+            className="yb-teal-button inline-flex items-center rounded-[12px] px-4 py-3 text-[13px] font-semibold text-[#071217]"
+          >
+            Back to dashboard
+          </Link>
+          <Link
+            href="/judge"
+            className="glass-inset inline-flex items-center rounded-[12px] px-4 py-3 text-[13px] font-medium text-[#d8e1e8] transition hover:border-[rgba(0,201,177,0.25)]"
+          >
+            Open Judge Mode
+          </Link>
         </div>
       </header>
 

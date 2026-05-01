@@ -2,6 +2,9 @@ import {
   DEFAULT_WALLET_ADDRESS,
   getAvailableWalletNetworks,
   getDefaultWalletNetworkKey,
+  getYieldStrategyAttestationOracleAddress,
+  getYieldStrategyInftAddress,
+  getYieldStrategyMarketplaceAddress,
   type WalletNetworkKey,
 } from "@/lib/wallet";
 
@@ -158,7 +161,7 @@ const sidebarGroups: Array<{
       {
         slug: "0g-integration",
         label: "0G Integration",
-        description: "Live 0G Storage, TEE-verified inference via 0G Compute Network, explorer links, and ProofRegistry behavior.",
+        description: "Live 0G Storage, 0G Compute broker path, explorer links, ProofRegistry, and mainnet deployment artifacts.",
       },
       {
         slug: "strategy-as-inft",
@@ -212,12 +215,31 @@ function hasValue(value: string | undefined) {
   return Boolean(value && value.trim());
 }
 
+function hasComputeCredentials(networkKey: WalletNetworkKey) {
+  const provider =
+    networkKey === "mainnet"
+      ? process.env.ZG_MAINNET_COMPUTE_PROVIDER_ADDRESS ?? process.env.ZG_COMPUTE_PROVIDER_ADDRESS
+      : process.env.ZG_TESTNET_COMPUTE_PROVIDER_ADDRESS ?? process.env.ZG_COMPUTE_PROVIDER_ADDRESS;
+  const signer =
+    networkKey === "mainnet"
+      ? process.env.ZG_MAINNET_LEDGER_PRIVATE_KEY ?? process.env.ZG_LEDGER_PRIVATE_KEY
+      : process.env.ZG_TESTNET_LEDGER_PRIVATE_KEY ?? process.env.ZG_LEDGER_PRIVATE_KEY;
+
+  return hasValue(provider) && hasValue(signer);
+}
+
 function getLlmMode() {
-  return "Deterministic in-app narrative fallback";
+  const defaultNetworkKey = getDefaultWalletNetworkKey();
+  return hasComputeCredentials(defaultNetworkKey)
+    ? "0G Compute broker path with deterministic fallback"
+    : "Deterministic in-app narrative fallback";
 }
 
 function getComputeMode() {
-  return "Deterministic local snapshot without external compute";
+  const defaultNetworkKey = getDefaultWalletNetworkKey();
+  return hasComputeCredentials(defaultNetworkKey)
+    ? `0G Compute credentials configured for ${defaultNetworkKey}`
+    : "Deterministic fallback available when compute is unavailable";
 }
 
 function getRuntimeStoreMode() {
@@ -245,7 +267,7 @@ export function getDocsRuntimeStatus(): DocsRuntimeStatus {
   const proofMode = mapped.testnet.storageConfigured || mapped.mainnet.storageConfigured
     ? "0G Storage upload path is configured for at least one network"
     : "0G Storage route exists, but upload credentials are still required";
-  const optimizationMode = "UI-ready deterministic scoring with streamed narrative fallback";
+  const optimizationMode = "Mainnet-first optimizer with Integrity Auditor, proof storage, and Agent NFT minting";
   const defaultNetworkKey = getDefaultWalletNetworkKey();
   const defaultNetworkLabel = mapped[defaultNetworkKey]?.label ?? "0G Mainnet";
 
@@ -307,14 +329,30 @@ export function getDocNeighbors(slug: DocSlug) {
 }
 
 export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
-  const liveExplorer = status.networks.testnet.explorerBase;
+  const defaultNetworkKey = getDefaultWalletNetworkKey();
+  const secondaryNetworkKey: WalletNetworkKey = defaultNetworkKey === "mainnet" ? "testnet" : "mainnet";
+  const defaultNetwork = status.networks[defaultNetworkKey];
+  const secondaryNetwork = status.networks[secondaryNetworkKey];
+  const liveExplorer = defaultNetwork.explorerBase;
   const walletLabel = `${shortAddress(status.demoWallet)} demo wallet`;
-  const registryStatus = status.networks.testnet.proofRegistryConfigured
-    ? "ProofRegistry can be written on the configured testnet path"
-    : "ProofRegistry remains optional until `ZG_PROOF_REGISTRY_ADDRESS` is set";
-  const storageStatus = status.networks.testnet.storageConfigured
-    ? "0G Storage upload can run on the default testnet path"
-    : "0G Storage upload route exists, but it still needs RPC, storage URL, and private key envs";
+  const registryStatus = defaultNetwork.proofRegistryConfigured
+    ? `ProofRegistry is configured for ${defaultNetwork.label}`
+    : `ProofRegistry needs an address for ${defaultNetwork.label}`;
+  const storageStatus = defaultNetwork.storageConfigured
+    ? `0G Storage upload is configured for ${defaultNetwork.label}`
+    : `0G Storage upload needs RPC, storage URL, and signer envs for ${defaultNetwork.label}`;
+  const inftAddress = getYieldStrategyInftAddress(defaultNetworkKey);
+  const marketplaceAddress = getYieldStrategyMarketplaceAddress(defaultNetworkKey);
+  const oracleAddress = getYieldStrategyAttestationOracleAddress(defaultNetworkKey);
+  const agentNftStatus = inftAddress
+    ? `YieldStrategyINFT live at ${shortAddress(inftAddress)}`
+    : "YieldStrategyINFT address is not configured";
+  const marketplaceStatus = marketplaceAddress
+    ? `Strategy marketplace live at ${shortAddress(marketplaceAddress)}`
+    : "Marketplace address is not configured";
+  const oracleStatus = oracleAddress
+    ? `Attestation oracle live at ${shortAddress(oracleAddress)}`
+    : "Attestation oracle address is not configured";
 
   return [
     {
@@ -325,7 +363,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
       description:
         "A complete tour of what YieldBoost AI is, who it is for, and how the workspace is structured.",
       summary: [
-        { label: "Default Network", value: status.networks.testnet.label, tone: "teal" },
+        { label: "Default Network", value: defaultNetwork.label, tone: "teal" },
         { label: "Demo Wallet", value: walletLabel, tone: "white" },
         { label: "Runtime Store", value: status.runtimeStore, tone: "green" },
       ],
@@ -339,16 +377,16 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           id: "what-is-yieldboost-ai",
           title: "What YieldBoost AI is",
           intro:
-            "YieldBoost AI is a dashboard-first DeFi optimization workspace that turns passive portfolio balances into a proof-backed recommendation flow.",
+            "YieldBoost AI is a mainnet-first DeFi optimization workspace that turns idle wallet balances into proof-backed yield strategies.",
           paragraphs: [
-            "The product starts with a wallet or watch-only address, reads a current portfolio snapshot, estimates a higher-yield route, streams the reasoning to the interface, and then stores the resulting receipt in the proof pipeline.",
-            "It is designed for three audiences at once: end users who want a clear action path, judges who need a short demo they can verify, and developers who need a codebase that shows where optimization, storage, and proof anchoring happen.",
+            "The product starts with a wallet or watch-only address, reads the current portfolio snapshot, recommends a low-risk route, checks the output with Integrity Auditor, and stores the resulting proof package through the 0G proof pipeline.",
+            "It is designed for three audiences at once: end users who want a clear action path, judges who need a short mainnet demo they can verify, and developers who need a codebase that shows where optimization, storage, ProofRegistry anchoring, Agent NFT minting, and marketplace adoption happen.",
           ],
           callout: {
             tone: "teal",
             title: "Current truth",
             body:
-              "The live, verifiable part of the app today is the proof persistence flow and history trail. The runtime path prioritizes 0G-backed proof capture, while optimization scoring and reasoning stay available through deterministic fallback behavior when needed.",
+              "The live public story is now mainnet-first: Judge Mode shows the latest proof-backed wallet snapshot, ProofRegistry links, Integrity Auditor status, YieldStrategyINFT artifacts, and marketplace context without requiring a wallet connection.",
           },
         },
         {
@@ -368,7 +406,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             {
               title: "Proof surfaces",
               body:
-                "History, the proof modal, and the latest result cards reveal the tx hash, storage identifier, optional ProofRegistry transaction, and explorer links.",
+                "History, the proof modal, Judge Mode, and the latest result cards reveal the tx hash, storage identifier, ProofRegistry transaction, Agent NFT mint reference, and explorer links.",
             },
           ],
           table: {
@@ -381,6 +419,8 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
               ["Strategies", "Strategy framing and ranking", "Users and judges", "Derived from current app state"],
               ["Opportunities", "Ranked opportunities", "Users", "Useful before execution"],
               ["History", "Proof ledger and verification trail", "Judges and developers", "Most important proof review page"],
+              ["Agents", "Minted strategy Agent NFTs", "Users and judges", "Shows proof-backed strategies as on-chain artifacts"],
+              ["Marketplace", "Strategy adoption listings", "Users and judges", "Shows listed Strategy NFTs and adoption status"],
               ["Analytics", "Performance framing", "Judges and contributors", "Some values are derived from stored proofs"],
               ["Watchlist", "Protocol watchlist", "Users", "State-aware support page"],
               ["Settings", "Workspace controls", "Contributors", "Binds to runtime settings state"],
@@ -392,10 +432,10 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           id: "judge-demo",
           title: "A reliable judge walkthrough",
           bullets: [
-            "Start on `/docs` for the product framing, then jump to `/docs/overview` if the reviewer wants the high-level picture.",
-            "Open the dashboard, point at `Boost My Yield Now`, and explain that it compresses the default optimization flow into one click.",
-            "Run the optimization from the dashboard or Boost page, then show the proof modal and History page to prove that the result is not just visual output.",
-            "If ProofRegistry is configured, highlight the extra on-chain registry tx. If it is not configured, say so directly and show the storage-only receipt path instead.",
+            "Start on `/judge` when the reviewer wants the fastest proof-backed view without wallet connection.",
+            "Use `/docs` when the reviewer wants architecture, security boundaries, and the plain-English explanation behind the live flow.",
+            "Open the dashboard or `/agent`, run 1-click optimization, then show the proof modal with Integrity Auditor, 0G Storage CID, block number, and ProofRegistry tx.",
+            "Mint the result as an Agent NFT, then open `/agents` or `/marketplace` to show that the strategy becomes an on-chain artifact, not only a UI state.",
           ],
         },
       ],
@@ -408,9 +448,9 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
       description:
         "Why the project exists, which problem it tackles, and what trust model it assumes.",
       summary: [
-        { label: "Problem", value: "Idle DeFi capital and fragmented proof trails", tone: "amber" },
+        { label: "Problem", value: "Idle DeFi capital and hallucination-prone AI output", tone: "amber" },
         { label: "Target Users", value: "Retail users, judges, and contributors", tone: "white" },
-        { label: "Trust Model", value: "Transparent fallbacks over fake certainty", tone: "green" },
+        { label: "Trust Model", value: "Guardrailed output + proof trail", tone: "green" },
       ],
       quickLinks: pageQuickLinks("overview", "0g-integration", "roadmap"),
       sections: [
@@ -419,7 +459,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           title: "Problem statement",
           paragraphs: [
             "Many DeFi dashboards stop at recommendation cards. They show a higher APY route, but they do not explain how the route was produced, what part is simulated, where proof is stored, or how a reviewer should validate the claim.",
-            "YieldBoost AI exists to reduce that trust gap. The interface is opinionated, the optimization flow is guided, and the proof surfaces are always close to the main action paths.",
+            "YieldBoost AI exists to reduce that trust gap. The interface is opinionated, the optimization flow is guided, Integrity Auditor checks the recommendation, and the proof surfaces are always close to the main action paths.",
           ],
         },
         {
@@ -434,7 +474,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             tone: "amber",
             title: "No inflated claims",
             body:
-              "The docs intentionally separate live proof storage from aspirational compute messaging. If an integration is optional, simulated, or fallback-driven, it is called out as such.",
+              "The docs present the current product as mainnet-first and proof-backed, while still being clear about what is a recommendation, what is an on-chain proof, and what is a future execution layer.",
           },
         },
         {
@@ -455,13 +495,13 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           title: "Trust model",
           paragraphs: [
             "YieldBoost AI is not a custody layer. Wallet access stays in the browser wallet or a manually entered watch-only address. The app reads wallet state, prepares optimization output, and stores proof records.",
-            "The product is strongest when it is explicit about uncertainty. Optimization numbers can still come from deterministic or sandbox-assisted logic, but proof storage, history surfacing, and verifier-friendly metadata remain visible either way.",
+            "The product is strongest when it is explicit about verification. Optimization output is treated as a proposal, checked by Integrity Auditor, persisted through the proof flow, and only then presented as a reviewable strategy artifact.",
           ],
           bullets: [
             "Connected wallets can switch networks and broadcast the selected address into the app state.",
             "Watch mode allows a valid address to be tracked without an injected wallet session.",
             "Proof records are stored in KV when configured, or in the local runtime artifact file when running locally.",
-            "The app defaults to testnet-first behavior and should be presented as testnet unless the active environment says otherwise.",
+            `The live submission path defaults to ${defaultNetwork.label}, while ${secondaryNetwork.label} remains available for comparison and fallback testing.`,
           ],
         },
       ],
@@ -476,7 +516,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
       summary: [
         { label: "Recommended Start", value: "Dashboard for fastest first impression", tone: "teal" },
         { label: "Wallet Mode", value: "Connected or watch-only", tone: "white" },
-        { label: "Proof Path", value: storageStatus, tone: "green" },
+        { label: "Proof Path", value: storageStatus, tone: defaultNetwork.storageConfigured ? "green" : "amber" },
       ],
       quickLinks: pageQuickLinks("overview", "wallet-and-security", "how-1-click-works"),
       sections: [
@@ -497,7 +537,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             {
               title: "Confirm network state",
               body:
-                `The current environment is organized around ${status.networks.testnet.label}. Mainnet is optional and only becomes usable when its RPC and storage envs are configured.`,
+                `The current public path is organized around ${defaultNetwork.label}. ${secondaryNetwork.label} remains available from the switcher for comparison and fallback testing.`,
             },
           ],
         },
@@ -524,8 +564,11 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             columns: ["Route", "Why it matters", "Good for", "Notes"],
             rows: [
               ["/docs", "Docs landing page", "Orientation", "Best place to hand someone a map"],
+              ["/judge", "Read-only review surface", "Judges", "Best place to verify latest proof without wallet setup"],
               ["/", "Dashboard", "Fast demo", "Contains `Boost My Yield Now`"],
               ["/agent", "Boost page", "Execution walkthrough", "Contains `Execute Optimization` and prompt box"],
+              ["/agents", "Agent NFT gallery", "NFT proof review", "Shows minted Strategy NFTs"],
+              ["/marketplace", "Strategy marketplace", "Adoption review", "Shows listed proof-backed Strategy NFTs"],
               ["/history", "Proof history", "Verification", "Useful immediately after a run"],
               ["/docs/proof-and-verification", "Verification guide", "Judges and developers", "Explains how to read tx hash and storage proof"],
             ],
@@ -567,7 +610,12 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             {
               title: "Generate the optimization snapshot",
               body:
-                `The optimization engine currently runs in ${status.computeMode.toLowerCase()}. It returns projected APY, gain estimate, recommendation, and supporting reasoning text.`,
+                `The optimization engine uses ${status.computeMode.toLowerCase()}. It returns projected APY, gain estimate, recommendation, and supporting reasoning text.`,
+            },
+            {
+              title: "Audit the recommendation",
+              body:
+                "Integrity Auditor checks the recommendation against the wallet snapshot and proof context so unrealistic or unsafe AI output can be rejected before proof writing or NFT minting.",
             },
             {
               title: "Stream the recommendation",
@@ -592,7 +640,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           bullets: [
             "The dashboard CTA switches into an optimizing state.",
             "The right-side agent surfaces update with live progress and recommendation text.",
-            "The latest proof row starts showing the tx hash, storage identifier, and optional ProofRegistry details once available.",
+            "The latest proof row starts showing the tx hash, storage identifier, Integrity Auditor status, and ProofRegistry details once available.",
             "History becomes the persistent review surface for later verification or demo replay.",
           ],
           code: {
@@ -608,8 +656,9 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             columns: ["Stage", "Live behavior", "Fallback behavior", "What to say out loud"],
             rows: [
               ["Wallet snapshot", "Reads active wallet + network", "Empty state or RPC error", "Wallet is required for a meaningful live run"],
-              ["Optimization scoring", status.computeMode, "Deterministic snapshot", "Scoring stays demo-safe if external compute is missing"],
-              ["Narrative stream", status.llmMode, "Built-in narrative copy", "The wording can fall back even when the UI flow still works"],
+              ["Optimization scoring", status.computeMode, "Deterministic snapshot fallback", "The product stays usable if external compute is unavailable"],
+              ["Integrity Auditor", "Deterministic guardrail", "Rejects unsafe or unrealistic output", "Do not store or mint a rejected recommendation"],
+              ["Narrative stream", status.llmMode, "Built-in narrative copy", "The wording can fall back while the proof flow still remains explicit"],
               ["Proof storage", status.proofMode, "Honest storage configuration error", "Do not imply a stored proof if upload envs are missing"],
             ],
           },
@@ -673,7 +722,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             {
               title: "Wait for the proof surfaces",
               body:
-                "Once the storage route responds, the result card can expose explorer links, storage identifiers, and optional ProofRegistry data.",
+                "Once the storage route responds, the result card can expose explorer links, storage identifiers, Integrity Auditor data, and ProofRegistry data.",
             },
           ],
           code: {
@@ -720,7 +769,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           title: "What the proof package contains",
           paragraphs: [
             "The stored decision payload includes current APY, optimized APY, estimated gain, recommendation, confidence score, and reasoning text when available.",
-            "After a storage write succeeds, the app pairs that decision payload with transaction metadata such as storage tx hash, timestamp, block number when available, wallet address, and optional ProofRegistry metadata.",
+            "After a storage write succeeds, the app pairs that decision payload with transaction metadata such as storage tx hash, timestamp, block number when available, wallet address, Integrity Auditor result, and ProofRegistry metadata when anchored.",
           ],
         },
         {
@@ -731,15 +780,16 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             rows: [
               ["Tx hash", "Proof modal, dashboard proof row, latest result", "Primary storage write transaction", "Fastest external verification handle"],
               ["CID / storage ID", "Proof modal and result cards", "User-facing storage identifier returned by the proof flow", "Connects the run to stored content"],
+              ["Integrity Auditor", "Proof modal, Judge Mode, stored payload", "APPROVED or REJECTED guardrail result", "Shows the AI output was checked before proof/mint"],
               ["Explorer link", "Proof modal and result cards", "Direct link into the configured 0G explorer", "Lets a reviewer verify outside the app"],
-              ["ProofRegistry tx", "Result card or proof modal when configured", "Separate contract write for registry anchoring", "Shows optional on-chain indexing layer"],
+              ["ProofRegistry tx", "Result card or proof modal", "Separate contract write for registry anchoring", "Shows on-chain indexing layer"],
             ],
           },
           callout: {
             tone: "amber",
             title: "Important wording",
             body:
-              "If the current environment only stored to 0G Storage and did not write to ProofRegistry, describe the run as storage-backed, not fully registry-anchored.",
+              "A proof receipt proves what the app produced and stored. It is not a guarantee of future APY, and it should not be described as an automatic fund-moving transaction.",
           },
         },
         {
@@ -747,7 +797,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           title: "How history and verification work",
           paragraphs: [
             "History is the proof ledger view for the current runtime store. It summarizes runs, shows the newest proof rows, and exposes a judge-friendly verification summary.",
-            "The proof modal prefers live stored proof data from `/api/0g/proof`; if no live record exists yet, it falls back to a generated placeholder so the UI remains explorable. That fallback is useful for layout testing, but it should not be presented as a real proof record.",
+            "The proof modal prefers live stored proof data from `/api/0g/proof`; if a CID lookup is not available, it can still resolve receipt metadata from a known transaction hash so older Agent NFTs do not appear as pending forever.",
           ],
           bullets: [
             "Use History to show how proof entries accumulate across runs.",
@@ -777,12 +827,12 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
       label: "0G Integration",
       category: "Platform & Trust",
       description:
-        "Live 0G Storage, TEE-verified inference via 0G Compute Network, explorer links, and ProofRegistry behavior.",
+        "Live 0G Storage, 0G Compute broker path, explorer links, ProofRegistry behavior, and mainnet deployment artifacts.",
       summary: [
-        { label: "Default Path", value: status.networks.testnet.label, tone: "teal" },
-        { label: "Storage", value: storageStatus, tone: "green" },
-        { label: "TEE Inference", value: "0G Compute Network (when configured)", tone: "green" },
-        { label: "Explorer", value: status.networks.testnet.explorerBase, tone: "white" },
+        { label: "Default Path", value: defaultNetwork.label, tone: "teal" },
+        { label: "Storage", value: storageStatus, tone: defaultNetwork.storageConfigured ? "green" : "amber" },
+        { label: "Compute", value: status.computeMode, tone: "green" },
+        { label: "Explorer", value: liveExplorer, tone: "white" },
       ],
       quickLinks: pageQuickLinks("proof-and-verification", "wallet-and-security", "roadmap"),
       sections: [
@@ -792,28 +842,29 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           bullets: [
             "Network configuration is modeled explicitly for testnet and mainnet in the wallet layer.",
             "The proof storage route can upload a JSON proof package through the 0G TypeScript SDK when the active network has RPC, storage URL, and private key configured.",
-            "TEE-verified inference is available via 0G Compute Network when the active network has a compute provider address and ledger signer configured.",
-            "The UI consistently surfaces the resulting storage tx hash, explorer link, TEE attestation badge, and optional ProofRegistry transaction.",
+            "0G Compute broker inference is attempted when the active network has a compute provider address and ledger signer configured.",
+            "Integrity Auditor checks the recommendation before the proof write and before Agent NFT minting.",
+            "The UI consistently surfaces the resulting storage tx hash, explorer link, Integrity Auditor status, ProofRegistry transaction, and mainnet contract artifacts.",
             "The current explorer path is built from the configured explorer base and the returned transaction hashes.",
           ],
         },
         {
           id: "tee-verification",
-          title: "TEE-verified inference via 0G Compute",
+          title: "0G Compute and attestation metadata",
           paragraphs: [
-            "When 0G Compute credentials are configured, the optimization route prioritizes TEE-verified inference through the 0G Compute Network. This provides hardware-enforced privacy and mitigates front-running risks.",
-            "The TEE attestation includes provider address, model identifier, chat ID, and verification status. These metadata are stored alongside the proof record and surfaced in the proof modal with a distinctive green badge.",
+            "When 0G Compute credentials are configured, the optimization route prioritizes inference through the 0G Compute broker. The app validates broker response metadata before presenting the result as verified runtime output.",
+            "When attestation metadata is present, the proof record can include provider address, model identifier, chat ID, verification method, and signed-text match status. Agent NFT minting can also register attestation hashes through the oracle path.",
           ],
           bullets: [
-            "TEE inference is the highest-priority narrative path when configured, falling back to deterministic narrative if unavailable.",
-            "The UI displays a 'TEE Verified' badge in the agent panel and proof modal when attestation is present.",
-            "TEE metadata (provider, model, chat ID, verification status) is persisted in the stored proof record for audit trails.",
+            "0G Compute is the highest-priority narrative path when configured, falling back honestly if unavailable.",
+            "The UI displays verification metadata only when it exists in the returned proof package.",
+            "Attestation metadata can be persisted in the stored proof record and linked to Agent NFT verification.",
           ],
           callout: {
             tone: "green",
-            title: "TEE configuration",
+            title: "Compute configuration",
             body:
-              "To enable TEE verification, set the active network's compute provider address and ledger signer envs. The app will automatically use TEE inference when available.",
+              "To enable the 0G Compute path, set the active network's compute provider address and ledger signer envs. If the broker path is unavailable, the app keeps the recommendation flow explicit instead of faking a compute result.",
           },
         },
         {
@@ -823,7 +874,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             {
               title: "Serialize decision payload",
               body:
-                "The app creates a temporary JSON file that includes optimization values, timestamp, TEE metadata (if available), and `appId: yieldboost-ai`.",
+                "The app creates a temporary JSON file that includes optimization values, timestamp, Integrity Auditor result, optional compute metadata, and `appId: yieldboost-ai`.",
             },
             {
               title: "Upload through the 0G SDK",
@@ -833,7 +884,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             {
               title: "Capture the returned metadata",
               body:
-                "The route stores the returned root hash, tx hash, block info when obtainable, wallet address, explorer URL, TEE attestation fields, and optional note flags.",
+                "The route stores the returned root hash, tx hash, block info when obtainable, wallet address, explorer URL, Integrity Auditor fields, compute metadata, and optional note flags.",
             },
             {
               title: "Persist locally or in KV",
@@ -846,13 +897,13 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           id: "compute-fallbacks",
           title: "Compute and narrative fallback behavior",
           paragraphs: [
-            "The optimization engine prioritizes 0G Compute (TEE) when the active network is configured, then falls back to deterministic local narrative when that path is unavailable.",
-            "This keeps the app functional even when compute infrastructure is unavailable, while still prioritizing TEE-verified inference when possible.",
+            "The optimization engine prioritizes 0G Compute when the active network is configured, then falls back to deterministic local narrative when that path is unavailable.",
+            "This keeps the app functional even when compute infrastructure is unavailable, while still being honest about which path produced the result.",
           ],
           table: {
             columns: ["Provider", "Priority", "When active", "What it provides"],
             rows: [
-              ["0G Compute (TEE)", "1 (highest)", "Active network compute provider + ledger signer set", "TEE-verified inference with hardware attestation"],
+              ["0G Compute broker", "1 (highest)", "Active network compute provider + ledger signer set", "Broker-backed inference and verification metadata when available"],
               ["Deterministic", "2", "Always available", "Built-in narrative templates"],
             ],
           },
@@ -861,7 +912,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           id: "network-matrix",
           title: "Network matrix",
           table: {
-            columns: ["Network", "Wallet switch support", "Storage config", "ProofRegistry", "TEE Compute", "Explorer"],
+            columns: ["Network", "Wallet switch support", "Storage config", "ProofRegistry", "Compute", "Explorer"],
             rows: [
               [
                 status.networks.testnet.label,
@@ -890,11 +941,11 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
       label: "Strategy as INFT",
       category: "Platform & Trust",
       description:
-        "How yield optimization strategies become tradable Agent NFTs with encrypted metadata and authorization.",
+        "How yield optimization strategies become Agent NFTs and marketplace-ready proof-backed artifacts.",
       summary: [
-        { label: "Contract", value: "YieldStrategyINFT (ERC-721)", tone: "teal" },
-        { label: "Metadata", value: "Encrypted on 0G Storage", tone: "green" },
-        { label: "Authorization", value: "Usage rights for other wallets", tone: "white" },
+        { label: "Contract", value: agentNftStatus, tone: inftAddress ? "green" : "amber" },
+        { label: "Marketplace", value: marketplaceStatus, tone: marketplaceAddress ? "green" : "amber" },
+        { label: "Oracle", value: oracleStatus, tone: oracleAddress ? "green" : "amber" },
       ],
       quickLinks: pageQuickLinks("0g-integration", "wallet-and-security", "faq"),
       sections: [
@@ -902,14 +953,14 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           id: "what-is-strategy-inft",
           title: "What Strategy as INFT means",
           paragraphs: [
-            "Each successful yield optimization can be minted as an Agent NFT. This NFT represents the strategy details, the APY achieved, and the proof of the optimization run.",
-            "The strategy metadata is encrypted and stored on 0G Storage, while the hash and key identifiers are stored on-chain. This allows the strategy to be traded, authorized for use by others, or verified without exposing the full strategy details.",
+            "Each successful yield optimization can be minted as an Agent NFT. This NFT represents the strategy route, APY context, wallet ownership, and proof trail from the optimization run.",
+            "The current runtime packages strategy metadata with the proof CID, tx hash, performance fields, Integrity Auditor result, and optional compute metadata. The contract stores the strategy artifact while the app keeps proof links visible for review.",
           ],
           bullets: [
             "NFT represents a specific yield optimization strategy",
-            "Encrypted metadata protects strategy details while allowing verification",
-            "TEE attestation can be verified on-chain if available",
-            "Authorization system allows sharing strategies without transferring ownership",
+            "Mint goes to the connected wallet, not the server signer",
+            "Integrity Auditor must approve the strategy before minting",
+            "Marketplace adoption lets a listed strategy be reviewed before another wallet adopts it",
           ],
         },
         {
@@ -924,7 +975,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             {
               title: "Open the proof modal",
               body:
-                "Click 'View on Explorer' or open the proof modal from the latest result card.",
+                "Open proof details from the latest result card and confirm the proof has a storage CID, tx hash, block number, and Integrity Auditor status.",
             },
             {
               title: "Click 'Mint as Agent'",
@@ -934,36 +985,36 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             {
               title: "View in Agent Gallery",
               body:
-                "After minting, visit the /agents page to see all your minted Agent NFTs with their APY, verification status, and ownership.",
+                "After minting, visit `/agents` to see all minted Agent NFTs with APY, proof links, ownership, and the source label.",
             },
           ],
         },
         {
           id: "authorization-system",
-          title: "Strategy authorization and sharing",
+          title: "Strategy marketplace and adoption",
           paragraphs: [
-            "Agent NFTs include an authorization system that allows the owner to grant usage rights to other wallets without transferring ownership.",
-            "This enables strategy sharing scenarios where one user creates a profitable strategy and others can use it while the creator retains ownership and potential royalties.",
+            "The Marketplace page reads minted Strategy NFTs and active adoption listings from the mainnet marketplace contract when configured.",
+            "This lets a strategy become a reviewable artifact that can be listed, inspected, and adopted after the buyer checks the proof trail.",
           ],
           bullets: [
-            "Owners can authorize specific addresses to use their strategy",
-            "Authorization can be revoked at any time",
-            "Authorized users can execute the strategy without owning the NFT",
-            "This creates a potential marketplace for strategy licensing",
+            "Owners can list Strategy NFTs from the marketplace UI.",
+            "Listings expose price, owner, APY, ROI lift, accuracy, and proof links.",
+            "Buyers can inspect proof metadata before trusting the artifact.",
+            "The current mainnet marketplace address is surfaced in Judge Mode and the docs.",
           ],
         },
         {
           id: "tee-verification",
-          title: "TEE verification in Agent NFTs",
+          title: "Attestation oracle and verification flag",
           paragraphs: [
-            "If an optimization was performed using 0G Compute with TEE, the Agent NFT will include a verification flag indicating TEE attestation.",
-            "This provides cryptographic proof that the strategy recommendation was generated inside a Trusted Execution Environment, adding trust and verifiability to the strategy.",
+            "When the optimization includes verified compute metadata, the mint route can derive an attestation hash and register it through the AttestationRegistryOracle before minting.",
+            "The INFT `verified` flag is therefore reserved for this attestation path. A strategy can still be proof-backed and Integrity Auditor-approved even when the on-chain attestation flag is false.",
           ],
           callout: {
             tone: "green",
-            title: "TEE Verified badge",
+            title: "Avoid confusion",
             body:
-              "Agent NFTs with TEE verification display a green 'Verified' badge, indicating the strategy was generated with hardware-enforced privacy and attestation.",
+              "In `/agents`, `verified=false` does not mean the proof is fake. It means the specific on-chain oracle attestation flag was not set for that NFT.",
           },
         },
       ],
@@ -978,7 +1029,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
       summary: [
         { label: "Supported Wallets", value: "MetaMask, Rabby, Coinbase, Trust, OKX", tone: "teal" },
         { label: "Fallback Mode", value: "Manual watch-only address", tone: "white" },
-        { label: "Demo Warning", value: "Testnet-first and non-custodial UI", tone: "amber" },
+        { label: "Security Boundary", value: "Non-custodial recommendation and proof UX", tone: "amber" },
       ],
       quickLinks: pageQuickLinks("getting-started", "troubleshooting", "faq"),
       sections: [
@@ -999,15 +1050,15 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           title: "Security notes",
           bullets: [
             "The app does not custody funds in the code shown here; it orchestrates wallet context, optimization output, and proof storage metadata.",
-            "Because this is a demo-oriented product, testnet language should remain explicit unless you have a fully configured mainnet environment.",
-            "A proof receipt is not the same thing as guaranteed profitable execution. It is evidence of what the app produced and stored, not a promise of future APY.",
+            `The current public deployment is mainnet-first on ${defaultNetwork.label}, while ${secondaryNetwork.label} stays available for comparison.`,
+            "A proof receipt is not the same thing as guaranteed profitable execution. It is evidence of what the app recommended, audited, produced, and stored, not a promise of future APY.",
             "Do not commit `.env.local`, API keys, private keys, access tokens, or wallet secrets into Git.",
           ],
           callout: {
             tone: "amber",
             title: "Demo limitation",
             body:
-              "This workspace is ideal for product demos, proof UX, and architecture review. It should not be pitched as a battle-tested production trading system without additional execution, custody, and risk controls.",
+              "This workspace is ideal for product demos, proof UX, architecture review, and strategy artifact minting. It should not be pitched as an autonomous production trading executor without additional execution, custody, and risk controls.",
           },
         },
         {
@@ -1015,12 +1066,13 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           title: "What the app stores in 0G Storage",
           paragraphs: [
             "The proof route writes a compact JSON proof package that is meant to support verification and replay of the optimization result. In the current implementation, this package can include the optimization decision, timestamp, wallet-scoped metadata, and a portfolio snapshot when the client provides it.",
-            "That means the stored record is useful for auditability, but it should be described honestly: it is proof-oriented application data, not zero-knowledge private portfolio storage.",
+            "That means the stored record is useful for auditability, but it should be described honestly: it is proof-oriented application data, not a private zero-knowledge portfolio vault.",
           ],
           table: {
             columns: ["Data type", "Current behavior", "Why it exists", "What it does not include"],
             rows: [
               ["Optimization decision", "Stored", "Lets judges and users inspect the recommended route and APY change later", "Does not include private keys or seed phrases"],
+              ["Integrity Auditor result", "Stored", "Shows whether the recommendation passed the anti-hallucination guardrail", "Does not guarantee future market outcomes"],
               ["Wallet-scoped metadata", "Stored", "Keeps proof history tied to the review wallet", "Does not grant signing authority"],
               ["Portfolio snapshot fields", "Optionally stored", "Helps replay the recorded context behind the proof", "Not a full encrypted vault of wallet history"],
               ["Secrets and credentials", "Not stored", "Should remain in envs or wallet software only", "Never belongs in proof payloads"],
@@ -1030,7 +1082,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             tone: "green",
             title: "Security boundary",
             body:
-              "In the current codebase, the strongest honest claim is that YieldBoost AI stores verifier-friendly proof data while keeping wallet secrets out of the proof flow. It does not yet claim end-to-end encrypted financial privacy for every stored field.",
+              "The strongest honest claim is that YieldBoost AI stores verifier-friendly proof data and Integrity Auditor context while keeping wallet secrets out of the proof flow.",
           },
         },
         {
@@ -1073,12 +1125,12 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             {
               title: "Is YieldBoost AI moving funds automatically?",
               body:
-                "Not by default in the code shown here. The product demonstrates optimization logic, proof persistence, and result surfacing. Treat it as a guided demo workflow unless your execution environment explicitly adds the missing production controls.",
+                "No. The product recommends and proves a strategy; it does not automatically swap, stake, or move user funds. Execution remains a separate production-grade layer.",
             },
             {
               title: "What does `Boost My Yield Now` do?",
               body:
-                "It runs the default optimization request from the dashboard and then tries to store the resulting proof record so you can verify the outcome.",
+                "It runs the default optimization request from the dashboard, passes the output through Integrity Auditor, and stores the resulting proof record when approved.",
             },
             {
               title: "What does `Execute Optimization` do?",
@@ -1096,10 +1148,10 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           id: "judge-questions",
           title: "Questions judges usually ask",
           bullets: [
-            "What part is live? Answer: the UI flow, wallet context, proof storage route, explorer links, and history surface are real code paths; some optimization and narrative stages can still fall back depending on environment.",
-            "Is this testnet? Answer: yes by default, unless the active environment has mainnet RPC, storage, and registry configuration.",
-            "How do I verify it? Answer: open History or the proof modal, then follow the explorer link and compare it with the stored identifiers.",
-            "What makes it different from a dashboard mock? Answer: the app stores runtime proof records and exposes them consistently across multiple product surfaces.",
+            `What part is live? Answer: the ${defaultNetwork.label} proof flow, wallet context, proof storage route, ProofRegistry links, Agent NFT minting, marketplace reading, and Judge Mode are live code paths.`,
+            `Is this testnet? Answer: no, the public submission path is mainnet-first. ${secondaryNetwork.label} is still available for comparison and testing.`,
+            "How do I verify it? Answer: open `/judge`, History, or the proof modal, then follow the ChainScan links and compare them with the stored identifiers.",
+            "What makes it different from a dashboard mock? Answer: the app stores runtime proof records, anchors them, mints strategy artifacts, and exposes the same trail across Judge Mode, Agents, Marketplace, and Docs.",
           ],
         },
         {
@@ -1112,6 +1164,9 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
               ["Tx hash", "Blockchain transaction identifier", "Proof modal and result surfaces", "Fastest verification handle"],
               ["CID / storage ID", "Proof storage identifier", "Proof modal and latest result", "Used to reference the stored record"],
               ["ProofRegistry", "Optional on-chain registry contract", "Proof modal and result card", "Adds an extra verification layer"],
+              ["Integrity Auditor", "Deterministic anti-hallucination guardrail", "Proof modal and Judge Mode", "Rejects unsafe or unrealistic recommendations before proof/mint"],
+              ["Agent NFT", "On-chain strategy artifact", "Agents page and proof modal", "Turns a proof-backed strategy into an ownable artifact"],
+              ["Marketplace", "Strategy adoption surface", "Marketplace page and Judge Mode", "Lets listed Strategy NFTs be inspected before adoption"],
               ["Watch mode", "Tracking an address without wallet connection", "Sidebar", "Useful for demos and read-only review"],
               ["0G explorer", "External verification site", "Proof links", "Lets reviewers inspect transactions outside the app"],
             ],
@@ -1143,7 +1198,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
               ["No wallet balance shown", "No address, RPC off, or RPC error", "Sidebar + portfolio API", "Connect/paste a wallet and confirm RPC env"],
               ["Optimization request failed", "Agent route or provider issue", "Boost page + `/api/agent/optimize`", "Retry with default prompt and inspect provider envs"],
               ["Proof storage failed", "0G envs missing", "`/api/0g/store` response", "Set RPC, storage URL, and private key for the target network"],
-              ["No ProofRegistry entry", "Registry address not configured or tx failed", "Result card note + server logs", "Describe the run as storage-only and fix env later"],
+              ["No ProofRegistry entry", "Wrong network, registry env mismatch, or tx failed", "Result card note + server logs", "Keep the storage proof visible and fix the registry path before claiming an anchor"],
               ["History empty after run", "Store write failed or different wallet context", "Runtime store + latest agent route", "Check store backend and requested wallet address"],
             ],
           },
@@ -1173,7 +1228,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           id: "honest-demo-recovery",
           title: "How to recover during a live demo",
           bullets: [
-            "If ProofRegistry is unavailable, say the environment is running in storage-only mode and continue with the explorer link and stored receipt.",
+            "If ProofRegistry is unavailable, say the current run has a storage proof but the registry anchor needs attention, then continue with the explorer link and stored receipt.",
             "If LLM output falls back, explain that the recommendation wording degraded gracefully while the proof and UI pipeline stayed intact.",
             "If the wallet provider is unavailable, switch to watch mode with the demo wallet so the review can continue without blocking on extension setup.",
           ],
@@ -1204,6 +1259,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
               ["Client state", "`components/providers/AppDataProvider.tsx`", "Portfolio and optimization context", "Central runtime state hub"],
               ["Feature pages", "`app/*/page.tsx` + feature components", "Dashboard, Boost, portfolio, and support routes", "Docs adds a separate documentation shell"],
               ["API routes", "`app/api/**`", "Portfolio, optimization, 0G storage, proof lookup, feature page data", "Rate limited through middleware"],
+              ["Contract surfaces", "`/agents` + `/marketplace`", "Read minted Strategy NFTs and adoption listings", "Backed by INFT and marketplace envs"],
               ["Server helpers", "`lib/server/**`", "Live portfolio, runtime store, feature-page loaders", "Separates server concerns from view code"],
             ],
           },
@@ -1223,16 +1279,19 @@ Sidebar wallet state -> AppDataProvider -> /api/portfolio
 Dashboard / Boost page -> /api/agent/optimize
         |
         v
-Client receives optimization payload + streamed narrative
+Integrity Auditor checks recommendation
         |
         v
-/api/0g/store -> 0G SDK upload -> optional ProofRegistry write
+/api/0g/store -> 0G SDK upload -> ProofRegistry anchor when configured
         |
         v
 runtime-store (KV or local file)
         |
         v
-History / proof modal / /api/agent/latest / /api/0g/proof`,
+History / proof modal / Judge Mode / /api/agent/latest / /api/0g/proof
+        |
+        v
+Mint as Agent -> YieldStrategyINFT -> Agents / Marketplace`,
           },
         },
         {
@@ -1299,12 +1358,17 @@ History / proof modal / /api/agent/latest / /api/0g/proof`,
             {
               title: "Proof persistence",
               body:
-                "The client follows up with a POST to `/api/0g/store` carrying the final decision payload, network key, and wallet address.",
+                "The client follows up with a POST to `/api/0g/store` carrying the audited decision payload, network key, wallet address, and runtime metadata.",
             },
             {
               title: "Hydration and replay",
               body:
                 "Later, `/api/agent/latest`, `/api/history`, and `/api/0g/proof` all read from the stored proof record instead of recomputing everything from scratch.",
+            },
+            {
+              title: "Artifact minting and adoption",
+              body:
+                "`/api/agent/mint`, `/api/agent/list`, and `/api/marketplace/list` connect the approved proof output to YieldStrategyINFT and the marketplace adoption surface.",
             },
           ],
         },
@@ -1314,7 +1378,7 @@ History / proof modal / /api/agent/latest / /api/0g/proof`,
           bullets: [
             "Optimization narrative prioritizes 0G Compute when the active network credentials are configured.",
             "If the compute provider is unavailable, the app still produces a deterministic narrative so the UX does not collapse.",
-            "The snapshot builder stays available locally, which keeps the product usable even before full mainnet cutover.",
+            "Integrity Auditor stays deterministic so guardrail behavior does not depend on another model call.",
             "This fallback behavior is intentional and is surfaced honestly in the UI.",
           ],
         },
@@ -1331,6 +1395,11 @@ History / proof modal / /api/agent/latest / /api/0g/proof`,
   "yield_increase_pct": 23.61,
   "recommended": "SaucerSwap LP",
   "confidence": 96,
+  "integrityAudit": {
+    "status": "APPROVED",
+    "score": 100,
+    "source": "deterministic-logic-guardrail"
+  },
   "executionSeconds": 8.42,
   "estimatedAnnualGain": 2356.41,
   "totalPortfolio": 24570.25,
@@ -1348,9 +1417,9 @@ History / proof modal / /api/agent/latest / /api/0g/proof`,
       description:
         "What is already real, what still falls back, and the next logical production steps for the project.",
       summary: [
-        { label: "Live Now", value: "Docs, dashboard flow, proof storage pipeline, history", tone: "teal" },
-        { label: "Current Limitation", value: "Compute and narrative can still be fallback-driven", tone: "amber" },
-        { label: "Next Frontier", value: "Deeper execution and stronger verifier tooling", tone: "green" },
+        { label: "Live Now", value: "Mainnet proof, Judge Mode, Agent NFTs, marketplace", tone: "teal" },
+        { label: "Current Boundary", value: "Recommendation and proof, not autonomous fund execution", tone: "amber" },
+        { label: "Next Frontier", value: "Deeper execution safety and Proof-of-Optimization", tone: "green" },
       ],
       quickLinks: pageQuickLinks("0g-integration", "architecture", "faq"),
       sections: [
@@ -1360,9 +1429,11 @@ History / proof modal / /api/agent/latest / /api/0g/proof`,
           bullets: [
             "A polished multi-surface workspace with dashboard, Boost, History, analytics, and docs.",
             "Wallet connection and watch mode flow inside the sidebar.",
-            "Optimization requests with streamed narrative and stored result hydration.",
-            "0G Storage upload path plus optional ProofRegistry contract anchoring.",
-            "A proof history ledger that can be demonstrated to judges and contributors.",
+            "Optimization requests with Integrity Auditor and stored result hydration.",
+            "0G Storage upload path plus ProofRegistry contract anchoring on the configured default network.",
+            "Judge Mode with mainnet/testnet switching and ChainScan links.",
+            "Strategy Agent NFT minting through YieldStrategyINFT.",
+            "Marketplace listing/adoption view for proof-backed Strategy NFTs.",
           ],
         },
         {
@@ -1371,14 +1442,14 @@ History / proof modal / /api/agent/latest / /api/0g/proof`,
           bullets: [
             "Proof persistence depends on environment configuration; without the right envs, proof storage fails honestly.",
             "The portfolio snapshot currently focuses on native balance retrieval plus the latest proof-derived portfolio total rather than a deep multi-asset on-chain portfolio engine.",
-            "The optimization engine is still demo-oriented and not a production trading executor.",
-            "Some UX copy references 0G-forward compute language more aggressively than the current compute implementation warrants.",
+            "The optimization engine recommends and proves strategies, but it is not a production autonomous trading executor.",
+            "The on-chain INFT `verified` flag is reserved for the attestation oracle path, so proof-backed NFTs can exist even when that flag is false.",
           ],
           callout: {
             tone: "amber",
             title: "Production-ready next step",
             body:
-              "The strongest next milestone is making optimization, execution, and verification all align under the same trust model so the docs, UI copy, and runtime behavior match even more tightly.",
+              "The strongest next milestone is adding execution simulation and stronger risk checks while preserving the current proof-first, auditor-gated product story.",
           },
         },
         {
@@ -1401,9 +1472,9 @@ History / proof modal / /api/agent/latest / /api/0g/proof`,
                 "Expose proof payload viewing, explorer deep links, registry replay helpers, and failure notes more directly in the UI.",
             },
             {
-              title: "Extend 0G integration",
+              title: "Deepen Proof-of-Optimization",
               body:
-                "Move more of the compute and verification story into explicitly live 0G-backed services so the product claim becomes even tighter.",
+                "Turn repeated high-quality optimization events into richer scoring, reward, and marketplace signals for future $YA0G mechanics.",
             },
           ],
         },
