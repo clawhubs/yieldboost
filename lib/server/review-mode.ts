@@ -1,12 +1,15 @@
 import "server-only";
 
 import { cookies } from "next/headers";
+import { ethers } from "ethers";
 import {
   DEFAULT_WALLET_ADDRESS,
   getAvailableWalletNetworks,
   getServer0GNetworkConfig,
   getServerDefaultNetworkKey,
+  getYieldStrategyAttestationOracleAddress,
   getYieldStrategyInftAddress,
+  getYieldStrategyMarketplaceAddress,
   resolveWalletNetworkKey,
   WALLET_NETWORK_COOKIE_KEY,
 } from "@/lib/wallet";
@@ -44,6 +47,15 @@ export interface JudgeComponentStatus {
   meta?: string;
 }
 
+export interface JudgeDeploymentArtifact {
+  label: string;
+  value: string;
+  helper: string;
+  status: HealthStatus;
+  href?: string;
+  meta?: string;
+}
+
 export interface JudgeChecklistItem {
   label: string;
   status: HealthStatus;
@@ -63,6 +75,7 @@ export interface JudgePageData {
   latestProof: StoredProofRecord | null;
   latestProofCards: JudgeStatusCard[];
   efficiencyCards: JudgeStatusCard[];
+  deploymentArtifacts: JudgeDeploymentArtifact[];
   components: JudgeComponentStatus[];
   mainnetChecklist: JudgeChecklistItem[];
   envChecklist: JudgeEnvItem[];
@@ -143,6 +156,142 @@ function toHealthStatus(value: boolean): HealthStatus {
 
 function readEnv(name: string) {
   return process.env[name];
+}
+
+function buildExplorerTxHref(networkKey: string, txHash: string | undefined) {
+  if (!txHash) return undefined;
+  return `${getServer0GNetworkConfig(networkKey).explorerBase.replace(/\/$/, "")}/tx/${txHash}`;
+}
+
+function buildExplorerAddressHref(networkKey: string, address: string | undefined) {
+  if (!address) return undefined;
+  return `${getServer0GNetworkConfig(networkKey).explorerBase.replace(/\/$/, "")}/address/${address}`;
+}
+
+async function resolveLatestAgentMintArtifact(
+  walletAddress: string,
+  networkKey: string,
+): Promise<JudgeDeploymentArtifact> {
+  const networkConfig = getServer0GNetworkConfig(networkKey);
+  const inftAddress = getYieldStrategyInftAddress(networkKey);
+
+  if (!networkConfig.rpcUrl || !inftAddress) {
+    return {
+      label: "Latest Agent NFT mint tx",
+      value: "Pending",
+      helper: "INFT contract or RPC is not configured for the active review network.",
+      status: "pending",
+    };
+  }
+
+  try {
+    const provider = new ethers.JsonRpcProvider(networkConfig.rpcUrl);
+    const inft = new ethers.Contract(
+      inftAddress,
+      [
+        "function totalSupply() view returns (uint256)",
+        "function ownerOf(uint256 tokenId) view returns (address)",
+        "event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)",
+      ],
+      provider,
+    );
+    const totalSupply = Number(await inft.totalSupply());
+    const zeroAddress = ethers.ZeroAddress;
+    const latestBlock = await provider.getBlockNumber();
+
+    for (let tokenId = totalSupply; tokenId >= 1; tokenId -= 1) {
+      try {
+        const owner = String(await inft.ownerOf(tokenId));
+        if (owner.toLowerCase() !== walletAddress.toLowerCase()) {
+          continue;
+        }
+
+        const filter = inft.filters.Transfer(zeroAddress, owner, BigInt(tokenId));
+        const fromBlock = Math.max(0, latestBlock - 500_000);
+        const logs = await inft.queryFilter(filter, fromBlock, latestBlock);
+        const latestLog = logs.at(-1);
+        const txHash = latestLog?.transactionHash;
+
+        return {
+          label: "Latest Agent NFT mint tx",
+          value: txHash ? shorten(txHash, 8) : `Agent NFT #${tokenId}`,
+          helper: txHash
+            ? `Most recent Agent NFT minted to the judge wallet: token #${tokenId}.`
+            : `Token #${tokenId} exists for the judge wallet, but the mint tx was outside the scanned block window.`,
+          status: txHash ? "live" : "configured",
+          href: buildExplorerTxHref(networkKey, txHash),
+          meta: `Token #${tokenId}`,
+        };
+      } catch {
+        // Keep scanning older token IDs if a token read fails.
+      }
+    }
+
+    return {
+      label: "Latest Agent NFT mint tx",
+      value: "No judge NFT yet",
+      helper: "The INFT contract is live, but no minted Agent NFT was found for the judge wallet.",
+      status: "partial",
+      href: buildExplorerAddressHref(networkKey, inftAddress),
+      meta: "INFT contract available",
+    };
+  } catch {
+    return {
+      label: "Latest Agent NFT mint tx",
+      value: "Lookup pending",
+      helper: "Judge mode could not resolve the latest mint transaction from the RPC during this render.",
+      status: "partial",
+      href: buildExplorerAddressHref(networkKey, inftAddress),
+      meta: "Contract lookup fallback",
+    };
+  }
+}
+
+async function buildDeploymentArtifacts({
+  reviewWallet,
+}: {
+  reviewWallet: string;
+}): Promise<JudgeDeploymentArtifact[]> {
+  const artifactNetwork = "mainnet";
+  const networkConfig = getServer0GNetworkConfig(artifactNetwork);
+  const inftAddress = getYieldStrategyInftAddress(artifactNetwork);
+  const marketplaceAddress = getYieldStrategyMarketplaceAddress(artifactNetwork);
+  const oracleAddress = getYieldStrategyAttestationOracleAddress(artifactNetwork);
+  const latestMint = await resolveLatestAgentMintArtifact(reviewWallet, artifactNetwork);
+
+  return [
+    latestMint,
+    {
+      label: "Mainnet strategy marketplace",
+      value: marketplaceAddress ? shorten(marketplaceAddress, 8) : "Not configured",
+      helper: marketplaceAddress
+        ? "Adoption contract used by the Marketplace tab for listed Strategy Agent NFTs."
+        : "Set the marketplace address to expose on-chain listing/adoption from Judge Mode.",
+      status: marketplaceAddress ? "live" : "pending",
+      href: buildExplorerAddressHref(artifactNetwork, marketplaceAddress),
+      meta: networkConfig.label,
+    },
+    {
+      label: "Mainnet attestation oracle",
+      value: oracleAddress ? shorten(oracleAddress, 8) : "Not configured",
+      helper: oracleAddress
+        ? "On-chain oracle used by Agent NFT minting to mark broker-backed attestation hashes as verified."
+        : "Set the oracle address to show on-chain attestation verification in Judge Mode.",
+      status: oracleAddress ? "live" : "pending",
+      href: buildExplorerAddressHref(artifactNetwork, oracleAddress),
+      meta: networkConfig.label,
+    },
+    {
+      label: "Mainnet YieldStrategyINFT",
+      value: inftAddress ? shorten(inftAddress, 8) : "Not configured",
+      helper: inftAddress
+        ? "ERC-721 strategy artifact contract used when optimization results are minted as Agent NFTs."
+        : "Set the INFT address to enable contract-backed Agent NFT inventory.",
+      status: inftAddress ? "live" : "pending",
+      href: buildExplorerAddressHref(artifactNetwork, inftAddress),
+      meta: networkConfig.label,
+    },
+  ];
 }
 
 function hasAlibabaEmbeddingConfig() {
@@ -428,6 +577,9 @@ export async function getJudgePageData(): Promise<JudgePageData> {
     runtimeStatus,
     latestProof: latestProofAcrossNetworks,
   });
+  const deploymentArtifacts = await buildDeploymentArtifacts({
+    reviewWallet,
+  });
   const efficiencyCards: JudgeStatusCard[] = [
     {
       label: "Semantic Cache",
@@ -665,6 +817,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
     latestProof,
     latestProofCards,
     efficiencyCards,
+    deploymentArtifacts,
     components,
     mainnetChecklist,
     envChecklist,

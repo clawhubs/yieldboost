@@ -231,6 +231,61 @@ export default async function JudgePage() {
             <div className="mt-5 space-y-[10px]">
               <div className="glass-inset rounded-[16px] px-4 py-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <div className="text-[12px] font-medium text-white">Mainnet deployment artifacts</div>
+                    <div className="mt-1 text-[12px] text-[#9faab6]">
+                      Contract and NFT artifacts that complete the proof-to-agent path.
+                    </div>
+                  </div>
+                  <Link
+                    href="/marketplace"
+                    className="inline-flex items-center gap-2 rounded-full border border-[rgba(34,221,208,0.2)] px-3 py-2 text-[12px] font-medium text-[#22ddd0] transition hover:border-[rgba(34,221,208,0.36)] hover:text-white"
+                  >
+                    Open marketplace
+                    <ArrowUpRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+                <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                  {data.deploymentArtifacts.map((artifact) => (
+                    <div
+                      key={artifact.label}
+                      className="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">
+                          {artifact.label}
+                        </div>
+                        <span className={`rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] ${statusBadgeClass(artifact.status)}`}>
+                          {artifact.status}
+                        </span>
+                      </div>
+                      <div className="mt-2 break-all text-[14px] font-semibold text-white">
+                        {artifact.value}
+                      </div>
+                      <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">
+                        {artifact.helper}
+                      </div>
+                      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                        <span className="text-[11px] text-[#8ea1af]">{artifact.meta}</span>
+                        {artifact.href ? (
+                          <a
+                            href={artifact.href}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#22ddd0]"
+                          >
+                            Open ChainScan
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </a>
+                        ) : null}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="glass-inset rounded-[16px] px-4 py-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="text-[12px] font-medium text-white">Verification payload</div>
                   {integrityAudit ? (
                     <div
