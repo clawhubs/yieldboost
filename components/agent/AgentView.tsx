@@ -115,6 +115,18 @@ export default function AgentView() {
                 <span className="glass-inset rounded-[10px] px-3 py-1 text-[11px] text-[#d8e1e8]">
                   0G Network verified
                 </span>
+                {latestResult?.integrityAudit ? (
+                  <span
+                    data-testid="boost-integrity-auditor"
+                    className={`rounded-[10px] px-3 py-1 text-[11px] ${
+                      latestResult.integrityAudit.status === "APPROVED"
+                        ? "glass-accent text-[#68ff7a]"
+                        : "border border-[rgba(255,105,105,0.28)] bg-[rgba(255,105,105,0.06)] text-[#ff9a9a]"
+                    }`}
+                  >
+                    Integrity Auditor: {latestResult.integrityAudit.status === "APPROVED" ? "Approved" : "Rejected"}
+                  </span>
+                ) : null}
               </div>
             </div>
             <div className="glass-inset mt-5 rounded-[16px] border-[rgba(0,201,177,0.12)] bg-[radial-gradient(circle_at_top_right,rgba(34,221,208,0.10),transparent_40%)] px-4 py-4">

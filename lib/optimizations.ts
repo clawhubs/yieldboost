@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { IntegrityAudit } from "@/lib/integrity-audit";
 
 export type OptimizationState = "analyzing" | "optimizing" | "executing" | "done";
 export type FeedState = "analyzing" | "optimizing" | "complete";
@@ -35,6 +36,7 @@ export interface OptimizationResult {
   proofRegistryExplorerUrl?: string;
   proofStatus?: "stored" | "error" | "pending";
   proofStatusDetail?: string;
+  integrityAudit?: IntegrityAudit;
 }
 
 export interface OptimizationFeedItem {

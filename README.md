@@ -42,6 +42,7 @@ The active implementation in this repository is now centered on a **mainnet-firs
 - **0G Compute** for TEE-ready inference when provider credentials are configured.
 - **0G Storage** for storing optimization proof payloads.
 - **ProofRegistry** for on-chain anchoring of those stored proofs on the active network.
+- **Integrity Auditor** as a deterministic backend guardrail before any new proof write.
 
 The result is a product story judges can verify quickly: a user runs an optimization, the app persists the reasoning and decision payload on 0G infrastructure, and `/judge` exposes the latest mainnet review snapshot without requiring wallet connection, faucet setup, or rerunning the flow.
 
@@ -79,11 +80,13 @@ YieldBoost turns that idle capital into an actionable, proof-backed yield route:
 
 - It reads the wallet snapshot and identifies underused balance exposure.
 - It recommends a higher-yield route such as LP, staking, or safer rebalance opportunities based on the active strategy model.
+- It runs the prediction through a deterministic Integrity Auditor before treating it as proof-ready.
 - It stores the optimization output as a verifiable artifact instead of leaving it as a temporary UI suggestion.
 
 The project is also designed around **verifiable AI**, not just recommendation UX:
 
 - The optimization result is serialized and uploaded through the 0G mainnet storage pipeline by default.
+- The Integrity Auditor compares that result with the live/proof-backed wallet snapshot and rejects impossible yield claims before storage or minting.
 - The latest run is retained in a runtime proof ledger.
 - The storage result is also anchored on-chain through `ProofRegistry`.
 - The judge can open `/judge` first, inspect the latest wallet snapshot in read-only mode, and switch networks only if they want secondary context.
@@ -149,7 +152,9 @@ flowchart TD
     STREAM --> UI
 
     UI --> STORE[/api/0g/store/]
-    STORE --> JSON[Write proof JSON temp file]
+    STORE --> AUDIT[Integrity Auditor deterministic guardrail]
+    AUDIT -->|APPROVED| JSON[Write proof JSON temp file]
+    AUDIT -->|REJECTED| BLOCK[Return rejected audit, skip proof write]
     JSON --> ZGS[0G Storage Indexer.upload]
     ZGS --> PROOF[StoredProofRecord]
     STORE -->|optional| REG[ProofRegistry.recordProof]
@@ -176,15 +181,17 @@ flowchart TD
 1. The client calls [`/api/agent/optimize`](app/api/agent/optimize/route.ts), which builds a deterministic optimization snapshot and then attempts **0G Compute** inference through [`lib/server/og-compute.ts`](lib/server/og-compute.ts).
 2. If the compute provider is available, the app requests a `chat/completions` inference response from the 0G serving broker and returns the streamed narrative to the UI.
 3. The client then posts the finalized decision payload to [`/api/0g/store`](app/api/0g/store/route.ts).
-4. That route writes a JSON proof artifact, uploads it through **0G Storage** using `Indexer.upload`, and records the resulting storage hash and tx metadata.
-5. If `ProofRegistry` is configured, the same route calls `recordProof(...)` on the on-chain registry contract defined in [`contracts/ProofRegistry.sol`](contracts/ProofRegistry.sol).
-6. The full proof record is persisted into the runtime ledger managed by [`lib/server/runtime-store.ts`](lib/server/runtime-store.ts), backed by **Vercel KV** when available or `.artifacts/runtime-store.json` as a local fallback.
-7. The proof can then be rehydrated across the product through:
+4. The storage route runs the deterministic Integrity Auditor from [`lib/integrity-audit.ts`](lib/integrity-audit.ts), comparing the worker prediction against the submitted wallet snapshot and the latest runtime proof reference when available.
+5. If the audit is `REJECTED`, the route returns the audit reasons and skips 0G Storage, ProofRegistry, and Agent NFT proof promotion.
+6. If the audit is `APPROVED`, the route writes a JSON proof artifact, uploads it through **0G Storage** using `Indexer.upload`, and records the resulting storage hash and tx metadata.
+7. If `ProofRegistry` is configured, the same route calls `recordProof(...)` on the on-chain registry contract defined in [`contracts/ProofRegistry.sol`](contracts/ProofRegistry.sol).
+8. The full proof record is persisted into the runtime ledger managed by [`lib/server/runtime-store.ts`](lib/server/runtime-store.ts), backed by **Vercel KV** when available or `.artifacts/runtime-store.json` as a local fallback.
+9. The proof can then be rehydrated across the product through:
    - [`/api/agent/latest`](app/api/agent/latest/route.ts)
    - [`/api/0g/proof`](app/api/0g/proof/route.ts)
    - [`/api/history`](app/api/history/route.ts)
    - [`/api/agent/list`](app/api/agent/list/route.ts)
-8. The judge opens [`/judge`](<app/(workspace)/judge/page.tsx>), which surfaces the latest proof, wallet snapshot, explorer links, registry status, and a compact network switcher in one audit-first page.
+10. The judge opens [`/judge`](<app/(workspace)/judge/page.tsx>), which surfaces the latest proof, wallet snapshot, explorer links, registry status, Integrity Auditor state, and a compact network switcher in one audit-first page.
 
 ## Agent NFT Layer
 
@@ -210,6 +217,7 @@ Why this matters for judging:
 
 - **0G Compute-first inference path**: the live optimize route attempts TEE-ready inference through the 0G broker and falls back honestly when the provider is unavailable.
 - **0G Storage proof persistence**: every successful proof write stores decision metadata, timestamps, wallet scope, and explorer links.
+- **Integrity Auditor guardrail**: before a proof is stored or a strategy can be promoted, a deterministic rule-based backend auditor checks APY bounds, lift sanity, snapshot presence, route/asset compatibility, and zero-balance hallucination cases.
 - **Optional on-chain ProofRegistry anchoring**: if the registry contract env is present, the proof is also recorded on-chain and surfaced with a registry tx hash and proof id.
 - **Runtime proof ledger**: proofs are queryable later without re-running the optimization.
 
@@ -239,6 +247,7 @@ It does four important things:
 - **Pins the review flow to the latest recorded proof**, so judges see a concrete result first.
 - **Defaults the review path to mainnet**, which matches the current live submission story.
 - **Keeps proof links, CID/root hash, registry status, and snapshot details on one page**, minimizing review friction.
+- **Shows the Integrity Auditor result** so reviewers can see whether the deterministic guardrail approved the prediction before proof persistence.
 
 This is the UX decision that makes YieldBoost AI unusually judge-friendly: the verification path is short, visible, and does not depend on extension setup.
 
@@ -286,6 +295,8 @@ So the honest positioning is now: **YieldBoost AI actively reduces repeated toke
 
 ### Integrity Hardening
 
+- **Integrity Auditor / Logic Guardrail** is deterministic and does not call Qwen, OpenAI, Claude, or another model. It compares the worker prediction with wallet snapshot/proof/runtime data before a proof write. The audit result is stored as `integrityAudit.status`, `score`, `reasons`, `checkedAt`, and `source: deterministic-logic-guardrail`.
+- **Rejected audit results are not proof successes**: `/api/0g/store` returns a rejection, skips 0G Storage upload, skips `ProofRegistry.recordProof`, and the UI labels the result as blocked instead of silently continuing.
 - **Agent NFT metadata encryption** now uses **AES-256-GCM** in [`lib/server/encryption.ts`](lib/server/encryption.ts), with a required `STRATEGY_METADATA_ENCRYPTION_KEY` and a backward-compatible decrypt path for earlier base64 test payloads.
 - **0G Compute response validation** now uses the broker verification path in [`lib/server/og-compute.ts`](lib/server/og-compute.ts): the app verifies the returned chat ID through the broker and confirms the signed response body matches the text surfaced in the UI before marking the proof as TEE-verified.
 - **Agent NFT attestation hashes** are now derived from the runtime attestation payload when a verified 0G Compute result is present, rather than from a generic placeholder string.
@@ -298,6 +309,7 @@ One of the strongest implementation details here is that the app does not fake l
 - If **0G Compute** is unavailable, optimization narration falls back locally.
 - If **0G Compute** falls back locally, Agent NFTs can still mint, but the on-chain `verified` flag remains false because no broker-verified attestation hash exists to register.
 - If **0G Storage** fails, the UI still shows the optimization result but marks proof sync failure honestly.
+- If the **Integrity Auditor** rejects a prediction, the app shows the rejection and does not treat the run as a stored proof or mint-ready strategy.
 - If **ProofRegistry** is not configured, storage still succeeds and the record is marked accordingly.
 - If **Vercel KV** is missing, runtime history falls back to `.artifacts/runtime-store.json`.
 - If **INFT contract envs** are missing, `/agents` switches to proof-backed history mode.

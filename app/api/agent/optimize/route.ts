@@ -1,5 +1,14 @@
 import { NextRequest } from "next/server";
-import { buildNarrative, buildOptimizationSnapshot, portfolioSchema } from "@/lib/optimizations";
+import {
+  type OptimizationResult,
+  buildNarrative,
+  buildOptimizationSnapshot,
+  portfolioSchema,
+} from "@/lib/optimizations";
+import {
+  auditOptimizationDecision,
+  type AuditablePortfolioSnapshot,
+} from "@/lib/integrity-audit";
 import { generateAlibabaTextEmbedding, hasAlibabaEmbeddingConfig } from "@/lib/server/alibaba-embeddings";
 import { runTEEInference, isComputeConfigured } from "@/lib/server/og-compute";
 import {
@@ -50,12 +59,45 @@ function hasDetectedAssets(portfolio: Record<string, number>) {
   return Object.values(portfolio).some((value) => value > 0);
 }
 
-function withFreshResult(result: ReturnType<typeof buildOptimizationSnapshot>) {
+function buildPortfolioAuditSnapshot(
+  portfolio: Record<string, number>,
+  currentAPY: number,
+): AuditablePortfolioSnapshot {
+  const tokens = Object.entries(portfolio).map(([symbol, value]) => ({
+    symbol,
+    amount: value,
+    valueUSD: value,
+  }));
+
   return {
+    tokens,
+    totalUSD: tokens.reduce((sum, token) => sum + token.valueUSD, 0),
+    currentAPY,
+  };
+}
+
+function withIntegrityAudit(
+  result: OptimizationResult,
+  portfolio: Record<string, number>,
+): OptimizationResult {
+  return {
+    ...result,
+    integrityAudit: auditOptimizationDecision({
+      decision: result,
+      portfolioSnapshot: buildPortfolioAuditSnapshot(portfolio, result.current_apy),
+    }),
+  };
+}
+
+function withFreshResult(
+  result: OptimizationResult,
+  portfolio: Record<string, number>,
+): OptimizationResult {
+  return withIntegrityAudit({
     ...result,
     timestamp: new Date().toISOString(),
     executionSeconds: Math.max(0.38, Number((result.executionSeconds * 0.22).toFixed(2))),
-  };
+  }, portfolio);
 }
 
 export async function POST(req: NextRequest) {
@@ -80,7 +122,10 @@ export async function POST(req: NextRequest) {
     normalizedPrompt: compressedInput.normalizedPrompt,
     portfolioDigest: compressedInput.portfolioDigest,
   });
-  const result = buildOptimizationSnapshot(portfolio, compressedInput.normalizedPrompt);
+  const result = withIntegrityAudit(
+    buildOptimizationSnapshot(portfolio, compressedInput.normalizedPrompt),
+    portfolio,
+  );
 
   const headers = {
     "X-Optimization-Result": JSON.stringify(result),
@@ -113,7 +158,7 @@ export async function POST(req: NextRequest) {
 
   const exactCacheEntry = await findExactOptimizationCacheEntry(cacheKey);
   if (exactCacheEntry) {
-    const hydratedResult = withFreshResult(exactCacheEntry.result);
+    const hydratedResult = withFreshResult(exactCacheEntry.result, portfolio);
     const responseHeaders: Record<string, string> = {
       "X-Optimization-Result": JSON.stringify(hydratedResult),
       "X-LLM-Provider": "semantic-cache",
@@ -151,7 +196,7 @@ export async function POST(req: NextRequest) {
     if (similarEntry) {
       cacheStatus = "embedding-hit";
       cacheSimilarity = similarEntry.similarity;
-      const hydratedResult = withFreshResult(similarEntry.entry.result);
+      const hydratedResult = withFreshResult(similarEntry.entry.result, portfolio);
       const responseHeaders: Record<string, string> = {
         "X-Optimization-Result": JSON.stringify(hydratedResult),
         "X-LLM-Provider": "embedding-reuse",

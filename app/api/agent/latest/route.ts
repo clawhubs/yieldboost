@@ -77,6 +77,7 @@ export async function GET(req: NextRequest) {
     proofRegistryTxHash: storedProof.proofRegistryTxHash,
     proofRegistryProofId: storedProof.proofRegistryProofId,
     proofRegistryExplorerUrl: storedProof.proofRegistryExplorerUrl,
+    integrityAudit: storedProof.integrityAudit,
   };
 
   return NextResponse.json({

@@ -15,13 +15,17 @@ import {
   type StoredDecisionPayload,
   type StoredPortfolioSnapshot,
 } from "@/lib/backend-data";
+import { auditOptimizationDecision } from "@/lib/integrity-audit";
 import {
   getServer0GNetworkConfig,
   resolveWalletNetworkKey,
   type WalletNetworkKey,
   WALLET_NETWORK_COOKIE_KEY,
 } from "@/lib/wallet";
-import { recordStoredProof } from "@/lib/server/runtime-store";
+import {
+  getLatestStoredProofForWallet,
+  recordStoredProof,
+} from "@/lib/server/runtime-store";
 
 export const runtime = "nodejs";
 
@@ -116,6 +120,25 @@ export async function POST(req: NextRequest) {
     payload.networkKey ?? req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value,
   );
   const config = getServer0GNetworkConfig(networkKey);
+  const comparisonProof = walletAddress
+    ? await getLatestStoredProofForWallet(walletAddress, networkKey)
+    : null;
+  const integrityAudit = auditOptimizationDecision({
+    decision,
+    portfolioSnapshot,
+    comparisonProof,
+  });
+
+  if (integrityAudit.status === "REJECTED") {
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Integrity Auditor rejected this optimization; proof write skipped.",
+        integrityAudit,
+      },
+      { status: 422 },
+    );
+  }
 
   if (!config.storageUrl || !config.rpcUrl || !config.privateKey) {
     return NextResponse.json(
@@ -142,6 +165,7 @@ export async function POST(req: NextRequest) {
           walletAddress: walletAddress ?? undefined,
           decision,
           portfolioSnapshot,
+          integrityAudit,
           teeProvider: payload.teeProvider,
           teeModel: payload.teeModel,
           teeChatId: payload.teeChatId,
@@ -245,6 +269,7 @@ export async function POST(req: NextRequest) {
         decision,
         walletAddress: walletAddress ?? signer.address,
         portfolioSnapshot,
+        integrityAudit,
         note: receipt ? undefined : "pending_receipt",
         // TEE / 0G Compute metadata
         teeProvider: payload.teeProvider,
@@ -303,6 +328,7 @@ export async function POST(req: NextRequest) {
         proofRegistryTxHash: proof.proofRegistryTxHash,
         proofRegistryProofId: proof.proofRegistryProofId,
         proofRegistryExplorerUrl: proof.proofRegistryExplorerUrl,
+        integrityAudit: proof.integrityAudit,
         note: proof.note,
         // TEE / 0G Compute metadata
         teeProvider: proof.teeProvider,

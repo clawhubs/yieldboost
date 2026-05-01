@@ -12,6 +12,7 @@ import {
 } from "@/lib/wallet";
 import { getDocsRuntimeStatus } from "@/lib/docs/content";
 import type { StoredProofRecord } from "@/lib/backend-data";
+import { auditOptimizationDecision } from "@/lib/integrity-audit";
 import {
   resolveLatestProofForWallet,
   resolveLatestProofForWalletAcrossNetworks,
@@ -376,6 +377,21 @@ function buildMainnetChecklist({
   ] satisfies JudgeChecklistItem[];
 }
 
+function resolveProofIntegrityAudit(proof: StoredProofRecord | null) {
+  if (!proof) {
+    return null;
+  }
+
+  return (
+    proof.integrityAudit ??
+    auditOptimizationDecision({
+      decision: proof.decision,
+      portfolioSnapshot: proof.portfolioSnapshot,
+      comparisonProof: proof,
+    })
+  );
+}
+
 export async function getJudgePageData(): Promise<JudgePageData> {
   const runtimeStatus = getDocsRuntimeStatus();
   const reviewWallet = DEFAULT_WALLET_ADDRESS;
@@ -384,7 +400,12 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   const reviewNetwork = resolveWalletNetworkKey(
     cookieStore.get(WALLET_NETWORK_COOKIE_KEY)?.value,
   );
-  const latestProof = await resolveLatestProofForWallet(reviewWallet, reviewNetwork);
+  const rawLatestProof = await resolveLatestProofForWallet(reviewWallet, reviewNetwork);
+  const latestIntegrityAudit = resolveProofIntegrityAudit(rawLatestProof);
+  const latestProof =
+    rawLatestProof && latestIntegrityAudit
+      ? { ...rawLatestProof, integrityAudit: latestIntegrityAudit }
+      : rawLatestProof;
   const scopedProofs = await resolveProofHistoryForWallet(reviewWallet, reviewNetwork);
   const proofCount = scopedProofs.length;
   const proofNetwork = latestProof?.networkKey ?? reviewNetwork;

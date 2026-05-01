@@ -56,6 +56,8 @@ export default async function JudgePage() {
   const latestExplorerLabel = data.latestProof?.proofRegistryExplorerUrl
     ? "Open ProofRegistry tx"
     : "Open latest tx";
+  const integrityAudit = data.latestProof?.integrityAudit;
+  const integrityApproved = integrityAudit?.status === "APPROVED";
   const quickReviewPoints = [
     "Open `/judge` as the submission entry point to see the latest wallet result first.",
     "Follow the latest tx link and the CID to verify the current mainnet proof externally.",
@@ -228,7 +230,24 @@ export default async function JudgePage() {
 
             <div className="mt-5 space-y-[10px]">
               <div className="glass-inset rounded-[16px] px-4 py-4">
-                <div className="text-[12px] font-medium text-white">Verification payload</div>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="text-[12px] font-medium text-white">Verification payload</div>
+                  {integrityAudit ? (
+                    <div
+                      data-testid="judge-integrity-auditor"
+                      className={`inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-[10px] font-semibold ${
+                        integrityApproved
+                          ? "border-[rgba(47,224,109,0.24)] bg-[rgba(47,224,109,0.08)] text-[#68ff7a]"
+                          : "border-[rgba(255,105,105,0.28)] bg-[rgba(255,105,105,0.06)] text-[#ff9a9a]"
+                      }`}
+                    >
+                      Integrity Auditor: {integrityApproved ? "Approved" : "Rejected"}
+                      <span className="font-medium text-[#d7e0e8]">
+                        {integrityApproved ? "Logic Guardrail passed" : "Proof write blocked"}
+                      </span>
+                    </div>
+                  ) : null}
+                </div>
                 <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                   <div className="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3">
                     <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Storage CID</div>

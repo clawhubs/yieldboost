@@ -29,7 +29,10 @@ export default function JudgeNetworkSwitcher() {
   }
 
   return (
-    <div className="mt-5 w-full max-w-3xl rounded-[18px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-4 py-4">
+    <div
+      data-testid="judge-network-switcher"
+      className="mt-5 w-full max-w-3xl rounded-[18px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-4 py-4"
+    >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="text-[11px] uppercase tracking-[0.18em] text-[#87a0ad]">
@@ -46,6 +49,7 @@ export default function JudgeNetworkSwitcher() {
               <button
                 key={network.key}
                 type="button"
+                data-testid={`judge-network-${network.key}`}
                 disabled={!network.enabled || active}
                 onClick={() => switchNetwork(network.key)}
                 className={`rounded-full border px-3 py-2 text-left text-[12px] transition ${

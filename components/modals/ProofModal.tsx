@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Copy, ExternalLink, X, ShieldCheck } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import type { IntegrityAudit } from "@/lib/integrity-audit";
 import { isWalletAddress, type WalletNetworkKey, WALLET_OVERRIDE_STORAGE_KEY } from "@/lib/wallet";
 
 interface ProofModalProps {
@@ -18,6 +19,7 @@ interface ProofModalProps {
   proofRegistryTxHash?: string;
   proofRegistryProofId?: string;
   proofRegistryExplorerUrl?: string;
+  integrityAudit?: IntegrityAudit;
   decision?: {
     current_apy: number;
     optimized_apy: number;
@@ -43,6 +45,7 @@ interface ProofPayload {
   proofRegistryTxHash?: string;
   proofRegistryProofId?: string;
   proofRegistryExplorerUrl?: string;
+  integrityAudit?: IntegrityAudit;
   // TEE / 0G Compute metadata
   teeProvider?: string;
   teeModel?: string;
@@ -78,6 +81,7 @@ export default function ProofModal({
   proofRegistryTxHash,
   proofRegistryProofId,
   proofRegistryExplorerUrl,
+  integrityAudit,
   decision,
   mintPortfolio,
   networkKey,
@@ -154,6 +158,7 @@ export default function ProofModal({
       Boolean(proofRegistryTxHash) ||
       Boolean(proofRegistryProofId) ||
       Boolean(proofRegistryExplorerUrl) ||
+      Boolean(integrityAudit) ||
       Boolean(timestamp);
 
     if (!hasAnySeed) {
@@ -171,6 +176,7 @@ export default function ProofModal({
       proofRegistryTxHash,
       proofRegistryProofId,
       proofRegistryExplorerUrl,
+      integrityAudit,
     };
   }, [
     cid,
@@ -180,12 +186,14 @@ export default function ProofModal({
     proofRegistryExplorerUrl,
     proofRegistryProofId,
     proofRegistryTxHash,
+    integrityAudit,
     timestamp,
     txHash,
     walletAddress,
   ]);
 
   const activeProof = proof ?? seededProof;
+  const activeIntegrityAudit = activeProof?.integrityAudit ?? integrityAudit;
   const explorerHref = buildExplorerHref(activeProof?.explorerUrl, activeProof?.txHash);
   const proofRegistryHref = buildExplorerHref(
     activeProof?.proofRegistryExplorerUrl,
@@ -213,6 +221,7 @@ export default function ProofModal({
 
   const canMintAgent =
     showMintAction &&
+    activeIntegrityAudit?.status !== "REJECTED" &&
     Boolean(decision) &&
     Boolean(targetWalletAddress) &&
     Boolean(mintPortfolio && Object.keys(mintPortfolio).length > 0);
@@ -393,6 +402,46 @@ export default function ProofModal({
                   </div>
                 ) : null}
 
+                {activeIntegrityAudit ? (
+                  <div
+                    data-testid="proof-integrity-audit"
+                    className={`rounded-[20px] border p-4 sm:rounded-[24px] ${
+                      activeIntegrityAudit.status === "APPROVED"
+                        ? "border-[rgba(47,224,109,0.3)] bg-[rgba(47,224,109,0.05)]"
+                        : "border-[rgba(255,105,105,0.28)] bg-[rgba(255,105,105,0.06)]"
+                    }`}
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck
+                          className={`h-5 w-5 ${
+                            activeIntegrityAudit.status === "APPROVED"
+                              ? "text-[#2fe06d]"
+                              : "text-[#ff8d8d]"
+                          }`}
+                        />
+                        <p
+                          className={`text-xs uppercase tracking-[0.18em] ${
+                            activeIntegrityAudit.status === "APPROVED"
+                              ? "text-[#2fe06d]"
+                              : "text-[#ff8d8d]"
+                          }`}
+                        >
+                          Integrity Auditor: {activeIntegrityAudit.status === "APPROVED" ? "Approved" : "Rejected"}
+                        </p>
+                      </div>
+                      <div className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-medium text-white">
+                        Score {activeIntegrityAudit.score}
+                      </div>
+                    </div>
+                    <p className="mt-3 text-sm text-[var(--text-muted)]">
+                      {activeIntegrityAudit.status === "APPROVED"
+                        ? "Logic Guardrail passed."
+                        : activeIntegrityAudit.reasons[0] ?? "Logic Guardrail rejected this prediction."}
+                    </p>
+                  </div>
+                ) : null}
+
                 {activeProof?.proofRegistryAddress ? (
                   <div className="rounded-[20px] border border-white/8 bg-[rgba(255,255,255,0.02)] p-4 sm:rounded-[24px]">
                     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -529,6 +578,7 @@ export default function ProofModal({
                               decision,
                               storageCid: activeProof?.cid,
                               txHash: activeProof?.txHash,
+                              integrityAudit: activeIntegrityAudit,
                               teeAttestation:
                                 activeProof?.teeChatId &&
                                 activeProof?.teeProvider &&

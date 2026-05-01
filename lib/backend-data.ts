@@ -3,6 +3,7 @@ import {
   buildOptimizationSnapshot,
   createProofDetails,
 } from "@/lib/optimizations";
+import type { IntegrityAudit } from "@/lib/integrity-audit";
 import type { WalletNetworkKey } from "@/lib/wallet";
 
 export interface PortfolioToken {
@@ -271,6 +272,7 @@ export interface StoredProofRecord {
   proofRegistryTxHash?: string;
   proofRegistryProofId?: string;
   proofRegistryExplorerUrl?: string;
+  integrityAudit?: IntegrityAudit;
   note?: string;
   // TEE / 0G Compute metadata
   teeProvider?: string;
@@ -402,6 +404,7 @@ function createOptimizationResultFromProof(
     proofRegistryTxHash: proof.proofRegistryTxHash,
     proofRegistryProofId: proof.proofRegistryProofId,
     proofRegistryExplorerUrl: proof.proofRegistryExplorerUrl,
+    integrityAudit: proof.integrityAudit,
   };
 }
 
@@ -1606,6 +1609,7 @@ export function createStoredProofFallback(
     timestamp: proof.timestamp,
     explorerUrl: proof.explorerUrl,
     decision,
+    integrityAudit: undefined,
     note,
   };
 }

@@ -18,6 +18,7 @@ import {
   type OptimizationState,
   buildOptimizationSnapshot,
 } from "@/lib/optimizations";
+import type { IntegrityAudit } from "@/lib/integrity-audit";
 import {
   DEFAULT_WALLET_ADDRESS,
   type WalletChangeDetail,
@@ -270,6 +271,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     };
   }) {
     let storageErrorMessage: string | undefined;
+    let storageAudit: IntegrityAudit | undefined;
     let storageData:
       | {
           cid: string;
@@ -282,6 +284,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           proofRegistryTxHash?: string;
           proofRegistryProofId?: string;
           proofRegistryExplorerUrl?: string;
+          integrityAudit?: IntegrityAudit;
           note?: string;
         }
       | null = null;
@@ -344,9 +347,16 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       if (!storageResponse.ok) {
         let message = `Storage failed with status ${storageResponse.status}`;
         try {
-          const payload = (await storageResponse.json()) as { error?: string };
+          const payload = (await storageResponse.json()) as {
+            error?: string;
+            integrityAudit?: IntegrityAudit;
+          };
+          storageAudit = payload.integrityAudit;
           if (payload.error) {
             message = payload.error;
+          }
+          if (payload.integrityAudit?.status === "REJECTED") {
+            message = `Integrity Auditor rejected: ${payload.integrityAudit.reasons.join(" ")}`;
           }
         } catch {
           // Keep the HTTP status-based message when parsing fails.
@@ -364,8 +374,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           proofRegistryTxHash?: string;
           proofRegistryProofId?: string;
           proofRegistryExplorerUrl?: string;
+          integrityAudit?: IntegrityAudit;
           note?: string;
         };
+        storageAudit = storageData.integrityAudit;
 
         if (storageData.cid) {
           applyStorageProofEvent(
@@ -397,6 +409,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       proofRegistryTxHash: storageData?.proofRegistryTxHash,
       proofRegistryProofId: storageData?.proofRegistryProofId,
       proofRegistryExplorerUrl: storageData?.proofRegistryExplorerUrl,
+      integrityAudit:
+        storageAudit ??
+        optimizationData.integrityAudit ??
+        fallbackResult.integrityAudit,
       proofStatus: storageData?.cid ? "stored" : storageErrorMessage ? "error" : "pending",
       proofStatusDetail:
         storageErrorMessage ??
@@ -711,6 +727,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         reasoning: fullText || optimizationData.reasoning || fallbackResult.reasoning,
         timestamp: new Date().toISOString(),
         walletAddress: activeWalletAddress,
+        integrityAudit: optimizationData.integrityAudit ?? fallbackResult.integrityAudit,
         proofStatus: "pending",
         proofStatusDetail: "Proof sync is running in the background.",
       };

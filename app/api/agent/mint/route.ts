@@ -6,6 +6,7 @@ import {
   encryptStrategy,
   generateAttestationHash,
 } from "@/lib/server/encryption";
+import { auditOptimizationDecision } from "@/lib/integrity-audit";
 import { getContractSignerPrivateKey } from "@/lib/server/network-credentials";
 import {
   getYieldStrategyInftAddress,
@@ -32,6 +33,15 @@ const mintRequestSchema = z.object({
   }),
   storageCid: z.string().optional(),
   txHash: z.string().optional(),
+  integrityAudit: z
+    .object({
+      status: z.enum(["APPROVED", "REJECTED"]),
+      score: z.number(),
+      reasons: z.array(z.string()),
+      checkedAt: z.string(),
+      source: z.literal("deterministic-logic-guardrail"),
+    })
+    .optional(),
   teeAttestation: z
     .object({
       chatId: z.string(),
@@ -43,6 +53,23 @@ const mintRequestSchema = z.object({
     })
     .optional(),
 });
+
+function buildMintAuditSnapshot(
+  portfolio: Record<string, number>,
+  currentAPY: number,
+) {
+  const tokens = Object.entries(portfolio).map(([symbol, value]) => ({
+    symbol,
+    amount: value,
+    valueUSD: value,
+  }));
+
+  return {
+    tokens,
+    totalUSD: tokens.reduce((sum, token) => sum + token.valueUSD, 0),
+    currentAPY,
+  };
+}
 
 /**
  * Mint a new Strategy NFT from an optimization result
@@ -56,6 +83,7 @@ export async function POST(req: NextRequest) {
       decision,
       storageCid,
       txHash,
+      integrityAudit,
       teeAttestation,
     } = mintRequestSchema.parse(body);
     const networkKey = resolveWalletNetworkKey(
@@ -72,6 +100,24 @@ export async function POST(req: NextRequest) {
           error: "A valid connected wallet address is required to mint the Agent NFT",
         },
         { status: 400 },
+      );
+    }
+
+    const mintIntegrityAudit =
+      integrityAudit ??
+      auditOptimizationDecision({
+        decision,
+        portfolioSnapshot: buildMintAuditSnapshot(portfolio, decision.current_apy),
+      });
+
+    if (mintIntegrityAudit.status === "REJECTED") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Integrity Auditor rejected this strategy, so it cannot be minted.",
+          integrityAudit: mintIntegrityAudit,
+        },
+        { status: 422 },
       );
     }
 
@@ -120,6 +166,7 @@ export async function POST(req: NextRequest) {
       },
       storageCid,
       txHash,
+      integrityAudit: mintIntegrityAudit,
       teeAttestation,
       timestamp: Date.now(),
     });
@@ -202,6 +249,7 @@ export async function POST(req: NextRequest) {
       apy: decision.optimized_apy,
       attestationOracleAddress: oracleAddress,
       verifiedOnChain: Boolean(strategy?.verified),
+      integrityAudit: mintIntegrityAudit,
       explorerUrl: `${networkConfig.explorerBase.replace(/\/$/, "")}/tx/${receipt.hash}`,
     });
   } catch (error) {

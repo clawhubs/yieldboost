@@ -11,6 +11,7 @@ import type {
   StoredPortfolioSnapshot,
   StoredProofRecord,
 } from "@/lib/backend-data";
+import type { IntegrityAudit } from "@/lib/integrity-audit";
 import {
   getServer0GNetworkConfig,
   sameWalletAddress,
@@ -141,6 +142,7 @@ function mergeProofRecords(
     },
     walletAddress: storedProof.walletAddress ?? liveProof.walletAddress,
     portfolioSnapshot: storedProof.portfolioSnapshot ?? liveProof.portfolioSnapshot,
+    integrityAudit: storedProof.integrityAudit ?? liveProof.integrityAudit,
     note: storedProof.note ?? liveProof.note,
     teeProvider: storedProof.teeProvider ?? liveProof.teeProvider,
     teeModel: storedProof.teeModel ?? liveProof.teeModel,
@@ -184,6 +186,7 @@ async function readProofPayloadFromStorage(
       teeVerificationMethod?: string;
       teeSignedTextMatches?: boolean;
       llmProvider?: string;
+      integrityAudit?: IntegrityAudit;
     };
 
     return parsed;
@@ -349,6 +352,7 @@ async function buildLiveProofFromRegistryLog({
     proofRegistryTxHash: log.transactionHash,
     proofRegistryProofId: log.args.proofId.toString(),
     proofRegistryExplorerUrl: `${explorerBase.replace(/\/$/, "")}/tx/${log.transactionHash}`,
+    integrityAudit: storedProof?.integrityAudit,
     note: "live_registry_fallback",
     teeProvider: undefined,
     teeModel: undefined,
@@ -386,6 +390,7 @@ async function buildLiveProofFromRegistryLog({
     },
     walletAddress: storagePayload.walletAddress ?? liveProof.walletAddress,
     portfolioSnapshot: storagePayload.portfolioSnapshot,
+    integrityAudit: storagePayload.integrityAudit ?? liveProof.integrityAudit,
     teeProvider: storagePayload.teeProvider,
     teeModel: storagePayload.teeModel,
     teeChatId: storagePayload.teeChatId,

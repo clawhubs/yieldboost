@@ -229,6 +229,8 @@ export default function DashboardView() {
     : latestResult?.proofUrl
       ? "Open latest proof tx"
       : "Open 0G Explorer";
+  const integrityAudit = latestResult?.integrityAudit;
+  const auditApproved = integrityAudit?.status === "APPROVED";
 
   const liveDecisions = useMemo(() => {
     if (!latestResult) return decisionItems as readonly string[];
@@ -236,6 +238,9 @@ export default function DashboardView() {
     const bullets: string[] = [
       `${latestResult.recommended} selected with ${latestResult.confidence}% confidence`,
       `APY lift ${latestResult.current_apy}% → ${latestResult.optimized_apy}% (+${latestResult.yield_increase_pct}%)`,
+      latestResult.integrityAudit
+        ? `Integrity Auditor: ${latestResult.integrityAudit.status === "APPROVED" ? "Approved" : "Rejected"}`
+        : "Integrity Auditor: pending proof sync",
       `Projected annual gain +$${gain} on ${portfolioMetricValue} portfolio`,
       latestResult.proofRegistryProofId
         ? `ProofRegistry entry #${latestResult.proofRegistryProofId} recorded on ${activeNetwork.label}`
@@ -570,6 +575,21 @@ export default function DashboardView() {
                           ? `Wallet snapshot live for ${portfolioWalletLabel}`
                           : "Waiting for the first live wallet snapshot"}
                     </div>
+                    {integrityAudit ? (
+                      <div
+                        data-testid="integrity-auditor-indicator"
+                        className={`mt-2 inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-[10px] font-semibold ${
+                          auditApproved
+                            ? "border-[#12453f] bg-[#0b1a18] text-[#2fe06d]"
+                            : "border-[#553034] bg-[#1a0c0e] text-[#ff9a9a]"
+                        }`}
+                      >
+                        Integrity Auditor: {auditApproved ? "Approved" : "Rejected"}
+                        <span className="font-medium text-[#cfd9e1]">
+                          {auditApproved ? "Logic Guardrail passed" : "Proof write blocked"}
+                        </span>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
 
@@ -1150,6 +1170,7 @@ export default function DashboardView() {
           proofRegistryTxHash={latestResult?.proofRegistryTxHash}
           proofRegistryProofId={latestResult?.proofRegistryProofId}
           proofRegistryExplorerUrl={latestResult?.proofRegistryExplorerUrl}
+          integrityAudit={latestResult?.integrityAudit}
           mintPortfolio={livePortfolio}
           networkKey={networkKey}
           showMintAction={!judgeMode}
