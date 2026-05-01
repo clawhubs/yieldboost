@@ -237,9 +237,11 @@ export default async function JudgePage() {
               <div className="glass-inset rounded-[16px] px-4 py-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <div className="text-[12px] font-medium text-white">Mainnet deployment artifacts</div>
+                    <div className="text-[12px] font-medium text-white">
+                      {data.reviewNetworkLabel} deployment artifacts
+                    </div>
                     <div className="mt-1 text-[12px] text-[#9faab6]">
-                      Contract and NFT artifacts that complete the proof-to-agent path.
+                      Contract and NFT artifacts scoped to the active judge review network.
                     </div>
                   </div>
                   <Link
@@ -418,7 +420,7 @@ export default async function JudgePage() {
                       {inftComponent.address}
                     </div>
                     <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">
-                      Mainnet Agent NFT contract address used by the app.
+                      {data.reviewNetworkLabel} Agent NFT contract address used by the app.
                     </div>
                   </div>
                 ) : null}

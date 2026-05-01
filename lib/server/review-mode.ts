@@ -252,10 +252,12 @@ async function resolveLatestAgentMintArtifact(
 
 async function buildDeploymentArtifacts({
   reviewWallet,
+  reviewNetwork,
 }: {
   reviewWallet: string;
+  reviewNetwork: WalletNetworkKey;
 }): Promise<JudgeDeploymentArtifact[]> {
-  const artifactNetwork = "mainnet";
+  const artifactNetwork = reviewNetwork;
   const networkConfig = getServer0GNetworkConfig(artifactNetwork);
   const inftAddress = getYieldStrategyInftAddress(artifactNetwork);
   const marketplaceAddress = getYieldStrategyMarketplaceAddress(artifactNetwork);
@@ -265,31 +267,31 @@ async function buildDeploymentArtifacts({
   return [
     latestMint,
     {
-      label: "Mainnet strategy marketplace",
+      label: `${networkConfig.label} strategy marketplace`,
       value: marketplaceAddress ? shorten(marketplaceAddress, 8) : "Not configured",
       helper: marketplaceAddress
         ? "Adoption contract used by the Marketplace tab for listed Strategy Agent NFTs."
-        : "Set the marketplace address to expose on-chain listing/adoption from Judge Mode.",
+        : `Set the marketplace address to expose on-chain listing/adoption from Judge Mode on ${networkConfig.label}.`,
       status: marketplaceAddress ? "live" : "pending",
       href: buildExplorerAddressHref(artifactNetwork, marketplaceAddress),
       meta: networkConfig.label,
     },
     {
-      label: "Mainnet attestation oracle",
+      label: `${networkConfig.label} attestation oracle`,
       value: oracleAddress ? shorten(oracleAddress, 8) : "Not configured",
       helper: oracleAddress
         ? "On-chain oracle used by Agent NFT minting to mark broker-backed attestation hashes as verified."
-        : "Set the oracle address to show on-chain attestation verification in Judge Mode.",
+        : `Set the oracle address to show on-chain attestation verification in Judge Mode on ${networkConfig.label}.`,
       status: oracleAddress ? "live" : "pending",
       href: buildExplorerAddressHref(artifactNetwork, oracleAddress),
       meta: networkConfig.label,
     },
     {
-      label: "Mainnet YieldStrategyINFT",
+      label: `${networkConfig.label} YieldStrategyINFT`,
       value: inftAddress ? shorten(inftAddress, 8) : "Not configured",
       helper: inftAddress
         ? "ERC-721 strategy artifact contract used when optimization results are minted as Agent NFTs."
-        : "Set the INFT address to enable contract-backed Agent NFT inventory.",
+        : `Set the INFT address to enable contract-backed Agent NFT inventory on ${networkConfig.label}.`,
       status: inftAddress ? "live" : "pending",
       href: buildExplorerAddressHref(artifactNetwork, inftAddress),
       meta: networkConfig.label,
@@ -572,9 +574,9 @@ export async function getJudgePageData(): Promise<JudgePageData> {
     { preferProofSnapshot: true, latestProof },
   );
   const preferredConfig = getServer0GNetworkConfig(preferredNetwork);
-  const computeProviderAddress = getComputeProviderAddress(preferredNetwork);
-  const computeLedgerPrivateKey = getComputeLedgerPrivateKey(preferredNetwork);
-  const computeConfigured = hasComputeCredentials(preferredNetwork);
+  const computeProviderAddress = getComputeProviderAddress(reviewNetwork);
+  const computeLedgerPrivateKey = getComputeLedgerPrivateKey(reviewNetwork);
+  const computeConfigured = hasComputeCredentials(reviewNetwork);
   const networks = getAvailableWalletNetworks();
   const mainnetConfig = networks.find((network) => network.key === "mainnet") ?? preferredConfig;
   const latestExplorer = trimUrl(latestProof?.explorerUrl);
@@ -587,6 +589,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   });
   const deploymentArtifacts = await buildDeploymentArtifacts({
     reviewWallet,
+    reviewNetwork,
   });
   const efficiencyCards: JudgeStatusCard[] = [
     {
@@ -731,8 +734,8 @@ export async function getJudgePageData(): Promise<JudgePageData> {
       title: "0G Compute Network",
       status: computeConfigured ? "configured" : "partial",
       detail: computeConfigured
-        ? `TEE-ready provider credentials are present for ${preferredConfig.label}. If the provider is unavailable at runtime, the app still falls back honestly.`
-        : `The app will keep working with deterministic narrative fallback until compute provider envs are completed for ${preferredConfig.label}.`,
+        ? `TEE-ready provider credentials are present for ${reviewNetworkConfig.label}. If the provider is unavailable at runtime, the app still falls back honestly.`
+        : `The app will keep working with deterministic narrative fallback until compute provider envs are completed for ${reviewNetworkConfig.label}.`,
       meta: computeProviderAddress
         ? shorten(computeProviderAddress, 8)
         : computeLedgerPrivateKey
@@ -743,30 +746,30 @@ export async function getJudgePageData(): Promise<JudgePageData> {
       title: "ProofRegistry",
       status: latestProof?.proofRegistryAddress
         ? "live"
-        : preferredConfig.proofRegistryAddress
+        : reviewNetworkConfig.proofRegistryAddress
           ? "configured"
           : "pending",
       detail: latestProof?.proofRegistryProofId
         ? `Latest proof is anchored on-chain as Proof #${latestProof.proofRegistryProofId}.`
-        : preferredConfig.proofRegistryAddress
+        : reviewNetworkConfig.proofRegistryAddress
           ? "Registry contract is configured, but the latest proof has not produced a live proof id in this runtime snapshot."
           : "No registry contract is configured for the active server network yet.",
       href: latestRegistryExplorer,
-      address: latestProof?.proofRegistryAddress ?? preferredConfig.proofRegistryAddress,
+      address: latestProof?.proofRegistryAddress ?? reviewNetworkConfig.proofRegistryAddress,
       meta: latestProof?.proofRegistryTxHash
         ? `Registry tx ${shorten(latestProof.proofRegistryTxHash, 10)}`
         : "Contract verification placeholder is shown until deployment is confirmed",
     },
     {
       title: "Yield Strategy INFT",
-      status: getYieldStrategyInftAddress(preferredNetwork) ? "configured" : "partial",
-      detail: getYieldStrategyInftAddress(preferredNetwork)
-        ? "Agent routes can read a deployed contract address when the environment is set."
-        : "The `/agents` page stays demo-safe by falling back to proof-backed strategies when contract envs are missing.",
-      address: getYieldStrategyInftAddress(preferredNetwork),
-      meta: getYieldStrategyInftAddress(preferredNetwork)
-        ? "Contract mode available"
-        : "Proof-backed fallback active",
+      status: getYieldStrategyInftAddress(reviewNetwork) ? "configured" : "partial",
+      detail: getYieldStrategyInftAddress(reviewNetwork)
+        ? `Agent routes can read a deployed contract address for ${reviewNetworkConfig.label}.`
+        : `The \`/agents\` page stays demo-safe by falling back to proof-backed strategies when ${reviewNetworkConfig.label} contract envs are missing.`,
+      address: getYieldStrategyInftAddress(reviewNetwork),
+      meta: getYieldStrategyInftAddress(reviewNetwork)
+        ? `${reviewNetworkConfig.label} contract mode available`
+        : `${reviewNetworkConfig.label} proof-backed fallback active`,
     },
     {
       title: "Explorer Links",
