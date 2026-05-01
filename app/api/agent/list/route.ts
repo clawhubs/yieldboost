@@ -18,14 +18,20 @@ export const runtime = "nodejs";
 
 function buildProofFallbackStrategies(
   walletAddress?: string,
+  networkKey?: string,
 ) {
   return getStoredProofs().then((proofs) => {
     const scopedProofs = walletAddress
       ? proofs.filter((proof) => sameWalletAddress(proof.walletAddress, walletAddress))
       : proofs;
 
-    return scopedProofs.map((proof, index) => ({
+    const networkScopedProofs = networkKey
+      ? scopedProofs.filter((proof) => proof.networkKey === networkKey)
+      : scopedProofs;
+
+    return networkScopedProofs.map((proof, index) => ({
       tokenId: Number.parseInt(proof.proofRegistryProofId ?? "", 10) || index + 1,
+      networkKey: proof.networkKey,
       encryptedUri: proof.cid,
       contentHash: proof.txHash,
       apy: proof.decision.optimized_apy,
@@ -91,7 +97,7 @@ export async function GET(req: NextRequest) {
     const privateKey = getContractSignerPrivateKey(networkKey);
 
     if (!inftAddress || !privateKey) {
-      const strategies = await buildProofFallbackStrategies(walletAddress ?? undefined);
+      const strategies = await buildProofFallbackStrategies(walletAddress ?? undefined, networkKey);
       return NextResponse.json(
         {
           success: true,
@@ -107,7 +113,7 @@ export async function GET(req: NextRequest) {
     }
 
     if (!networkConfig.rpcUrl) {
-      const strategies = await buildProofFallbackStrategies(walletAddress ?? undefined);
+      const strategies = await buildProofFallbackStrategies(walletAddress ?? undefined, networkKey);
       return NextResponse.json(
         {
           success: true,
@@ -196,6 +202,7 @@ export async function GET(req: NextRequest) {
         
         strategies.push({
           tokenId: i,
+          networkKey,
           encryptedUri: strategy.encryptedUri,
           contentHash: strategy.contentHash,
           apy: Number(strategy.apy) / 100, // Convert from basis points
@@ -255,7 +262,13 @@ export async function GET(req: NextRequest) {
             req.nextUrl.searchParams.get("wallet") ??
               req.cookies.get(WALLET_COOKIE_KEY)?.value,
           );
-    const strategies = await buildProofFallbackStrategies(walletAddress ?? undefined);
+    const requestedNetwork =
+      req.nextUrl.searchParams.get("network") ??
+      req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value;
+    const networkKey = requestedNetwork
+      ? resolveWalletNetworkKey(requestedNetwork)
+      : getServerDefaultNetworkKey();
+    const strategies = await buildProofFallbackStrategies(walletAddress ?? undefined, networkKey);
 
     return NextResponse.json(
       {

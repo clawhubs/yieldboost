@@ -12,11 +12,14 @@ import {
   Wallet2,
 } from "lucide-react";
 import AgentCard from "./AgentCard";
+import { usePortfolio } from "@/hooks/usePortfolio";
+import type { WalletNetworkKey } from "@/lib/wallet";
 
 const ProofModal = lazy(() => import("@/components/modals/ProofModal"));
 
 interface Strategy {
   tokenId: number;
+  networkKey?: WalletNetworkKey | null;
   encryptedUri: string;
   contentHash: string;
   apy: number;
@@ -66,6 +69,7 @@ function sortStrategies(strategies: Strategy[], sortMode: SortMode) {
 }
 
 export default function AgentGallery() {
+  const { networkKey, portfolio } = usePortfolio();
   const [strategies, setStrategies] = useState<Strategy[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -80,7 +84,11 @@ export default function AgentGallery() {
     async function loadStrategies() {
       try {
         setLoading(true);
-        const response = await fetch("/api/agent/list", { cache: "no-store" });
+        const params = new URLSearchParams({ network: networkKey });
+        if (portfolio?.walletAddress) {
+          params.set("wallet", portfolio.walletAddress);
+        }
+        const response = await fetch(`/api/agent/list?${params.toString()}`, { cache: "no-store" });
         if (!response.ok) {
           throw new Error("Failed to load strategies");
         }
@@ -101,7 +109,7 @@ export default function AgentGallery() {
     }
 
     void loadStrategies();
-  }, []);
+  }, [networkKey, portfolio?.walletAddress]);
 
   const sortedStrategies = useMemo(
     () => sortStrategies(strategies, sortMode),
@@ -234,7 +242,7 @@ export default function AgentGallery() {
                 Real strategies, real proof history, better separation per run.
               </h2>
               <p className="mt-3 max-w-xl text-[14px] leading-6 text-[#9fb0be]">
-                Gallery ini sekarang membaca data asli dari contract NFT atau proof optimization wallet yang sedang connect, lalu memisahkan route berdasarkan waktu, gain, dan status verifikasi.
+                This gallery reads live Strategy NFT contract data or proof-backed optimization history for the active review wallet, then separates routes by time, gain, and verification status.
               </p>
             </div>
 
@@ -407,6 +415,7 @@ export default function AgentGallery() {
           proofRegistryTxHash={selectedStrategy?.proofRegistryTxHash ?? undefined}
           proofRegistryProofId={selectedStrategy?.proofRegistryProofId ?? undefined}
           proofRegistryExplorerUrl={selectedStrategy?.proofRegistryExplorerUrl ?? undefined}
+          networkKey={selectedStrategy?.networkKey ?? networkKey}
           showMintAction={false}
           decision={
             selectedStrategy

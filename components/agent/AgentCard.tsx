@@ -169,7 +169,7 @@ export default function AgentCard({
             Real optimization context
           </div>
           <p className="mt-2 text-[13px] leading-6 text-[#d4e0e7]">
-            Strategy ini diambil dari proof optimize nyata wallet kamu, jadi angka APY, gain, dan proof id berasal dari execution history yang tersimpan.
+            This strategy card is backed by a stored optimization proof, so APY, gain, and proof identifiers come from persisted execution history for the active review wallet.
           </p>
         </div>
       ) : null}
