@@ -550,9 +550,12 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   const preferredNetwork = getServerDefaultNetworkKey();
   const cookieStore = await cookies();
   const reviewNetworkCookie = cookieStore.get(WALLET_NETWORK_COOKIE_KEY)?.value;
+  const defaultReviewNetwork: WalletNetworkKey = getServer0GNetworkConfig("mainnet").enabled
+    ? "mainnet"
+    : preferredNetwork;
   const reviewNetwork = reviewNetworkCookie
     ? resolveWalletNetworkKey(reviewNetworkCookie)
-    : preferredNetwork;
+    : defaultReviewNetwork;
   const reviewNetworkConfig = getServer0GNetworkConfig(reviewNetwork);
   const rawLatestProof = await resolveLatestProofForWallet(reviewWallet, reviewNetwork);
   const latestIntegrityAudit = resolveProofIntegrityAudit(rawLatestProof);
