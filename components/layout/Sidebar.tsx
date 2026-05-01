@@ -432,11 +432,20 @@ export default function Sidebar() {
       : getDefaultWalletNetworkKey();
     setSelectedNetwork(savedNetwork);
     setCookie(WALLET_NETWORK_COOKIE_KEY, savedNetwork);
+    const judgeModeActive = localStorage.getItem(JUDGE_MODE_STORAGE_KEY) === "true";
 
     const savedProviderId = localStorage.getItem(WALLET_PROVIDER_STORAGE_KEY);
     const savedWallet = localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY);
 
     void (async () => {
+      if (judgeModeActive) {
+        setWalletAddr(null);
+        setConnected(false);
+        setErrorText(null);
+        broadcastWalletChange(DEFAULT_WALLET_ADDRESS, savedNetwork, "Judge demo wallet", false);
+        return;
+      }
+
       async function restoreAuthorizedWallet(
         providerId: string,
         networkKey: WalletNetworkKey,
