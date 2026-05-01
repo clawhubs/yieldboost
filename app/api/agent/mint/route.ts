@@ -26,6 +26,9 @@ const mintRequestSchema = z.object({
     optimized_apy: z.number(),
     recommended: z.string(),
     reasoning: z.string().optional(),
+    yield_increase_pct: z.number().optional(),
+    estimatedAnnualGain: z.number().optional(),
+    confidence: z.number().optional(),
   }),
   storageCid: z.string().optional(),
   txHash: z.string().optional(),
@@ -108,6 +111,13 @@ export async function POST(req: NextRequest) {
     const encryptedUri = encryptStrategy({
       portfolio,
       decision,
+      performance: {
+        roi: decision.yield_increase_pct ?? decision.optimized_apy - decision.current_apy,
+        accuracy: decision.confidence ?? null,
+        currentApy: decision.current_apy,
+        optimizedApy: decision.optimized_apy,
+        estimatedAnnualGain: decision.estimatedAnnualGain ?? null,
+      },
       storageCid,
       txHash,
       teeAttestation,

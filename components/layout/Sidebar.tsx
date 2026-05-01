@@ -78,6 +78,7 @@ const navigation: NavigationItem[] = [
   { href: "/analytics", label: "Analytics", icon: ChartNoAxesCombined },
   { href: "/watchlist", label: "Watchlist", icon: Star, badge: "NEW" },
   { href: "/agents", label: "Agents", icon: Bot },
+  { href: "/marketplace", label: "Marketplace", icon: Package2, badge: "NFT" },
   { href: "/docs", label: "Docs", icon: BookOpenText },
   { href: "/settings", label: "Settings", icon: Settings2 },
 ];

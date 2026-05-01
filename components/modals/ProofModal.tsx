@@ -23,6 +23,9 @@ interface ProofModalProps {
     optimized_apy: number;
     recommended: string;
     reasoning?: string;
+    yield_increase_pct?: number;
+    estimatedAnnualGain?: number;
+    confidence?: number;
   };
   mintPortfolio?: Record<string, number>;
   networkKey?: WalletNetworkKey;

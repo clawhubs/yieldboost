@@ -55,9 +55,14 @@ function buildProofFallbackStrategies(
  */
 export async function GET(req: NextRequest) {
   try {
-    const walletAddress = resolveWalletAddress(
-      req.nextUrl.searchParams.get("wallet") ?? req.cookies.get(WALLET_COOKIE_KEY)?.value,
-    );
+    const scope = req.nextUrl.searchParams.get("scope");
+    const walletAddress =
+      scope === "all"
+        ? null
+        : resolveWalletAddress(
+            req.nextUrl.searchParams.get("wallet") ??
+              req.cookies.get(WALLET_COOKIE_KEY)?.value,
+          );
     const networkKey = resolveWalletNetworkKey(
       req.nextUrl.searchParams.get("network") ??
         req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value,
@@ -135,6 +140,13 @@ export async function GET(req: NextRequest) {
                 recommended?: string;
                 reasoning?: string;
               };
+              performance?: {
+                roi?: number | null;
+                accuracy?: number | null;
+                currentApy?: number;
+                optimizedApy?: number;
+                estimatedAnnualGain?: number | null;
+              };
               storageCid?: string;
               txHash?: string;
             }
@@ -151,6 +163,13 @@ export async function GET(req: NextRequest) {
               recommended?: string;
               reasoning?: string;
             };
+            performance?: {
+              roi?: number | null;
+              accuracy?: number | null;
+              currentApy?: number;
+              optimizedApy?: number;
+              estimatedAnnualGain?: number | null;
+            };
             storageCid?: string;
             txHash?: string;
           };
@@ -163,10 +182,22 @@ export async function GET(req: NextRequest) {
           encryptedUri: strategy.encryptedUri,
           contentHash: strategy.contentHash,
           apy: Number(strategy.apy) / 100, // Convert from basis points
-          currentApy: decryptedPayload?.decision?.current_apy ?? null,
-          yieldIncreasePct: decryptedPayload?.decision?.yield_increase_pct ?? null,
-          estimatedAnnualGain: decryptedPayload?.decision?.estimatedAnnualGain ?? null,
-          confidence: decryptedPayload?.decision?.confidence ?? null,
+          currentApy:
+            decryptedPayload?.decision?.current_apy ??
+            decryptedPayload?.performance?.currentApy ??
+            null,
+          yieldIncreasePct:
+            decryptedPayload?.decision?.yield_increase_pct ??
+            decryptedPayload?.performance?.roi ??
+            null,
+          estimatedAnnualGain:
+            decryptedPayload?.decision?.estimatedAnnualGain ??
+            decryptedPayload?.performance?.estimatedAnnualGain ??
+            null,
+          confidence:
+            decryptedPayload?.decision?.confidence ??
+            decryptedPayload?.performance?.accuracy ??
+            null,
           recommended: decryptedPayload?.decision?.recommended ?? null,
           reasoning: decryptedPayload?.decision?.reasoning ?? null,
           storageProof: decryptedPayload?.storageCid ?? null,
@@ -196,9 +227,13 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     console.error("List error:", error);
-    const walletAddress = resolveWalletAddress(
-      req.nextUrl.searchParams.get("wallet") ?? req.cookies.get(WALLET_COOKIE_KEY)?.value,
-    );
+    const walletAddress =
+      req.nextUrl.searchParams.get("scope") === "all"
+        ? null
+        : resolveWalletAddress(
+            req.nextUrl.searchParams.get("wallet") ??
+              req.cookies.get(WALLET_COOKIE_KEY)?.value,
+          );
     const strategies = await buildProofFallbackStrategies(walletAddress ?? undefined);
 
     return NextResponse.json(

@@ -192,8 +192,10 @@ YieldBoost AI is not only storing optimization proofs. It also turns a completed
 - [`contracts/YieldStrategyINFT.sol`](contracts/YieldStrategyINFT.sol) is the on-chain contract for the strategy NFT layer.
 - [`/api/agent/mint`](app/api/agent/mint/route.ts) mints the NFT from a live optimization result, using the connected wallet as the NFT recipient.
 - [`contracts/AttestationRegistryOracle.sol`](contracts/AttestationRegistryOracle.sol) now backs the optional on-chain attestation path so broker-verified compute hashes can be registered before minting.
+- [`/marketplace`](<app/(workspace)/marketplace/page.tsx>) adds a simple Strategy NFT marketplace gallery for browsing minted strategies by APY, ROI lift, accuracy, owner, and proof link.
+- [`contracts/YieldStrategyAdoptionMarket.sol`](contracts/YieldStrategyAdoptionMarket.sol) provides the adoption contract path for listing and adopting enumerable Strategy NFTs.
 - [`/api/agent/list`](app/api/agent/list/route.ts) reads back minted strategy agents from the contract, with a graceful proof-history fallback when contract mode is unavailable.
-- The NFT payload carries the optimization context: APY delta, strategy reasoning, proof hash references, and attestation-linked metadata.
+- The NFT payload carries the optimization context: APY delta, ROI lift, strategy accuracy/confidence, strategy reasoning, proof hash references, and attestation-linked metadata.
 
 Why this matters for judging:
 

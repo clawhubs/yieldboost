@@ -1158,6 +1158,9 @@ export default function DashboardView() {
             optimized_apy: latestResult.optimized_apy,
             recommended: latestResult.recommended,
             reasoning: latestResult.reasoning,
+            yield_increase_pct: latestResult.yield_increase_pct,
+            estimatedAnnualGain: latestResult.estimatedAnnualGain,
+            confidence: latestResult.confidence,
           } : undefined}
         />
       </Suspense>

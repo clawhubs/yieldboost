@@ -19,6 +19,8 @@
     "deploy:inft:mainnet": "node scripts/deploy-inft.cjs mainnet",
     "deploy:attestation-oracle": "node scripts/deploy-attestation-oracle.cjs",
     "deploy:attestation-oracle:mainnet": "node scripts/deploy-attestation-oracle.cjs mainnet",
+    "deploy:adoption-market": "node scripts/deploy-adoption-market.cjs",
+    "deploy:adoption-market:mainnet": "node scripts/deploy-adoption-market.cjs mainnet",
     "export:attestation-oracle-abi": "node scripts/export-attestation-oracle-abi.cjs",
     "verify:attestation-oracle:mainnet": "node scripts/verify-attestation-oracle-chainscan.cjs mainnet",
     "configure:inft-oracle": "node scripts/configure-inft-oracle.cjs",

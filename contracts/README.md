@@ -3,6 +3,7 @@
 ## Files
 - `YieldStrategyINFT.sol` - Main ERC-7857 compliant Strategy NFT contract
 - `AttestationRegistryOracle.sol` - On-chain registry for broker-verified attestation hashes
+- `YieldStrategyAdoptionMarket.sol` - Simple adoption marketplace for enumerable Strategy NFTs
 - `MockOracle.sol` - Mock oracle for local testing only
 
 ## Deployment Options
@@ -33,11 +34,16 @@ npx hardhat deploy --network 0g_testnet
 ## Contract Features
 
 ### YieldStrategyINFT
-- ERC-721 NFT representing yield strategies
+- ERC-721 Enumerable NFT representing yield strategies
 - Encrypted strategy metadata stored on 0G Storage
 - TEE verification via oracle (optional, now supported by the AttestationRegistryOracle flow)
 - Authorization system for strategy usage
 - APY tracking in basis points
+
+### YieldStrategyAdoptionMarket
+- Lists Strategy NFTs after the owner approves the marketplace contract
+- Lets another wallet adopt a listed strategy through an atomic NFT transfer
+- Keeps marketplace custody simple: payment and `safeTransferFrom` happen in the same transaction
 
 ### AttestationRegistryOracle
 - Stores attestation hashes that already passed broker-backed runtime verification
@@ -58,4 +64,5 @@ YIELD_STRATEGY_ATTESTATION_ORACLE_ADDRESS=<deployed_oracle_address>
 1. Deploy `YieldStrategyINFT`
 2. Deploy `AttestationRegistryOracle`
 3. Point the INFT contract to the oracle with `setOracle(...)`
-4. Save the addresses to `.env.local` or Vercel envs
+4. Deploy `YieldStrategyAdoptionMarket` with the INFT contract address when marketplace adoption should go live
+5. Save the addresses to `.env.local` or Vercel envs
