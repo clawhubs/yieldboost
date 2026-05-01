@@ -292,6 +292,55 @@ export default async function JudgePage() {
               </div>
 
               <div className="glass-inset rounded-[16px] px-4 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="glass-accent flex h-10 w-10 items-center justify-center rounded-[13px] text-[#22ddd0]">
+                    <Boxes className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <div className="text-[14px] font-semibold text-white">0G components in use</div>
+                    <div className="mt-1 text-[12px] text-[#9faab6]">
+                      Core 0G links kept close to the deployment artifacts for faster audit.
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-[10px] md:grid-cols-3">
+                  {primaryComponents.map((component) => (
+                    <div key={component.title} className="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="text-[14px] font-semibold text-white">{component.title}</div>
+                        <span
+                          className={`rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] ${statusBadgeClass(component.status)}`}
+                        >
+                          {component.status}
+                        </span>
+                      </div>
+                      <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">{component.detail}</div>
+                      {component.address ? (
+                        <div className="mt-2 break-all text-[12px] text-[#d8e1e8]">
+                          {component.address}
+                        </div>
+                      ) : null}
+                      {component.meta ? (
+                        <div className="mt-2 text-[11px] text-[#9faab6]">{component.meta}</div>
+                      ) : null}
+                      {component.href ? (
+                        <a
+                          href={component.href}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-3 inline-flex items-center gap-2 text-[12px] font-medium text-[#22ddd0]"
+                        >
+                          Open reference
+                          <ArrowUpRight className="h-3.5 w-3.5" />
+                        </a>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="glass-inset rounded-[16px] px-4 py-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="text-[12px] font-medium text-white">Verification payload</div>
                   {integrityAudit ? (
@@ -446,56 +495,6 @@ export default async function JudgePage() {
                 ))}
               </div>
             </details>
-          </section>
-
-          <section className="yb-card rounded-[18px] px-5 py-5">
-            <div className="flex items-center gap-3">
-              <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
-                <Boxes className="h-5 w-5" />
-              </div>
-              <div>
-                <h2 className="text-[22px] font-semibold text-white">0G components in use</h2>
-                <p className="mt-1 text-[13px] text-[#9faab6]">
-                  The three components most judges usually ask about first.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-4 grid gap-[10px] md:grid-cols-3">
-              {primaryComponents.map((component) => (
-                <div key={component.title} className="glass-inset rounded-[16px] px-4 py-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="text-[15px] font-semibold text-white">{component.title}</div>
-                    <span
-                      className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] ${statusBadgeClass(component.status)}`}
-                    >
-                      {component.status}
-                    </span>
-                  </div>
-                  <div className="mt-3 text-[13px] leading-6 text-[#d6dee6]">{component.detail}</div>
-                  {component.address ? (
-                    <div className="mt-3 break-all text-[12px] text-[#d8e1e8]">
-                      {component.address}
-                    </div>
-                  ) : null}
-                  {component.meta ? (
-                    <div className="mt-2 text-[12px] text-[#9faab6]">{component.meta}</div>
-                  ) : null}
-                  {component.href ? (
-                    <a
-                      href={component.href}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-3 inline-flex items-center gap-2 text-[12px] font-medium text-[#22ddd0]"
-                    >
-                      Open reference
-                      <ArrowUpRight className="h-3.5 w-3.5" />
-                    </a>
-                  ) : null}
-                </div>
-              ))}
-            </div>
-
           </section>
 
           <section className="yb-card rounded-[18px] px-5 py-5">
