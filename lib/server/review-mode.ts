@@ -12,6 +12,7 @@ import {
   getYieldStrategyMarketplaceAddress,
   resolveWalletNetworkKey,
   WALLET_NETWORK_COOKIE_KEY,
+  type WalletNetworkKey,
 } from "@/lib/wallet";
 import { getDocsRuntimeStatus } from "@/lib/docs/content";
 import type { StoredProofRecord } from "@/lib/backend-data";
@@ -70,6 +71,8 @@ export interface JudgeEnvItem {
 }
 
 export interface JudgePageData {
+  reviewNetwork: WalletNetworkKey;
+  reviewNetworkLabel: string;
   runtimeLabel: string;
   statusCards: JudgeStatusCard[];
   latestProof: StoredProofRecord | null;
@@ -546,9 +549,11 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   const reviewWallet = DEFAULT_WALLET_ADDRESS;
   const preferredNetwork = getServerDefaultNetworkKey();
   const cookieStore = await cookies();
-  const reviewNetwork = resolveWalletNetworkKey(
-    cookieStore.get(WALLET_NETWORK_COOKIE_KEY)?.value,
-  );
+  const reviewNetworkCookie = cookieStore.get(WALLET_NETWORK_COOKIE_KEY)?.value;
+  const reviewNetwork = reviewNetworkCookie
+    ? resolveWalletNetworkKey(reviewNetworkCookie)
+    : preferredNetwork;
+  const reviewNetworkConfig = getServer0GNetworkConfig(reviewNetwork);
   const rawLatestProof = await resolveLatestProofForWallet(reviewWallet, reviewNetwork);
   const latestIntegrityAudit = resolveProofIntegrityAudit(rawLatestProof);
   const latestProof =
@@ -635,7 +640,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
     },
     {
       label: "Review Network",
-      value: getServer0GNetworkConfig(reviewNetwork).label,
+      value: reviewNetworkConfig.label,
       helper:
         reviewNetwork === "mainnet"
           ? "Judge snapshot is currently scoped to mainnet."
@@ -812,6 +817,8 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   }
 
   return {
+    reviewNetwork,
+    reviewNetworkLabel: reviewNetworkConfig.label,
     runtimeLabel: runtimeStatus.currentStatusLine,
     statusCards,
     latestProof,

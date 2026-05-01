@@ -1,17 +1,31 @@
 "use client";
 
-import { useMemo } from "react";
-import { usePortfolio } from "@/hooks/usePortfolio";
+import { useEffect, useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   getAvailableWalletNetworks,
   WALLET_NETWORK_CHANGE_REQUEST_EVENT,
+  WALLET_NETWORK_COOKIE_KEY,
+  WALLET_NETWORK_STORAGE_KEY,
   type WalletNetworkKey,
 } from "@/lib/wallet";
 
 const availableNetworks = getAvailableWalletNetworks();
 
-export default function JudgeNetworkSwitcher() {
-  const { networkKey } = usePortfolio();
+function setCookie(name: string, value: string) {
+  document.cookie = `${name}=${value}; path=/; max-age=31536000; SameSite=Lax`;
+}
+
+interface JudgeNetworkSwitcherProps {
+  reviewNetworkKey: WalletNetworkKey;
+}
+
+export default function JudgeNetworkSwitcher({
+  reviewNetworkKey,
+}: JudgeNetworkSwitcherProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [selectedNetwork, setSelectedNetwork] = useState(reviewNetworkKey);
   const orderedNetworks = useMemo(
     () =>
       [...availableNetworks].sort((left, right) =>
@@ -20,12 +34,22 @@ export default function JudgeNetworkSwitcher() {
     [],
   );
 
+  useEffect(() => {
+    setSelectedNetwork(reviewNetworkKey);
+  }, [reviewNetworkKey]);
+
   function switchNetwork(nextNetwork: WalletNetworkKey) {
+    setSelectedNetwork(nextNetwork);
+    window.localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, nextNetwork);
+    setCookie(WALLET_NETWORK_COOKIE_KEY, nextNetwork);
     window.dispatchEvent(
       new CustomEvent(WALLET_NETWORK_CHANGE_REQUEST_EVENT, {
         detail: { networkKey: nextNetwork },
       }),
     );
+    startTransition(() => {
+      router.refresh();
+    });
   }
 
   return (
@@ -44,13 +68,13 @@ export default function JudgeNetworkSwitcher() {
         </div>
         <div className="inline-flex flex-wrap gap-2">
           {orderedNetworks.map((network) => {
-            const active = network.key === networkKey;
+            const active = network.key === selectedNetwork;
             return (
               <button
                 key={network.key}
                 type="button"
                 data-testid={`judge-network-${network.key}`}
-                disabled={!network.enabled || active}
+                disabled={!network.enabled || active || isPending}
                 onClick={() => switchNetwork(network.key)}
                 className={`rounded-full border px-3 py-2 text-left text-[12px] transition ${
                   active
@@ -60,7 +84,11 @@ export default function JudgeNetworkSwitcher() {
               >
                 <div className="font-semibold">{network.key === "mainnet" ? "Mainnet" : "Testnet"}</div>
                 <div className="mt-0.5 text-[11px] text-[#8ea1af]">
-                  {active ? "Current review network" : network.chainName}
+                  {active
+                    ? isPending
+                      ? "Syncing latest proof"
+                      : "Current review network"
+                    : network.chainName}
                 </div>
               </button>
             );

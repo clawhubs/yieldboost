@@ -39,6 +39,7 @@ function statusBadgeClass(status: "live" | "configured" | "partial" | "pending")
 
 export default async function JudgePage() {
   const data = await getJudgePageData();
+  const reviewingMainnet = data.reviewNetwork === "mainnet";
   const primaryComponents = data.components.filter((component) =>
     ["0G Storage", "0G Compute Network", "ProofRegistry"].includes(component.title),
   );
@@ -107,10 +108,12 @@ export default async function JudgePage() {
               Judge Mode
             </div>
             <h1 className="mt-3 font-[family-name:var(--font-display)] text-[30px] font-semibold leading-[1.08] text-white md:text-[40px]">
-              Mainnet review starts here.
+              {reviewingMainnet ? "Mainnet review starts here." : "Testnet comparison snapshot."}
             </h1>
             <p className="mt-3 max-w-3xl text-[15px] leading-7 text-[#9daab6]">
-              YieldBoost AI turns idle crypto balances into a better low-risk yield route, shows the decision clearly, and keeps the latest wallet proof ready for external verification. This page stays read-only so a judge can inspect the current result without rerunning the flow.
+              {reviewingMainnet
+                ? "YieldBoost AI turns idle crypto balances into a better low-risk yield route, shows the decision clearly, and keeps the latest wallet proof ready for external verification. This page stays read-only so a judge can inspect the current result without rerunning the flow."
+                : "This secondary view scopes the same judge wallet to the testnet proof ledger, so reviewers can compare build history without leaving the read-only audit surface."}
             </p>
             <div className="mt-5 grid w-full gap-[10px] md:grid-cols-3">
               {[
@@ -124,7 +127,9 @@ export default async function JudgePage() {
                 },
                 {
                   title: "What is live",
-                  body: "0G Mainnet proof data, explorer links, and ProofRegistry anchoring from the latest recorded run.",
+                  body: reviewingMainnet
+                    ? "0G Mainnet proof data, explorer links, and ProofRegistry anchoring from the latest recorded run."
+                    : "A testnet proof snapshot for comparison, while Mainnet remains the production review target.",
                 },
               ].map((item) => (
                 <div key={item.title} className="glass-inset rounded-[14px] px-4 py-4">
@@ -166,7 +171,7 @@ export default async function JudgePage() {
                 </Link>
               </div>
             </div>
-            <JudgeNetworkSwitcher />
+            <JudgeNetworkSwitcher reviewNetworkKey={data.reviewNetwork} />
             <div className="mt-4 flex w-full max-w-3xl flex-wrap items-center justify-center gap-3">
               {projectProfiles.map((profile) => {
                 const Icon = profile.icon;
