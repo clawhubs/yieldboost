@@ -782,14 +782,14 @@
             <div class="kicker"><span class="dot"></span>0G Labs Global Hackathon</div>
             <h1>Verifiable yield optimization for the AI-native Web3.</h1>
             <p class="lead">
-              Mainnet-first optimizer, 0G proof trail, frictionless judge review, and strategy-agent NFT minting.
+              Mainnet-first optimizer, anti-hallucination guardrails, 0G proof trail, frictionless judge review, Agent NFT minting, and strategy marketplace adoption.
             </p>
             <div class="hero-row">
               <div class="pill-row">
                 <span class="pill">0G Mainnet default</span>
                 <span class="pill">0G Storage + ProofRegistry</span>
-                <span class="pill">0G Compute path</span>
-                <span class="pill">YieldStrategyINFT</span>
+                <span class="pill">Integrity Auditor</span>
+                <span class="pill">Agent NFT + Marketplace</span>
               </div>
               <p class="mini">Live app: yieldboost-ai.vercel.app/judge</p>
             </div>
@@ -805,22 +805,22 @@
             <h2>AI yield advice is easy to generate. It is hard to verify.</h2>
             <div class="grid three" style="margin-top: 34px">
               <div class="card">
-                <strong>Opaque AI output</strong>
-                <span>Most dashboards show a recommendation, but not a durable proof trail for what was decided.</span>
+                <strong>AI can hallucinate</strong>
+                <span>Finance agents need guardrails before an output is treated as a trusted strategy.</span>
               </div>
               <div class="card">
-                <strong>Review friction</strong>
-                <span>Hackathon judges should not need a wallet, faucet, or manual rerun just to audit the result.</span>
+                <strong>Opaque recommendations</strong>
+                <span>Most dashboards show a route, but not the wallet snapshot, proof trail, and validation context behind it.</span>
               </div>
               <div class="card">
-                <strong>Strategy ownership</strong>
-                <span>A completed strategy should become a portable artifact, not a temporary UI state.</span>
+                <strong>Temporary strategy state</strong>
+                <span>A completed strategy should become a portable on-chain artifact, not disappear as a UI-only result.</span>
               </div>
             </div>
             <div class="split">
               <div>
                 <p class="lead">
-                  YieldBoost AI turns an optimization into a visible chain of custody: compute, storage, registry anchor, and optional Agent NFT.
+                  YieldBoost AI turns an optimization into a visible chain of custody: compressed input, runtime guardrail, 0G Storage, ProofRegistry anchor, Agent NFT, and marketplace adoption.
                 </p>
               </div>
               <div class="chart">
@@ -847,7 +847,7 @@
               </div>
               <div class="node" data-step="2">
                 <strong>Optimize route</strong>
-                <span class="mini">Portfolio snapshot is compressed and routed through cache, embeddings, and compute.</span>
+                <span class="mini">Portfolio snapshot is compressed and routed through cache, embeddings, compute, and auditor checks.</span>
               </div>
               <div class="node" data-step="3">
                 <strong>Anchor proof</strong>
@@ -855,7 +855,7 @@
               </div>
               <div class="node" data-step="4">
                 <strong>Review or mint</strong>
-                <span class="mini">Judge Mode audits the proof. User can mint a Strategy Agent NFT.</span>
+                <span class="mini">Judge Mode audits the proof. User can mint and list a Strategy Agent NFT.</span>
               </div>
             </div>
             <div class="grid four" style="margin-top: 28px">
@@ -870,14 +870,14 @@
                 <span>route scoring</span>
               </div>
               <div class="card metric">
-                <span class="mini">Proof coverage</span>
-                <span class="value">100%</span>
-                <span>stored run trail</span>
+                <span class="mini">Guardrail</span>
+                <span class="value">100</span>
+                <span>Integrity Auditor score</span>
               </div>
               <div class="card metric">
-                <span class="mini">Judge wallet</span>
-                <span class="value" style="font-size: 20px">0x8a3c...</span>
-                <span>read-only demo wallet</span>
+                <span class="mini">Agent NFTs</span>
+                <span class="value">3</span>
+                <span>mainnet minted strategies</span>
               </div>
             </div>
           </div>
@@ -908,8 +908,8 @@
                 <span class="mini">Alibaba text-embedding-v4</span>
               </div>
               <div class="node" data-step="E">
-                <strong>0G Compute</strong>
-                <span class="mini">Inference path + verified runtime metadata</span>
+                <strong>Compute + Auditor</strong>
+                <span class="mini">Inference output checked against portfolio facts</span>
               </div>
               <div class="node" data-step="F">
                 <strong>0G Storage</strong>
@@ -921,7 +921,7 @@
               </div>
             </div>
             <p class="lead">
-              The key design choice: optimization is not just displayed. It becomes a durable, wallet-scoped proof artifact that the judge can inspect without touching user funds.
+              The key design choice: AI output is treated as a proposal until it passes guardrails and becomes a durable, wallet-scoped proof artifact.
             </p>
           </div>
           <div class="footer"><span>System flow</span><span class="slide-no">04 / 09</span></div>
@@ -946,7 +946,7 @@
                   </div>
                   <div class="card">
                     <strong>Direct explorer path</strong>
-                    <span>Latest storage tx, ProofRegistry anchor, contract addresses, and proof history are surfaced in one place.</span>
+                    <span>Latest storage tx, ProofRegistry anchor, Agent NFT mint tx, marketplace, oracle, contract addresses, and proof history are surfaced in one place.</span>
                   </div>
                 </div>
               </div>
@@ -965,7 +965,7 @@
                     </div>
                     <div class="card metric">
                       <span class="mini">Proof history</span>
-                      <span class="value" style="font-size: 26px">14 runs</span>
+                      <span class="value" style="font-size: 26px">Live runs</span>
                     </div>
                   </div>
                   <div class="mock-line"></div>
@@ -997,12 +997,22 @@
               <div class="card">
                 <strong>Attestation Oracle</strong>
                 <span class="address">0x216E7880D64D94335B583c539802d3e61958d4A2</span>
-                <span class="mini">Allows verified attestation hashes to be registered on-chain.</span>
+                <span class="mini">Registers verified attestation hashes before INFT verification is marked on-chain.</span>
               </div>
               <div class="card">
-                <strong>Latest anchor tx</strong>
-                <span class="address">0xa76f59de764dfb5dcd2fae3e8dff53cb0e213bab89162e7b4de16962309caa9b</span>
-                <span class="mini">Mainnet ProofRegistry transaction linked from the product.</span>
+                <strong>Strategy Marketplace</strong>
+                <span class="address">0x48F989C7f41056509980731C1b4D59164C0C1A40</span>
+                <span class="mini">Mainnet adoption contract for listed proof-backed Strategy NFTs.</span>
+              </div>
+              <div class="card">
+                <strong>Latest ProofRegistry tx</strong>
+                <span class="address">0x2c50807ad1b35cda372f420f1a996dfa7a6555d4b7672f265fbb60d79bcd82b1</span>
+                <span class="mini">Latest tested mainnet proof anchor from the product flow.</span>
+              </div>
+              <div class="card">
+                <strong>Latest Agent NFT mint tx</strong>
+                <span class="address">0x5fa0bdd16f914941d127aaa2cefcedeccc48d9b1d7bd31f52605b5a901aaf4ff</span>
+                <span class="mini">Token #3 minted to the connected demo wallet during live validation.</span>
               </div>
             </div>
           </div>
@@ -1015,7 +1025,7 @@
           <div class="inner">
             <div class="kicker"><span class="dot"></span>Runtime efficiency</div>
             <h2>Inference is optimized before the system spends compute.</h2>
-            <div class="grid three" style="margin-top: 32px">
+            <div class="grid four" style="margin-top: 32px">
               <div class="card">
                 <strong>Semantic Cache</strong>
                 <span>Scoped by wallet, network, normalized prompt, and portfolio digest before new inference runs.</span>
@@ -1028,12 +1038,16 @@
                 <strong>Prompt Compression</strong>
                 <span>The optimizer rewrites noisy input into compact intent, constraints, and portfolio facts.</span>
               </div>
+              <div class="card">
+                <strong>Integrity Auditor</strong>
+                <span>Checks AI recommendations against the real snapshot before proof writing or NFT minting.</span>
+              </div>
             </div>
             <div class="flow" style="grid-template-columns: repeat(4, 1fr)">
               <div class="node" data-step="1"><strong>Raw intent</strong><span class="mini">User request + portfolio</span></div>
               <div class="node" data-step="2"><strong>Compacted prompt</strong><span class="mini">Less noise, same decision context</span></div>
               <div class="node" data-step="3"><strong>Reuse check</strong><span class="mini">Exact cache or vector similarity</span></div>
-              <div class="node" data-step="4"><strong>Compute only if needed</strong><span class="mini">Preserve 0G proof flow</span></div>
+              <div class="node" data-step="4"><strong>Audit then store</strong><span class="mini">Reject unsafe or unrealistic output</span></div>
             </div>
           </div>
           <div class="footer"><span>Token efficiency</span><span class="slide-no">07 / 09</span></div>
@@ -1056,8 +1070,12 @@
                     <span>Agent ownership follows the user wallet, not the server signer.</span>
                   </div>
                   <div class="card">
-                    <strong>Encrypted metadata</strong>
-                    <span>Strategy metadata is protected with AES-256-GCM at the app runtime layer.</span>
+                    <strong>Marketplace adoption</strong>
+                    <span>Listed strategy NFTs can be inspected through proof metadata before adoption.</span>
+                  </div>
+                  <div class="card">
+                    <strong>Auditor-gated mint</strong>
+                    <span>Rejected recommendations do not enter the proof-to-NFT path.</span>
                   </div>
                 </div>
               </div>
@@ -1067,7 +1085,7 @@
                   <div class="card" style="min-height: 320px">
                     <div class="kicker"><span class="dot"></span>Agent NFT</div>
                     <h3 style="margin-top: 18px">SaucerSwap LP Strategy Agent</h3>
-                    <p class="mini" style="margin-top: 10px">Confidence 96% | APY 23.84% | Proof-linked mint</p>
+                    <p class="mini" style="margin-top: 10px">Confidence 96% | APY 23.84% | Proof-linked mint | Listed strategy-ready</p>
                     <div class="chart">
                       <svg viewBox="0 0 600 180">
                         <path d="M36 132 C108 88 158 118 220 74 C286 28 332 88 398 48 C462 12 504 46 568 22" fill="none" stroke="#22d3ee" stroke-width="5" stroke-linecap="round" />
@@ -1090,7 +1108,7 @@
             <div class="grid three" style="margin-top: 34px">
               <div class="card">
                 <strong>Phase 1: Mainnet proof product</strong>
-                <span>Live proof trail, Judge Mode, Agent NFT minting, and dual-network review.</span>
+                <span>Live proof trail, Judge Mode, Integrity Auditor, Agent NFT minting, marketplace, and dual-network review.</span>
               </div>
               <div class="card">
                 <strong>Phase 2: $YA0G reward logic</strong>
@@ -1103,9 +1121,9 @@
             </div>
             <div class="flow" style="margin-top: 34px">
               <div class="node" data-step="1"><strong>Run</strong><span class="mini">User optimizes portfolio</span></div>
-              <div class="node" data-step="2"><strong>Verify</strong><span class="mini">0G Storage + ProofRegistry</span></div>
-              <div class="node" data-step="3"><strong>Own</strong><span class="mini">Mint strategy agent</span></div>
-              <div class="node" data-step="4"><strong>Reward</strong><span class="mini">Future $YA0G mining</span></div>
+              <div class="node" data-step="2"><strong>Guardrail</strong><span class="mini">Integrity Auditor approval</span></div>
+              <div class="node" data-step="3"><strong>Verify</strong><span class="mini">0G Storage + ProofRegistry</span></div>
+              <div class="node" data-step="4"><strong>Own + adopt</strong><span class="mini">Agent NFT marketplace</span></div>
             </div>
             <p class="lead">
               YieldBoost AI is strongest as a mainnet-live verifiable finance product: AI recommendations with a proof trail judges can inspect in seconds.
