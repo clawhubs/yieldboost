@@ -34,6 +34,10 @@ const latestLiveProofCache = new Map<
   string,
   { fetchedAt: number; proof: StoredProofRecord | null }
 >();
+const liveProofHistoryCache = new Map<
+  string,
+  { fetchedAt: number; proofs: StoredProofRecord[] }
+>();
 
 type ProofRegistryLog = Awaited<
   ReturnType<Contract["queryFilter"]>
@@ -71,6 +75,13 @@ function getLatestLiveProofCacheKey(
   networkKey: WalletNetworkKey,
 ) {
   return `${walletAddress.toLowerCase()}::${networkKey}`;
+}
+
+function getLiveProofHistoryCacheKey(
+  walletAddress: string,
+  networkKey: WalletNetworkKey,
+) {
+  return `history::${walletAddress.toLowerCase()}::${networkKey}`;
 }
 
 function sameProofIdentity(
@@ -245,9 +256,18 @@ async function findLatestRegistryProofLog(
   walletAddress: string,
   networkKey: WalletNetworkKey,
 ) {
+  return (await findRegistryProofLogs(contract, walletAddress, networkKey, 1))[0] ?? null;
+}
+
+async function findRegistryProofLogs(
+  contract: Contract,
+  walletAddress: string,
+  networkKey: WalletNetworkKey,
+  limit = 25,
+) {
   const provider = contract.runner?.provider;
   if (!provider || typeof provider.getBlockNumber !== "function") {
-    return null;
+    return [];
   }
 
   const latestBlock = await provider.getBlockNumber();
@@ -257,16 +277,123 @@ async function findLatestRegistryProofLog(
     latestBlock - MAX_BLOCK_LOOKBACK,
   );
   const filter = contract.filters.ProofRecorded(null, walletAddress);
+  const found: ProofRegistryLog[] = [];
 
   for (let toBlock = latestBlock; toBlock >= minBlock; toBlock -= BLOCK_SCAN_CHUNK) {
     const fromBlock = Math.max(minBlock, toBlock - BLOCK_SCAN_CHUNK + 1);
     const logs = await contract.queryFilter(filter, fromBlock, toBlock);
     if (logs.length > 0) {
-      return logs[logs.length - 1] as ProofRegistryLog;
+      found.push(...logs.reverse());
+      if (found.length >= limit) {
+        break;
+      }
     }
   }
 
-  return null;
+  return found
+    .sort((left, right) => {
+      const blockDelta = right.blockNumber - left.blockNumber;
+      if (blockDelta !== 0) return blockDelta;
+
+      const leftIndex = "index" in left ? Number(left.index) : 0;
+      const rightIndex = "index" in right ? Number(right.index) : 0;
+      return rightIndex - leftIndex;
+    })
+    .slice(0, limit);
+}
+
+async function buildLiveProofFromRegistryLog({
+  provider,
+  log,
+  walletAddress,
+  networkKey,
+  registryAddress,
+  explorerBase,
+  storedProof,
+  hydrateStoragePayload = false,
+}: {
+  provider: JsonRpcProvider;
+  log: EventLog;
+  walletAddress: string;
+  networkKey: WalletNetworkKey;
+  registryAddress: string;
+  explorerBase: string;
+  storedProof?: StoredProofRecord | null;
+  hydrateStoragePayload?: boolean;
+}) {
+  const storageTxHash = String(log.args.storageTxHash);
+  const currentApy = toPercent(log.args.currentApyBps);
+  const optimizedApy = toPercent(log.args.optimizedApyBps);
+
+  let blockNumber = log.blockNumber;
+  try {
+    const storageReceipt = await provider.getTransactionReceipt(storageTxHash);
+    if (storageReceipt?.blockNumber) {
+      blockNumber = storageReceipt.blockNumber;
+    }
+  } catch {
+    // Keep the registry block when the storage receipt is unavailable.
+  }
+
+  const liveProof: StoredProofRecord = {
+    cid: String(log.args.cid),
+    txHash: storageTxHash,
+    blockNumber,
+    timestamp: new Date(Number(log.args.timestamp) * 1000).toISOString(),
+    networkKey,
+    explorerUrl: `${explorerBase.replace(/\/$/, "")}/tx/${storageTxHash}`,
+    decision: buildDecisionFromLiveProof(currentApy, optimizedApy, storedProof?.decision),
+    walletAddress,
+    portfolioSnapshot: undefined,
+    proofRegistryAddress: registryAddress,
+    proofRegistryTxHash: log.transactionHash,
+    proofRegistryProofId: log.args.proofId.toString(),
+    proofRegistryExplorerUrl: `${explorerBase.replace(/\/$/, "")}/tx/${log.transactionHash}`,
+    note: "live_registry_fallback",
+    teeProvider: undefined,
+    teeModel: undefined,
+    teeChatId: undefined,
+    teeVerified: undefined,
+    teeVerificationMethod: undefined,
+    teeSignedTextMatches: undefined,
+    llmProvider: undefined,
+  };
+
+  if (
+    storedProof &&
+    sameWalletAddress(storedProof.walletAddress, walletAddress) &&
+    sameProofIdentity(storedProof, liveProof)
+  ) {
+    return mergeProofRecords(liveProof, storedProof);
+  }
+
+  if (!hydrateStoragePayload) {
+    return liveProof;
+  }
+
+  const storagePayload = await readProofPayloadFromStorage(liveProof.cid, networkKey);
+  if (!storagePayload) {
+    return liveProof;
+  }
+
+  return {
+    ...liveProof,
+    decision: {
+      ...liveProof.decision,
+      ...storagePayload.decision,
+      current_apy: liveProof.decision.current_apy,
+      optimized_apy: liveProof.decision.optimized_apy,
+    },
+    walletAddress: storagePayload.walletAddress ?? liveProof.walletAddress,
+    portfolioSnapshot: storagePayload.portfolioSnapshot,
+    teeProvider: storagePayload.teeProvider,
+    teeModel: storagePayload.teeModel,
+    teeChatId: storagePayload.teeChatId,
+    teeVerified: storagePayload.teeVerified,
+    teeVerificationMethod: storagePayload.teeVerificationMethod,
+    teeSignedTextMatches: storagePayload.teeSignedTextMatches,
+    llmProvider: storagePayload.llmProvider,
+  } satisfies StoredProofRecord;
 }
 
 async function getLatestLiveProofFromRegistry(
@@ -294,83 +421,87 @@ async function getLatestLiveProofFromRegistry(
       return null;
     }
 
-    const storageTxHash = String(latestLog.args.storageTxHash);
-    const currentApy = toPercent(latestLog.args.currentApyBps);
-    const optimizedApy = toPercent(latestLog.args.optimizedApyBps);
-
-    let blockNumber = latestLog.blockNumber;
-    try {
-      const storageReceipt = await provider.getTransactionReceipt(storageTxHash);
-      if (storageReceipt?.blockNumber) {
-        blockNumber = storageReceipt.blockNumber;
-      }
-    } catch {
-      // Keep the registry block when the storage receipt is unavailable.
-    }
-
-    const liveProof: StoredProofRecord = {
-      cid: String(latestLog.args.cid),
-      txHash: storageTxHash,
-      blockNumber,
-      timestamp: new Date(Number(latestLog.args.timestamp) * 1000).toISOString(),
-      networkKey,
-      explorerUrl: `${config.explorerBase.replace(/\/$/, "")}/tx/${storageTxHash}`,
-      decision: buildDecisionFromLiveProof(currentApy, optimizedApy, storedProof?.decision),
+    const liveProof = await buildLiveProofFromRegistryLog({
+      provider,
+      log: latestLog,
       walletAddress,
-      portfolioSnapshot: undefined,
-      proofRegistryAddress: config.proofRegistryAddress,
-      proofRegistryTxHash: latestLog.transactionHash,
-      proofRegistryProofId: latestLog.args.proofId.toString(),
-      proofRegistryExplorerUrl: `${config.explorerBase.replace(/\/$/, "")}/tx/${latestLog.transactionHash}`,
-      note: "live_registry_fallback",
-      teeProvider: undefined,
-      teeModel: undefined,
-      teeChatId: undefined,
-      teeVerified: undefined,
-      teeVerificationMethod: undefined,
-      teeSignedTextMatches: undefined,
-      llmProvider: undefined,
-    };
-
-    if (
-      storedProof &&
-      sameWalletAddress(storedProof.walletAddress, walletAddress) &&
-      sameProofIdentity(storedProof, liveProof)
-    ) {
-      const merged = mergeProofRecords(liveProof, storedProof);
-      latestLiveProofCache.set(cacheKey, { fetchedAt: Date.now(), proof: merged });
-      return merged;
-    }
-
-    const storagePayload = await readProofPayloadFromStorage(liveProof.cid, networkKey);
-    if (storagePayload) {
-      const hydrated = {
-        ...liveProof,
-        decision: {
-          ...liveProof.decision,
-          ...storagePayload.decision,
-          current_apy: liveProof.decision.current_apy,
-          optimized_apy: liveProof.decision.optimized_apy,
-        },
-        walletAddress: storagePayload.walletAddress ?? liveProof.walletAddress,
-        portfolioSnapshot: storagePayload.portfolioSnapshot,
-        teeProvider: storagePayload.teeProvider,
-        teeModel: storagePayload.teeModel,
-        teeChatId: storagePayload.teeChatId,
-        teeVerified: storagePayload.teeVerified,
-        teeVerificationMethod: storagePayload.teeVerificationMethod,
-        teeSignedTextMatches: storagePayload.teeSignedTextMatches,
-        llmProvider: storagePayload.llmProvider,
-      };
-      latestLiveProofCache.set(cacheKey, { fetchedAt: Date.now(), proof: hydrated });
-      return hydrated;
-    }
+      networkKey,
+      registryAddress: config.proofRegistryAddress,
+      explorerBase: config.explorerBase,
+      storedProof,
+      hydrateStoragePayload: true,
+    });
 
     latestLiveProofCache.set(cacheKey, { fetchedAt: Date.now(), proof: liveProof });
     return liveProof;
   } catch {
     latestLiveProofCache.set(cacheKey, { fetchedAt: Date.now(), proof: null });
     return null;
+  }
+}
+
+async function getLiveProofHistoryFromRegistry(
+  walletAddress: string,
+  networkKey: WalletNetworkKey,
+  storedProofs: StoredProofRecord[],
+): Promise<StoredProofRecord[]> {
+  const cacheKey = getLiveProofHistoryCacheKey(walletAddress, networkKey);
+  const cached = liveProofHistoryCache.get(cacheKey);
+  if (cached && Date.now() - cached.fetchedAt < LIVE_PROOF_CACHE_TTL_MS) {
+    return cached.proofs;
+  }
+
+  const config = getServer0GNetworkConfig(networkKey);
+  if (!config.rpcUrl || !config.proofRegistryAddress) {
+    return [];
+  }
+
+  try {
+    const registryAddress = config.proofRegistryAddress;
+    const provider = new JsonRpcProvider(config.rpcUrl);
+    const contract = new Contract(registryAddress, proofRegistryAbi, provider);
+    const logs = await findRegistryProofLogs(contract, walletAddress, networkKey);
+    const eventLogs = logs.filter(isEventLog);
+    const liveProofs = await Promise.all(
+      eventLogs.map((log) => {
+        const storedProof = storedProofs.find((proof) =>
+          sameProofIdentity(proof, {
+            cid: String(log.args.cid),
+            txHash: String(log.args.storageTxHash),
+            blockNumber: log.blockNumber,
+            timestamp: new Date(Number(log.args.timestamp) * 1000).toISOString(),
+            networkKey,
+            explorerUrl: "",
+            decision: buildDecisionFromLiveProof(
+              toPercent(log.args.currentApyBps),
+              toPercent(log.args.optimizedApyBps),
+            ),
+            walletAddress,
+            proofRegistryAddress: registryAddress,
+            proofRegistryTxHash: log.transactionHash,
+            proofRegistryProofId: log.args.proofId.toString(),
+          }),
+        );
+
+        return buildLiveProofFromRegistryLog({
+          provider,
+          log,
+          walletAddress,
+          networkKey,
+          registryAddress,
+          explorerBase: config.explorerBase,
+          storedProof,
+          hydrateStoragePayload: false,
+        });
+      }),
+    );
+
+    const sorted = liveProofs.sort((left, right) => compareProofRecency(right, left));
+    liveProofHistoryCache.set(cacheKey, { fetchedAt: Date.now(), proofs: sorted });
+    return sorted;
+  } catch {
+    liveProofHistoryCache.set(cacheKey, { fetchedAt: Date.now(), proofs: [] });
+    return [];
   }
 }
 
@@ -399,16 +530,23 @@ export async function resolveProofHistoryForWallet(
     sameWalletAddress(proof.walletAddress, walletAddress) &&
     proof.networkKey === networkKey,
   );
+  const liveProofs = await getLiveProofHistoryFromRegistry(walletAddress, networkKey, storedProofs);
   const latestProof = await resolveLatestProofForWallet(walletAddress, networkKey);
-  if (!latestProof) {
+  if (!latestProof && liveProofs.length === 0) {
     return storedProofs;
   }
 
-  const withoutLatestDuplicate = storedProofs.filter(
-    (proof) => !sameProofIdentity(proof, latestProof),
-  );
+  const mergedProofs = [...storedProofs];
+  for (const proof of latestProof ? [latestProof, ...liveProofs] : liveProofs) {
+    const duplicateIndex = mergedProofs.findIndex((item) => sameProofIdentity(item, proof));
+    if (duplicateIndex >= 0) {
+      mergedProofs[duplicateIndex] = mergeProofRecords(proof, mergedProofs[duplicateIndex]);
+    } else {
+      mergedProofs.push(proof);
+    }
+  }
 
-  return [latestProof, ...withoutLatestDuplicate].sort(
+  return mergedProofs.sort(
     (left, right) => compareProofRecency(right, left),
   );
 }
