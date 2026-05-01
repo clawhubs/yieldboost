@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ethers } from "ethers";
 import {
   getServer0GNetworkConfig,
+  getServerDefaultNetworkKey,
   getYieldStrategyInftAddress,
   getYieldStrategyMarketplaceAddress,
   resolveWalletNetworkKey,
@@ -11,10 +12,12 @@ import {
 export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
-  const networkKey = resolveWalletNetworkKey(
+  const requestedNetwork =
     req.nextUrl.searchParams.get("network") ??
-      req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value,
-  );
+    req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value;
+  const networkKey = requestedNetwork
+    ? resolveWalletNetworkKey(requestedNetwork)
+    : getServerDefaultNetworkKey();
   const networkConfig = getServer0GNetworkConfig(networkKey);
   const inftAddress = getYieldStrategyInftAddress(networkKey);
   const marketplaceAddress = getYieldStrategyMarketplaceAddress(networkKey);

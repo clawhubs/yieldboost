@@ -5,6 +5,7 @@ import { getContractSignerPrivateKey } from "@/lib/server/network-credentials";
 import { decryptStrategy } from "@/lib/server/encryption";
 import {
   getYieldStrategyInftAddress,
+  getServerDefaultNetworkKey,
   getServer0GNetworkConfig,
   resolveWalletAddress,
   resolveWalletNetworkKey,
@@ -63,10 +64,12 @@ export async function GET(req: NextRequest) {
             req.nextUrl.searchParams.get("wallet") ??
               req.cookies.get(WALLET_COOKIE_KEY)?.value,
           );
-    const networkKey = resolveWalletNetworkKey(
+    const requestedNetwork =
       req.nextUrl.searchParams.get("network") ??
-        req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value,
-    );
+      req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value;
+    const networkKey = requestedNetwork
+      ? resolveWalletNetworkKey(requestedNetwork)
+      : getServerDefaultNetworkKey();
     const networkConfig = getServer0GNetworkConfig(networkKey);
 
     // Get contract address from env
