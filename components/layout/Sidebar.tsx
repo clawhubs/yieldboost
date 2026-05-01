@@ -492,7 +492,9 @@ export default function Sidebar() {
       }
 
       const detail = (event as CustomEvent<{ networkKey?: WalletNetworkKey }>).detail;
-      const nextNetwork = resolveWalletNetworkKey(detail?.networkKey);
+      const nextNetwork = detail?.networkKey
+        ? resolveWalletNetworkKey(detail.networkKey)
+        : selectedNetworkRef.current;
       setSelectedNetwork(nextNetwork);
       localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, nextNetwork);
       setCookie(WALLET_NETWORK_COOKIE_KEY, nextNetwork);
@@ -502,7 +504,9 @@ export default function Sidebar() {
 
     function handleWalletNetworkChangeRequest(event: Event) {
       const detail = (event as CustomEvent<{ networkKey?: WalletNetworkKey }>).detail;
-      const nextNetwork = resolveWalletNetworkKey(detail?.networkKey);
+      const nextNetwork = detail?.networkKey
+        ? resolveWalletNetworkKey(detail.networkKey)
+        : selectedNetworkRef.current;
       setWalletModalOpen(false);
       void applyNetworkSelection(nextNetwork, true);
     }

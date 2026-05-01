@@ -28,6 +28,7 @@ interface Strategy {
   reasoning?: string | null;
   storageProof?: string | null;
   txHash?: string | null;
+  blockNumber?: number | null;
   proofUrl?: string | null;
   proofRegistryProofId?: string | null;
   proofRegistryTxHash?: string | null;
@@ -399,6 +400,7 @@ export default function AgentGallery() {
           }}
           cid={selectedStrategy?.storageProof ?? selectedStrategy?.encryptedUri}
           txHash={selectedStrategy?.txHash ?? selectedStrategy?.contentHash}
+          blockNumber={selectedStrategy?.blockNumber ?? undefined}
           explorerUrl={selectedStrategy?.proofUrl ?? undefined}
           timestamp={selectedStrategy?.timestamp}
           walletAddress={selectedStrategy?.owner}

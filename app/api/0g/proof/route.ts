@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { JsonRpcProvider } from "ethers";
 import { getLatestStoredProof, getStoredProofByCid } from "@/lib/server/runtime-store";
-import { getServer0GNetworkConfig, resolveWalletNetworkKey } from "@/lib/wallet";
+import {
+  getServer0GNetworkConfig,
+  getServerDefaultNetworkKey,
+  resolveWalletNetworkKey,
+} from "@/lib/wallet";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -35,6 +39,11 @@ async function resolveBlockNumber(
 
 export async function GET(req: NextRequest) {
   const cid = req.nextUrl.searchParams.get("cid");
+  const txHash = req.nextUrl.searchParams.get("txHash") ?? undefined;
+  const requestedNetwork = req.nextUrl.searchParams.get("network");
+  const networkKey = requestedNetwork
+    ? resolveWalletNetworkKey(requestedNetwork)
+    : getServerDefaultNetworkKey();
 
   const storedProof = cid
     ? await getStoredProofByCid(cid)
@@ -68,13 +77,26 @@ export async function GET(req: NextRequest) {
   }
 
   if (!cid) {
-    return NextResponse.json(
-      { success: false, error: "No live proof available yet" },
-      { status: 404 },
-    );
+    if (!txHash) {
+      return NextResponse.json(
+        { success: false, error: "No live proof available yet" },
+        { status: 404 },
+      );
+    }
+
+    const blockNumber = await resolveBlockNumber(txHash, undefined, networkKey);
+    return NextResponse.json({
+      success: true,
+      data: {
+        txHash,
+        block: blockNumber,
+        timestamp: new Date().toISOString(),
+        networkKey,
+        explorerUrl: `${getServer0GNetworkConfig(networkKey).explorerBase.replace(/\/$/, "")}/tx/${txHash}`,
+      },
+    });
   }
 
-  const networkKey = resolveWalletNetworkKey(req.nextUrl.searchParams.get("network"));
   const networkConfig = getServer0GNetworkConfig(networkKey);
   const storageUrl = networkConfig.storageUrl;
 
@@ -111,6 +133,21 @@ export async function GET(req: NextRequest) {
     } catch {
       // Ignore remote failure and return an honest error below.
     }
+  }
+
+  if (txHash) {
+    const blockNumber = await resolveBlockNumber(txHash, undefined, networkKey);
+    return NextResponse.json({
+      success: true,
+      data: {
+        cid,
+        txHash,
+        block: blockNumber,
+        timestamp: new Date().toISOString(),
+        networkKey,
+        explorerUrl: `${networkConfig.explorerBase.replace(/\/$/, "")}/tx/${txHash}`,
+      },
+    });
   }
 
   return NextResponse.json({

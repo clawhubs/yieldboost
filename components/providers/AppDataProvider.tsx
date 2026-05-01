@@ -236,10 +236,15 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const portfolioRequestIdRef = useRef(0);
   const latestRequestIdRef = useRef(0);
   const latestResultRef = useRef<OptimizationResult | null>(null);
+  const networkKeyRef = useRef(networkKey);
 
   useEffect(() => {
     latestResultRef.current = latestResult;
   }, [latestResult]);
+
+  useEffect(() => {
+    networkKeyRef.current = networkKey;
+  }, [networkKey]);
 
   async function syncProofRecord({
     activeWalletAddress,
@@ -618,7 +623,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       const judgeModeActive =
         typeof window !== "undefined" &&
         window.localStorage.getItem(JUDGE_MODE_STORAGE_KEY) === "true";
-      const nextNetwork = resolveWalletNetworkKey(detail?.networkKey);
+      const nextNetwork = detail?.networkKey
+        ? resolveWalletNetworkKey(detail.networkKey)
+        : networkKeyRef.current;
       const nextWalletAddress = judgeModeActive
         ? DEFAULT_WALLET_ADDRESS
         : detail?.walletAddress;

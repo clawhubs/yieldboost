@@ -109,7 +109,11 @@ export default function ProofModal({
       setLoading(true);
 
       try {
-        const endpoint = `/api/0g/proof?cid=${encodeURIComponent(cid)}`;
+        const params = new URLSearchParams();
+        params.set("cid", cid);
+        if (txHash) params.set("txHash", txHash);
+        if (networkKey) params.set("network", networkKey);
+        const endpoint = `/api/0g/proof?${params.toString()}`;
         const response = await fetch(endpoint, { cache: "no-store" });
 
         if (!response.ok) {
@@ -136,7 +140,7 @@ export default function ProofModal({
     return () => {
       cancelled = true;
     };
-  }, [cid, open]);
+  }, [cid, networkKey, open, txHash]);
 
   async function copy(
     value: string,

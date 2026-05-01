@@ -51,6 +51,20 @@ function buildProofFallbackStrategies(
   });
 }
 
+async function resolveTransactionBlockNumber(
+  provider: ethers.JsonRpcProvider,
+  txHash?: string | null,
+) {
+  if (!txHash) return null;
+
+  try {
+    const receipt = await provider.getTransactionReceipt(txHash);
+    return receipt?.blockNumber ?? null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * List all minted Strategy NFTs
  */
@@ -205,6 +219,10 @@ export async function GET(req: NextRequest) {
           reasoning: decryptedPayload?.decision?.reasoning ?? null,
           storageProof: decryptedPayload?.storageCid ?? null,
           txHash: decryptedPayload?.txHash ?? null,
+          blockNumber: await resolveTransactionBlockNumber(
+            provider,
+            decryptedPayload?.txHash,
+          ),
           proofUrl: decryptedPayload?.txHash
             ? `${networkConfig.explorerBase.replace(/\/$/, "")}/tx/${decryptedPayload.txHash}`
             : null,

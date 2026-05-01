@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getLivePortfolioSnapshot } from "@/lib/server/live-portfolio";
 import {
   JUDGE_MODE_COOKIE_KEY,
+  getServerDefaultNetworkKey,
   resolveWalletAddress,
   resolveWalletNetworkKey,
   WALLET_COOKIE_KEY,
@@ -15,10 +16,12 @@ export async function GET(req: NextRequest) {
   const walletAddress = resolveWalletAddress(
     req.nextUrl.searchParams.get("wallet") ?? req.cookies.get(WALLET_COOKIE_KEY)?.value,
   );
-  const networkKey = resolveWalletNetworkKey(
+  const requestedNetwork =
     req.nextUrl.searchParams.get("network") ??
-      req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value,
-  );
+    req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value;
+  const networkKey = requestedNetwork
+    ? resolveWalletNetworkKey(requestedNetwork)
+    : getServerDefaultNetworkKey();
   const judgeMode = req.cookies.get(JUDGE_MODE_COOKIE_KEY)?.value === "true";
 
   return NextResponse.json(
