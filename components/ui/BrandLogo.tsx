@@ -32,7 +32,7 @@ export default function BrandLogo({
 
       {iconOnly ? null : (
         /*
-          Wordmark — Anthropic-style condensed bold uppercase
+          Wordmark — condensed bold uppercase
         */
         <div className="leading-none">
           <p
@@ -46,7 +46,7 @@ export default function BrandLogo({
               lineHeight: 1,
             }}
           >
-            YiledBoost{" "}
+            YIELDBOOST{" "}
             <span style={{ color: "#1fd8c8" }}>AI</span>
           </p>
         </div>

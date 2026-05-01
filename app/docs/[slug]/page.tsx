@@ -26,14 +26,14 @@ export async function generateMetadata({
 
   if (!getDocSlugs().includes(slug as DocSlug)) {
     return {
-      title: "Docs | YiledBoost Ai",
+      title: "Docs | YieldBoost AI",
     };
   }
 
   const page = getDocPage(slug as DocSlug, getDocsRuntimeStatus());
 
   return {
-    title: `${page.label} | Docs | YiledBoost Ai`,
+    title: `${page.label} | Docs | YieldBoost AI`,
     description: page.description,
   };
 }
