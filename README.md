@@ -105,9 +105,12 @@ The current public deployment is now **mainnet-default**.
 | Mainnet strategy marketplace | [`0x48F989C7f41056509980731C1b4D59164C0C1A40`](https://chainscan.0g.ai/address/0x48F989C7f41056509980731C1b4D59164C0C1A40) |
 | Mainnet `GlobalBlacklistRegistry` | [`0xbc576EA5a68ED9d217299c107C801445e9A5a7BE`](https://chainscan.0g.ai/address/0xbc576EA5a68ED9d217299c107C801445e9A5a7BE) |
 | Mainnet `ValidationRegistry` | [`0x62aa83b0A610BE298dF08004d764229B8f2aC219`](https://chainscan.0g.ai/address/0x62aa83b0A610BE298dF08004d764229B8f2aC219) |
-| Latest 0G Storage tx | [`0x4a186175bce710b8e7bdb8f07498ce733efc4f26bb17cba3bffd08dfa3a0f54d`](https://chainscan.0g.ai/tx/0x4a186175bce710b8e7bdb8f07498ce733efc4f26bb17cba3bffd08dfa3a0f54d) |
-| Latest `ProofRegistry` anchor tx | [`0xa76f59de764dfb5dcd2fae3e8dff53cb0e213bab89162e7b4de16962309caa9b`](https://chainscan.0g.ai/tx/0xa76f59de764dfb5dcd2fae3e8dff53cb0e213bab89162e7b4de16962309caa9b) |
-| Latest Agent NFT mint tx | [`0x93c2600f0d576e8512b3d57afe4a495e17446bf91ad8d9e9333cb62bdd2adc19`](https://chainscan.0g.ai/tx/0x93c2600f0d576e8512b3d57afe4a495e17446bf91ad8d9e9333cb62bdd2adc19) |
+| Latest proof CID | `0x2298be9fc73b1defab97956b4973bbf0aca38cf198f7a2da8c674d7b05ec054c` |
+| Latest 0G Storage tx | [`0x7d069e8231bb639242fda1127e4062715e08e05bcfb7c41b80dc1f79fdd7743a`](https://chainscan.0g.ai/tx/0x7d069e8231bb639242fda1127e4062715e08e05bcfb7c41b80dc1f79fdd7743a) |
+| Latest `ProofRegistry` anchor tx | [`0xcb0bb6f4f61de4a2e8f7e29ddbbbb1dd56814ed2eee4731450669756006a02f4`](https://chainscan.0g.ai/tx/0xcb0bb6f4f61de4a2e8f7e29ddbbbb1dd56814ed2eee4731450669756006a02f4) |
+| Latest `ProofRegistry` proof ID | `6` |
+| Latest Agent NFT | `Token #4` |
+| Latest Agent NFT mint tx | [`0x2d4e074e9239f17db837fdfcc5ffa77393f292b7699836a79da260aefdddcb18`](https://chainscan.0g.ai/tx/0x2d4e074e9239f17db837fdfcc5ffa77393f292b7699836a79da260aefdddcb18) |
 | Judge entry point | [`/judge`](https://yieldboost-ai.vercel.app/judge) |
 
 ### Latest Integrity Stack Evidence
