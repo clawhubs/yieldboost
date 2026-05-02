@@ -277,6 +277,36 @@ export function getYieldStrategyMarketplaceAddress(
   return process.env.YIELD_STRATEGY_MARKETPLACE_ADDRESS;
 }
 
+export function getGlobalBlacklistRegistryAddress(
+  value: string | null | undefined,
+) {
+  const networkKey = resolveWalletNetworkKey(value);
+
+  if (networkKey === "mainnet") {
+    return (
+      process.env.GLOBAL_BLACKLIST_REGISTRY_MAINNET_ADDRESS ??
+      process.env.GLOBAL_BLACKLIST_REGISTRY_ADDRESS
+    );
+  }
+
+  return process.env.GLOBAL_BLACKLIST_REGISTRY_ADDRESS;
+}
+
+export function getValidationRegistryAddress(
+  value: string | null | undefined,
+) {
+  const networkKey = resolveWalletNetworkKey(value);
+
+  if (networkKey === "mainnet") {
+    return (
+      process.env.VALIDATION_REGISTRY_MAINNET_ADDRESS ??
+      process.env.VALIDATION_REGISTRY_ADDRESS
+    );
+  }
+
+  return process.env.VALIDATION_REGISTRY_ADDRESS;
+}
+
 export function isWalletAddress(value: string | null | undefined) {
   return Boolean(value && /^0x[a-fA-F0-9]{40}$/.test(value));
 }

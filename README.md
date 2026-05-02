@@ -103,6 +103,8 @@ The current public deployment is now **mainnet-default**.
 | Mainnet `YieldStrategyINFT` | [`0xb264D861264B0e4f8fb98A61B7694BA8a3B6BBe3`](https://chainscan.0g.ai/address/0xb264D861264B0e4f8fb98A61B7694BA8a3B6BBe3) |
 | Mainnet attestation oracle | [`0x216E7880D64D94335B583c539802d3e61958d4A2`](https://chainscan.0g.ai/address/0x216E7880D64D94335B583c539802d3e61958d4A2) |
 | Mainnet strategy marketplace | [`0x48F989C7f41056509980731C1b4D59164C0C1A40`](https://chainscan.0g.ai/address/0x48F989C7f41056509980731C1b4D59164C0C1A40) |
+| Mainnet `GlobalBlacklistRegistry` | [`0xbc576EA5a68ED9d217299c107C801445e9A5a7BE`](https://chainscan.0g.ai/address/0xbc576EA5a68ED9d217299c107C801445e9A5a7BE) |
+| Mainnet `ValidationRegistry` | [`0x62aa83b0A610BE298dF08004d764229B8f2aC219`](https://chainscan.0g.ai/address/0x62aa83b0A610BE298dF08004d764229B8f2aC219) |
 | Latest 0G Storage tx | [`0x4a186175bce710b8e7bdb8f07498ce733efc4f26bb17cba3bffd08dfa3a0f54d`](https://chainscan.0g.ai/tx/0x4a186175bce710b8e7bdb8f07498ce733efc4f26bb17cba3bffd08dfa3a0f54d) |
 | Latest `ProofRegistry` anchor tx | [`0xa76f59de764dfb5dcd2fae3e8dff53cb0e213bab89162e7b4de16962309caa9b`](https://chainscan.0g.ai/tx/0xa76f59de764dfb5dcd2fae3e8dff53cb0e213bab89162e7b4de16962309caa9b) |
 | Latest Agent NFT mint tx | [`0x93c2600f0d576e8512b3d57afe4a495e17446bf91ad8d9e9333cb62bdd2adc19`](https://chainscan.0g.ai/tx/0x93c2600f0d576e8512b3d57afe4a495e17446bf91ad8d9e9333cb62bdd2adc19) |
@@ -493,6 +495,8 @@ ZG_MAINNET_PRIVATE_KEY=<mainnet_signer_private_key>
 ZG_MAINNET_PROOF_REGISTRY_ADDRESS=0x8e63e117E71A80Cfc10fDF375F079e2e29cd7D7D
 YIELD_STRATEGY_INFT_MAINNET_ADDRESS=0xb264D861264B0e4f8fb98A61B7694BA8a3B6BBe3
 YIELD_STRATEGY_ATTESTATION_ORACLE_MAINNET_ADDRESS=0x216E7880D64D94335B583c539802d3e61958d4A2
+GLOBAL_BLACKLIST_REGISTRY_MAINNET_ADDRESS=0xbc576EA5a68ED9d217299c107C801445e9A5a7BE
+VALIDATION_REGISTRY_MAINNET_ADDRESS=0x62aa83b0A610BE298dF08004d764229B8f2aC219
 ```
 
 Optional but recommended:

@@ -7,6 +7,8 @@ import {
   getAvailableWalletNetworks,
   getServer0GNetworkConfig,
   getServerDefaultNetworkKey,
+  getGlobalBlacklistRegistryAddress,
+  getValidationRegistryAddress,
   getYieldStrategyAttestationOracleAddress,
   getYieldStrategyInftAddress,
   getYieldStrategyMarketplaceAddress,
@@ -276,6 +278,8 @@ async function buildDeploymentArtifacts({
   const inftAddress = getYieldStrategyInftAddress(artifactNetwork);
   const marketplaceAddress = getYieldStrategyMarketplaceAddress(artifactNetwork);
   const oracleAddress = getYieldStrategyAttestationOracleAddress(artifactNetwork);
+  const blacklistRegistryAddress = getGlobalBlacklistRegistryAddress(artifactNetwork);
+  const validationRegistryAddress = getValidationRegistryAddress(artifactNetwork);
   const latestMint = await resolveLatestAgentMintArtifact(reviewWallet, artifactNetwork);
 
   return [
@@ -309,6 +313,26 @@ async function buildDeploymentArtifacts({
       status: inftAddress ? "live" : "pending",
       href: buildExplorerAddressHref(artifactNetwork, inftAddress),
       meta: networkConfig.label,
+    },
+    {
+      label: `${networkConfig.label} GlobalBlacklistRegistry`,
+      value: blacklistRegistryAddress ? shorten(blacklistRegistryAddress, 8) : "Not configured",
+      helper: blacklistRegistryAddress
+        ? "Append-only on-chain anchor for hallucination blacklist CIDs captured by the Integrity Auditor."
+        : `Set the blacklist registry address to expose on-chain rejection anchors on ${networkConfig.label}.`,
+      status: blacklistRegistryAddress ? "live" : "pending",
+      href: buildExplorerAddressHref(artifactNetwork, blacklistRegistryAddress),
+      meta: "Hallucination Blacklist",
+    },
+    {
+      label: `${networkConfig.label} ValidationRegistry`,
+      value: validationRegistryAddress ? shorten(validationRegistryAddress, 8) : "Not configured",
+      helper: validationRegistryAddress
+        ? "On-chain anchor for Multiverse Stress Test report cards and historical replay verdicts."
+        : `Set the validation registry address to expose stress-test report anchors on ${networkConfig.label}.`,
+      status: validationRegistryAddress ? "live" : "pending",
+      href: buildExplorerAddressHref(artifactNetwork, validationRegistryAddress),
+      meta: "Multiverse Stress Test",
     },
   ];
 }
@@ -466,6 +490,18 @@ function buildEnvChecklist() {
       requiredFor: "On-chain INFT attestation verification",
       status: hasValue(readEnv("YIELD_STRATEGY_ATTESTATION_ORACLE_MAINNET_ADDRESS")) ? "set" : "optional",
       detail: "Lets Agent NFT minting register broker-verified attestation hashes on-chain before the INFT contract marks the strategy as verified.",
+    },
+    {
+      name: "GLOBAL_BLACKLIST_REGISTRY_MAINNET_ADDRESS",
+      requiredFor: "Mainnet Hallucination Blacklist anchoring",
+      status: hasValue(readEnv("GLOBAL_BLACKLIST_REGISTRY_MAINNET_ADDRESS")) ? "set" : "missing",
+      detail: "Mainnet append-only registry for blacklist CIDs produced by the Integrity Auditor.",
+    },
+    {
+      name: "VALIDATION_REGISTRY_MAINNET_ADDRESS",
+      requiredFor: "Mainnet Multiverse Stress Test anchoring",
+      status: hasValue(readEnv("VALIDATION_REGISTRY_MAINNET_ADDRESS")) ? "set" : "missing",
+      detail: "Mainnet registry for stress-test report cards and historical replay verdict CIDs.",
     },
   ];
 
