@@ -26,6 +26,8 @@ import {
   getLatestStoredProofForWallet,
   recordStoredProof,
 } from "@/lib/server/runtime-store";
+import { recordHallucinationBlacklistEntry } from "@/lib/server/hallucination-blacklist";
+import { syncSovereignMemory } from "@/lib/server/sovereign-memory";
 
 export const runtime = "nodejs";
 
@@ -130,11 +132,22 @@ export async function POST(req: NextRequest) {
   });
 
   if (integrityAudit.status === "REJECTED") {
+    const blacklistEntry = await recordHallucinationBlacklistEntry({
+      networkKey,
+      decision,
+      portfolioSnapshot,
+      audit: integrityAudit,
+    }).catch((error) => {
+      console.warn("[integrity-audit] Blacklist indexing failed:", error);
+      return null;
+    });
+
     return NextResponse.json(
       {
         success: false,
         error: "Integrity Auditor rejected this optimization; proof write skipped.",
         integrityAudit,
+        blacklistEntry,
       },
       { status: 422 },
     );
@@ -313,6 +326,15 @@ export async function POST(req: NextRequest) {
       }
 
       await recordStoredProof(proof);
+      const memoryRecord = await syncSovereignMemory({
+        agentId: walletAddress ?? signer.address,
+        walletAddress: walletAddress ?? signer.address,
+        networkKey,
+        proof,
+      }).catch((error) => {
+        console.warn("[sovereign-memory] Memory sync failed:", error);
+        return null;
+      });
 
       return NextResponse.json({
         success: true,
@@ -329,6 +351,7 @@ export async function POST(req: NextRequest) {
         proofRegistryProofId: proof.proofRegistryProofId,
         proofRegistryExplorerUrl: proof.proofRegistryExplorerUrl,
         integrityAudit: proof.integrityAudit,
+        sovereignMemory: memoryRecord,
         note: proof.note,
         // TEE / 0G Compute metadata
         teeProvider: proof.teeProvider,

@@ -692,6 +692,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
       // Extract TEE attestation from headers
       const llmProvider = response.headers.get("X-LLM-Provider") || undefined;
+      const blacklistStatus = response.headers.get("X-Blacklist-Status");
+      const blacklistCid = response.headers.get("X-Blacklist-CID");
       const teeAttestationHeader = response.headers.get("X-TEE-Attestation");
       const teeAttestation = teeAttestationHeader
         ? (JSON.parse(teeAttestationHeader) as {
@@ -735,8 +737,14 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         timestamp: new Date().toISOString(),
         walletAddress: activeWalletAddress,
         integrityAudit: optimizationData.integrityAudit ?? fallbackResult.integrityAudit,
-        proofStatus: "pending",
-        proofStatusDetail: "Proof sync is running in the background.",
+        proofStatus:
+          blacklistStatus === "hit"
+            ? "error"
+            : optimizationData.proofStatus ?? "pending",
+        proofStatusDetail:
+          blacklistStatus === "hit"
+            ? `Pre-inference blacklist block${blacklistCid ? `: ${blacklistCid}` : ""}.`
+            : optimizationData.proofStatusDetail ?? "Proof sync is running in the background.",
       };
 
       startTransition(() => {
@@ -749,17 +757,19 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       window.setTimeout(() => setProgress("analyzing"), 1200);
       setIsOptimizing(false);
 
-      void syncProofRecord({
-        activeWalletAddress,
-        fallbackResult,
-        fullText,
-        llmProvider,
-        networkKey,
-        optimizationData,
-        portfolio,
-        scopeKey: optimisticScopeKey,
-        teeAttestation,
-      });
+      if (blacklistStatus !== "hit") {
+        void syncProofRecord({
+          activeWalletAddress,
+          fallbackResult,
+          fullText,
+          llmProvider,
+          networkKey,
+          optimizationData,
+          portfolio,
+          scopeKey: optimisticScopeKey,
+          teeAttestation,
+        });
+      }
 
       return nextResult;
     } catch (error) {

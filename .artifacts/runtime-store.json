@@ -362,6 +362,206 @@
       "proofRegistryProofId": "10"
     }
   ],
+  "agentMemories": [
+    {
+      "id": "2ccb9acb-b5c9-4890-8168-161310db2ca9",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "networkKey": "testnet",
+      "cid": "0x78a694e360f797c21f7325d29967bb018fd295cfa0b6c8eefee85a76d0bf000c",
+      "txHash": "0x3c37924768ac24e99e0e3447c8ccae073802e8d6d9ee5bd95ff841ed714880f3",
+      "blockNumber": 31151055,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x3c37924768ac24e99e0e3447c8ccae073802e8d6d9ee5bd95ff841ed714880f3",
+      "proofCid": "0xe8c827c03427e1cecc768ec2eb4f30b34ab3315e9979cd6568fafc76e1853d88",
+      "memoryVersion": 1,
+      "snapshot": {
+        "contextSummary": "YieldBoost agent preserved context after auditor proof cycle.",
+        "recentTask": "Sovereign memory sync for judge evidence",
+        "lastRecommendation": "SaucerSwap LP",
+        "proofCid": "0xe8c827c03427e1cecc768ec2eb4f30b34ab3315e9979cd6568fafc76e1853d88"
+      },
+      "timestamp": "2026-05-02T18:56:23.546Z",
+      "storageMode": "0g"
+    }
+  ],
+  "blacklist": [
+    {
+      "id": "aa454b8b-b437-4772-9b1b-d89e24445a62",
+      "networkKey": "testnet",
+      "cid": "0x09c1f8700849bc5e92e09469a6d24c110e5076cdaa1b3ecfc9017028581eacfd",
+      "txHash": "0xcb0d5cb2344a57b1e31d4ddbda1ebebb5dde6f53f68469a0846abbb2228551bd",
+      "blockNumber": 31151264,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0xcb0d5cb2344a57b1e31d4ddbda1ebebb5dde6f53f68469a0846abbb2228551bd",
+      "fingerprint": "7d7b1e5a45e9a1ed1e3161e4fa92cdef856d5c3d1bb76d15a14813bb6c84622f",
+      "invalidInput": "imaginary eth hyper vault 0 420 this should be blocked before 0g storage or proofregistry writes.",
+      "hallucinatedOutput": "This should be blocked before 0G Storage or ProofRegistry writes.",
+      "auditorReasoning": [
+        "Optimized APY 420% exceeds the 75% deterministic guardrail.",
+        "APY lift 420.00 points is outside the deterministic guardrail.",
+        "Reported APY lift 9999% is above the 400% guardrail.",
+        "Estimated annual gain is larger than the available snapshot balance."
+      ],
+      "auditScore": 0,
+      "source": "integrity-auditor",
+      "timestamp": "2026-05-02T18:57:53.607Z",
+      "storageMode": "0g"
+    },
+    {
+      "id": "d06ac653-a625-4c96-a573-29bcc930b300",
+      "networkKey": "testnet",
+      "cid": "local-93203f5d75ccd079ca1ef2fe76e14fe6942ba3f1798c6a5a8284fa00f935c790",
+      "fingerprint": "de6bff785e86fd5f81c6a8cddf79aca4f22e4cbf876906a896a5d6f89fd1f4ab",
+      "invalidInput": "0g 4000 usdc 12000 usdc 0g impossible yield vault 12.38 91 poison sample accepts impossible volatile oracle data.",
+      "hallucinatedOutput": "Poison sample: accepts impossible volatile oracle data.",
+      "auditorReasoning": [
+        "Optimized APY 91% exceeds the 75% deterministic guardrail.",
+        "APY lift 78.62 points is outside the deterministic guardrail.",
+        "Optimized APY is more than 4x the current APY baseline.",
+        "Reported APY lift 610% is above the 400% guardrail."
+      ],
+      "auditScore": 0,
+      "source": "integrity-auditor",
+      "timestamp": "2026-05-02T18:56:23.546Z",
+      "storageMode": "local-fallback",
+      "note": "0G env incomplete; payload persisted locally at .artifacts/0g-fallback/yieldboost-blacklist-93203f5d75ccd079.json; upload fallback reason: Request failed with status code 503"
+    }
+  ],
+  "stressReports": [
+    {
+      "id": "97d47767-519a-43a7-8d5e-084589d9963e",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "networkKey": "testnet",
+      "datasetCid": "demo-ohclv-cid-for-judge-replay",
+      "reportCid": "0x685847e175588ec9551cb14ea139910f55b768c1ea752c0dfc92cc4b8f441b54",
+      "txHash": "0x16f91be8376560703bf492d1c253f6585e87b5c0e1df382f087be4de89ef79e4",
+      "blockNumber": 31151121,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x16f91be8376560703bf492d1c253f6585e87b5c0e1df382f087be4de89ef79e4",
+      "baselineApy": 12.38,
+      "verifiedApy": 23.84,
+      "simulatedProfit": 2815.75,
+      "maxDrawdown": 0.2653,
+      "decisions": [
+        {
+          "timestamp": "2026-04-24T00:00:00.000Z",
+          "marketClose": 1.04,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-25T00:00:00.000Z",
+          "marketClose": 1.1,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-26T00:00:00.000Z",
+          "marketClose": 0.91,
+          "standardAgentApy": 60,
+          "auditorApy": 23.84,
+          "auditorDecision": "REJECTED",
+          "reason": "Optimized APY is more than 4x the current APY baseline."
+        },
+        {
+          "timestamp": "2026-04-27T00:00:00.000Z",
+          "marketClose": 0.86,
+          "standardAgentApy": 61,
+          "auditorApy": 23.84,
+          "auditorDecision": "REJECTED",
+          "reason": "Optimized APY is more than 4x the current APY baseline."
+        },
+        {
+          "timestamp": "2026-04-28T00:00:00.000Z",
+          "marketClose": 0.92,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-29T00:00:00.000Z",
+          "marketClose": 1.01,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        }
+      ],
+      "verdict": "PASS",
+      "timestamp": "2026-05-02T18:56:52.049Z",
+      "storageMode": "0g"
+    },
+    {
+      "id": "5a8f4df1-24b4-44b1-8bbd-b6df2fda68a2",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "networkKey": "testnet",
+      "datasetCid": "demo-ohclv-cid-for-judge-replay",
+      "reportCid": "local-2327206f228f1e470bf8ebf49fd1719bf8f4a0e5c30da6bc6bf2064bc4caad08",
+      "baselineApy": 12.38,
+      "verifiedApy": 23.84,
+      "simulatedProfit": 2815.75,
+      "maxDrawdown": 0.2281,
+      "decisions": [
+        {
+          "timestamp": "2026-04-24T00:00:00.000Z",
+          "marketClose": 1.04,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-25T00:00:00.000Z",
+          "marketClose": 1.1,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-26T00:00:00.000Z",
+          "marketClose": 0.91,
+          "standardAgentApy": 60,
+          "auditorApy": 23.84,
+          "auditorDecision": "REJECTED",
+          "reason": "Optimized APY is more than 4x the current APY baseline."
+        },
+        {
+          "timestamp": "2026-04-27T00:00:00.000Z",
+          "marketClose": 0.86,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-28T00:00:00.000Z",
+          "marketClose": 0.92,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-29T00:00:00.000Z",
+          "marketClose": 1.01,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        }
+      ],
+      "verdict": "WATCH",
+      "timestamp": "2026-05-02T18:56:23.544Z",
+      "storageMode": "local-fallback",
+      "note": "0G env incomplete; payload persisted locally at .artifacts/0g-fallback/yieldboost-stress-report-2327206f228f1e47.json; upload fallback reason: Request failed with status code 503"
+    }
+  ],
   "settings": {
     "riskProfile": "Moderate",
     "notificationRules": 8,

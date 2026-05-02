@@ -284,6 +284,79 @@ export interface StoredProofRecord {
   llmProvider?: string;
 }
 
+export type ProofStorageMode = "0g" | "local-fallback";
+
+export interface StoredAgentMemoryRecord {
+  id: string;
+  agentId: string;
+  tokenId?: string;
+  walletAddress?: string;
+  networkKey?: WalletNetworkKey;
+  cid: string;
+  txHash?: string;
+  blockNumber?: number;
+  explorerUrl?: string;
+  proofCid?: string;
+  memoryVersion: number;
+  snapshot: {
+    contextSummary: string;
+    recentTask: string;
+    lastRecommendation?: string;
+    auditStatus?: IntegrityAudit["status"];
+    proofCid?: string;
+  };
+  timestamp: string;
+  storageMode: ProofStorageMode;
+  note?: string;
+}
+
+export interface StoredBlacklistRecord {
+  id: string;
+  networkKey?: WalletNetworkKey;
+  cid: string;
+  txHash?: string;
+  blockNumber?: number;
+  explorerUrl?: string;
+  fingerprint: string;
+  invalidInput: string;
+  hallucinatedOutput: string;
+  auditorReasoning: string[];
+  auditScore: number;
+  source: "integrity-auditor";
+  timestamp: string;
+  storageMode: ProofStorageMode;
+  note?: string;
+}
+
+export interface StoredStressTestReport {
+  id: string;
+  agentId: string;
+  tokenId?: string;
+  walletAddress?: string;
+  networkKey?: WalletNetworkKey;
+  datasetCid: string;
+  reportCid: string;
+  txHash?: string;
+  blockNumber?: number;
+  explorerUrl?: string;
+  baselineApy: number;
+  verifiedApy: number;
+  simulatedProfit: number;
+  maxDrawdown: number;
+  decisions: Array<{
+    timestamp: string;
+    marketClose: number;
+    standardAgentApy: number;
+    auditorApy: number;
+    auditorDecision: "APPROVED" | "REJECTED";
+    reason: string;
+  }>;
+  verdict: "PASS" | "WATCH" | "FAIL";
+  timestamp: string;
+  storageMode: ProofStorageMode;
+  note?: string;
+}
+
 function round(value: number, digits = 2) {
   const multiplier = 10 ** digits;
   return Math.round(value * multiplier) / multiplier;

@@ -7,15 +7,24 @@ import { kv } from "@vercel/kv";
 import {
   type SettingsPatchInput,
   type SettingsState,
+  type StoredAgentMemoryRecord,
+  type StoredBlacklistRecord,
   type StoredProofRecord,
+  type StoredStressTestReport,
   buildSettingsResponse,
   getDefaultSettingsState,
 } from "@/lib/backend-data";
 import { sameWalletAddress } from "@/lib/wallet";
 
 const PROOFS_KEY = "yieldboost:proofs";
+const MEMORIES_KEY = "yieldboost:agent-memories";
+const BLACKLIST_KEY = "yieldboost:blacklist";
+const STRESS_REPORTS_KEY = "yieldboost:stress-reports";
 const SETTINGS_KEY = "yieldboost:settings";
 const MAX_PROOFS = 50;
+const MAX_MEMORY_RECORDS = 50;
+const MAX_BLACKLIST_RECORDS = 80;
+const MAX_STRESS_REPORTS = 40;
 const LOCAL_STORE_PATH = path.join(process.cwd(), ".artifacts", "runtime-store.json");
 
 export function isRuntimeStoreKvConfigured() {
@@ -25,6 +34,9 @@ export function isRuntimeStoreKvConfigured() {
 // --- In-memory fallback (for local dev without KV) ---
 interface RuntimeStore {
   proofs: StoredProofRecord[];
+  agentMemories: StoredAgentMemoryRecord[];
+  blacklist: StoredBlacklistRecord[];
+  stressReports: StoredStressTestReport[];
   settings: SettingsState;
 }
 
@@ -36,6 +48,9 @@ function getLocalStore(): RuntimeStore {
   if (!globalStore.__yieldboostRuntimeStore) {
     globalStore.__yieldboostRuntimeStore = {
       proofs: [],
+      agentMemories: [],
+      blacklist: [],
+      stressReports: [],
       settings: getDefaultSettingsState(),
     };
   }
@@ -63,6 +78,15 @@ function sortProofsNewestFirst(proofs: StoredProofRecord[]) {
 
     return right.txHash.localeCompare(left.txHash);
   });
+}
+
+function sortTimestampedNewestFirst<T extends { timestamp: string }>(
+  items: T[],
+  maxItems: number,
+) {
+  return [...items]
+    .sort((left, right) => parseProofTimestamp(right.timestamp) - parseProofTimestamp(left.timestamp))
+    .slice(0, maxItems);
 }
 
 function sameStoredProofRun(
@@ -109,6 +133,13 @@ async function readLocalStoreFile(): Promise<RuntimeStore | null> {
 
     return {
       proofs: Array.isArray(parsed.proofs) ? parsed.proofs : [],
+      agentMemories: Array.isArray(parsed.agentMemories)
+        ? parsed.agentMemories
+        : [],
+      blacklist: Array.isArray(parsed.blacklist) ? parsed.blacklist : [],
+      stressReports: Array.isArray(parsed.stressReports)
+        ? parsed.stressReports
+        : [],
       settings: parsed.settings
         ? { ...getDefaultSettingsState(), ...parsed.settings }
         : getDefaultSettingsState(),
@@ -202,6 +233,206 @@ export async function getLatestStoredProofForWallet(
       (proof) =>
         sameWalletAddress(proof.walletAddress, walletAddress) &&
         (!networkKey || proof.networkKey === networkKey),
+    ) ?? null
+  );
+}
+
+export async function recordAgentMemory(
+  record: StoredAgentMemoryRecord,
+): Promise<StoredAgentMemoryRecord> {
+  if (isRuntimeStoreKvConfigured()) {
+    try {
+      const existing = await kv.lrange<StoredAgentMemoryRecord>(
+        MEMORIES_KEY,
+        0,
+        MAX_MEMORY_RECORDS - 1,
+      );
+      const filtered = (existing ?? []).filter((item) => item.id !== record.id);
+      const next = sortTimestampedNewestFirst(
+        [record, ...filtered],
+        MAX_MEMORY_RECORDS,
+      );
+      await kv.del(MEMORIES_KEY);
+      if (next.length > 0) {
+        await kv.lpush(MEMORIES_KEY, ...next.slice().reverse());
+      }
+      return record;
+    } catch (error) {
+      console.warn("[runtime-store] KV memory write failed, using local fallback:", error);
+    }
+  }
+
+  const store = await loadLocalStore();
+  store.agentMemories = sortTimestampedNewestFirst(
+    [record, ...store.agentMemories.filter((item) => item.id !== record.id)],
+    MAX_MEMORY_RECORDS,
+  );
+  globalStore.__yieldboostRuntimeStore = store;
+  await writeLocalStoreFile(store);
+  return record;
+}
+
+export async function getAgentMemories(): Promise<StoredAgentMemoryRecord[]> {
+  if (isRuntimeStoreKvConfigured()) {
+    try {
+      const items = await kv.lrange<StoredAgentMemoryRecord>(
+        MEMORIES_KEY,
+        0,
+        MAX_MEMORY_RECORDS - 1,
+      );
+      return sortTimestampedNewestFirst(items ?? [], MAX_MEMORY_RECORDS);
+    } catch (error) {
+      console.warn("[runtime-store] KV memory read failed, using local fallback:", error);
+    }
+  }
+
+  return sortTimestampedNewestFirst(
+    (await loadLocalStore()).agentMemories,
+    MAX_MEMORY_RECORDS,
+  );
+}
+
+export async function getLatestAgentMemory(
+  agentId?: string,
+  networkKey?: StoredAgentMemoryRecord["networkKey"],
+): Promise<StoredAgentMemoryRecord | null> {
+  const memories = await getAgentMemories();
+  return (
+    memories.find(
+      (memory) =>
+        (!agentId || memory.agentId === agentId) &&
+        (!networkKey || memory.networkKey === networkKey),
+    ) ?? null
+  );
+}
+
+export async function recordBlacklistEntry(
+  record: StoredBlacklistRecord,
+): Promise<StoredBlacklistRecord> {
+  if (isRuntimeStoreKvConfigured()) {
+    try {
+      const existing = await kv.lrange<StoredBlacklistRecord>(
+        BLACKLIST_KEY,
+        0,
+        MAX_BLACKLIST_RECORDS - 1,
+      );
+      const filtered = (existing ?? []).filter(
+        (item) => item.fingerprint !== record.fingerprint,
+      );
+      const next = sortTimestampedNewestFirst(
+        [record, ...filtered],
+        MAX_BLACKLIST_RECORDS,
+      );
+      await kv.del(BLACKLIST_KEY);
+      if (next.length > 0) {
+        await kv.lpush(BLACKLIST_KEY, ...next.slice().reverse());
+      }
+      return record;
+    } catch (error) {
+      console.warn("[runtime-store] KV blacklist write failed, using local fallback:", error);
+    }
+  }
+
+  const store = await loadLocalStore();
+  store.blacklist = sortTimestampedNewestFirst(
+    [
+      record,
+      ...store.blacklist.filter(
+        (item) => item.fingerprint !== record.fingerprint,
+      ),
+    ],
+    MAX_BLACKLIST_RECORDS,
+  );
+  globalStore.__yieldboostRuntimeStore = store;
+  await writeLocalStoreFile(store);
+  return record;
+}
+
+export async function getBlacklistEntries(): Promise<StoredBlacklistRecord[]> {
+  if (isRuntimeStoreKvConfigured()) {
+    try {
+      const items = await kv.lrange<StoredBlacklistRecord>(
+        BLACKLIST_KEY,
+        0,
+        MAX_BLACKLIST_RECORDS - 1,
+      );
+      return sortTimestampedNewestFirst(items ?? [], MAX_BLACKLIST_RECORDS);
+    } catch (error) {
+      console.warn("[runtime-store] KV blacklist read failed, using local fallback:", error);
+    }
+  }
+
+  return sortTimestampedNewestFirst(
+    (await loadLocalStore()).blacklist,
+    MAX_BLACKLIST_RECORDS,
+  );
+}
+
+export async function recordStressTestReport(
+  record: StoredStressTestReport,
+): Promise<StoredStressTestReport> {
+  if (isRuntimeStoreKvConfigured()) {
+    try {
+      const existing = await kv.lrange<StoredStressTestReport>(
+        STRESS_REPORTS_KEY,
+        0,
+        MAX_STRESS_REPORTS - 1,
+      );
+      const filtered = (existing ?? []).filter((item) => item.id !== record.id);
+      const next = sortTimestampedNewestFirst(
+        [record, ...filtered],
+        MAX_STRESS_REPORTS,
+      );
+      await kv.del(STRESS_REPORTS_KEY);
+      if (next.length > 0) {
+        await kv.lpush(STRESS_REPORTS_KEY, ...next.slice().reverse());
+      }
+      return record;
+    } catch (error) {
+      console.warn("[runtime-store] KV stress report write failed, using local fallback:", error);
+    }
+  }
+
+  const store = await loadLocalStore();
+  store.stressReports = sortTimestampedNewestFirst(
+    [record, ...store.stressReports.filter((item) => item.id !== record.id)],
+    MAX_STRESS_REPORTS,
+  );
+  globalStore.__yieldboostRuntimeStore = store;
+  await writeLocalStoreFile(store);
+  return record;
+}
+
+export async function getStressTestReports(): Promise<StoredStressTestReport[]> {
+  if (isRuntimeStoreKvConfigured()) {
+    try {
+      const items = await kv.lrange<StoredStressTestReport>(
+        STRESS_REPORTS_KEY,
+        0,
+        MAX_STRESS_REPORTS - 1,
+      );
+      return sortTimestampedNewestFirst(items ?? [], MAX_STRESS_REPORTS);
+    } catch (error) {
+      console.warn("[runtime-store] KV stress report read failed, using local fallback:", error);
+    }
+  }
+
+  return sortTimestampedNewestFirst(
+    (await loadLocalStore()).stressReports,
+    MAX_STRESS_REPORTS,
+  );
+}
+
+export async function getLatestStressTestReport(
+  agentId?: string,
+  networkKey?: StoredStressTestReport["networkKey"],
+): Promise<StoredStressTestReport | null> {
+  const reports = await getStressTestReports();
+  return (
+    reports.find(
+      (report) =>
+        (!agentId || report.agentId === agentId) &&
+        (!networkKey || report.networkKey === networkKey),
     ) ?? null
   );
 }

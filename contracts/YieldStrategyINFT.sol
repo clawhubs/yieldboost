@@ -41,6 +41,9 @@ contract YieldStrategyINFT is ERC721, ERC721Enumerable, ERC721URIStorage, Ownabl
     
     // Token ID => Strategy metadata
     mapping(uint256 => StrategyMetadata) public strategies;
+
+    // Token ID => latest sovereign memory CID on 0G Storage
+    mapping(uint256 => string) public agentMemory;
     
     // Oracle address (optional for TEE verification)
     address public oracle;
@@ -62,6 +65,12 @@ contract YieldStrategyINFT is ERC721, ERC721Enumerable, ERC721URIStorage, Ownabl
     event UsageRevoked(uint256 indexed tokenId, address indexed user);
     
     event OracleUpdated(address indexed oldOracle, address indexed newOracle);
+
+    event AgentMemoryUpdated(
+        uint256 indexed tokenId,
+        address indexed updater,
+        string memoryCid
+    );
 
     constructor(address initialOwner) ERC721("YieldStrategy Agent", "YSA") Ownable(initialOwner) {
         oracle = address(0); // No oracle by default for testnet
@@ -159,6 +168,19 @@ contract YieldStrategyINFT is ERC721, ERC721Enumerable, ERC721URIStorage, Ownabl
     function getStrategy(uint256 tokenId) external view returns (StrategyMetadata memory) {
         require(_ownerOf(tokenId) != address(0), "Token does not exist");
         return strategies[tokenId];
+    }
+
+    /**
+     * Update the latest 0G Storage CID for an agent's sovereign memory.
+     * The current owner or an approved operator can refresh memory after an audited run.
+     */
+    function updateAgentMemory(uint256 tokenId, string calldata memoryCid) external {
+        require(_ownerOf(tokenId) != address(0), "Token does not exist");
+        require(bytes(memoryCid).length > 0, "Empty memory CID");
+        require(_isAuthorized(_ownerOf(tokenId), msg.sender, tokenId), "Not authorized");
+
+        agentMemory[tokenId] = memoryCid;
+        emit AgentMemoryUpdated(tokenId, msg.sender, memoryCid);
     }
 
     /**

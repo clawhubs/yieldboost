@@ -15,7 +15,12 @@ import {
   type WalletNetworkKey,
 } from "@/lib/wallet";
 import { getDocsRuntimeStatus } from "@/lib/docs/content";
-import type { StoredProofRecord } from "@/lib/backend-data";
+import type {
+  StoredAgentMemoryRecord,
+  StoredBlacklistRecord,
+  StoredProofRecord,
+  StoredStressTestReport,
+} from "@/lib/backend-data";
 import { auditOptimizationDecision } from "@/lib/integrity-audit";
 import {
   resolveLatestProofForWallet,
@@ -28,6 +33,11 @@ import {
   getComputeProviderAddress,
   hasComputeCredentials,
 } from "@/lib/server/network-credentials";
+import {
+  getBlacklistEntries,
+  getLatestAgentMemory,
+  getLatestStressTestReport,
+} from "@/lib/server/runtime-store";
 
 type BadgeTone = "teal" | "green" | "amber" | "white";
 type HealthStatus = "live" | "configured" | "partial" | "pending";
@@ -76,7 +86,11 @@ export interface JudgePageData {
   runtimeLabel: string;
   statusCards: JudgeStatusCard[];
   latestProof: StoredProofRecord | null;
+  sovereignMemory: StoredAgentMemoryRecord | null;
+  latestBlacklistEntry: StoredBlacklistRecord | null;
+  latestStressReport: StoredStressTestReport | null;
   latestProofCards: JudgeStatusCard[];
+  integrityStackCards: JudgeStatusCard[];
   efficiencyCards: JudgeStatusCard[];
   deploymentArtifacts: JudgeDeploymentArtifact[];
   components: JudgeComponentStatus[];
@@ -219,8 +233,8 @@ async function resolveLatestAgentMintArtifact(
           label: "Latest Agent NFT mint tx",
           value: txHash ? shorten(txHash, 8) : `Agent NFT #${tokenId}`,
           helper: txHash
-            ? `Most recent Agent NFT minted to the judge wallet: token #${tokenId}.`
-            : `Token #${tokenId} exists for the judge wallet, but the mint tx was outside the scanned block window.`,
+            ? `Most recent Agent NFT minted to the review wallet: token #${tokenId}.`
+            : `Token #${tokenId} exists for the review wallet, but the mint tx was outside the scanned block window.`,
           status: txHash ? "live" : "configured",
           href: buildExplorerTxHref(networkKey, txHash),
           meta: `Token #${tokenId}`,
@@ -233,7 +247,7 @@ async function resolveLatestAgentMintArtifact(
     return {
       label: "Latest Agent NFT mint tx",
       value: "No judge NFT yet",
-      helper: "The INFT contract is live, but no minted Agent NFT was found for the judge wallet.",
+      helper: "The INFT contract is live, but no minted Agent NFT was found for the review wallet.",
       status: "partial",
       href: buildExplorerAddressHref(networkKey, inftAddress),
       meta: "INFT contract available",
@@ -566,6 +580,20 @@ export async function getJudgePageData(): Promise<JudgePageData> {
       ? { ...rawLatestProof, integrityAudit: latestIntegrityAudit }
       : rawLatestProof;
   const scopedProofs = await resolveProofHistoryForWallet(reviewWallet, reviewNetwork);
+  const sovereignMemory =
+    (await getLatestAgentMemory(reviewWallet, reviewNetwork)) ??
+    (await getLatestAgentMemory(reviewWallet));
+  const scopedBlacklistEntries = (await getBlacklistEntries()).filter(
+    (entry) => !entry.networkKey || entry.networkKey === reviewNetwork,
+  );
+  const allBlacklistEntries = await getBlacklistEntries();
+  const blacklistEntries = scopedBlacklistEntries.length
+    ? scopedBlacklistEntries
+    : allBlacklistEntries;
+  const latestBlacklistEntry = blacklistEntries[0] ?? null;
+  const latestStressReport =
+    (await getLatestStressTestReport(reviewWallet, reviewNetwork)) ??
+    (await getLatestStressTestReport(reviewWallet));
   const proofCount = scopedProofs.length;
   const proofNetwork = latestProof?.networkKey ?? reviewNetwork;
   const judgePortfolio = await getLivePortfolioSnapshot(
@@ -611,6 +639,37 @@ export async function getJudgePageData(): Promise<JudgePageData> {
       value: "Enabled",
       helper: "The optimizer rewrites noisy prompts into a compact intent-and-constraint format before compute.",
       tone: "teal",
+    },
+  ];
+  const integrityStackCards: JudgeStatusCard[] = [
+    {
+      label: "Sovereign Memory",
+      value: sovereignMemory ? `v${sovereignMemory.memoryVersion}` : "Pending",
+      helper: sovereignMemory
+        ? `Latest memory CID ${shorten(sovereignMemory.cid, 10)} (${sovereignMemory.storageMode}).`
+        : "No agent memory snapshot has been synced yet.",
+      tone: sovereignMemory ? "green" : "amber",
+    },
+    {
+      label: "Hallucination Blacklist",
+      value: `${blacklistEntries.length} entr${blacklistEntries.length === 1 ? "y" : "ies"}`,
+      helper: latestBlacklistEntry
+        ? `Latest rejection indexed as ${shorten(latestBlacklistEntry.cid, 10)} before future inference.`
+        : "No rejected output has been indexed yet.",
+      tone: latestBlacklistEntry ? "green" : "amber",
+    },
+    {
+      label: "Multiverse Stress Test",
+      value: latestStressReport ? latestStressReport.verdict : "Pending",
+      helper: latestStressReport
+        ? `Report ${shorten(latestStressReport.reportCid, 10)} verified APY ${latestStressReport.verifiedApy.toFixed(2)}%.`
+        : "No historical validation report has been generated yet.",
+      tone:
+        latestStressReport?.verdict === "PASS"
+          ? "green"
+          : latestStressReport
+            ? "amber"
+            : "white",
     },
   ];
 
@@ -761,6 +820,39 @@ export async function getJudgePageData(): Promise<JudgePageData> {
         : "Contract verification placeholder is shown until deployment is confirmed",
     },
     {
+      title: "Sovereign Memory",
+      status: sovereignMemory ? "live" : "pending",
+      detail: sovereignMemory
+        ? `Agent memory v${sovereignMemory.memoryVersion} is persisted with CID ${shorten(sovereignMemory.cid, 12)}.`
+        : "Memory sync route is available, and the next approved proof will persist an agent snapshot.",
+      href: sovereignMemory?.explorerUrl,
+      meta: sovereignMemory
+        ? `${sovereignMemory.storageMode} memory snapshot`
+        : "Awaiting first memory snapshot",
+    },
+    {
+      title: "Hallucination Blacklist",
+      status: latestBlacklistEntry ? "live" : "configured",
+      detail: latestBlacklistEntry
+        ? `Auditor rejection indexed as CID ${shorten(latestBlacklistEntry.cid, 12)} and checked before new inference.`
+        : "Rejected auditor outputs are indexed automatically and checked before 0G Compute is called.",
+      href: latestBlacklistEntry?.explorerUrl,
+      meta: latestBlacklistEntry
+        ? `Score ${latestBlacklistEntry.auditScore}`
+        : "Pre-inference defense ready",
+    },
+    {
+      title: "Multiverse Stress Test",
+      status: latestStressReport ? "live" : "configured",
+      detail: latestStressReport
+        ? `Latest historical replay verdict is ${latestStressReport.verdict} with report CID ${shorten(latestStressReport.reportCid, 12)}.`
+        : "Stress-test runner can replay historical OHLCV slices and store Integrity Report Cards.",
+      href: latestStressReport?.explorerUrl,
+      meta: latestStressReport
+        ? `Verified APY ${latestStressReport.verifiedApy.toFixed(2)}%`
+        : "Report card runner ready",
+    },
+    {
       title: "Yield Strategy INFT",
       status: getYieldStrategyInftAddress(reviewNetwork) ? "configured" : "partial",
       detail: getYieldStrategyInftAddress(reviewNetwork)
@@ -828,7 +920,11 @@ export async function getJudgePageData(): Promise<JudgePageData> {
     runtimeLabel: runtimeStatus.currentStatusLine,
     statusCards,
     latestProof,
+    sovereignMemory,
+    latestBlacklistEntry,
+    latestStressReport,
     latestProofCards,
+    integrityStackCards,
     efficiencyCards,
     deploymentArtifacts,
     components,

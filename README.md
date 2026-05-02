@@ -10,10 +10,14 @@
   <img src="https://img.shields.io/badge/Status-Live-14c784?style=for-the-badge" alt="Status Live" />
   <img src="https://img.shields.io/badge/Infrastructure-0G%20Labs-00d2ff?style=for-the-badge" alt="Infrastructure 0G Labs" />
   <img src="https://img.shields.io/badge/Default%20Network-Mainnet-1f8fff?style=for-the-badge" alt="Default Network Mainnet" />
+  <img src="https://img.shields.io/badge/Sovereign%20Memory-0G%20Storage-18c6ff?style=for-the-badge" alt="Sovereign Memory on 0G Storage" />
+  <img src="https://img.shields.io/badge/Hallucination%20Blacklist-Pre--Inference%20Defense-ff5c7a?style=for-the-badge" alt="Hallucination Blacklist" />
+  <img src="https://img.shields.io/badge/Stress%20Test-Integrity%20Report%20Card-f6c166?style=for-the-badge" alt="Multiverse Stress Test" />
   <img src="https://img.shields.io/badge/Judge%20Mode-/judge-7c5cff?style=for-the-badge" alt="Judge Mode" />
   <img src="https://img.shields.io/badge/Proof%20Layer-0G%20Storage%20%2B%20ProofRegistry-0f172a?style=for-the-badge" alt="Proof Layer" />
   <img src="https://img.shields.io/badge/Agent%20NFT-YieldStrategyINFT-00a86b?style=for-the-badge" alt="Agent NFT YieldStrategyINFT" />
   <img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge" alt="Next.js 15" />
+  <img src="https://img.shields.io/badge/License-MIT-white?style=for-the-badge" alt="MIT License" />
 </p>
 
 <p align="center">
@@ -23,30 +27,71 @@
 <p align="center">
   <a href="#why-this-matters">Why it matters</a> •
   <a href="#mainnet-live-verification">Mainnet verification</a> •
+  <a href="#founder-grade-snapshot">Founder grade</a> •
+  <a href="#the-problem">Problem</a> •
+  <a href="#the-solution">Solution</a> •
   <a href="#hackathon-track-alignment">Track alignment</a> •
   <a href="#fast-judge-review">Fast judge review</a> •
   <a href="#architecture">Architecture</a> •
   <a href="#0g-native-data-flow">0G data flow</a> •
+  <a href="#0g-integration-upgrade">0G integration upgrade</a> •
   <a href="#agent-nft-layer">Agent NFT layer</a> •
+  <a href="#readme-stats">Stats</a> •
   <a href="#local-installation">Local setup</a> •
-  <a href="#testnet-secondary-path">Testnet secondary path</a> •
-  <a href="#roadmap-ya0g-and-proof-of-optimization">Roadmap</a>
+  <a href="#license">License</a> •
+  <a href="#contributing">Contributing</a>
 </p>
 
 > YieldBoost AI is now positioned around a live 0G mainnet proof flow: detect underused wallet capital, generate a yield optimization result, persist it through 0G infrastructure, and let a judge verify the latest outcome from `/judge` without wallet friction.
 
 YieldBoost AI is a Next.js application that helps Web3 users put idle crypto balances to work. Instead of leaving small or underused token allocations sitting unproductive in a wallet, the app analyzes the portfolio, recommends a better low-risk yield route, and turns that optimization run into an externally reviewable proof trail.
 
-The active implementation in this repository is now centered on a **mainnet-first** review path across three 0G primitives:
+The active implementation in this repository is now centered on a **mainnet-first** review path across the core 0G stack plus an integrity memory layer:
 
 - **0G Compute** for TEE-ready inference when provider credentials are configured.
 - **0G Storage** for storing optimization proof payloads.
 - **ProofRegistry** for on-chain anchoring of those stored proofs on the active network.
 - **Integrity Auditor** as a deterministic backend guardrail before any new proof write.
+- **Sovereign Memory** for persistent agent state snapshots on 0G Storage.
+- **Hallucination Blacklist** for pre-inference rejection of known bad patterns.
+- **Multiverse Stress Test** for historical replay and 0G-backed Integrity Report Cards.
 
 The result is a product story judges can verify quickly: a user runs an optimization, the app persists the reasoning and decision payload on 0G infrastructure, and `/judge` exposes the latest mainnet review snapshot without requiring wallet connection, faucet setup, or rerunning the flow.
 
 On top of that proof path, YieldBoost AI also ships a **Strategy Agent NFT layer** through `YieldStrategyINFT`, so a verified optimization can be elevated into a portable on-chain strategy artifact instead of remaining only as an off-chain UI event.
+
+## Founder Grade Snapshot
+
+| Dimension | Current grade | Evidence |
+| --- | --- | --- |
+| Verifiability | A | 0G Storage proofs, ProofRegistry anchoring, explorer links, and `/judge` read-only review. |
+| Agent memory | A- | `Sovereign Memory` snapshots persist context state and latest proof CID to 0G Storage. |
+| AI safety | A- | Integrity Auditor blocks impossible outputs and indexes rejections into the hallucination blacklist. |
+| Demo clarity | A | Judge Mode shows proof, memory, blacklist, stress report, and verification links without wallet setup. |
+| Production honesty | A | 0G Compute, Storage, Registry, KV, and contract paths all expose fallback states instead of faking success. |
+
+## The Problem
+
+AI yield tools usually fail in three places:
+
+- They recommend attractive APY numbers without proving the wallet data or audit trail behind the result.
+- They forget prior context, so an agent can repeat the same unsafe reasoning across sessions.
+- They treat historical validation as a slide-deck claim instead of a verifiable artifact that judges or users can inspect.
+
+In DeFi, that is not a small UX issue. An unverified AI recommendation can route users toward impossible APY, mismatched assets, or stale market assumptions.
+
+## The Solution
+
+YieldBoost AI turns each optimization into a verifiable finance event:
+
+- The agent creates an optimization result from the wallet snapshot.
+- The Integrity Auditor checks APY bounds, asset compatibility, liquidity evidence, and impossible-yield cases.
+- Approved results are stored on 0G Storage and optionally anchored through ProofRegistry.
+- Rejected results are indexed into a hallucination blacklist and checked before future inference.
+- Agent memory snapshots are persisted as 0G Storage CIDs so the strategy can be rehydrated.
+- Historical market slices can be replayed through Multiverse Stress Test and stored as Integrity Report Cards.
+
+The product story becomes simple: **AI proposes, Auditor verifies, 0G stores, chain anchors, Judge verifies.**
 
 ## Mainnet Live Verification
 
@@ -62,6 +107,19 @@ The current public deployment is now **mainnet-default**.
 | Latest `ProofRegistry` anchor tx | [`0xa76f59de764dfb5dcd2fae3e8dff53cb0e213bab89162e7b4de16962309caa9b`](https://chainscan.0g.ai/tx/0xa76f59de764dfb5dcd2fae3e8dff53cb0e213bab89162e7b4de16962309caa9b) |
 | Latest Agent NFT mint tx | [`0x93c2600f0d576e8512b3d57afe4a495e17446bf91ad8d9e9333cb62bdd2adc19`](https://chainscan.0g.ai/tx/0x93c2600f0d576e8512b3d57afe4a495e17446bf91ad8d9e9333cb62bdd2adc19) |
 | Judge entry point | [`/judge`](https://yieldboost-ai.vercel.app/judge) |
+
+### Latest Integrity Stack Evidence
+
+These testnet artifacts prove the newly added agent memory, blacklist, and stress-test layers are operational in the same codebase:
+
+| Artifact | CID / tx |
+| --- | --- |
+| Sovereign Memory CID | `0x78a694e360f797c21f7325d29967bb018fd295cfa0b6c8eefee85a76d0bf000c` |
+| Sovereign Memory tx | [`0x3c37924768ac24e99e0e3447c8ccae073802e8d6d9ee5bd95ff841ed714880f3`](https://chainscan-galileo.0g.ai/tx/0x3c37924768ac24e99e0e3447c8ccae073802e8d6d9ee5bd95ff841ed714880f3) |
+| Hallucination Blacklist CID | `0x09c1f8700849bc5e92e09469a6d24c110e5076cdaa1b3ecfc9017028581eacfd` |
+| Hallucination Blacklist tx | [`0xcb0d5cb2344a57b1e31d4ddbda1ebebb5dde6f53f68469a0846abbb2228551bd`](https://chainscan-galileo.0g.ai/tx/0xcb0d5cb2344a57b1e31d4ddbda1ebebb5dde6f53f68469a0846abbb2228551bd) |
+| Multiverse Stress Report CID | `0x685847e175588ec9551cb14ea139910f55b768c1ea752c0dfc92cc4b8f441b54` |
+| Multiverse Stress Report tx | [`0x16f91be8376560703bf492d1c253f6585e87b5c0e1df382f087be4de89ef79e4`](https://chainscan-galileo.0g.ai/tx/0x16f91be8376560703bf492d1c253f6585e87b5c0e1df382f087be4de89ef79e4) |
 
 What this means in practice:
 
@@ -144,26 +202,46 @@ flowchart TD
     U[User or Judge] --> UI[Next.js App Router UI]
 
     UI --> OPT[/api/agent/optimize/]
+    OPT --> COMPRESS[Prompt compression + portfolio digest]
+    COMPRESS --> PRECHECK[Hallucination blacklist lookup]
+    PRECHECK -->|hit| BLOCKED[Pre-inference rejection]
+    PRECHECK -->|clear| CACHE[Semantic cache / embedding reuse]
     OPT --> SNAP[buildOptimizationSnapshot]
-    OPT -->|if 0G Compute configured| TEE[runTEEInference via 0G broker]
-    OPT -->|if not configured or fails| FALLBACK[Deterministic local narrative fallback]
+    CACHE -->|miss| TEE[runTEEInference via 0G broker]
+    CACHE -->|hit| STREAM
+    TEE -->|if unavailable| FALLBACK[Deterministic local narrative fallback]
     TEE --> STREAM[Stream narrative back to client]
     FALLBACK --> STREAM
+    BLOCKED --> STREAM
     STREAM --> UI
 
     UI --> STORE[/api/0g/store/]
     STORE --> AUDIT[Integrity Auditor deterministic guardrail]
     AUDIT -->|APPROVED| JSON[Write proof JSON temp file]
-    AUDIT -->|REJECTED| BLOCK[Return rejected audit, skip proof write]
+    AUDIT -->|REJECTED| BLWRITE[Index blacklist entry]
+    BLWRITE --> BLSTORE[0G Storage blacklist artifact]
+    BLSTORE --> RUNTIME
     JSON --> ZGS[0G Storage Indexer.upload]
     ZGS --> PROOF[StoredProofRecord]
     STORE -->|optional| REG[ProofRegistry.recordProof]
+    PROOF --> MEMORY[/api/agent/memory/]
+    MEMORY --> MEMSTORE[0G Storage memory snapshot]
 
     PROOF --> RUNTIME[Vercel KV or .artifacts/runtime-store.json]
     REG --> RUNTIME
+    MEMSTORE --> RUNTIME
+
+    UI --> STRESS[/api/stress-test/run/]
+    STRESS --> HIST[Historical OHLCV / oracle replay]
+    HIST --> REPORT[Integrity Report Card]
+    REPORT --> REPORTSTORE[0G Storage report artifact]
+    REPORTSTORE --> RUNTIME
 
     RUNTIME --> LATEST[/api/agent/latest/]
     RUNTIME --> PROOFAPI[/api/0g/proof/]
+    RUNTIME --> MEMORYAPI[/api/agent/memory/]
+    RUNTIME --> BLACKLISTAPI[/api/auditor/blacklist/]
+    RUNTIME --> STRESSAPI[/api/stress-test/run/]
     RUNTIME --> LIST[/api/agent/list/]
     RUNTIME --> HISTORY[/api/history/]
 
@@ -172,26 +250,58 @@ flowchart TD
     BOOT --> REVIEW[Read-only review wallet + cookies/localStorage]
     REVIEW --> LATEST
     REVIEW --> PROOFAPI
+    REVIEW --> MEMORYAPI
+    REVIEW --> BLACKLISTAPI
+    REVIEW --> STRESSAPI
     REVIEW --> HISTORY
     REVIEW --> LIST
 ```
 
 ## 0G-Native Data Flow
 
-1. The client calls [`/api/agent/optimize`](app/api/agent/optimize/route.ts), which builds a deterministic optimization snapshot and then attempts **0G Compute** inference through [`lib/server/og-compute.ts`](lib/server/og-compute.ts).
-2. If the compute provider is available, the app requests a `chat/completions` inference response from the 0G serving broker and returns the streamed narrative to the UI.
-3. The client then posts the finalized decision payload to [`/api/0g/store`](app/api/0g/store/route.ts).
-4. The storage route runs the deterministic Integrity Auditor from [`lib/integrity-audit.ts`](lib/integrity-audit.ts), comparing the worker prediction against the submitted wallet snapshot and the latest runtime proof reference when available.
-5. If the audit is `REJECTED`, the route returns the audit reasons and skips 0G Storage, ProofRegistry, and Agent NFT proof promotion.
-6. If the audit is `APPROVED`, the route writes a JSON proof artifact, uploads it through **0G Storage** using `Indexer.upload`, and records the resulting storage hash and tx metadata.
-7. If `ProofRegistry` is configured, the same route calls `recordProof(...)` on the on-chain registry contract defined in [`contracts/ProofRegistry.sol`](contracts/ProofRegistry.sol).
-8. The full proof record is persisted into the runtime ledger managed by [`lib/server/runtime-store.ts`](lib/server/runtime-store.ts), backed by **Vercel KV** when available or `.artifacts/runtime-store.json` as a local fallback.
-9. The proof can then be rehydrated across the product through:
+1. The client calls [`/api/agent/optimize`](app/api/agent/optimize/route.ts), which compresses the prompt, hashes the wallet scope, and builds a deterministic optimization snapshot.
+2. Before inference, the optimizer checks the **Hallucination Blacklist** in [`lib/server/hallucination-blacklist.ts`](lib/server/hallucination-blacklist.ts). Similar rejected patterns return a pre-inference block instead of spending compute.
+3. If no blacklist match is found, the optimizer checks exact cache and embedding-based semantic cache through [`lib/server/optimization-cache.ts`](lib/server/optimization-cache.ts).
+4. If no cache is available, the app attempts **0G Compute** inference through [`lib/server/og-compute.ts`](lib/server/og-compute.ts), then falls back honestly if the provider is unavailable.
+5. The client posts the finalized decision payload to [`/api/0g/store`](app/api/0g/store/route.ts).
+6. The storage route runs the deterministic Integrity Auditor from [`lib/integrity-audit.ts`](lib/integrity-audit.ts), comparing the worker prediction against the submitted wallet snapshot and the latest runtime proof reference when available.
+7. If the audit is `REJECTED`, the route indexes the failed input/output/reasoning into the Hallucination Blacklist and skips ProofRegistry promotion.
+8. If the audit is `APPROVED`, the route writes a JSON proof artifact, uploads it through **0G Storage** using `Indexer.upload`, and records the resulting storage hash and tx metadata.
+9. If `ProofRegistry` is configured, the same route calls `recordProof(...)` on the on-chain registry contract defined in [`contracts/ProofRegistry.sol`](contracts/ProofRegistry.sol).
+10. After a successful proof write, [`lib/server/sovereign-memory.ts`](lib/server/sovereign-memory.ts) syncs the agent's latest context snapshot to 0G Storage and records the memory CID.
+11. [`/api/stress-test/run`](app/api/stress-test/run/route.ts) can replay historical OHLCV/oracle slices, produce an Integrity Report Card, and store that report on 0G Storage.
+12. The full proof, memory, blacklist, and stress-test records are persisted into the runtime ledger managed by [`lib/server/runtime-store.ts`](lib/server/runtime-store.ts), backed by **Vercel KV** when available or `.artifacts/runtime-store.json` as a local fallback.
+13. The proof can then be rehydrated across the product through:
    - [`/api/agent/latest`](app/api/agent/latest/route.ts)
    - [`/api/0g/proof`](app/api/0g/proof/route.ts)
+   - [`/api/agent/memory`](app/api/agent/memory/route.ts)
+   - [`/api/auditor/blacklist`](app/api/auditor/blacklist/route.ts)
+   - [`/api/stress-test/run`](app/api/stress-test/run/route.ts)
    - [`/api/history`](app/api/history/route.ts)
    - [`/api/agent/list`](app/api/agent/list/route.ts)
-10. The judge opens [`/judge`](<app/(workspace)/judge/page.tsx>), which surfaces the latest proof, wallet snapshot, explorer links, registry status, Integrity Auditor state, and a compact network switcher in one audit-first page.
+14. The judge opens [`/judge`](<app/(workspace)/judge/page.tsx>), which surfaces the latest proof, wallet snapshot, memory CID, blacklist CID, stress-test report CID, explorer links, registry status, and Integrity Auditor state in one audit-first page.
+
+## 0G Integration Upgrade
+
+The repo now includes three additional 0G-native integrity layers.
+
+| Layer | Backend path | Storage artifact | Contract path |
+| --- | --- | --- | --- |
+| Sovereign Memory | [`/api/agent/memory`](app/api/agent/memory/route.ts), [`lib/server/sovereign-memory.ts`](lib/server/sovereign-memory.ts) | Agent context snapshot JSON on 0G Storage | `agentMemory[tokenId]` in [`YieldStrategyINFT.sol`](contracts/YieldStrategyINFT.sol) |
+| Hallucination Blacklist | [`/api/auditor/blacklist`](app/api/auditor/blacklist/route.ts), [`lib/server/hallucination-blacklist.ts`](lib/server/hallucination-blacklist.ts) | Invalid input + hallucinated output + auditor reasoning | [`GlobalBlacklistRegistry.sol`](contracts/GlobalBlacklistRegistry.sol) |
+| Multiverse Stress Test | [`/api/stress-test/run`](app/api/stress-test/run/route.ts), [`lib/server/multiverse-stress-test.ts`](lib/server/multiverse-stress-test.ts) | Integrity Report Card from historical replay | [`ValidationRegistry.sol`](contracts/ValidationRegistry.sol) |
+
+### Sovereign Memory
+
+The agent persists a compact state snapshot after successful proof cycles. The snapshot includes context summary, recent task, latest recommendation, auditor status, proof CID, memory version, and optional token ID. This gives Strategy Agent NFTs a portable memory pointer instead of leaving agent history trapped in a browser session.
+
+### Hallucination Blacklist
+
+Rejected auditor outputs are no longer dead ends. They are transformed into blacklist entries with a fingerprint, invalid input document, hallucinated output, auditor reasoning, score, CID, and optional explorer URL. Future optimizer calls check this list before inference, so known-bad requests can be rejected before 0G Compute or fallback generation runs.
+
+### Multiverse Stress Test
+
+The stress-test runner replays historical OHLCV/oracle slices against standard agent decisions and audited decisions. The output is an Integrity Report Card containing decision-by-decision verdicts, verified APY, simulated profit, max drawdown, and final verdict. The report is stored as a 0G Storage artifact and surfaced in Judge Mode.
 
 ## Agent NFT Layer
 
@@ -264,8 +374,11 @@ This is the UX decision that makes YieldBoost AI unusually judge-friendly: the v
 | 0G primitive | Where it appears | What it does |
 | --- | --- | --- |
 | 0G Compute | [`lib/server/og-compute.ts`](lib/server/og-compute.ts) | Initializes the broker, funds the inference sub-account when needed, acknowledges provider signer, and performs inference requests. |
-| 0G Storage | [`app/api/0g/store/route.ts`](app/api/0g/store/route.ts) | Uploads the optimization proof payload through the 0G SDK indexer. |
+| 0G Storage | [`app/api/0g/store/route.ts`](app/api/0g/store/route.ts), [`lib/server/zero-g-storage.ts`](lib/server/zero-g-storage.ts) | Uploads proof payloads, memory snapshots, blacklist entries, and stress-test reports through the 0G SDK indexer. |
 | ProofRegistry | [`contracts/ProofRegistry.sol`](contracts/ProofRegistry.sol) and [`app/api/0g/store/route.ts`](app/api/0g/store/route.ts) | Anchors proof metadata on-chain and emits `ProofRecorded`. |
+| Sovereign Memory | [`app/api/agent/memory/route.ts`](app/api/agent/memory/route.ts) and [`contracts/YieldStrategyINFT.sol`](contracts/YieldStrategyINFT.sol) | Stores agent state snapshots on 0G Storage and exposes `agentMemory[tokenId]`. |
+| Hallucination Blacklist | [`app/api/auditor/blacklist/route.ts`](app/api/auditor/blacklist/route.ts) and [`contracts/GlobalBlacklistRegistry.sol`](contracts/GlobalBlacklistRegistry.sol) | Indexes rejected auditor outputs and checks similar requests before inference. |
+| Multiverse Stress Test | [`app/api/stress-test/run/route.ts`](app/api/stress-test/run/route.ts) and [`contracts/ValidationRegistry.sol`](contracts/ValidationRegistry.sol) | Replays historical slices and stores Integrity Report Cards as 0G artifacts. |
 
 ### Token / Prompt Efficiency
 
@@ -296,7 +409,10 @@ So the honest positioning is now: **YieldBoost AI actively reduces repeated toke
 ### Integrity Hardening
 
 - **Integrity Auditor / Logic Guardrail** is deterministic and does not call Qwen, OpenAI, Claude, or another model. It compares the worker prediction with wallet snapshot/proof/runtime data before a proof write. The audit result is stored as `integrityAudit.status`, `score`, `reasons`, `checkedAt`, and `source: deterministic-logic-guardrail`.
-- **Rejected audit results are not proof successes**: `/api/0g/store` returns a rejection, skips 0G Storage upload, skips `ProofRegistry.recordProof`, and the UI labels the result as blocked instead of silently continuing.
+- **Rejected audit results are not proof successes**: `/api/0g/store` returns a rejection, skips proof promotion, indexes the failure into the hallucination blacklist, and the UI labels the result as blocked instead of silently continuing.
+- **Pre-inference blacklist defense** checks known-bad patterns before 0G Compute is called, returning `X-Blacklist-Status: hit` when a similar hallucination has already been captured.
+- **Sovereign Memory** persists state snapshots after successful proof cycles so agent context can be rehydrated from a 0G Storage CID.
+- **Multiverse Stress Test** validates agent behavior against historical replay and stores a verifiable report card.
 - **Agent NFT metadata encryption** now uses **AES-256-GCM** in [`lib/server/encryption.ts`](lib/server/encryption.ts), with a required `STRATEGY_METADATA_ENCRYPTION_KEY` and a backward-compatible decrypt path for earlier base64 test payloads.
 - **0G Compute response validation** now uses the broker verification path in [`lib/server/og-compute.ts`](lib/server/og-compute.ts): the app verifies the returned chat ID through the broker and confirms the signed response body matches the text surfaced in the UI before marking the proof as TEE-verified.
 - **Agent NFT attestation hashes** are now derived from the runtime attestation payload when a verified 0G Compute result is present, rather than from a generic placeholder string.
@@ -327,7 +443,20 @@ That behavior is much better for judge trust than pretending every subsystem is 
 | `/api/0g/store` | 0G Storage upload and optional ProofRegistry anchoring. |
 | `/api/0g/proof` | Retrieve the latest stored proof or fetch proof data by CID/hash. |
 | `/api/agent/latest` | Rehydrate the latest proof-backed optimization result for a wallet. |
+| `/api/agent/memory` | Sync and read Sovereign Memory snapshots for an agent or wallet. |
+| `/api/auditor/blacklist` | Index rejected auditor outputs and query blacklist matches. |
+| `/api/stress-test/run` | Run historical replay and store Integrity Report Cards. |
 | `/api/history` | Proof-backed execution history for the active wallet. |
+
+## README Stats
+
+| Metric | Value |
+| --- | --- |
+| 0G-facing API routes | 6: optimize, store, proof, memory, blacklist, stress test |
+| Solidity contracts in scope | 6: ProofRegistry, YieldStrategyINFT, AttestationRegistryOracle, AdoptionMarket, GlobalBlacklistRegistry, ValidationRegistry |
+| Verifiable artifact types | Proof receipt, memory snapshot, blacklist entry, stress-test report, Agent NFT metadata |
+| Judge proof surfaces | `/judge`, proof modal, history, agents, marketplace |
+| Validation commands | `npm run lint`, `npx tsc --noEmit`, `npm run build`, `solcjs`, Playwright |
 
 ## Local Installation
 
@@ -463,12 +592,18 @@ npm run setup:tee-broker:mainnet
 | --- | --- |
 | [`app/api/agent/optimize/route.ts`](app/api/agent/optimize/route.ts) | Active optimization entry point. |
 | [`lib/server/og-compute.ts`](lib/server/og-compute.ts) | 0G Compute broker integration. |
+| [`lib/server/zero-g-storage.ts`](lib/server/zero-g-storage.ts) | Shared 0G JSON upload helper with honest local fallback for development. |
 | [`app/api/0g/store/route.ts`](app/api/0g/store/route.ts) | Proof upload and registry anchoring. |
+| [`app/api/agent/memory/route.ts`](app/api/agent/memory/route.ts) | Sovereign Memory sync and read API. |
+| [`app/api/auditor/blacklist/route.ts`](app/api/auditor/blacklist/route.ts) | Hallucination Blacklist write/read API. |
+| [`app/api/stress-test/run/route.ts`](app/api/stress-test/run/route.ts) | Multiverse Stress Test runner and report API. |
 | [`lib/server/runtime-store.ts`](lib/server/runtime-store.ts) | Proof persistence layer. |
 | [`app/(workspace)/judge/page.tsx`](<app/(workspace)/judge/page.tsx>) | Main judge review surface. |
 | [`components/judge/JudgeModeBootstrap.tsx`](components/judge/JudgeModeBootstrap.tsx) | Wallet-free review bootstrap behavior. |
 | [`contracts/ProofRegistry.sol`](contracts/ProofRegistry.sol) | On-chain proof registry. |
 | [`contracts/YieldStrategyINFT.sol`](contracts/YieldStrategyINFT.sol) | Strategy Agent NFT contract. |
+| [`contracts/GlobalBlacklistRegistry.sol`](contracts/GlobalBlacklistRegistry.sol) | Append-only CID registry for rejected hallucination artifacts. |
+| [`contracts/ValidationRegistry.sol`](contracts/ValidationRegistry.sol) | On-chain anchor design for stress-test report cards. |
 
 ## Roadmap: $YA0G and Proof-of-Optimization
 
@@ -504,3 +639,11 @@ The implementation already proves the essential idea:
 - **judges can review the latest result without wallet friction**
 
 That is a much more compelling hackathon story than a generic AI dashboard, because the output is not only generated, but also reviewable.
+
+## License
+
+This project is released under the [MIT License](LICENSE).
+
+## Contributing
+
+Contributions are welcome through issues and pull requests. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before proposing changes, especially for contract, proof, or 0G integration work.

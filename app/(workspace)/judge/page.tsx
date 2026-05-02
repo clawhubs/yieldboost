@@ -233,6 +233,57 @@ export default async function JudgePage() {
               ))}
             </div>
 
+            <div className="mt-5 glass-inset rounded-[16px] px-4 py-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="text-[12px] font-medium text-white">Integrity memory stack</div>
+                  <div className="mt-1 text-[12px] text-[#9faab6]">
+                    Backend-backed artifacts for memory persistence, blacklist defense, and historical validation.
+                  </div>
+                </div>
+                {data.latestStressReport?.explorerUrl ? (
+                  <a
+                    href={data.latestStressReport.explorerUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 rounded-full border border-[rgba(34,221,208,0.2)] px-3 py-2 text-[12px] font-medium text-[#22ddd0] transition hover:border-[rgba(34,221,208,0.36)] hover:text-white"
+                  >
+                    Verify report
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                ) : null}
+              </div>
+              <div className="mt-4 grid gap-[10px] md:grid-cols-3">
+                {data.integrityStackCards.map((card) => (
+                  <div key={card.label} className="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3">
+                    <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">{card.label}</div>
+                    <div className={`mt-2 text-[18px] font-semibold ${toneClass(card.tone)}`}>{card.value}</div>
+                    <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">{card.helper}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 grid gap-3 md:grid-cols-3">
+                <div className="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3">
+                  <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Memory CID</div>
+                  <div className="mt-2 break-all text-[12px] leading-6 text-[#d8e1e8]">
+                    {data.sovereignMemory?.cid ?? "No memory CID yet"}
+                  </div>
+                </div>
+                <div className="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3">
+                  <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Blacklist CID</div>
+                  <div className="mt-2 break-all text-[12px] leading-6 text-[#d8e1e8]">
+                    {data.latestBlacklistEntry?.cid ?? "No blacklist CID yet"}
+                  </div>
+                </div>
+                <div className="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3">
+                  <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Stress Report CID</div>
+                  <div className="mt-2 break-all text-[12px] leading-6 text-[#d8e1e8]">
+                    {data.latestStressReport?.reportCid ?? "No report CID yet"}
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="mt-5 space-y-[10px]">
               <div className="glass-inset rounded-[16px] px-4 py-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">

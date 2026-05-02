@@ -19,6 +19,7 @@ import {
   touchOptimizationCacheEntry,
   upsertOptimizationCacheEntry,
 } from "@/lib/server/optimization-cache";
+import { findHallucinationBlacklistMatch } from "@/lib/server/hallucination-blacklist";
 import { compressOptimizationInput } from "@/lib/server/prompt-compression";
 import {
   resolveWalletAddress,
@@ -153,6 +154,55 @@ export async function POST(req: NextRequest) {
 
     return new Response(createMockStream(narrative), {
       headers: responseHeaders,
+    });
+  }
+
+  const blacklistMatch = await findHallucinationBlacklistMatch({
+    networkKey,
+    prompt: compressedInput.normalizedPrompt,
+    portfolio,
+  });
+
+  if (blacklistMatch) {
+    const blockedNarrative =
+      `Integrity Auditor blocked this request before inference. ` +
+      `It is ${Math.round(blacklistMatch.similarity * 100)}% similar to a hallucination entry stored as CID ${blacklistMatch.entry.cid}.`;
+    const blockedResult: OptimizationResult = {
+      ...result,
+      optimized_apy: result.current_apy,
+      yield_increase: 0,
+      yield_increase_pct: 0,
+      recommended: "Blocked by Hallucination Blacklist",
+      confidence: 0,
+      reasoning: blockedNarrative,
+      timestamp: new Date().toISOString(),
+      integrityAudit: {
+        status: "REJECTED",
+        score: Math.min(blacklistMatch.entry.auditScore, 20),
+        reasons: [
+          `Pre-inference blacklist match: ${blacklistMatch.entry.cid}`,
+          ...blacklistMatch.entry.auditorReasoning,
+        ],
+        checkedAt: new Date().toISOString(),
+        source: "deterministic-logic-guardrail",
+      },
+      proofStatus: "error",
+      proofStatusDetail: "Skipped inference and proof write because a similar hallucination is already blacklisted.",
+    };
+
+    return new Response(createMockStream(blockedNarrative), {
+      headers: {
+        "X-Optimization-Result": JSON.stringify(blockedResult),
+        "X-LLM-Provider": "blacklist-block",
+        "X-Compute-Status": "pre-inference-blacklist-block",
+        "X-Prompt-Compression": compressedInput.compactPrompt,
+        "X-Cache-Status": "blacklist-hit",
+        "X-Blacklist-Status": "hit",
+        "X-Blacklist-CID": blacklistMatch.entry.cid,
+        "X-Blacklist-Similarity": blacklistMatch.similarity.toFixed(4),
+        "Access-Control-Expose-Headers":
+          "X-Optimization-Result, X-LLM-Provider, X-Compute-Status, X-Prompt-Compression, X-Cache-Status, X-Blacklist-Status, X-Blacklist-CID, X-Blacklist-Similarity",
+      },
     });
   }
 
