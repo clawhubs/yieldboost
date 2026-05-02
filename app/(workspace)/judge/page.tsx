@@ -59,6 +59,29 @@ export default async function JudgePage() {
     : "Open latest tx";
   const integrityAudit = data.latestProof?.integrityAudit;
   const integrityApproved = integrityAudit?.status === "APPROVED";
+  const integrityEvidenceArtifacts = [
+    {
+      label: "Memory CID",
+      value: data.sovereignMemory?.cid,
+      empty: "No memory CID yet",
+      href: data.sovereignMemory?.explorerUrl,
+      linkLabel: "Open memory tx on Chainscan",
+    },
+    {
+      label: "Blacklist CID",
+      value: data.latestBlacklistEntry?.cid,
+      empty: "No blacklist CID yet",
+      href: data.latestBlacklistEntry?.explorerUrl,
+      linkLabel: "Open blacklist tx on Chainscan",
+    },
+    {
+      label: "Stress Report CID",
+      value: data.latestStressReport?.reportCid,
+      empty: "No report CID yet",
+      href: data.latestStressReport?.explorerUrl,
+      linkLabel: "Open stress tx on Chainscan",
+    },
+  ];
   const quickReviewPoints = [
     "Open `/judge` as the submission entry point to see the latest wallet result first.",
     "Follow the latest tx link and the CID to verify the current mainnet proof externally.",
@@ -263,24 +286,30 @@ export default async function JudgePage() {
                 ))}
               </div>
               <div className="mt-4 grid gap-3 md:grid-cols-3">
-                <div className="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3">
-                  <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Memory CID</div>
-                  <div className="mt-2 break-all text-[12px] leading-6 text-[#d8e1e8]">
-                    {data.sovereignMemory?.cid ?? "No memory CID yet"}
+                {integrityEvidenceArtifacts.map((artifact) => (
+                  <div
+                    key={artifact.label}
+                    className="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3"
+                  >
+                    <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">
+                      {artifact.label}
+                    </div>
+                    <div className="mt-2 break-all text-[12px] leading-6 text-[#d8e1e8]">
+                      {artifact.value ?? artifact.empty}
+                    </div>
+                    {artifact.href ? (
+                      <a
+                        href={artifact.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-3 inline-flex items-center gap-2 rounded-full border border-[rgba(34,221,208,0.18)] px-3 py-2 text-[11px] font-medium text-[#22ddd0] transition hover:border-[rgba(34,221,208,0.36)] hover:text-white"
+                      >
+                        {artifact.linkLabel}
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </a>
+                    ) : null}
                   </div>
-                </div>
-                <div className="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3">
-                  <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Blacklist CID</div>
-                  <div className="mt-2 break-all text-[12px] leading-6 text-[#d8e1e8]">
-                    {data.latestBlacklistEntry?.cid ?? "No blacklist CID yet"}
-                  </div>
-                </div>
-                <div className="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3">
-                  <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Stress Report CID</div>
-                  <div className="mt-2 break-all text-[12px] leading-6 text-[#d8e1e8]">
-                    {data.latestStressReport?.reportCid ?? "No report CID yet"}
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
