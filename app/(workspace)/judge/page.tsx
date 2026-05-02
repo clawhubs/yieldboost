@@ -259,7 +259,7 @@ export default async function JudgePage() {
             <div className="mt-5 glass-inset rounded-[16px] px-4 py-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <div className="text-[12px] font-medium text-white">Integrity memory stack</div>
+                  <div className="text-[15px] font-semibold text-white">Integrity memory stack</div>
                   <div className="mt-1 text-[12px] text-[#9faab6]">
                     Backend-backed artifacts for memory persistence, blacklist defense, and historical validation.
                   </div>
@@ -278,9 +278,16 @@ export default async function JudgePage() {
               </div>
               <div className="mt-4 grid gap-[10px] md:grid-cols-3">
                 {data.integrityStackCards.map((card) => (
-                  <div key={card.label} className="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3">
-                    <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">{card.label}</div>
-                    <div className={`mt-2 text-[18px] font-semibold ${toneClass(card.tone)}`}>{card.value}</div>
+                  <div
+                    key={card.label}
+                    className="relative overflow-hidden rounded-[12px] border border-[rgba(34,221,208,0.16)] bg-[linear-gradient(180deg,rgba(34,221,208,0.07),rgba(255,255,255,0.025))] px-4 py-4 shadow-[0_12px_34px_rgba(0,0,0,0.22)]"
+                  >
+                    <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,rgba(34,221,208,0.72),transparent)]" />
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="text-[13px] font-semibold leading-5 text-white">{card.label}</div>
+                      <span className="mt-1 h-2 w-2 rounded-full bg-[#22ddd0] shadow-[0_0_18px_rgba(34,221,208,0.72)]" />
+                    </div>
+                    <div className={`mt-3 text-[20px] font-semibold ${toneClass(card.tone)}`}>{card.value}</div>
                     <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">{card.helper}</div>
                   </div>
                 ))}
@@ -289,9 +296,9 @@ export default async function JudgePage() {
                 {integrityEvidenceArtifacts.map((artifact) => (
                   <div
                     key={artifact.label}
-                    className="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3"
+                    className="rounded-[12px] border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.035)] px-4 py-4"
                   >
-                    <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">
+                    <div className="text-[12px] font-semibold text-white">
                       {artifact.label}
                     </div>
                     <div className="mt-2 break-all text-[12px] leading-6 text-[#d8e1e8]">
@@ -317,7 +324,7 @@ export default async function JudgePage() {
               <div className="glass-inset rounded-[16px] px-4 py-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <div className="text-[12px] font-medium text-white">
+                    <div className="text-[15px] font-semibold text-white">
                       {data.reviewNetworkLabel} deployment artifacts
                     </div>
                     <div className="mt-1 text-[12px] text-[#9faab6]">
@@ -336,10 +343,11 @@ export default async function JudgePage() {
                   {data.deploymentArtifacts.map((artifact) => (
                     <div
                       key={artifact.label}
-                      className="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3"
+                      className="relative overflow-hidden rounded-[12px] border border-[rgba(34,221,208,0.14)] bg-[linear-gradient(180deg,rgba(255,255,255,0.055),rgba(255,255,255,0.025))] px-4 py-4 shadow-[0_12px_34px_rgba(0,0,0,0.2)]"
                     >
+                      <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,rgba(34,221,208,0.62),transparent)]" />
                       <div className="flex items-start justify-between gap-3">
-                        <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">
+                        <div className="text-[13px] font-semibold leading-5 text-white">
                           {artifact.label}
                         </div>
                         <span className={`rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] ${statusBadgeClass(artifact.status)}`}>
