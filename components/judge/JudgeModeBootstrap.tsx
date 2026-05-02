@@ -6,7 +6,6 @@ import {
   DEFAULT_WALLET_ADDRESS,
   JUDGE_MODE_COOKIE_KEY,
   JUDGE_MODE_STORAGE_KEY,
-  resolveWalletNetworkKey,
   WALLET_CHANGE_EVENT,
   WALLET_COOKIE_KEY,
   WALLET_NETWORK_COOKIE_KEY,
@@ -23,10 +22,7 @@ export default function JudgeModeBootstrap() {
   useEffect(() => {
     enterJudgeMode();
 
-    const savedNetworkValue = window.localStorage.getItem(WALLET_NETWORK_STORAGE_KEY) ?? undefined;
-    const preferredNetwork = savedNetworkValue
-      ? resolveWalletNetworkKey(savedNetworkValue)
-      : "mainnet";
+    const preferredNetwork = "mainnet";
 
     window.localStorage.setItem(JUDGE_MODE_STORAGE_KEY, "true");
     setCookie(JUDGE_MODE_COOKIE_KEY, "true");

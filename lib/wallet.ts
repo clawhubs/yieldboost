@@ -50,6 +50,7 @@ export interface Server0GNetworkConfig extends WalletNetworkConfig {
 const DEFAULT_TESTNET_STORAGE_URL =
   "https://indexer-storage-testnet-turbo.0g.ai";
 const DEFAULT_TESTNET_RPC_URL = "https://evmrpc-testnet.0g.ai";
+const DEFAULT_MAINNET_CHAIN_ID = 16661;
 const DEFAULT_MAINNET_RPC_URL = "https://evmrpc.0g.ai";
 const DEFAULT_MAINNET_STORAGE_URL = "https://indexer-storage-turbo.0g.ai";
 
@@ -137,7 +138,10 @@ function buildNetworkConfig(
 
 function getNetworkConfigs() {
   const testnetChainId = parseChainId(process.env.NEXT_PUBLIC_0G_TESTNET_CHAIN_ID, 16602);
-  const mainnetChainId = parseChainId(process.env.NEXT_PUBLIC_0G_MAINNET_CHAIN_ID);
+  const mainnetChainId = parseChainId(
+    process.env.NEXT_PUBLIC_0G_MAINNET_CHAIN_ID,
+    DEFAULT_MAINNET_CHAIN_ID,
+  );
 
   return {
     testnet: buildNetworkConfig("testnet", {

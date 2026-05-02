@@ -18,9 +18,9 @@ import {
 import { auditOptimizationDecision } from "@/lib/integrity-audit";
 import {
   getServer0GNetworkConfig,
+  getServerDefaultNetworkKey,
   resolveWalletNetworkKey,
   type WalletNetworkKey,
-  WALLET_NETWORK_COOKIE_KEY,
 } from "@/lib/wallet";
 import {
   getLatestStoredProofForWallet,
@@ -61,6 +61,10 @@ const portfolioSnapshotSchema = z
     displayLabel: z.string().optional(),
   })
   .optional();
+
+function resolveMainnetFirstNetwork(value: string | null | undefined): WalletNetworkKey {
+  return value ? resolveWalletNetworkKey(value) : getServerDefaultNetworkKey();
+}
 
 const proofRegistryAbi = [
   "event ProofRecorded(uint256 indexed proofId,address indexed owner,string cid,bytes32 indexed rootHash,bytes32 storageTxHash,uint256 currentApyBps,uint256 optimizedApyBps,uint64 timestamp)",
@@ -118,9 +122,7 @@ export async function POST(req: NextRequest) {
     payload.portfolioSnapshot,
   ) as StoredPortfolioSnapshot | undefined;
   const walletAddress = walletAddressSchema.safeParse(payload.walletAddress).data;
-  const networkKey = resolveWalletNetworkKey(
-    payload.networkKey ?? req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value,
-  );
+  const networkKey = resolveMainnetFirstNetwork(payload.networkKey);
   const config = getServer0GNetworkConfig(networkKey);
   const comparisonProof = walletAddress
     ? await getLatestStoredProofForWallet(walletAddress, networkKey)

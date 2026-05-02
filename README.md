@@ -110,16 +110,16 @@ The current public deployment is now **mainnet-default**.
 
 ### Latest Integrity Stack Evidence
 
-These testnet artifacts prove the newly added agent memory, blacklist, and stress-test layers are operational in the same codebase:
+These mainnet artifacts prove the newly added agent memory, blacklist, and stress-test layers are operational in the same codebase:
 
 | Artifact | CID / tx |
 | --- | --- |
-| Sovereign Memory CID | `0x78a694e360f797c21f7325d29967bb018fd295cfa0b6c8eefee85a76d0bf000c` |
-| Sovereign Memory tx | [`0x3c37924768ac24e99e0e3447c8ccae073802e8d6d9ee5bd95ff841ed714880f3`](https://chainscan-galileo.0g.ai/tx/0x3c37924768ac24e99e0e3447c8ccae073802e8d6d9ee5bd95ff841ed714880f3) |
-| Hallucination Blacklist CID | `0x09c1f8700849bc5e92e09469a6d24c110e5076cdaa1b3ecfc9017028581eacfd` |
-| Hallucination Blacklist tx | [`0xcb0d5cb2344a57b1e31d4ddbda1ebebb5dde6f53f68469a0846abbb2228551bd`](https://chainscan-galileo.0g.ai/tx/0xcb0d5cb2344a57b1e31d4ddbda1ebebb5dde6f53f68469a0846abbb2228551bd) |
-| Multiverse Stress Report CID | `0x685847e175588ec9551cb14ea139910f55b768c1ea752c0dfc92cc4b8f441b54` |
-| Multiverse Stress Report tx | [`0x16f91be8376560703bf492d1c253f6585e87b5c0e1df382f087be4de89ef79e4`](https://chainscan-galileo.0g.ai/tx/0x16f91be8376560703bf492d1c253f6585e87b5c0e1df382f087be4de89ef79e4) |
+| Sovereign Memory CID | `0x71bcddb1ba132b9c12b8a06d09b34ff1622bde7eaae6526dfba1cd4d699b7b5b` |
+| Sovereign Memory tx | [`0xa3a5f72d2ff4b6c451421a4e9ae215bf94f79d4cece599d19cbe9227abf0ca5e`](https://chainscan.0g.ai/tx/0xa3a5f72d2ff4b6c451421a4e9ae215bf94f79d4cece599d19cbe9227abf0ca5e) |
+| Hallucination Blacklist CID | `0xd660cdb9aec29214736fcb5763ba80fe6a5d2dcfd6cc35d68d7a178372b21625` |
+| Hallucination Blacklist tx | [`0x4eaee2337e0ffbec64b43e85c4619768071a0ff11c6a0b6c7a6c65a6a4521cb3`](https://chainscan.0g.ai/tx/0x4eaee2337e0ffbec64b43e85c4619768071a0ff11c6a0b6c7a6c65a6a4521cb3) |
+| Multiverse Stress Report CID | `0xf6fa5153b7df915b06b29e1e713a408ca1a79059a8538f22172bb1ded0f876b7` |
+| Multiverse Stress Report tx | [`0x2626de40d4640e99aef1c72fd7cd3b1eea0952036aefb96e863b25bf86b6f78f`](https://chainscan.0g.ai/tx/0x2626de40d4640e99aef1c72fd7cd3b1eea0952036aefb96e863b25bf86b6f78f) |
 
 What this means in practice:
 

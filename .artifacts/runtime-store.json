@@ -364,6 +364,23 @@
   ],
   "agentMemories": [
     {
+      "id": "0022fdef-b201-4d9b-9471-4ae697f0f84e",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "networkKey": "mainnet",
+      "cid": "0x71bcddb1ba132b9c12b8a06d09b34ff1622bde7eaae6526dfba1cd4d699b7b5b",
+      "txHash": "0xa3a5f72d2ff4b6c451421a4e9ae215bf94f79d4cece599d19cbe9227abf0ca5e",
+      "blockNumber": 32129893,
+      "explorerUrl": "https://chainscan.0g.ai/tx/0xa3a5f72d2ff4b6c451421a4e9ae215bf94f79d4cece599d19cbe9227abf0ca5e",
+      "memoryVersion": 1,
+      "snapshot": {
+        "contextSummary": "Mainnet sovereign memory proof for YieldBoost AI judge evidence.",
+        "recentTask": "Persist agent context to 0G Mainnet Storage"
+      },
+      "timestamp": "2026-05-02T20:10:44.655Z",
+      "storageMode": "0g"
+    },
+    {
       "id": "2ccb9acb-b5c9-4890-8168-161310db2ca9",
       "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
       "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
@@ -385,6 +402,27 @@
     }
   ],
   "blacklist": [
+    {
+      "id": "222ba1f2-44d1-4a40-b823-c9a8bfb8832c",
+      "networkKey": "mainnet",
+      "cid": "0xd660cdb9aec29214736fcb5763ba80fe6a5d2dcfd6cc35d68d7a178372b21625",
+      "txHash": "0x4eaee2337e0ffbec64b43e85c4619768071a0ff11c6a0b6c7a6c65a6a4521cb3",
+      "blockNumber": 32129907,
+      "explorerUrl": "https://chainscan.0g.ai/tx/0x4eaee2337e0ffbec64b43e85c4619768071a0ff11c6a0b6c7a6c65a6a4521cb3",
+      "fingerprint": "1437ad8b25049b98686b3e80ecf68bca6122e251fa814db0d5f0171e0742257c",
+      "invalidInput": "0g 7371.07 bonzo 3685.54 usdc 13513.64 usdc 0g bonzo emergency high apy vault 12.38 99 mainnet evidence entry deliberately invalid high apy route captured by deterministic auditor before inference reuse.",
+      "hallucinatedOutput": "Mainnet evidence entry: deliberately invalid high APY route captured by deterministic auditor before inference reuse.",
+      "auditorReasoning": [
+        "Optimized APY 99% exceeds the 75% deterministic guardrail.",
+        "APY lift 86.62 points is outside the deterministic guardrail.",
+        "Optimized APY is more than 4x the current APY baseline.",
+        "Reported APY lift 700% is above the 400% guardrail."
+      ],
+      "auditScore": 0,
+      "source": "integrity-auditor",
+      "timestamp": "2026-05-02T20:11:02.025Z",
+      "storageMode": "0g"
+    },
     {
       "id": "aa454b8b-b437-4772-9b1b-d89e24445a62",
       "networkKey": "testnet",
@@ -427,6 +465,74 @@
     }
   ],
   "stressReports": [
+    {
+      "id": "18a5276d-2321-41a0-9b52-2c8576b4ef44",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "networkKey": "mainnet",
+      "datasetCid": "mainnet-ohclv-0g-volatility-slice",
+      "reportCid": "0xf6fa5153b7df915b06b29e1e713a408ca1a79059a8538f22172bb1ded0f876b7",
+      "txHash": "0x2626de40d4640e99aef1c72fd7cd3b1eea0952036aefb96e863b25bf86b6f78f",
+      "blockNumber": 32129917,
+      "explorerUrl": "https://chainscan.0g.ai/tx/0x2626de40d4640e99aef1c72fd7cd3b1eea0952036aefb96e863b25bf86b6f78f",
+      "baselineApy": 12.38,
+      "verifiedApy": 23.84,
+      "simulatedProfit": 2815.75,
+      "maxDrawdown": 0.2653,
+      "decisions": [
+        {
+          "timestamp": "2026-04-24T00:00:00.000Z",
+          "marketClose": 1.04,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-25T00:00:00.000Z",
+          "marketClose": 1.1,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-26T00:00:00.000Z",
+          "marketClose": 0.91,
+          "standardAgentApy": 60,
+          "auditorApy": 23.84,
+          "auditorDecision": "REJECTED",
+          "reason": "Optimized APY is more than 4x the current APY baseline."
+        },
+        {
+          "timestamp": "2026-04-27T00:00:00.000Z",
+          "marketClose": 0.86,
+          "standardAgentApy": 61,
+          "auditorApy": 23.84,
+          "auditorDecision": "REJECTED",
+          "reason": "Optimized APY is more than 4x the current APY baseline."
+        },
+        {
+          "timestamp": "2026-04-28T00:00:00.000Z",
+          "marketClose": 0.92,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-29T00:00:00.000Z",
+          "marketClose": 1.01,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        }
+      ],
+      "verdict": "PASS",
+      "timestamp": "2026-05-02T20:11:12.029Z",
+      "storageMode": "0g"
+    },
     {
       "id": "97d47767-519a-43a7-8d5e-084589d9963e",
       "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",

@@ -22,16 +22,21 @@ import {
 import { findHallucinationBlacklistMatch } from "@/lib/server/hallucination-blacklist";
 import { compressOptimizationInput } from "@/lib/server/prompt-compression";
 import {
+  getServerDefaultNetworkKey,
   resolveWalletAddress,
   resolveWalletNetworkKey,
   WALLET_COOKIE_KEY,
-  WALLET_NETWORK_COOKIE_KEY,
+  type WalletNetworkKey,
 } from "@/lib/wallet";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
 const encoder = new TextEncoder();
+
+function resolveMainnetFirstNetwork(value: string | null | undefined): WalletNetworkKey {
+  return value ? resolveWalletNetworkKey(value) : getServerDefaultNetworkKey();
+}
 
 function createMockStream(text: string) {
   const parts = text.match(/.{1,18}/g) ?? [text];
@@ -110,9 +115,7 @@ export async function POST(req: NextRequest) {
 
   const portfolio = portfolioSchema.parse(body.portfolio);
   const prompt = body.prompt?.trim();
-  const networkKey = resolveWalletNetworkKey(
-    body.networkKey ?? req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value,
-  );
+  const networkKey = resolveMainnetFirstNetwork(body.networkKey);
   const walletAddress = resolveWalletAddress(
     req.cookies.get(WALLET_COOKIE_KEY)?.value,
   ) ?? undefined;

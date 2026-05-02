@@ -7,8 +7,10 @@ import {
 } from "@/lib/server/hallucination-blacklist";
 import { getBlacklistEntries } from "@/lib/server/runtime-store";
 import {
+  getServerDefaultNetworkKey,
   resolveWalletNetworkKey,
   WALLET_NETWORK_COOKIE_KEY,
+  type WalletNetworkKey,
 } from "@/lib/wallet";
 
 export const runtime = "nodejs";
@@ -51,8 +53,12 @@ const blacklistPostSchema = z.object({
   portfolioSnapshot: portfolioSnapshotSchema,
 });
 
+function resolveMainnetFirstNetwork(value: string | null | undefined): WalletNetworkKey {
+  return value ? resolveWalletNetworkKey(value) : getServerDefaultNetworkKey();
+}
+
 export async function GET(req: NextRequest) {
-  const networkKey = resolveWalletNetworkKey(
+  const networkKey = resolveMainnetFirstNetwork(
     req.nextUrl.searchParams.get("network") ??
       req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value,
   );
@@ -71,9 +77,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const body = blacklistPostSchema.parse(await req.json());
-  const networkKey = resolveWalletNetworkKey(
-    body.networkKey ?? req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value,
-  );
+  const networkKey = resolveMainnetFirstNetwork(body.networkKey);
 
   if (body.prompt || body.portfolio) {
     const match = await findHallucinationBlacklistMatch({

@@ -6,9 +6,11 @@ import {
 import { runMultiverseStressTest } from "@/lib/server/multiverse-stress-test";
 import {
   DEFAULT_WALLET_ADDRESS,
+  getServerDefaultNetworkKey,
   resolveWalletAddress,
   resolveWalletNetworkKey,
   WALLET_NETWORK_COOKIE_KEY,
+  type WalletNetworkKey,
 } from "@/lib/wallet";
 
 export const runtime = "nodejs";
@@ -33,8 +35,12 @@ const stressRunSchema = z.object({
   historicalSlice: z.array(historicalPointSchema).optional(),
 });
 
+function resolveMainnetFirstNetwork(value: string | null | undefined): WalletNetworkKey {
+  return value ? resolveWalletNetworkKey(value) : getServerDefaultNetworkKey();
+}
+
 export async function GET(req: NextRequest) {
-  const networkKey = resolveWalletNetworkKey(
+  const networkKey = resolveMainnetFirstNetwork(
     req.nextUrl.searchParams.get("network") ??
       req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value,
   );
@@ -56,9 +62,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const body = stressRunSchema.parse(await req.json());
-  const networkKey = resolveWalletNetworkKey(
-    body.networkKey ?? req.cookies.get(WALLET_NETWORK_COOKIE_KEY)?.value,
-  );
+  const networkKey = resolveMainnetFirstNetwork(body.networkKey);
   const walletAddress =
     resolveWalletAddress(body.walletAddress) ?? DEFAULT_WALLET_ADDRESS;
   const report = await runMultiverseStressTest({
