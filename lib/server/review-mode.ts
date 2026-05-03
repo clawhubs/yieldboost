@@ -32,7 +32,7 @@ import { auditOptimizationDecision } from "@/lib/integrity-audit";
 import {
   resolveLatestProofForWallet,
   resolveLatestProofForWalletAcrossNetworks,
-  resolveProofHistoryForWallet,
+  resolveProofCountForWallet,
 } from "@/lib/server/proof-resolution";
 import { getLivePortfolioSnapshot } from "@/lib/server/live-portfolio";
 import {
@@ -718,7 +718,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   const reviewNetworkConfig = getServer0GNetworkConfig(reviewNetwork);
   const [
     rawLatestProof,
-    scopedProofs,
+    proofCount,
     scopedMemory,
     fallbackMemory,
     blacklistEntries,
@@ -742,10 +742,10 @@ export async function getJudgePageData(): Promise<JudgePageData> {
       "latest proof resolution",
     ),
     withTimeout(
-      resolveProofHistoryForWallet(reviewWallet, reviewNetwork),
+      resolveProofCountForWallet(reviewWallet, reviewNetwork),
       3_000,
-      [],
-      "proof history resolution",
+      0,
+      "proof count resolution",
     ),
     getLatestAgentMemory(reviewWallet, reviewNetwork),
     getLatestAgentMemory(reviewWallet),
@@ -806,7 +806,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   const latestZkComplianceProof = scopedZkComplianceProof ?? fallbackZkComplianceProof ?? null;
   const latestGovernanceDecision = scopedGovernanceDecision ?? fallbackGovernanceDecision ?? null;
   const latestCrossAgentHandshake = scopedCrossAgentHandshake ?? fallbackCrossAgentHandshake ?? null;
-  const proofCount = scopedProofs.length;
+  const effectiveProofCount = Math.max(proofCount, latestProof ? 1 : 0);
   const proofNetwork = latestProof?.networkKey ?? reviewNetwork;
   const judgePortfolio = await withTimeout(
     getLivePortfolioSnapshot(
@@ -930,7 +930,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
       label: "Proof Store",
       value: runtimeStatus.runtimeStore,
       helper: latestProof
-        ? `${proofCount} recorded proof(s) available for this judge wallet`
+        ? `${effectiveProofCount} recorded proof(s) available for this judge wallet`
         : "No runtime proof recorded yet",
       tone: latestProof ? "green" : "amber",
     },
@@ -995,9 +995,9 @@ export async function getJudgePageData(): Promise<JudgePageData> {
         },
         {
           label: "Proof History",
-          value: `${proofCount} run${proofCount === 1 ? "" : "s"}`,
+          value: `${effectiveProofCount} run${effectiveProofCount === 1 ? "" : "s"}`,
           helper: `Latest proof recorded ${formatTime(latestProof.timestamp)}`,
-          tone: proofCount > 0 ? "green" : "amber",
+          tone: effectiveProofCount > 0 ? "green" : "amber",
         },
       ]
     : [
@@ -1257,6 +1257,6 @@ export async function getJudgePageData(): Promise<JudgePageData> {
       "Use `Exit judge mode` in the sidebar to return to the normal user wallet flow and run a fresh optimization.",
     ],
     blockers,
-    proofCount,
+    proofCount: effectiveProofCount,
   };
 }

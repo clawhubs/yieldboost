@@ -214,6 +214,8 @@ test("mainnet judge surfaces live integrity artifacts after recorded optimize fl
   await expect(page.getByText("Tee Envelope Recorded")).toBeVisible();
   await expect(page.getByText("Active").first()).toBeVisible();
   await expect(page.getByText("Completed").first()).toBeVisible();
+  await expect(page.getByText("Proof History")).toBeVisible();
+  await expect(page.getByText("8 runs")).toBeVisible();
 
   await expect(
     page.getByRole("link", { name: "Open memory tx on Chainscan" }),

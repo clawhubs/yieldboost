@@ -40,8 +40,10 @@ const liveProofHistoryCache = new Map<
   string,
   { fetchedAt: number; proofs: StoredProofRecord[] }
 >();
+const liveProofCountCache = new Map<string, { fetchedAt: number; count: number }>();
 const latestLiveProofPromiseCache = new Map<string, Promise<StoredProofRecord | null>>();
 const liveProofHistoryPromiseCache = new Map<string, Promise<StoredProofRecord[]>>();
+const liveProofCountPromiseCache = new Map<string, Promise<number>>();
 const storagePayloadCache = new Map<
   string,
   {
@@ -105,6 +107,13 @@ function getLiveProofHistoryCacheKey(
   networkKey: WalletNetworkKey,
 ) {
   return `history::${walletAddress.toLowerCase()}::${networkKey}`;
+}
+
+function getLiveProofCountCacheKey(
+  walletAddress: string,
+  networkKey: WalletNetworkKey,
+) {
+  return `count::${walletAddress.toLowerCase()}::${networkKey}`;
 }
 
 function sameProofIdentity(
@@ -176,6 +185,45 @@ function mergeProofRecords(
       storedProof.teeSignedTextMatches ?? liveProof.teeSignedTextMatches,
     llmProvider: storedProof.llmProvider ?? liveProof.llmProvider,
   } satisfies StoredProofRecord;
+}
+
+function getStoredProofIdentityMatches(
+  proof: StoredProofRecord,
+  registryAddress?: string,
+) {
+  const matches = new Set<string>();
+  if (proof.proofRegistryTxHash) {
+    matches.add(`registry-tx:${proof.proofRegistryTxHash.toLowerCase()}`);
+  }
+
+  if (proof.proofRegistryProofId) {
+    const proofRegistryAddress = (proof.proofRegistryAddress ?? registryAddress ?? "").toLowerCase();
+    if (proofRegistryAddress) {
+      matches.add(`registry-proof:${proofRegistryAddress}:${proof.proofRegistryProofId}`);
+    }
+  }
+
+  if (proof.txHash) {
+    matches.add(`storage-tx:${proof.txHash.toLowerCase()}`);
+  }
+
+  if (!proof.proofRegistryTxHash && !proof.proofRegistryProofId && !proof.txHash && proof.cid) {
+    matches.add(`cid:${proof.cid}`);
+  }
+
+  return matches;
+}
+
+function getLiveLogIdentityMatches(
+  log: EventLog,
+  registryAddress: string,
+) {
+  const matches = new Set<string>();
+  matches.add(`registry-tx:${log.transactionHash.toLowerCase()}`);
+  matches.add(`registry-proof:${registryAddress.toLowerCase()}:${log.args.proofId.toString()}`);
+  matches.add(`storage-tx:${String(log.args.storageTxHash).toLowerCase()}`);
+  matches.add(`cid:${String(log.args.cid)}`);
+  return matches;
 }
 
 function getStoragePayloadCacheKey(cid: string, networkKey: WalletNetworkKey) {
@@ -603,6 +651,69 @@ async function getLiveProofHistoryFromRegistry(
   return nextPromise;
 }
 
+async function getLiveProofCountFromRegistry(
+  walletAddress: string,
+  networkKey: WalletNetworkKey,
+  storedProofs: StoredProofRecord[],
+): Promise<number> {
+  const cacheKey = getLiveProofCountCacheKey(walletAddress, networkKey);
+  const cached = liveProofCountCache.get(cacheKey);
+  if (cached && Date.now() - cached.fetchedAt < LIVE_PROOF_CACHE_TTL_MS) {
+    return cached.count;
+  }
+
+  const inFlight = liveProofCountPromiseCache.get(cacheKey);
+  if (inFlight) {
+    return inFlight;
+  }
+
+  const config = getServer0GNetworkConfig(networkKey);
+  if (!config.rpcUrl || !config.proofRegistryAddress) {
+    return storedProofs.length;
+  }
+  const registryAddress = config.proofRegistryAddress;
+
+  const nextPromise = (async () => {
+    try {
+      const provider = new JsonRpcProvider(config.rpcUrl);
+      const contract = new Contract(registryAddress, proofRegistryAbi, provider);
+      const liveLogs = (await findRegistryProofLogs(
+        contract,
+        walletAddress,
+        networkKey,
+        Number.MAX_SAFE_INTEGER,
+      )).filter(isEventLog);
+
+      const liveIdentitySet = new Set<string>();
+      for (const log of liveLogs) {
+        for (const key of getLiveLogIdentityMatches(log, registryAddress)) {
+          liveIdentitySet.add(key);
+        }
+      }
+
+      let uniqueCount = liveLogs.length;
+      for (const storedProof of storedProofs) {
+        const matches = getStoredProofIdentityMatches(storedProof, registryAddress);
+        const duplicatesLiveProof = [...matches].some((key) => liveIdentitySet.has(key));
+        if (!duplicatesLiveProof) {
+          uniqueCount += 1;
+        }
+      }
+
+      liveProofCountCache.set(cacheKey, { fetchedAt: Date.now(), count: uniqueCount });
+      return uniqueCount;
+    } catch {
+      liveProofCountCache.set(cacheKey, { fetchedAt: Date.now(), count: storedProofs.length });
+      return storedProofs.length;
+    }
+  })().finally(() => {
+    liveProofCountPromiseCache.delete(cacheKey);
+  });
+
+  liveProofCountPromiseCache.set(cacheKey, nextPromise);
+  return nextPromise;
+}
+
 export async function resolveLatestProofForWallet(
   walletAddress: string,
   networkKey: WalletNetworkKey,
@@ -647,6 +758,18 @@ export async function resolveProofHistoryForWallet(
   return mergedProofs.sort(
     (left, right) => compareProofRecency(right, left),
   );
+}
+
+export async function resolveProofCountForWallet(
+  walletAddress: string,
+  networkKey: WalletNetworkKey,
+) {
+  const storedProofs = (await getStoredProofs()).filter((proof) =>
+    sameWalletAddress(proof.walletAddress, walletAddress) &&
+    proof.networkKey === networkKey,
+  );
+
+  return getLiveProofCountFromRegistry(walletAddress, networkKey, storedProofs);
 }
 
 export async function resolveLatestProofForWalletAcrossNetworks(
