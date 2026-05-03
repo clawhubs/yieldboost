@@ -1,12 +1,21 @@
 import Link from "next/link";
 import {
+  Activity,
   ArrowUpRight,
+  BadgeCheck,
   Bot,
   Boxes,
   CheckCircle2,
+  Database,
   ExternalLink,
+  FileText,
   GitBranch,
+  Hash,
+  Layers,
+  Network,
   ShieldCheck,
+  Sparkles,
+  Wallet,
 } from "lucide-react";
 import JudgeModeBootstrap from "@/components/judge/JudgeModeBootstrap";
 import JudgeNetworkSwitcher from "@/components/judge/JudgeNetworkSwitcher";
@@ -155,11 +164,28 @@ export default async function JudgePage() {
     },
   ];
 
+  const eyebrowClass =
+    "text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7e8d99]";
+  const cardTitleClass = "text-[15px] font-semibold leading-tight text-white";
+  const monoValueClass =
+    "font-mono break-all text-[12px] leading-6 text-[#d8e4ee]";
+  const linkPillClass =
+    "inline-flex items-center gap-1.5 rounded-full border border-[rgba(34,221,208,0.32)] bg-[rgba(34,221,208,0.10)] px-3 py-1.5 text-[11px] font-semibold text-[#9ff7f0] transition hover:border-[rgba(34,221,208,0.55)] hover:bg-[rgba(34,221,208,0.18)] hover:text-white";
+  const linkPillNeutralClass =
+    "inline-flex items-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.04)] px-3 py-1.5 text-[11px] font-semibold text-[#d8e1e8] transition hover:border-[rgba(255,255,255,0.24)] hover:text-white";
+  const sectionShellClass = "yb-card rounded-[20px] px-5 py-6";
+  const sectionHeaderRowClass = "flex flex-wrap items-start justify-between gap-3";
+  const sectionTitleClass =
+    "font-[family-name:var(--font-display)] text-[22px] font-semibold leading-tight text-white";
+  const sectionHelperClass = "mt-1 text-[13px] leading-6 text-[#9faab6]";
+  const subCardClass =
+    "rounded-[14px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.025)] px-4 py-4";
+
   return (
-    <section data-testid="judge-page" className="space-y-[10px] p-[10px]">
+    <section data-testid="judge-page" className="space-y-3 p-[10px] md:space-y-4">
       <JudgeModeBootstrap />
       <JudgeSnapshotAutoRefresh />
-      <header className="yb-card rounded-[18px] px-5 py-5">
+      <header className="yb-card rounded-[20px] px-5 py-6">
         <div className="mx-auto max-w-5xl">
           <div className="flex flex-col items-center text-center">
             <div className="glass-accent inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-[#22ddd0]">
@@ -255,407 +281,491 @@ export default async function JudgePage() {
         </div>
       </header>
 
-      <div className="space-y-[10px]">
-          <section className="yb-card rounded-[18px] px-5 py-5">
-            <div className="flex items-center gap-3">
+      <div className="space-y-3 md:space-y-4">
+        <details className="yb-card group rounded-[20px] px-5 py-5 [&_summary::-webkit-details-marker]:hidden">
+          <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
+                <CheckCircle2 className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className={sectionTitleClass}>How judges should review this submission</h2>
+                <p className={sectionHelperClass}>
+                  Keep the main screen short, expand only if you want the review path.
+                </p>
+              </div>
+            </div>
+            <span className="rounded-full border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.04)] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#d7e0e8] transition group-open:border-[rgba(34,221,208,0.32)] group-open:text-[#9ff7f0]">
+              <span className="group-open:hidden">Expand</span>
+              <span className="hidden group-open:inline">Collapse</span>
+            </span>
+          </summary>
+          <div className="mt-5 grid gap-3 md:grid-cols-2">
+            {quickReviewPoints.map((step) => (
+              <div
+                key={step}
+                className={`${subCardClass} flex items-start gap-3 text-[13px] leading-6 text-[#dce5ec]`}
+              >
+                <CheckCircle2 className="mt-0.5 h-4 w-4 flex-none text-[#2fe06d]" />
+                <span>{step}</span>
+              </div>
+            ))}
+          </div>
+        </details>
+
+        <section className={sectionShellClass}>
+          <div className={sectionHeaderRowClass}>
+            <div className="flex items-start gap-3">
               <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
                 <Bot className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="text-[22px] font-semibold text-white">Latest proof and wallet snapshot</h2>
-                <p className="mt-1 text-[13px] text-[#9faab6]">
+                <h2 className={sectionTitleClass}>Latest proof and wallet snapshot</h2>
+                <p className={sectionHelperClass}>
                   The current result for the active judge wallet, with proof and links kept visible in one place.
                 </p>
               </div>
             </div>
+            <span className="inline-flex items-center gap-2 rounded-full border border-[rgba(34,221,208,0.24)] bg-[rgba(34,221,208,0.08)] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#9ff7f0]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#22ddd0] shadow-[0_0_12px_rgba(34,221,208,0.7)]" />
+              Live snapshot
+            </span>
+          </div>
 
-            <div className="mt-4 grid gap-[10px] md:grid-cols-2 xl:grid-cols-4">
-              {data.latestProofCards.map((card) => (
-                <div key={card.label} className="glass-inset rounded-[14px] px-4 py-4">
-                  <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">
-                    {card.label}
-                  </div>
-                  <div className={`mt-2 text-[18px] font-semibold ${toneClass(card.tone)}`}>
-                    {card.value}
-                  </div>
-                  <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">
-                    {card.label === "Proof History" && data.latestProof?.timestamp ? (
-                      <BrowserTimeLabel
-                        value={data.latestProof.timestamp}
-                        prefix="Latest proof recorded"
-                      />
-                    ) : (
-                      card.helper
-                    )}
-                  </div>
+          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {data.latestProofCards.map((card) => (
+              <div
+                key={card.label}
+                className="relative overflow-hidden rounded-[16px] border border-[rgba(34,221,208,0.18)] bg-[linear-gradient(180deg,rgba(34,221,208,0.07)_0%,rgba(255,255,255,0.02)_100%)] px-4 py-5 shadow-[0_18px_44px_rgba(0,0,0,0.28)]"
+              >
+                <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,rgba(34,221,208,0.7),transparent)]" />
+                <div className={eyebrowClass}>{card.label}</div>
+                <div className={`mt-2 text-[22px] font-semibold leading-tight ${toneClass(card.tone)}`}>
+                  {card.value}
                 </div>
-              ))}
-            </div>
-
-            <div className="mt-5 glass-inset rounded-[16px] px-4 py-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <div className="text-[15px] font-semibold text-white">Integrity memory stack</div>
-                  <div className="mt-1 text-[12px] text-[#9faab6]">
-                    Backend-backed artifacts for memory persistence, blacklist defense, and historical validation.
-                  </div>
-                </div>
-                {data.latestStressReport?.explorerUrl ? (
-                  <a
-                    href={data.latestStressReport.explorerUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 rounded-full border border-[rgba(34,221,208,0.2)] px-3 py-2 text-[12px] font-medium text-[#22ddd0] transition hover:border-[rgba(34,221,208,0.36)] hover:text-white"
-                  >
-                    Verify report
-                    <ExternalLink className="h-3.5 w-3.5" />
-                  </a>
-                ) : null}
-              </div>
-              <div className="mt-4 grid gap-[10px] md:grid-cols-3">
-                {data.integrityStackCards.map((card) => (
-                  <div
-                    key={card.label}
-                    className="relative overflow-hidden rounded-[12px] border border-[rgba(34,221,208,0.16)] bg-[linear-gradient(180deg,rgba(34,221,208,0.07),rgba(255,255,255,0.025))] px-4 py-4 shadow-[0_12px_34px_rgba(0,0,0,0.22)]"
-                  >
-                    <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,rgba(34,221,208,0.72),transparent)]" />
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="text-[13px] font-semibold leading-5 text-white">{card.label}</div>
-                      <span className="mt-1 h-2 w-2 rounded-full bg-[#22ddd0] shadow-[0_0_18px_rgba(34,221,208,0.72)]" />
-                    </div>
-                    <div className={`mt-3 text-[20px] font-semibold ${toneClass(card.tone)}`}>{card.value}</div>
-                    <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">{card.helper}</div>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-4 grid gap-3 md:grid-cols-3">
-                {integrityEvidenceArtifacts.map((artifact) => (
-                  <div
-                    key={artifact.label}
-                    className="rounded-[12px] border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.035)] px-4 py-4"
-                  >
-                    <div className="text-[12px] font-semibold text-white">
-                      {artifact.label}
-                    </div>
-                    <div className="mt-2 break-all text-[12px] leading-6 text-[#d8e1e8]">
-                      {artifact.value ?? artifact.empty}
-                    </div>
-                    {artifact.href ? (
-                      <a
-                        href={artifact.href}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="mt-3 inline-flex items-center gap-2 rounded-full border border-[rgba(34,221,208,0.18)] px-3 py-2 text-[11px] font-medium text-[#22ddd0] transition hover:border-[rgba(34,221,208,0.36)] hover:text-white"
-                      >
-                        {artifact.linkLabel}
-                        <ExternalLink className="h-3.5 w-3.5" />
-                      </a>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-5 space-y-[10px]">
-              <div className="glass-inset rounded-[16px] px-4 py-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <div className="text-[15px] font-semibold text-white">
-                      {data.reviewNetworkLabel} deployment artifacts
-                    </div>
-                    <div className="mt-1 text-[12px] text-[#9faab6]">
-                      Contract and NFT artifacts scoped to the active judge review network.
-                    </div>
-                  </div>
-                  <Link
-                    href="/marketplace"
-                    className="inline-flex items-center gap-2 rounded-full border border-[rgba(34,221,208,0.2)] px-3 py-2 text-[12px] font-medium text-[#22ddd0] transition hover:border-[rgba(34,221,208,0.36)] hover:text-white"
-                  >
-                    Open marketplace
-                    <ArrowUpRight className="h-3.5 w-3.5" />
-                  </Link>
-                </div>
-                <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                  {data.deploymentArtifacts.map((artifact) => (
-                    <div
-                      key={artifact.label}
-                      className="relative overflow-hidden rounded-[12px] border border-[rgba(34,221,208,0.14)] bg-[linear-gradient(180deg,rgba(255,255,255,0.055),rgba(255,255,255,0.025))] px-4 py-4 shadow-[0_12px_34px_rgba(0,0,0,0.2)]"
-                    >
-                      <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,rgba(34,221,208,0.62),transparent)]" />
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="text-[13px] font-semibold leading-5 text-white">
-                          {artifact.label}
-                        </div>
-                        <span className={`rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] ${statusBadgeClass(artifact.status)}`}>
-                          {artifact.status}
-                        </span>
-                      </div>
-                      <div className="mt-2 break-all text-[14px] font-semibold text-white">
-                        {artifact.value}
-                      </div>
-                      <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">
-                        {artifact.helper}
-                      </div>
-                      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                        <span className="text-[11px] text-[#8ea1af]">{artifact.meta}</span>
-                        {artifact.href ? (
-                          <a
-                            href={artifact.href}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#22ddd0]"
-                          >
-                            Open ChainScan
-                            <ExternalLink className="h-3.5 w-3.5" />
-                          </a>
-                        ) : null}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="glass-inset rounded-[16px] px-4 py-4">
-                <div className="flex items-center gap-3">
-                  <div className="glass-accent flex h-10 w-10 items-center justify-center rounded-[13px] text-[#22ddd0]">
-                    <Boxes className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <div className="text-[14px] font-semibold text-white">0G components in use</div>
-                    <div className="mt-1 text-[12px] text-[#9faab6]">
-                      Core 0G links kept close to the deployment artifacts for faster audit.
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-4 grid gap-[10px] md:grid-cols-3">
-                  {primaryComponents.map((component) => (
-                    <div key={component.title} className="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="text-[14px] font-semibold text-white">{component.title}</div>
-                        <span
-                          className={`rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] ${statusBadgeClass(component.status)}`}
-                        >
-                          {component.status}
-                        </span>
-                      </div>
-                      <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">{component.detail}</div>
-                      {component.address ? (
-                        <div className="mt-2 break-all text-[12px] text-[#d8e1e8]">
-                          {component.address}
-                        </div>
-                      ) : null}
-                      {component.meta ? (
-                        <div className="mt-2 text-[11px] text-[#9faab6]">{component.meta}</div>
-                      ) : null}
-                      {component.href ? (
-                        <a
-                          href={component.href}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="mt-3 inline-flex items-center gap-2 text-[12px] font-medium text-[#22ddd0]"
-                        >
-                          Open reference
-                          <ArrowUpRight className="h-3.5 w-3.5" />
-                        </a>
-                      ) : null}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="glass-inset rounded-[16px] px-4 py-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="text-[12px] font-medium text-white">Verification payload</div>
-                  {integrityAudit ? (
-                    <div
-                      data-testid="judge-integrity-auditor"
-                      className={`inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-[10px] font-semibold ${
-                        integrityApproved
-                          ? "border-[rgba(47,224,109,0.24)] bg-[rgba(47,224,109,0.08)] text-[#68ff7a]"
-                          : "border-[rgba(255,105,105,0.28)] bg-[rgba(255,105,105,0.06)] text-[#ff9a9a]"
-                      }`}
-                    >
-                      Integrity Auditor: {integrityApproved ? "Approved" : "Rejected"}
-                      <span className="font-medium text-[#d7e0e8]">
-                        {integrityApproved ? "Logic Guardrail passed" : "Proof write blocked"}
-                      </span>
-                    </div>
-                  ) : null}
-                </div>
-                <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                  <div className="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3">
-                    <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Storage CID</div>
-                    <div className="mt-2 break-all text-[13px] leading-6 text-[#d8e1e8]">
-                      {data.latestProof?.cid ?? "No proof recorded yet"}
-                    </div>
-                  </div>
-                  <div className="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3">
-                    <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">ProofRegistry contract</div>
-                    <div className="mt-2 break-all text-[13px] leading-6 text-[#d8e1e8]">{proofRegistryValue}</div>
-                  </div>
-                  <div className="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3">
-                    <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Explorer</div>
-                    {latestExplorerUrl ? (
-                      <a
-                        href={latestExplorerUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="mt-2 inline-flex items-center gap-2 text-[13px] text-[#22ddd0]"
-                      >
-                        {latestExplorerLabel}
-                        <ExternalLink className="h-3.5 w-3.5" />
-                      </a>
-                    ) : (
-                      <div className="mt-2 text-[13px] leading-6 text-[#d6dee6]">No explorer URL yet</div>
-                    )}
-                  </div>
-                  <div className="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3">
-                    <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">ProofRegistry tx</div>
-                    {data.latestProof?.proofRegistryExplorerUrl ? (
-                      <a
-                        href={data.latestProof.proofRegistryExplorerUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="mt-2 inline-flex items-center gap-2 text-[13px] text-[#22ddd0]"
-                      >
-                        Open anchor tx
-                        <ExternalLink className="h-3.5 w-3.5" />
-                      </a>
-                    ) : (
-                      <div className="mt-2 text-[13px] leading-6 text-[#d6dee6]">No registry tx yet</div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid gap-[10px] xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-                <div className="glass-inset rounded-[16px] px-4 py-4">
-                  <div className="text-[12px] font-medium text-white">Reasoning snapshot</div>
-                  <div className="mt-3 text-[13px] leading-7 text-[#d6dee6]">
-                    {data.latestProof?.decision.reasoning ?? "No stored reasoning available yet."}
-                  </div>
-                </div>
-
-                <div className="glass-inset rounded-[16px] px-4 py-4">
-                  <div className="text-[12px] font-medium text-white">Runtime efficiency</div>
-                  <div className="mt-3 grid gap-3">
-                    {data.efficiencyCards.map((card) => (
-                      <div key={card.label} className="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3">
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">{card.label}</div>
-                          <div className={`text-[12px] font-semibold ${toneClass(card.tone)}`}>{card.value}</div>
-                        </div>
-                        <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">{card.helper}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid gap-[10px] md:grid-cols-2 xl:grid-cols-4">
-                <div className="yb-soft-card rounded-[16px] px-4 py-4">
-                  <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Judge wallet</div>
-                  <div className="mt-2 break-all text-[14px] font-semibold text-white">
-                    {reviewWalletCard?.value ?? "Pending wallet"}
-                  </div>
-                  <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">
-                    {reviewWalletCard?.helper ?? "Judge mode follows the wallet active in this browser session."}
-                  </div>
-                </div>
-
-                <div className="glass-inset rounded-[16px] px-4 py-4">
-                  <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Proof store</div>
-                  <div className={`mt-2 text-[14px] font-semibold ${toneClass(proofStoreCard?.tone)}`}>
-                    {proofStoreValue}
-                  </div>
-                  <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">{proofStoreCard?.helper}</div>
-                </div>
-
-                <div className="glass-inset rounded-[16px] px-4 py-4">
-                  <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">Pinned wallet</div>
-                  <div className="mt-2 break-all text-[13px] text-white">
-                    Judge wallet: {reviewWalletCard?.value ?? "Pending wallet"}
-                  </div>
-                  <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">
+                <div className="mt-3 text-[12px] leading-6 text-[#cdd7e0]">
+                  {card.label === "Proof History" && data.latestProof?.timestamp ? (
                     <BrowserTimeLabel
-                      value={data.latestProof?.timestamp}
+                      value={data.latestProof.timestamp}
                       prefix="Latest proof recorded"
-                      emptyLabel={latestProofHistoryCard?.helper ?? "No proof timestamp recorded yet."}
                     />
-                  </div>
+                  ) : (
+                    card.helper
+                  )}
                 </div>
-
-                {inftComponent?.address ? (
-                  <div className="glass-inset rounded-[16px] px-4 py-4">
-                    <div className="text-[11px] uppercase tracking-[0.08em] text-[#9faab6]">INFT contract</div>
-                    <div className="mt-2 break-all text-[13px] text-white">
-                      {inftComponent.address}
-                    </div>
-                    <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">
-                      {data.reviewNetworkLabel} Agent NFT contract address used by the app.
-                    </div>
-                  </div>
-                ) : null}
               </div>
-            </div>
+            ))}
+          </div>
+        </section>
 
-            <details className="mt-4 rounded-[14px] border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.02)] px-4 py-4 [&_summary::-webkit-details-marker]:hidden">
-              <summary className="flex cursor-pointer items-center justify-between gap-3">
-                <div>
-                  <div className="text-[14px] font-semibold text-white">How judges should review this submission</div>
-                  <div className="mt-1 text-[12px] text-[#9faab6]">Keep the main screen short, then expand this only if you want the review path.</div>
-                </div>
-                <span className="rounded-full border border-[rgba(255,255,255,0.08)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#d7e0e8]">
-                  Expand
-                </span>
-              </summary>
-              <div className="mt-4 space-y-3">
-                {quickReviewPoints.map((step) => (
-                  <div key={step} className="flex items-start gap-3 text-[13px] leading-6 text-[#d8e1e8]">
-                    <CheckCircle2 className="mt-1 h-4 w-4 flex-none text-[#2fe06d]" />
-                    <span>{step}</span>
-                  </div>
-                ))}
-              </div>
-            </details>
-          </section>
-
-          <section className="yb-card rounded-[18px] px-5 py-5">
-            <div className="flex items-center gap-3">
+        <section className={sectionShellClass}>
+          <div className={sectionHeaderRowClass}>
+            <div className="flex items-start gap-3">
               <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
-                <ShieldCheck className="h-5 w-5" />
+                <Sparkles className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="text-[22px] font-semibold text-white">Data safety</h2>
-                <p className="mt-1 text-[13px] text-[#9faab6]">
-                  Kept short on purpose for judges, with deeper notes available in the docs center.
+                <h2 className={sectionTitleClass}>Integrity memory stack</h2>
+                <p className={sectionHelperClass}>
+                  Backend-backed artifacts for memory persistence, blacklist defense, and historical validation.
                 </p>
               </div>
             </div>
+            {data.latestStressReport?.explorerUrl ? (
+              <a
+                href={data.latestStressReport.explorerUrl}
+                target="_blank"
+                rel="noreferrer"
+                className={linkPillClass}
+              >
+                Verify report
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            ) : null}
+          </div>
 
-            <div className="mt-4 grid gap-[10px] md:grid-cols-3">
-              {[
-                {
-                  title: "What is not stored",
-                  body: "The proof flow does not store private keys, seed phrases, or wallet secrets in 0G Storage or the runtime proof ledger.",
-                },
-                {
-                  title: "What is stored",
-                  body: "The app stores optimization output, timestamps, wallet-scoped proof metadata, and the snapshot fields needed to audit the recorded result.",
-                },
-                {
-                  title: "Judge-friendly truth",
-                  body: "This page keeps the security story concise. Open `/docs/wallet-and-security` for the fuller explanation of current boundaries and limitations.",
-                },
-              ].map((item) => (
-                <div key={item.title} className="glass-inset rounded-[16px] px-4 py-4">
-                  <div className="text-[14px] font-semibold text-white">{item.title}</div>
-                  <div className="mt-2 text-[12px] leading-6 text-[#d6dee6]">{item.body}</div>
+          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {data.integrityStackCards.map((card) => (
+              <div
+                key={card.label}
+                className="relative overflow-hidden rounded-[14px] border border-[rgba(34,221,208,0.16)] bg-[linear-gradient(180deg,rgba(34,221,208,0.07),rgba(255,255,255,0.02))] px-4 py-4 shadow-[0_12px_30px_rgba(0,0,0,0.22)]"
+              >
+                <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,rgba(34,221,208,0.7),transparent)]" />
+                <div className="flex items-start justify-between gap-2">
+                  <div className={cardTitleClass}>{card.label}</div>
+                  <span className="mt-1 h-2 w-2 rounded-full bg-[#22ddd0] shadow-[0_0_18px_rgba(34,221,208,0.72)]" />
+                </div>
+                <div className={`mt-3 text-[20px] font-semibold leading-tight ${toneClass(card.tone)}`}>
+                  {card.value}
+                </div>
+                <div className="mt-2 text-[12px] leading-6 text-[#cdd7e0]">{card.helper}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-5 rounded-[16px] border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] px-4 py-4">
+            <div className="flex items-center gap-2 text-[#9ff7f0]">
+              <Hash className="h-4 w-4" />
+              <span className={eyebrowClass}>Evidence anchors</span>
+            </div>
+            <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {integrityEvidenceArtifacts.map((artifact) => (
+                <div key={artifact.label} className={subCardClass}>
+                  <div className={eyebrowClass}>{artifact.label}</div>
+                  <div className={`mt-2 ${monoValueClass}`}>
+                    {artifact.value ?? (
+                      <span className="font-sans text-[#7a8693]">{artifact.empty}</span>
+                    )}
+                  </div>
+                  {artifact.href ? (
+                    <a
+                      href={artifact.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={`mt-3 ${linkPillClass}`}
+                    >
+                      {artifact.linkLabel}
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className={sectionShellClass}>
+          <div className={sectionHeaderRowClass}>
+            <div className="flex items-start gap-3">
+              <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
+                <Database className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className={sectionTitleClass}>Verification payload</h2>
+                <p className={sectionHelperClass}>
+                  Storage CID, registry contract, and explorer links to verify the latest proof externally.
+                </p>
+              </div>
+            </div>
+            {integrityAudit ? (
+              <div
+                data-testid="judge-integrity-auditor"
+                className={`inline-flex flex-wrap items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-semibold ${
+                  integrityApproved
+                    ? "border-[rgba(47,224,109,0.28)] bg-[rgba(47,224,109,0.08)] text-[#68ff7a]"
+                    : "border-[rgba(255,105,105,0.32)] bg-[rgba(255,105,105,0.06)] text-[#ff9a9a]"
+                }`}
+              >
+                <BadgeCheck className="h-4 w-4" />
+                Integrity Auditor: {integrityApproved ? "Approved" : "Rejected"}
+                <span className="font-medium text-[#d7e0e8]">
+                  {integrityApproved ? "Logic Guardrail passed" : "Proof write blocked"}
+                </span>
+              </div>
+            ) : null}
+          </div>
+
+          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div className={subCardClass}>
+              <div className="flex items-center gap-2">
+                <Hash className="h-3.5 w-3.5 text-[#9ff7f0]" />
+                <div className={eyebrowClass}>Storage CID</div>
+              </div>
+              <div className={`mt-2 ${monoValueClass}`}>
+                {data.latestProof?.cid ?? (
+                  <span className="font-sans text-[#7a8693]">No proof recorded yet</span>
+                )}
+              </div>
+            </div>
+            <div className={subCardClass}>
+              <div className="flex items-center gap-2">
+                <FileText className="h-3.5 w-3.5 text-[#9ff7f0]" />
+                <div className={eyebrowClass}>ProofRegistry contract</div>
+              </div>
+              <div className={`mt-2 ${monoValueClass}`}>{proofRegistryValue}</div>
+            </div>
+            <div className={subCardClass}>
+              <div className="flex items-center gap-2">
+                <ExternalLink className="h-3.5 w-3.5 text-[#9ff7f0]" />
+                <div className={eyebrowClass}>Explorer</div>
+              </div>
+              {latestExplorerUrl ? (
+                <a
+                  href={latestExplorerUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={`mt-3 ${linkPillClass}`}
+                >
+                  {latestExplorerLabel}
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              ) : (
+                <div className="mt-2 text-[12px] leading-6 text-[#7a8693]">No explorer URL yet</div>
+              )}
+            </div>
+            <div className={subCardClass}>
+              <div className="flex items-center gap-2">
+                <BadgeCheck className="h-3.5 w-3.5 text-[#9ff7f0]" />
+                <div className={eyebrowClass}>ProofRegistry tx</div>
+              </div>
+              {data.latestProof?.proofRegistryExplorerUrl ? (
+                <a
+                  href={data.latestProof.proofRegistryExplorerUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={`mt-3 ${linkPillClass}`}
+                >
+                  Open anchor tx
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              ) : (
+                <div className="mt-2 text-[12px] leading-6 text-[#7a8693]">No registry tx yet</div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <section className={sectionShellClass}>
+          <div className="flex items-start gap-3">
+            <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
+              <Wallet className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className={sectionTitleClass}>Wallet and proof store</h2>
+              <p className={sectionHelperClass}>
+                Pinned judge wallet, recorded proof store, and the active Agent NFT contract.
+              </p>
+            </div>
+          </div>
+          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div className={subCardClass}>
+              <div className={eyebrowClass}>Judge wallet</div>
+              <div className={`mt-2 ${monoValueClass} text-[13px] text-white`}>
+                {reviewWalletCard?.value ?? "Pending wallet"}
+              </div>
+              <div className="mt-2 text-[12px] leading-6 text-[#cdd7e0]">
+                {reviewWalletCard?.helper ?? "Judge mode follows the wallet active in this browser session."}
+              </div>
+            </div>
+            <div className={subCardClass}>
+              <div className={eyebrowClass}>Proof store</div>
+              <div className={`mt-2 text-[14px] font-semibold ${toneClass(proofStoreCard?.tone)}`}>
+                {proofStoreValue}
+              </div>
+              <div className="mt-2 text-[12px] leading-6 text-[#cdd7e0]">{proofStoreCard?.helper}</div>
+            </div>
+            <div className={subCardClass}>
+              <div className={eyebrowClass}>Pinned wallet</div>
+              <div className={`mt-2 ${monoValueClass} text-[13px] text-white`}>
+                Judge wallet: {reviewWalletCard?.value ?? "Pending wallet"}
+              </div>
+              <div className="mt-2 text-[12px] leading-6 text-[#cdd7e0]">
+                <BrowserTimeLabel
+                  value={data.latestProof?.timestamp}
+                  prefix="Latest proof recorded"
+                  emptyLabel={latestProofHistoryCard?.helper ?? "No proof timestamp recorded yet."}
+                />
+              </div>
+            </div>
+            {inftComponent?.address ? (
+              <div className={subCardClass}>
+                <div className={eyebrowClass}>INFT contract</div>
+                <div className={`mt-2 ${monoValueClass} text-[13px] text-white`}>
+                  {inftComponent.address}
+                </div>
+                <div className="mt-2 text-[12px] leading-6 text-[#cdd7e0]">
+                  {data.reviewNetworkLabel} Agent NFT contract address used by the app.
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </section>
+
+        <section className={sectionShellClass}>
+          <div className={sectionHeaderRowClass}>
+            <div className="flex items-start gap-3">
+              <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
+                <Layers className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className={sectionTitleClass}>{data.reviewNetworkLabel} deployment artifacts</h2>
+                <p className={sectionHelperClass}>
+                  Contract and NFT artifacts scoped to the active judge review network.
+                </p>
+              </div>
+            </div>
+            <Link href="/marketplace" className={linkPillNeutralClass}>
+              Open marketplace
+              <ArrowUpRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+
+          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {data.deploymentArtifacts.map((artifact) => (
+              <div
+                key={artifact.label}
+                className="relative overflow-hidden rounded-[14px] border border-[rgba(255,255,255,0.08)] bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))] px-4 py-4 shadow-[0_12px_30px_rgba(0,0,0,0.22)]"
+              >
+                <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,rgba(34,221,208,0.6),transparent)]" />
+                <div className="flex items-start justify-between gap-2">
+                  <div className={eyebrowClass}>{artifact.label}</div>
+                  <span
+                    className={`rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] ${statusBadgeClass(artifact.status)}`}
+                  >
+                    {artifact.status}
+                  </span>
+                </div>
+                <div className={`mt-2 ${monoValueClass} text-[14px] font-semibold text-white`}>
+                  {artifact.value}
+                </div>
+                <div className="mt-2 text-[12px] leading-6 text-[#cdd7e0]">{artifact.helper}</div>
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-[rgba(255,255,255,0.05)] pt-3">
+                  <span className="text-[11px] text-[#8ea1af]">{artifact.meta}</span>
+                  {artifact.href ? (
+                    <a
+                      href={artifact.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={linkPillClass}
+                    >
+                      Open ChainScan
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  ) : null}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className={sectionShellClass}>
+          <div className="flex items-start gap-3">
+            <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
+              <Network className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className={sectionTitleClass}>0G components in use</h2>
+              <p className={sectionHelperClass}>
+                Core 0G primitives wired into the optimizer flow, kept close for faster audit.
+              </p>
+            </div>
+          </div>
+          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {primaryComponents.map((component) => (
+              <div key={component.title} className={subCardClass}>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Boxes className="h-4 w-4 text-[#9ff7f0]" />
+                    <div className={cardTitleClass}>{component.title}</div>
+                  </div>
+                  <span
+                    className={`rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] ${statusBadgeClass(component.status)}`}
+                  >
+                    {component.status}
+                  </span>
+                </div>
+                <div className="mt-3 text-[12px] leading-6 text-[#cdd7e0]">{component.detail}</div>
+                {component.address ? (
+                  <div className={`mt-3 ${monoValueClass}`}>{component.address}</div>
+                ) : null}
+                {component.meta ? (
+                  <div className="mt-2 text-[11px] text-[#8ea1af]">{component.meta}</div>
+                ) : null}
+                {component.href ? (
+                  <a
+                    href={component.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={`mt-3 ${linkPillClass}`}
+                  >
+                    Open reference
+                    <ArrowUpRight className="h-3.5 w-3.5" />
+                  </a>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <div className="grid gap-3 md:gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,0.75fr)]">
+          <section className={sectionShellClass}>
+            <div className="flex items-start gap-3">
+              <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
+                <FileText className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className={sectionTitleClass}>Reasoning snapshot</h2>
+                <p className={sectionHelperClass}>
+                  The decision narrative tied to the latest stored proof.
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 rounded-[14px] border-l-2 border-[rgba(34,221,208,0.55)] bg-[rgba(34,221,208,0.04)] px-4 py-4 text-[14px] leading-7 text-[#e2ecf3]">
+              {data.latestProof?.decision.reasoning ?? "No stored reasoning available yet."}
+            </div>
+          </section>
+
+          <section className={sectionShellClass}>
+            <div className="flex items-start gap-3">
+              <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
+                <Activity className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className={sectionTitleClass}>Runtime efficiency</h2>
+                <p className={sectionHelperClass}>
+                  Caching, embedding, and prompt-compression status for the optimizer.
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 space-y-3">
+              {data.efficiencyCards.map((card) => (
+                <div key={card.label} className={subCardClass}>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className={eyebrowClass}>{card.label}</div>
+                    <span className={`text-[12px] font-semibold ${toneClass(card.tone)}`}>{card.value}</span>
+                  </div>
+                  <div className="mt-2 text-[12px] leading-6 text-[#cdd7e0]">{card.helper}</div>
                 </div>
               ))}
             </div>
           </section>
+        </div>
+
+        <section className={sectionShellClass}>
+          <div className="flex items-start gap-3">
+            <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className={sectionTitleClass}>Data safety</h2>
+              <p className={sectionHelperClass}>
+                Kept short on purpose for judges, with deeper notes available in the docs center.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-3 md:grid-cols-3">
+            {[
+              {
+                title: "What is not stored",
+                body: "The proof flow does not store private keys, seed phrases, or wallet secrets in 0G Storage or the runtime proof ledger.",
+              },
+              {
+                title: "What is stored",
+                body: "The app stores optimization output, timestamps, wallet-scoped proof metadata, and the snapshot fields needed to audit the recorded result.",
+              },
+              {
+                title: "Judge-friendly truth",
+                body: "This page keeps the security story concise. Open `/docs/wallet-and-security` for the fuller explanation of current boundaries and limitations.",
+              },
+            ].map((item) => (
+              <div key={item.title} className={subCardClass}>
+                <div className={cardTitleClass}>{item.title}</div>
+                <div className="mt-2 text-[13px] leading-6 text-[#cdd7e0]">{item.body}</div>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
     </section>
   );
