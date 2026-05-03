@@ -41,8 +41,9 @@
         background: var(--bg);
         color: var(--text);
         font-family:
+          "Space Grotesk",
           "Plus Jakarta Sans",
-          "Inter",
+          "Satoshi",
           "Segoe UI",
           system-ui,
           sans-serif;
@@ -497,6 +498,31 @@
         line-height: 1.45;
       }
 
+      .callout {
+        margin-top: 22px;
+        padding: 18px 20px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        background:
+          linear-gradient(135deg, rgba(34, 211, 238, 0.14), rgba(49, 245, 200, 0.05)),
+          rgba(4, 14, 20, 0.88);
+      }
+
+      .callout strong {
+        display: block;
+        color: #fff;
+        font-size: 18px;
+        line-height: 1.25;
+      }
+
+      .callout span {
+        display: block;
+        margin-top: 8px;
+        color: #cfe3e8;
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
       .chip-row {
         display: flex;
         flex-wrap: wrap;
@@ -830,20 +856,18 @@
           <img class="banner" src="./yieldboost-pitchdeck-assets/banner-lite.jpg" alt="YieldBoost AI banner" />
           <div class="shade"></div>
           <div class="inner">
-            <div class="kicker"><span class="dot"></span>0G Labs Global Hackathon</div>
-            <h1>Verifiable yield optimization for the AI-native Web3.</h1>
+            <div class="kicker"><span class="dot"></span>0G mainnet live product</div>
+            <h1>Verifiable yield optimization for AI-native finance.</h1>
             <p class="lead">
-              Mainnet-first optimizer, anti-hallucination guardrails, 0G proof trail, Sovereign Memory, Hallucination Blacklist, Multiverse Stress Test, Zero-Knowledge Reasoning, programmable AI governance, cross-agent neural handshake, frictionless judge review, and Strategy Agent NFT adoption.
+              YieldBoost AI turns an AI yield recommendation into a reviewable asset: wallet-scoped reasoning, integrity guardrails, 0G Storage, ProofRegistry anchoring, Strategy Agent NFTs, and a judge-ready evidence trail investors can inspect without rerunning the product.
             </p>
             <div class="hero-row">
               <div class="pill-row">
-                <span class="pill">0G Mainnet default</span>
-                <span class="pill">0G Storage + ProofRegistry</span>
-                <span class="pill">Sovereign Memory</span>
-                <span class="pill">Blacklist + Stress Test</span>
-                <span class="pill">ZKR + Governance</span>
-                <span class="pill">Neural Handshake + Compliance</span>
-                <span class="pill">Agent NFT + Marketplace</span>
+                <span class="pill">0G Mainnet proof trail</span>
+                <span class="pill">Audit-first AI decisions</span>
+                <span class="pill">Integrity memory stack</span>
+                <span class="pill">Agent NFT marketplace</span>
+                <span class="pill">VC-ready verification surface</span>
               </div>
               <p class="mini">Live app: yieldboost-ai.vercel.app/judge</p>
             </div>
@@ -856,25 +880,25 @@
         <article class="sheet">
           <div class="inner">
             <div class="kicker"><span class="dot"></span>The DeFi AI trust gap</div>
-            <h2>AI yield advice is easy to generate. It is hard to verify.</h2>
+            <h2>AI yield advice is abundant. Verifiable AI yield execution is scarce.</h2>
             <div class="grid three" style="margin-top: 34px">
               <div class="card">
-                <strong>AI can hallucinate</strong>
-                <span>Finance agents need guardrails before an output is treated as a trusted strategy.</span>
+                <strong>Trust bottleneck</strong>
+                <span>Funds, protocols, and users cannot scale black-box recommendations without proof of input facts, reasoning, and guardrail checks.</span>
               </div>
               <div class="card">
-                <strong>Opaque recommendations</strong>
-                <span>Most dashboards show a route, but not the wallet snapshot, proof trail, and validation context behind it.</span>
+                <strong>Idle capital leak</strong>
+                <span>Wallet balances sit underused because moving capital manually across fragmented DeFi opportunities is slow and risky.</span>
               </div>
               <div class="card">
-                <strong>Temporary strategy state</strong>
-                <span>A completed strategy should become a portable on-chain artifact, not disappear as a UI-only result.</span>
+                <strong>No durable strategy asset</strong>
+                <span>Most AI strategy outputs disappear as UI state instead of becoming reusable, ownable, and externally auditable artifacts.</span>
               </div>
             </div>
             <div class="split">
               <div>
                 <p class="lead">
-                  YieldBoost AI turns an optimization into a visible chain of custody: compressed input, runtime guardrail, 0G Storage, ProofRegistry anchor, Agent NFT, and marketplace adoption.
+                  The wedge is not "another yield dashboard." It is a trust layer for AI-generated financial decisions: propose, audit, store, anchor, own, and adopt.
                 </p>
               </div>
               <div class="chart">
@@ -892,41 +916,41 @@
       <section class="slide">
         <article class="sheet">
           <div class="inner">
-            <div class="kicker"><span class="dot"></span>Product loop</div>
-            <h2>One click produces a strategy, a proof, and a review surface.</h2>
+            <div class="kicker"><span class="dot"></span>Product wedge</div>
+            <h2>One click turns idle wallet context into a proof-backed strategy.</h2>
             <div class="flow">
               <div class="node" data-step="1">
-                <strong>Connect wallet</strong>
-                <span class="mini">User enters the normal dashboard flow with an active wallet context.</span>
+                <strong>Read wallet</strong>
+                <span class="mini">Capture the active portfolio facts and current yield baseline.</span>
               </div>
               <div class="node" data-step="2">
-                <strong>Optimize route</strong>
-                <span class="mini">Portfolio snapshot is compressed and routed through cache, embeddings, compute, and auditor checks.</span>
+                <strong>Generate route</strong>
+                <span class="mini">Compression, cache, embeddings, compute, and auditor checks produce a decision.</span>
               </div>
               <div class="node" data-step="3">
-                <strong>Anchor proof</strong>
-                <span class="mini">Result is stored through 0G Storage and anchored through ProofRegistry.</span>
+                <strong>Anchor evidence</strong>
+                <span class="mini">Decision payload is stored through 0G and anchored in ProofRegistry.</span>
               </div>
               <div class="node" data-step="4">
-                <strong>Review or mint</strong>
-                <span class="mini">Judge Mode audits the proof. User can mint and list a Strategy Agent NFT.</span>
+                <strong>Own or adopt</strong>
+                <span class="mini">Users mint Strategy Agent NFTs; reviewers inspect Judge Mode evidence.</span>
               </div>
             </div>
             <div class="grid four" style="margin-top: 28px">
               <div class="card metric">
-                <span class="mini">Projected APY</span>
-                <span class="value">16.48%</span>
-                <span>latest proof snapshot</span>
+                <span class="mini">Latest APY lift</span>
+                <span class="value" style="font-size: 26px">12.38 -> 16.48%</span>
+                <span>proof-backed snapshot</span>
               </div>
               <div class="card metric">
-                <span class="mini">Confidence</span>
-                <span class="value">91%</span>
-                <span>route scoring</span>
+                <span class="mini">Proof history</span>
+                <span class="value">8</span>
+                <span>recorded review runs</span>
               </div>
               <div class="card metric">
-                <span class="mini">Guardrail</span>
-                <span class="value">100</span>
-                <span>Integrity Auditor score</span>
+                <span class="mini">Integrity artifacts</span>
+                <span class="value">7</span>
+                <span>memory, ZKR, governance, compliance</span>
               </div>
               <div class="card metric">
                 <span class="mini">Agent NFTs</span>
@@ -943,7 +967,7 @@
         <article class="sheet">
           <div class="inner">
             <div class="kicker"><span class="dot"></span>0G-native architecture</div>
-            <h2>The system is built around a verifiable data and control path.</h2>
+            <h2>The moat is the chain of custody around every AI decision.</h2>
             <div class="flow flow-wide">
               <div class="node" data-step="A">
                 <strong>User input</strong>
@@ -975,7 +999,7 @@
               </div>
             </div>
             <p class="lead">
-              The key design choice: AI output is treated as a proposal until it passes guardrails and becomes a durable, wallet-scoped proof artifact.
+              AI output is treated as a proposal until it passes guardrails and becomes a durable, wallet-scoped proof artifact.
             </p>
             <div class="grid three" style="margin-top: 24px">
               <div class="card">
@@ -999,8 +1023,8 @@
       <section class="slide">
         <article class="sheet">
           <div class="inner">
-            <div class="kicker"><span class="dot"></span>AI control plane</div>
-            <h2>Six live backend artifacts keep the optimizer honest after every run.</h2>
+            <div class="kicker"><span class="dot"></span>Integrity control plane</div>
+            <h2>Every run leaves behind machine-readable evidence, not just a recommendation.</h2>
             <div class="grid three compact-grid" style="margin-top: 28px">
               <div class="card compact">
                 <strong>Sovereign Memory</strong>
@@ -1016,7 +1040,7 @@
               </div>
               <div class="card compact">
                 <strong>Zero-Knowledge Reasoning</strong>
-                <span>TEE/ZK-ready reasoning envelope is written to 0G and anchored on-chain with an honest `tee-envelope-recorded` status.</span>
+                <span>TEE/ZK-ready reasoning envelope is written to 0G and anchored on-chain with an honest tee-envelope-recorded status.</span>
               </div>
               <div class="card compact">
                 <strong>Programmable AI Governance</strong>
@@ -1033,6 +1057,10 @@
               <span class="chip">Handshake: completed</span>
               <span class="chip">ZK-Compliance: verified, 100%</span>
             </div>
+            <div class="callout">
+              <strong>Investor takeaway</strong>
+              <span>The proof stack compounds: each accepted or rejected strategy improves reviewability, repeatability, and defensibility for downstream users and partners.</span>
+            </div>
           </div>
           <div class="footer"><span>Control plane</span><span class="slide-no">05 / 11</span></div>
         </article>
@@ -1041,7 +1069,7 @@
       <section class="slide">
         <article class="sheet">
           <div class="inner">
-            <div class="kicker"><span class="dot"></span>Judge Mode</div>
+            <div class="kicker"><span class="dot"></span>Due diligence mode</div>
             <h2>Audit-first UX: no wallet, no faucet, no rerun.</h2>
             <div class="split">
               <div>
@@ -1055,8 +1083,8 @@
                     <span>Reviewers can compare networks without leaving the audit page.</span>
                   </div>
                   <div class="card">
-                    <strong>Direct explorer path</strong>
-                    <span>Latest storage tx, ProofRegistry anchor, Sovereign Memory CID, blacklist CID, stress report CID, Agent NFT mint tx, marketplace, oracle, and contract addresses are surfaced in one place.</span>
+                    <strong>Evidence directly under deployment</strong>
+                    <span>0G Mainnet contracts appear first, followed immediately by the Integrity memory stack and Evidence anchors as one review package.</span>
                   </div>
                 </div>
               </div>
@@ -1080,7 +1108,7 @@
                   </div>
                   <div class="mock-line"></div>
                   <div class="mock-line" style="width: 78%"></div>
-                  <p class="mini" style="margin-top: 12px">ZK-Compliance: 100% policy compliant | Governance: active low risk | ZKR anchor visible</p>
+                  <p class="mini" style="margin-top: 12px">Deployment artifacts -> Integrity stack -> Evidence anchors -> Reasoning brief</p>
                 </div>
               </div>
             </div>
@@ -1093,7 +1121,7 @@
         <article class="sheet">
           <div class="inner">
             <div class="kicker"><span class="dot"></span>Mainnet evidence</div>
-            <h2 style="max-width: 700px; font-size: clamp(31px, 3.4vw, 52px); line-height: 1.02;">Live contracts and latest proof trail are already on 0G mainnet.</h2>
+            <h2 style="max-width: 760px; font-size: clamp(31px, 3.4vw, 52px); line-height: 1.02;">This is not a roadmap slide: the core verification contracts are already on 0G mainnet.</h2>
             <div class="grid two compact-grid" style="margin-top: 20px">
               <div class="card compact">
                 <strong>ProofRegistry</strong>
@@ -1145,7 +1173,7 @@
         <article class="sheet">
           <div class="inner">
             <div class="kicker"><span class="dot"></span>Live artifact ledger</div>
-            <h2>The newest tx and anchor trail is already readable from Judge Mode.</h2>
+            <h2>The newest tx and anchor trail is readable from Judge Mode in seconds.</h2>
             <div class="ledger">
               <div class="card compact">
                 <strong>Latest proof write</strong>
@@ -1186,34 +1214,34 @@
       <section class="slide">
         <article class="sheet">
           <div class="inner">
-            <div class="kicker"><span class="dot"></span>Review stack</div>
-            <h2>Judge Mode keeps proof, memory, compliance, and control signals in one route.</h2>
+            <div class="kicker"><span class="dot"></span>Investment thesis</div>
+            <h2>YieldBoost can become the verification layer for AI-managed DeFi strategies.</h2>
             <div class="grid four" style="margin-top: 32px">
               <div class="card">
-                <strong>Latest proof</strong>
-                <span>Current APY, optimized APY, reasoning, proof history, and tx links stay above the fold for judges.</span>
+                <strong>Wedge</strong>
+                <span>Start with one painful action: make idle wallet capital easier to route into proof-backed yield opportunities.</span>
               </div>
               <div class="card">
-                <strong>Integrity memory stack</strong>
-                <span>Sovereign Memory, Hallucination Blacklist, and Multiverse Stress Test appear as separate evidence cards with explorer links.</span>
+                <strong>Moat</strong>
+                <span>The Integrity memory stack turns strategy history, rejections, reasoning envelopes, and governance into compounding evidence.</span>
               </div>
               <div class="card">
-                <strong>ZK and governance status</strong>
-                <span>ZKR, Governance, Neural Handshake, and ZK-Compliance show honest live statuses instead of decorative UI badges.</span>
+                <strong>Distribution</strong>
+                <span>Strategy Agent NFTs create portable, inspectable assets that can move through marketplaces, protocols, and partner dashboards.</span>
               </div>
               <div class="card">
-                <strong>Cross-network review</strong>
-                <span>Mainnet is the default review path, while testnet stays available for comparison without changing the clean `/judge` URL.</span>
+                <strong>Business model</strong>
+                <span>Take-rate on adopted strategies, premium automation, protocol integrations, and API access to proof-backed strategy intelligence.</span>
               </div>
             </div>
             <div class="flow" style="grid-template-columns: repeat(4, 1fr)">
-              <div class="node" data-step="1"><strong>Open</strong><span class="mini">Jump straight into `/judge`</span></div>
-              <div class="node" data-step="2"><strong>Inspect</strong><span class="mini">Check tx, CID, proof count, and latest timestamps</span></div>
-              <div class="node" data-step="3"><strong>Cross-check</strong><span class="mini">Review governance, ZKR, handshake, and compliance state</span></div>
-              <div class="node" data-step="4"><strong>Deep dive</strong><span class="mini">Open Chainscan links only where more proof is needed</span></div>
+              <div class="node" data-step="1"><strong>Acquire</strong><span class="mini">Wallet users and hackathon judges verify the live product</span></div>
+              <div class="node" data-step="2"><strong>Retain</strong><span class="mini">Memory and proofs create a durable strategy history</span></div>
+              <div class="node" data-step="3"><strong>Monetize</strong><span class="mini">Automation, adoption, marketplace, and API surfaces</span></div>
+              <div class="node" data-step="4"><strong>Scale</strong><span class="mini">Protocols and agents consume trusted strategy artifacts</span></div>
             </div>
           </div>
-          <div class="footer"><span>Judge evidence</span><span class="slide-no">09 / 11</span></div>
+          <div class="footer"><span>Company thesis</span><span class="slide-no">09 / 11</span></div>
         </article>
       </section>
 
@@ -1221,11 +1249,11 @@
         <article class="sheet">
           <div class="inner">
             <div class="kicker"><span class="dot"></span>Strategy Agent NFT</div>
-            <h2 style="max-width: 700px; font-size: clamp(31px, 3.4vw, 52px); line-height: 1.03;">Optimization results become ownable agent artifacts.</h2>
+            <h2 style="max-width: 740px; font-size: clamp(31px, 3.4vw, 52px); line-height: 1.03;">Optimization results become ownable, distributable strategy assets.</h2>
             <div class="split" style="margin-top: 18px">
               <div>
                 <p class="lead">
-                  After a proof-backed optimization, the user can mint the strategy through YieldStrategyINFT. The NFT is not the proof itself; it is the portable strategy artifact linked to the verified runtime output.
+                  After a proof-backed optimization, the user can mint the strategy through YieldStrategyINFT. The NFT is not the proof itself; it is the portable commercial wrapper linked to verified runtime output.
                 </p>
                 <div class="grid compact-grid" style="margin-top: 18px">
                   <div class="card compact">
@@ -1234,7 +1262,7 @@
                   </div>
                   <div class="card compact">
                     <strong>Marketplace adoption</strong>
-                    <span>Listed strategy NFTs can be inspected through proof metadata before adoption.</span>
+                    <span>Listed strategy NFTs can be inspected through proof metadata before adoption or downstream integration.</span>
                   </div>
                   <div class="card compact">
                     <strong>Auditor-gated mint</strong>
@@ -1266,33 +1294,33 @@
       <section class="slide">
         <article class="sheet">
           <div class="inner">
-            <div class="kicker"><span class="dot"></span>Roadmap</div>
-            <h2>From verifiable optimizer to Proof-of-Optimization economy.</h2>
+            <div class="kicker"><span class="dot"></span>Roadmap and use of capital</div>
+            <h2>From mainnet proof product to a Proof-of-Optimization network.</h2>
             <div class="grid three" style="margin-top: 34px">
               <div class="card">
-                <strong>Phase 1: Mainnet proof product</strong>
-                <span>Live proof trail, Judge Mode, Integrity Auditor, ZKR envelope, governance, handshake, compliance proof, and Agent NFT minting.</span>
+                <strong>Now: mainnet proof product</strong>
+                <span>Live Judge Mode, 0G proof trail, Integrity Auditor, ZKR envelope, governance, compliance, handshake, and Agent NFT minting.</span>
               </div>
               <div class="card">
-                <strong>Phase 2: $YA0G reward logic</strong>
-                <span>Reward high-quality optimization events backed by ProofRegistry and measurable outcome metadata.</span>
+                <strong>Next: partner pilots</strong>
+                <span>Package the proof-backed strategy flow for wallets, DeFi protocols, and agent marketplaces that need trusted AI decisions.</span>
               </div>
               <div class="card">
-                <strong>Phase 3: Mining by optimization quality</strong>
-                <span>Proof-of-Optimization weights verified runs by confidence, impact, and durable proof coverage.</span>
+                <strong>Scale: optimization economy</strong>
+                <span>Reward high-quality optimization events using ProofRegistry anchors, outcome metadata, confidence, impact, and durable proof coverage.</span>
               </div>
             </div>
             <div class="flow" style="margin-top: 34px">
-              <div class="node" data-step="1"><strong>Run</strong><span class="mini">User optimizes portfolio</span></div>
-              <div class="node" data-step="2"><strong>Guardrail</strong><span class="mini">Integrity Auditor approval</span></div>
-              <div class="node" data-step="3"><strong>Verify</strong><span class="mini">0G Storage + ProofRegistry</span></div>
-              <div class="node" data-step="4"><strong>Own + adopt</strong><span class="mini">Agent NFT marketplace</span></div>
+              <div class="node" data-step="1"><strong>Reliability</strong><span class="mini">Deeper testing, monitoring, and proof quality scoring</span></div>
+              <div class="node" data-step="2"><strong>Integrations</strong><span class="mini">Wallet, protocol, and marketplace distribution</span></div>
+              <div class="node" data-step="3"><strong>Automation</strong><span class="mini">Policy-aware execution and risk controls</span></div>
+              <div class="node" data-step="4"><strong>Network</strong><span class="mini">Incentives for verified optimization quality</span></div>
             </div>
             <p class="lead">
-              YieldBoost AI is strongest as a mainnet-live verifiable finance product: AI recommendations with a proof trail judges can inspect in seconds.
+              The near-term goal is simple: become the trusted proof surface that makes AI-generated DeFi strategy safe enough to adopt, automate, and distribute.
             </p>
           </div>
-          <div class="footer"><span>Future economy</span><span class="slide-no">11 / 11</span></div>
+          <div class="footer"><span>Roadmap</span><span class="slide-no">11 / 11</span></div>
         </article>
       </section>
     </main>

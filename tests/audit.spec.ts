@@ -155,6 +155,57 @@ test("judge page is reachable without wallet connection", async ({ page }) => {
   await expect(page.getByRole("link", { name: /Open (latest|ProofRegistry) tx/ }).first()).toBeVisible();
 });
 
+test("judge polish keeps integrity evidence directly after deployment artifacts", async ({
+  page,
+}) => {
+  await clearWalletState(page);
+  await page.goto(`${BASE}/judge`, { waitUntil: "domcontentloaded" });
+
+  const deploymentHeading = page.getByRole("heading", {
+    name: /0G (Mainnet|Testnet) deployment artifacts/,
+  });
+  const integrityPackage = page.getByTestId("judge-integrity-evidence-package");
+
+  await expect(deploymentHeading).toBeVisible();
+  await expect(integrityPackage).toBeVisible();
+  await expect(integrityPackage).toContainText("Integrity memory stack");
+  await expect(integrityPackage).toContainText("Evidence anchors");
+
+  const deploymentBox = await deploymentHeading.boundingBox();
+  const integrityBox = await integrityPackage.boundingBox();
+
+  expect(deploymentBox).not.toBeNull();
+  expect(integrityBox).not.toBeNull();
+  expect(integrityBox!.y).toBeGreaterThan(deploymentBox!.y);
+});
+
+test("judge reasoning snapshot reads as a complete audit brief", async ({ page }) => {
+  await clearWalletState(page);
+  await page.goto(`${BASE}/judge`, { waitUntil: "domcontentloaded" });
+
+  const reasoning = page.getByTestId("judge-reasoning-snapshot");
+
+  await expect(reasoning).toBeVisible();
+  await expect(reasoning).toContainText("Proof-bound narrative");
+  await expect(reasoning).toContainText("Stored decision narrative");
+  await expect(reasoning).toContainText("Decision under review");
+  await expect(reasoning).toContainText("APY claim");
+  await expect(reasoning).toContainText("Guardrail result");
+});
+
+test("pitchdeck frames the product as a VC-ready company narrative", async ({
+  page,
+}) => {
+  await page.goto(`${BASE}/pitchdeck/yieldboost-pitchdeck.html`, {
+    waitUntil: "domcontentloaded",
+  });
+
+  await expect(page.getByText("Investment thesis")).toBeVisible();
+  await expect(page.getByText("Business model")).toBeVisible();
+  await expect(page.getByText("Roadmap and use of capital")).toBeVisible();
+  await expect(page.getByText("0G mainnet live product")).toBeVisible();
+});
+
 test("testnet ZKR, governance, and handshake artifacts are exposed by backend routes", async ({
   request,
 }) => {

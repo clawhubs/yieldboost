@@ -46,9 +46,22 @@ function statusBadgeClass(status: "live" | "configured" | "partial" | "pending")
   return "border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-[#d7e0e8]";
 }
 
+function formatJudgePercent(value: number | undefined) {
+  return typeof value === "number" ? `${value.toFixed(2)}%` : "Pending proof";
+}
+
+function formatJudgeCurrency(value: number | undefined) {
+  if (typeof value !== "number") return "Pending proof";
+
+  return `$${value.toLocaleString("en-US", {
+    maximumFractionDigits: value > 0 && value < 1 ? 4 : 2,
+  })}`;
+}
+
 export default async function JudgePage() {
   const data = await getJudgePageData();
   const reviewingMainnet = data.reviewNetwork === "mainnet";
+  const latestDecision = data.latestProof?.decision;
   const primaryComponents = data.components.filter((component) =>
     ["0G Storage", "0G Compute Network", "ProofRegistry"].includes(component.title),
   );
@@ -162,6 +175,55 @@ export default async function JudgePage() {
       icon: ExternalLink,
       download: true,
     },
+  ];
+  const reasoningNarrative =
+    latestDecision?.reasoning?.trim() ||
+    "No stored reasoning is available yet. Judge Mode is still ready for review through the latest proof cards, deployment artifacts, and evidence anchors below.";
+  const reasoningAuditCards: Array<{
+    label: string;
+    value: string;
+    helper: string;
+    tone: "teal" | "green" | "amber" | "white";
+  }> = [
+    {
+      label: "Decision under review",
+      value: latestDecision?.recommended ?? "Pending proof",
+      helper: "The narrative must explain this exact route, not generic DeFi advice.",
+      tone: latestDecision ? "teal" : "amber",
+    },
+    {
+      label: "APY claim",
+      value: latestDecision
+        ? `${formatJudgePercent(latestDecision.current_apy)} -> ${formatJudgePercent(latestDecision.optimized_apy)}`
+        : "Pending proof",
+      helper: "Before/after APY is pulled from the stored proof payload.",
+      tone: latestDecision ? "green" : "amber",
+    },
+    {
+      label: "Projected annual gain",
+      value: formatJudgeCurrency(
+        latestDecision?.estimatedAnnualGain ?? latestDecision?.yield_increase,
+      ),
+      helper: "Financial upside is review context, not a guaranteed return.",
+      tone: latestDecision ? "white" : "amber",
+    },
+    {
+      label: "Guardrail result",
+      value: integrityAudit
+        ? integrityApproved
+          ? `Approved - score ${integrityAudit.score}`
+          : `Rejected - score ${integrityAudit.score}`
+        : "Auditor pending",
+      helper: integrityAudit
+        ? "Integrity Auditor checked the decision before downstream proof surfaces rely on it."
+        : "The page will expose approval or rejection as soon as the latest proof includes an audit result.",
+      tone: integrityAudit ? (integrityApproved ? "green" : "amber") : "white",
+    },
+  ];
+  const reasoningTrace = [
+    "Wallet-scoped snapshot constrains the recommendation to the review wallet and active network.",
+    "Prompt compression, cache, and embedding reuse keep repeated asks consistent before inference.",
+    "Storage CID and ProofRegistry links bind the decision narrative to an external verification path.",
   ];
 
   const eyebrowClass =
@@ -355,82 +417,6 @@ export default async function JudgePage() {
                 </div>
               </div>
             ))}
-          </div>
-        </section>
-
-        <section className={sectionShellClass}>
-          <div className={sectionHeaderRowClass}>
-            <div className="flex items-start gap-3">
-              <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
-                <Sparkles className="h-5 w-5" />
-              </div>
-              <div>
-                <h2 className={sectionTitleClass}>Integrity memory stack</h2>
-                <p className={sectionHelperClass}>
-                  Backend-backed artifacts for memory persistence, blacklist defense, and historical validation.
-                </p>
-              </div>
-            </div>
-            {data.latestStressReport?.explorerUrl ? (
-              <a
-                href={data.latestStressReport.explorerUrl}
-                target="_blank"
-                rel="noreferrer"
-                className={linkPillClass}
-              >
-                Verify report
-                <ExternalLink className="h-3.5 w-3.5" />
-              </a>
-            ) : null}
-          </div>
-
-          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            {data.integrityStackCards.map((card) => (
-              <div
-                key={card.label}
-                className="relative overflow-hidden rounded-[14px] border border-[rgba(34,221,208,0.16)] bg-[linear-gradient(180deg,rgba(34,221,208,0.07),rgba(255,255,255,0.02))] px-4 py-4 shadow-[0_12px_30px_rgba(0,0,0,0.22)]"
-              >
-                <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,rgba(34,221,208,0.7),transparent)]" />
-                <div className="flex items-start justify-between gap-2">
-                  <div className={cardTitleClass}>{card.label}</div>
-                  <span className="mt-1 h-2 w-2 rounded-full bg-[#22ddd0] shadow-[0_0_18px_rgba(34,221,208,0.72)]" />
-                </div>
-                <div className={`mt-3 text-[20px] font-semibold leading-tight ${toneClass(card.tone)}`}>
-                  {card.value}
-                </div>
-                <div className="mt-2 text-[12px] leading-6 text-[#cdd7e0]">{card.helper}</div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-5 rounded-[16px] border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] px-4 py-4">
-            <div className="flex items-center gap-2 text-[#9ff7f0]">
-              <Hash className="h-4 w-4" />
-              <span className={eyebrowClass}>Evidence anchors</span>
-            </div>
-            <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {integrityEvidenceArtifacts.map((artifact) => (
-                <div key={artifact.label} className={subCardClass}>
-                  <div className={eyebrowClass}>{artifact.label}</div>
-                  <div className={`mt-2 ${monoValueClass}`}>
-                    {artifact.value ?? (
-                      <span className="font-sans text-[#7a8693]">{artifact.empty}</span>
-                    )}
-                  </div>
-                  {artifact.href ? (
-                    <a
-                      href={artifact.href}
-                      target="_blank"
-                      rel="noreferrer"
-                      className={`mt-3 ${linkPillClass}`}
-                    >
-                      {artifact.linkLabel}
-                      <ExternalLink className="h-3.5 w-3.5" />
-                    </a>
-                  ) : null}
-                </div>
-              ))}
-            </div>
           </div>
         </section>
 
@@ -638,6 +624,90 @@ export default async function JudgePage() {
           </div>
         </section>
 
+        <section data-testid="judge-integrity-evidence-package" className={sectionShellClass}>
+          <div className={sectionHeaderRowClass}>
+            <div className="flex items-start gap-3">
+              <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
+                <Sparkles className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className={sectionTitleClass}>Integrity memory stack</h2>
+                <p className={sectionHelperClass}>
+                  Deployment says what is live; this package shows how each AI decision keeps memory, rejection, stress, compliance, governance, and handshake evidence attached.
+                </p>
+              </div>
+            </div>
+            {data.latestStressReport?.explorerUrl ? (
+              <a
+                href={data.latestStressReport.explorerUrl}
+                target="_blank"
+                rel="noreferrer"
+                className={linkPillClass}
+              >
+                Verify report
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            ) : null}
+          </div>
+
+          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {data.integrityStackCards.map((card) => (
+              <div
+                key={card.label}
+                className="relative overflow-hidden rounded-[14px] border border-[rgba(34,221,208,0.16)] bg-[linear-gradient(180deg,rgba(34,221,208,0.07),rgba(255,255,255,0.02))] px-4 py-4 shadow-[0_12px_30px_rgba(0,0,0,0.22)]"
+              >
+                <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,rgba(34,221,208,0.7),transparent)]" />
+                <div className="flex items-start justify-between gap-2">
+                  <div className={cardTitleClass}>{card.label}</div>
+                  <span className="mt-1 h-2 w-2 rounded-full bg-[#22ddd0] shadow-[0_0_18px_rgba(34,221,208,0.72)]" />
+                </div>
+                <div className={`mt-3 text-[20px] font-semibold leading-tight ${toneClass(card.tone)}`}>
+                  {card.value}
+                </div>
+                <div className="mt-2 text-[12px] leading-6 text-[#cdd7e0]">{card.helper}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-5 overflow-hidden rounded-[18px] border border-[rgba(34,221,208,0.16)] bg-[linear-gradient(135deg,rgba(34,221,208,0.08),rgba(255,255,255,0.02)_45%,rgba(47,224,109,0.05))]">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[rgba(255,255,255,0.07)] px-4 py-4">
+              <div className="flex items-center gap-2 text-[#9ff7f0]">
+                <Hash className="h-4 w-4" />
+                <span className={eyebrowClass}>Evidence anchors</span>
+              </div>
+              <span className="rounded-full border border-[rgba(34,221,208,0.18)] bg-[rgba(34,221,208,0.08)] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#9ff7f0]">
+                Reviewable trail
+              </span>
+            </div>
+            <div className="grid gap-0 md:grid-cols-2 xl:grid-cols-3">
+              {integrityEvidenceArtifacts.map((artifact) => (
+                <div
+                  key={artifact.label}
+                  className="border-t border-[rgba(255,255,255,0.06)] px-4 py-4 first:border-t-0 md:[&:nth-child(-n+2)]:border-t-0 xl:[&:nth-child(-n+3)]:border-t-0 xl:[&:nth-child(3n+1)]:border-l-0 md:border-l md:border-[rgba(255,255,255,0.06)] md:[&:nth-child(2n+1)]:border-l-0 xl:[&:nth-child(2n+1)]:border-l xl:[&:nth-child(3n+1)]:border-l-0"
+                >
+                  <div className={eyebrowClass}>{artifact.label}</div>
+                  <div className={`mt-2 ${monoValueClass}`}>
+                    {artifact.value ?? (
+                      <span className="font-sans text-[#7a8693]">{artifact.empty}</span>
+                    )}
+                  </div>
+                  {artifact.href ? (
+                    <a
+                      href={artifact.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={`mt-3 ${linkPillClass}`}
+                    >
+                      {artifact.linkLabel}
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section className={sectionShellClass}>
           <div className="flex items-start gap-3">
             <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
@@ -688,20 +758,54 @@ export default async function JudgePage() {
         </section>
 
         <div className="grid gap-3 md:gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,0.75fr)]">
-          <section className={sectionShellClass}>
-            <div className="flex items-start gap-3">
-              <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
-                <FileText className="h-5 w-5" />
+          <section data-testid="judge-reasoning-snapshot" className={sectionShellClass}>
+            <div className={sectionHeaderRowClass}>
+              <div className="flex items-start gap-3">
+                <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
+                  <FileText className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className={sectionTitleClass}>Reasoning snapshot</h2>
+                  <p className={sectionHelperClass}>
+                    A judge-readable decision brief: what the agent recommended, which numbers it claimed, and how the proof trail keeps that reasoning accountable.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h2 className={sectionTitleClass}>Reasoning snapshot</h2>
-                <p className={sectionHelperClass}>
-                  The decision narrative tied to the latest stored proof.
-                </p>
-              </div>
+              <span className="rounded-full border border-[rgba(34,221,208,0.24)] bg-[rgba(34,221,208,0.08)] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#9ff7f0]">
+                Proof-bound narrative
+              </span>
             </div>
-            <div className="mt-4 rounded-[14px] border-l-2 border-[rgba(34,221,208,0.55)] bg-[rgba(34,221,208,0.04)] px-4 py-4 text-[14px] leading-7 text-[#e2ecf3]">
-              {data.latestProof?.decision.reasoning ?? "No stored reasoning available yet."}
+
+            <div className="mt-5 rounded-[18px] border border-[rgba(34,221,208,0.18)] bg-[linear-gradient(135deg,rgba(34,221,208,0.10),rgba(255,255,255,0.025)_55%,rgba(47,224,109,0.06))] p-4 shadow-[0_18px_46px_rgba(0,0,0,0.24)]">
+              <div className="flex items-center gap-2 text-[#9ff7f0]">
+                <BadgeCheck className="h-4 w-4" />
+                <span className={eyebrowClass}>Stored decision narrative</span>
+              </div>
+              <p className="mt-3 text-[14px] leading-7 text-[#e8f2f7]">{reasoningNarrative}</p>
+            </div>
+
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              {reasoningAuditCards.map((card) => (
+                <div key={card.label} className={subCardClass}>
+                  <div className={eyebrowClass}>{card.label}</div>
+                  <div className={`mt-2 text-[18px] font-semibold leading-tight ${toneClass(card.tone)}`}>
+                    {card.value}
+                  </div>
+                  <div className="mt-2 text-[12px] leading-6 text-[#cdd7e0]">{card.helper}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-4 grid gap-2">
+              {reasoningTrace.map((item) => (
+                <div
+                  key={item}
+                  className="flex items-start gap-3 rounded-[12px] border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.025)] px-3 py-3 text-[12px] leading-6 text-[#d6e2ea]"
+                >
+                  <CheckCircle2 className="mt-1 h-3.5 w-3.5 flex-none text-[#2fe06d]" />
+                  <span>{item}</span>
+                </div>
+              ))}
             </div>
           </section>
 
