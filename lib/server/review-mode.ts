@@ -30,6 +30,7 @@ import type {
 } from "@/lib/backend-data";
 import { auditOptimizationDecision } from "@/lib/integrity-audit";
 import {
+  getKnownProofCountFloorForWallet,
   resolveLatestProofForWallet,
   resolveLatestProofForWalletAcrossNetworks,
   resolveProofCountForWallet,
@@ -716,6 +717,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
     ? resolveWalletNetworkKey(reviewNetworkCookie)
     : defaultReviewNetwork;
   const reviewNetworkConfig = getServer0GNetworkConfig(reviewNetwork);
+  const proofCountFloor = getKnownProofCountFloorForWallet(reviewWallet, reviewNetwork);
   const [
     rawLatestProof,
     proofCount,
@@ -744,7 +746,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
     withTimeout(
       resolveProofCountForWallet(reviewWallet, reviewNetwork),
       3_000,
-      0,
+      proofCountFloor,
       "proof count resolution",
     ),
     getLatestAgentMemory(reviewWallet, reviewNetwork),
