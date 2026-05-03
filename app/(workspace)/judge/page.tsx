@@ -81,6 +81,31 @@ export default async function JudgePage() {
       href: data.latestStressReport?.explorerUrl,
       linkLabel: "Open stress tx on Chainscan",
     },
+    {
+      label: "ZK Proof CID",
+      value: data.latestZkReasoningProof?.proofCid,
+      empty: "No ZK proof CID yet",
+      href:
+        data.latestZkReasoningProof?.proofRegistryExplorerUrl ??
+        data.latestZkReasoningProof?.explorerUrl,
+      linkLabel: data.latestZkReasoningProof?.proofRegistryExplorerUrl
+        ? "Open ZK proof anchor on Chainscan"
+        : "Open ZK proof tx on Chainscan",
+    },
+    {
+      label: "Governance CID",
+      value: data.latestGovernanceDecision?.artifactCid,
+      empty: "No governance CID yet",
+      href: data.latestGovernanceDecision?.explorerUrl,
+      linkLabel: "Open governance tx on Chainscan",
+    },
+    {
+      label: "Handshake CID",
+      value: data.latestCrossAgentHandshake?.artifactCid,
+      empty: "No handshake CID yet",
+      href: data.latestCrossAgentHandshake?.explorerUrl,
+      linkLabel: "Open handshake tx on Chainscan",
+    },
   ];
   const quickReviewPoints = [
     "Open `/judge` as the submission entry point to see the latest wallet result first.",

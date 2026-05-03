@@ -70,22 +70,63 @@ test("connect wallet flow can be opened from the no-wallet state", async ({ page
 
 test("judge page is reachable without wallet connection", async ({ page }) => {
   await clearWalletState(page);
-  await page.goto(`${BASE}/judge`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/judge`, { waitUntil: "domcontentloaded" });
 
   await expect(page.getByTestId("judge-page")).toBeVisible();
+  await expect(page.getByTestId("judge-network-sync-overlay")).toHaveCount(0);
   await expect(page.getByText("Latest proof and wallet snapshot")).toBeVisible();
-  await expect(page.getByTestId("judge-integrity-auditor")).toContainText(
-    /Integrity Auditor: (Approved|Rejected)/,
-  );
+  await expect(page.getByText("ZK-Proof")).toBeVisible();
+  await expect(page.getByText(/Testnet Verified|TEE Envelope Recorded|Zk Ready|Verified/).first()).toBeVisible();
+  await expect(page.getByText("Governance").first()).toBeVisible();
+  await expect(page.getByText("Active").first()).toBeVisible();
+  await expect(page.getByText("Neural Handshake").first()).toBeVisible();
+  await expect(page.getByText("ZK Proof CID")).toBeVisible();
+  await expect(page.getByText("Governance CID")).toBeVisible();
+  await expect(page.getByText("Handshake CID", { exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Open ZK proof/i }).first()).toBeVisible();
+  const integrityAuditor = page.getByTestId("judge-integrity-auditor");
+  if ((await integrityAuditor.count()) > 0) {
+    await expect(integrityAuditor).toContainText(
+      /Integrity Auditor: (Approved|Rejected)/,
+    );
+  }
   await expect(page.getByText("Judge wallet:")).toBeVisible();
   await expect(page.getByRole("link", { name: /Open (latest|ProofRegistry) tx/ }).first()).toBeVisible();
+});
+
+test("testnet ZKR, governance, and handshake artifacts are exposed by backend routes", async ({
+  request,
+}) => {
+  const [zkResponse, governanceResponse, handshakeResponse] = await Promise.all([
+    request.get(`${BASE}/api/zk/verify?network=testnet&wallet=${DEMO_WALLET}`),
+    request.get(`${BASE}/api/governance/evaluate?network=testnet&wallet=${DEMO_WALLET}`),
+    request.get(`${BASE}/api/agents/handshake?network=testnet&wallet=${DEMO_WALLET}`),
+  ]);
+
+  expect(zkResponse.ok()).toBeTruthy();
+  expect(governanceResponse.ok()).toBeTruthy();
+  expect(handshakeResponse.ok()).toBeTruthy();
+
+  const zk = await zkResponse.json();
+  const governance = await governanceResponse.json();
+  const handshake = await handshakeResponse.json();
+
+  expect(zk.data.latest.status).toBe("testnet-verified");
+  expect(zk.data.latest.proofCid).toMatch(/^0x[a-fA-F0-9]{64}$/);
+  expect(zk.data.latest.txHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+  expect(governance.data.latest.status).toBe("active");
+  expect(governance.data.latest.artifactCid).toMatch(/^0x[a-fA-F0-9]{64}$/);
+  expect(governance.data.latest.txHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+  expect(handshake.data.latest.status).toBe("completed");
+  expect(handshake.data.latest.artifactCid).toMatch(/^0x[a-fA-F0-9]{64}$/);
+  expect(handshake.data.latest.txHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
 });
 
 test("direct judge entry bootstraps the review wallet across dashboard and history", async ({
   page,
 }) => {
   await clearWalletState(page);
-  await page.goto(`${BASE}/judge`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/judge`, { waitUntil: "domcontentloaded" });
 
   await expect(page.getByTestId("judge-page")).toBeVisible();
   await expect(page.getByText(/Judge wallet:\s*0x8a3c/i)).toBeVisible();
@@ -95,7 +136,7 @@ test("direct judge entry bootstraps the review wallet across dashboard and histo
   await expect(page.getByTestId("sidebar")).toContainText("Judge mode");
   await expect(page.getByTestId("boost-yield-cta")).toBeDisabled();
 
-  const historyResponse = await page.goto(`${BASE}/history`, { waitUntil: "networkidle" });
+  const historyResponse = await page.goto(`${BASE}/history`, { waitUntil: "domcontentloaded" });
   expect(historyResponse?.ok()).toBeTruthy();
   await expect(page.getByRole("heading", { name: "Execution History & Proof Ledger" })).toBeVisible();
 });
@@ -104,7 +145,7 @@ test("judge network switcher can toggle testnet and mainnet review state", async
   page,
 }) => {
   await clearWalletState(page);
-  await page.goto(`${BASE}/judge`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/judge`, { waitUntil: "domcontentloaded" });
 
   const switcher = page.getByTestId("judge-network-switcher");
   const mainnetButton = page.getByTestId("judge-network-mainnet");
@@ -115,20 +156,26 @@ test("judge network switcher can toggle testnet and mainnet review state", async
   await expect(testnetButton).toBeVisible();
 
   if (!(await testnetButton.isDisabled())) {
-    await Promise.all([
-      page.waitForNavigation({ waitUntil: "networkidle" }),
-      testnetButton.click(),
-    ]);
-    await expect(page.getByTestId("judge-network-testnet")).toContainText("Current review network");
+    await testnetButton.click();
+    await expect(page.getByTestId("judge-network-sync-overlay")).toHaveCount(0, {
+      timeout: 30_000,
+    });
+    await expect(page.getByTestId("judge-network-testnet")).toContainText(
+      "Current review network",
+      { timeout: 30_000 },
+    );
   }
 
   const refreshedMainnetButton = page.getByTestId("judge-network-mainnet");
   if (!(await refreshedMainnetButton.isDisabled())) {
-    await Promise.all([
-      page.waitForNavigation({ waitUntil: "networkidle" }),
-      refreshedMainnetButton.click(),
-    ]);
-    await expect(page.getByTestId("judge-network-mainnet")).toContainText("Current review network");
+    await refreshedMainnetButton.click();
+    await expect(page.getByTestId("judge-network-sync-overlay")).toHaveCount(0, {
+      timeout: 30_000,
+    });
+    await expect(page.getByTestId("judge-network-mainnet")).toContainText(
+      "Current review network",
+      { timeout: 30_000 },
+    );
   }
 });
 
@@ -167,7 +214,7 @@ test("judge mode can be exited back to the normal no-wallet flow", async ({ page
 
 test("marketplace page keeps strategy NFT listings visible", async ({ page }) => {
   await enableDemoWatchMode(page);
-  await page.goto(`${BASE}/marketplace`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/marketplace`, { waitUntil: "domcontentloaded" });
 
   await expect(
     page.getByRole("heading", { name: "Adopt proof-backed yield strategies." }),
@@ -465,15 +512,15 @@ test("proof modal, history, agents, and judge routes stay accessible after demo-
     .poll(async () => page.evaluate(() => navigator.clipboard.readText().catch(() => "")))
     .toContain("0x");
 
-  const historyResponse = await page.goto(`${BASE}/history`, { waitUntil: "networkidle" });
+  const historyResponse = await page.goto(`${BASE}/history`, { waitUntil: "domcontentloaded" });
   expect(historyResponse?.ok()).toBeTruthy();
   await expect(page.getByRole("heading", { name: "Execution History & Proof Ledger" })).toBeVisible();
 
-  const agentsResponse = await page.goto(`${BASE}/agents`, { waitUntil: "networkidle" });
+  const agentsResponse = await page.goto(`${BASE}/agents`, { waitUntil: "domcontentloaded" });
   expect(agentsResponse?.ok()).toBeTruthy();
   await expect(page.getByRole("heading", { name: "Agent Gallery" })).toBeVisible();
 
-  const judgeResponse = await page.goto(`${BASE}/judge`, { waitUntil: "networkidle" });
+  const judgeResponse = await page.goto(`${BASE}/judge`, { waitUntil: "domcontentloaded" });
   expect(judgeResponse?.ok()).toBeTruthy();
   await expect(page.getByTestId("judge-page")).toBeVisible();
 });

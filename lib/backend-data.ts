@@ -286,6 +286,82 @@ export interface StoredProofRecord {
 
 export type ProofStorageMode = "0g" | "local-fallback";
 
+export type ZkReasoningProofStatus =
+  | "verified"
+  | "pending"
+  | "failed"
+  | "testnet-verified"
+  | "tee-envelope-recorded"
+  | "zk-ready";
+
+export interface StoredZkReasoningProof {
+  proofId: string;
+  proofCid: string;
+  txHash?: string;
+  blockNumber?: number;
+  explorerUrl?: string;
+  networkKey: WalletNetworkKey;
+  verifier: string;
+  proofType: string;
+  createdAt: string;
+  status: ZkReasoningProofStatus;
+  summary: string;
+  storageMode: ProofStorageMode;
+  artifactHash: string;
+  rootHash?: string;
+  walletAddress?: string;
+  agentId?: string;
+  proofRegistryAddress?: string;
+  proofRegistryTxHash?: string;
+  proofRegistryProofId?: string;
+  proofRegistryExplorerUrl?: string;
+  note?: string;
+}
+
+export type AIGovernanceStatus = "active" | "warning" | "throttled" | "halted";
+
+export interface StoredGovernanceDecision {
+  governanceId: string;
+  status: AIGovernanceStatus;
+  reason: string;
+  riskScore: number;
+  killSwitchTriggered: boolean;
+  artifactCid: string;
+  txHash?: string;
+  blockNumber?: number;
+  explorerUrl?: string;
+  networkKey: WalletNetworkKey;
+  createdAt: string;
+  storageMode: ProofStorageMode;
+  walletAddress?: string;
+  agentId?: string;
+  evaluatedAction?: string;
+  deterministicReasons: string[];
+  note?: string;
+}
+
+export type CrossAgentHandshakeStatus = "completed" | "pending" | "rejected";
+
+export interface StoredCrossAgentHandshake {
+  handshakeId: string;
+  requestingAgent: string;
+  respondingAgent: string;
+  handshakeType: string;
+  artifactCid: string;
+  txHash?: string;
+  blockNumber?: number;
+  explorerUrl?: string;
+  networkKey: WalletNetworkKey;
+  status: CrossAgentHandshakeStatus;
+  createdAt: string;
+  summary: string;
+  storageMode: ProofStorageMode;
+  skillPurpose?: string;
+  walletAddress?: string;
+  transcriptDigest: string;
+  note?: string;
+}
+
 export interface StoredAgentMemoryRecord {
   id: string;
   agentId: string;

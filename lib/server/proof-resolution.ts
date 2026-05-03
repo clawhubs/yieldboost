@@ -30,6 +30,7 @@ const MAX_BLOCK_LOOKBACK = 1_000_000;
 const BLOCK_SCAN_CHUNK = 50_000;
 const SUPPORTED_NETWORK_KEYS: WalletNetworkKey[] = ["testnet", "mainnet"];
 const LIVE_PROOF_CACHE_TTL_MS = 60_000;
+const STORAGE_PAYLOAD_READ_TIMEOUT_MS = 4_000;
 
 const latestLiveProofCache = new Map<
   string,
@@ -46,6 +47,14 @@ type ProofRegistryLog = Awaited<
 
 function isEventLog(log: ProofRegistryLog | null): log is EventLog {
   return Boolean(log && "args" in log);
+}
+
+function isYieldOptimizationProofLog(log: ProofRegistryLog) {
+  if (!isEventLog(log)) return true;
+
+  const currentApyBps = Number(log.args.currentApyBps ?? 0);
+  const optimizedApyBps = Number(log.args.optimizedApyBps ?? 0);
+  return currentApyBps > 0 || optimizedApyBps > 0;
 }
 
 function parseProofTimestamp(value: string | undefined) {
@@ -169,7 +178,15 @@ async function readProofPayloadFromStorage(
 
   try {
     const indexer = new Indexer(config.storageUrl);
-    const downloadError = await indexer.download(cid, tempFile, false);
+    const downloadError = await Promise.race([
+      indexer.download(cid, tempFile, false),
+      new Promise<Error>((resolve) => {
+        setTimeout(
+          () => resolve(new Error("storage_payload_read_timeout")),
+          STORAGE_PAYLOAD_READ_TIMEOUT_MS,
+        );
+      }),
+    ]);
     if (downloadError) {
       return null;
     }
@@ -285,8 +302,9 @@ async function findRegistryProofLogs(
   for (let toBlock = latestBlock; toBlock >= minBlock; toBlock -= BLOCK_SCAN_CHUNK) {
     const fromBlock = Math.max(minBlock, toBlock - BLOCK_SCAN_CHUNK + 1);
     const logs = await contract.queryFilter(filter, fromBlock, toBlock);
-    if (logs.length > 0) {
-      found.push(...logs.reverse());
+    const yieldLogs = logs.reverse().filter(isYieldOptimizationProofLog);
+    if (yieldLogs.length > 0) {
+      found.push(...yieldLogs);
       if (found.length >= limit) {
         break;
       }

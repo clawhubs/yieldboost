@@ -668,6 +668,72 @@
       "note": "0G env incomplete; payload persisted locally at .artifacts/0g-fallback/yieldboost-stress-report-2327206f228f1e47.json; upload fallback reason: Request failed with status code 503"
     }
   ],
+  "zkReasoningProofs": [
+    {
+      "proofId": "zkr-bd1e3aef-38f7-4021-922b-a15fc68b5fc6",
+      "proofCid": "0x196f445ce4dbe341e5bbc3faea0dc067c63430c1d6f120ba16ea8dbb1fd1a802",
+      "txHash": "0x4c2e1327836021896d2516fe664b3e7ab9b8758dc5a7711dd90ee1ceab59bb5b",
+      "blockNumber": 31240862,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x4c2e1327836021896d2516fe664b3e7ab9b8758dc5a7711dd90ee1ceab59bb5b",
+      "networkKey": "testnet",
+      "verifier": "0G Storage + YieldBoost deterministic verifier",
+      "proofType": "TEE/ZK-ready reasoning proof envelope",
+      "createdAt": "2026-05-03T05:46:30.111Z",
+      "status": "testnet-verified",
+      "summary": "ZKR testnet reasoning envelope for Judge Mode.",
+      "storageMode": "0g",
+      "artifactHash": "972762492fd2a8e979f67095188f9d264afd0f354abdd7df0c87d65abf1fbf39",
+      "rootHash": "0x196f445ce4dbe341e5bbc3faea0dc067c63430c1d6f120ba16ea8dbb1fd1a802",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "agentId": "yieldboost-judge-agent",
+      "proofRegistryAddress": "0x516D005367045b1fc18c9c9a0Ff7bf8653d1B4e3",
+      "proofRegistryTxHash": "0xde528cb2df43c9d6cfd015b9ab7f85bef645a9a4934d7471988673c276279dc1",
+      "proofRegistryExplorerUrl": "https://chainscan-galileo.0g.ai/tx/0xde528cb2df43c9d6cfd015b9ab7f85bef645a9a4934d7471988673c276279dc1",
+      "note": "pending_registry_receipt"
+    }
+  ],
+  "governanceDecisions": [
+    {
+      "governanceId": "gov-e368ead6-cfdb-4174-86f5-28bca51627b5",
+      "status": "active",
+      "reason": "Decision stayed inside deterministic governance policy limits.",
+      "riskScore": 12,
+      "killSwitchTriggered": false,
+      "artifactCid": "0xc10094638757eaf973f2a25259132cfa0aeaf945653829a62ae4397d8e07b5af",
+      "txHash": "0x6efa29e5017529832b654d451cc4d3f18fc86a2fa21af4c8f67b4bc032c4cf91",
+      "blockNumber": 31242009,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x6efa29e5017529832b654d451cc4d3f18fc86a2fa21af4c8f67b4bc032c4cf91",
+      "networkKey": "testnet",
+      "createdAt": "2026-05-03T05:55:26.896Z",
+      "storageMode": "0g",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "agentId": "yieldboost-judge-agent",
+      "evaluatedAction": "compact-governance-live-testnet",
+      "deterministicReasons": [
+        "Decision stayed inside deterministic governance policy limits."
+      ]
+    }
+  ],
+  "crossAgentHandshakes": [
+    {
+      "handshakeId": "handshake-b86a0a88-4bdf-4c0d-8f90-bd14f8bcd31b",
+      "requestingAgent": "YieldBoost Optimizer Agent",
+      "respondingAgent": "Integrity Auditor Agent",
+      "handshakeType": "cross-agent-neural-handshake",
+      "artifactCid": "0x491ab51685e0914ace65571a7a823894ffd3adf2cba0cb582eeabe45492547fa",
+      "txHash": "0x96392864bab668132a7d70d13f729bc648e153f448cfb3c8d551906ebed3491f",
+      "blockNumber": 31241493,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x96392864bab668132a7d70d13f729bc648e153f448cfb3c8d551906ebed3491f",
+      "networkKey": "testnet",
+      "status": "completed",
+      "createdAt": "2026-05-03T05:52:19.665Z",
+      "summary": "Optimizer and Integrity Auditor completed testnet neural handshake for Judge Mode.",
+      "storageMode": "0g",
+      "skillPurpose": "Cross-check yield reasoning, governance status, and proof-readiness before Judge Mode display.",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "transcriptDigest": "bca1cab283a22b2bd1ec879906c9ba6d48980803ed0f2b7f0171c801720824bb"
+    }
+  ],
   "settings": {
     "riskProfile": "Moderate",
     "notificationRules": 8,

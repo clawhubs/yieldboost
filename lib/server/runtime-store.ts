@@ -9,22 +9,32 @@ import {
   type SettingsState,
   type StoredAgentMemoryRecord,
   type StoredBlacklistRecord,
+  type StoredCrossAgentHandshake,
+  type StoredGovernanceDecision,
   type StoredProofRecord,
   type StoredStressTestReport,
+  type StoredZkReasoningProof,
   buildSettingsResponse,
   getDefaultSettingsState,
 } from "@/lib/backend-data";
+import type { WalletNetworkKey } from "@/lib/wallet";
 import { sameWalletAddress } from "@/lib/wallet";
 
 const PROOFS_KEY = "yieldboost:proofs";
 const MEMORIES_KEY = "yieldboost:agent-memories";
 const BLACKLIST_KEY = "yieldboost:blacklist";
 const STRESS_REPORTS_KEY = "yieldboost:stress-reports";
+const ZK_REASONING_PROOFS_KEY = "yieldboost:zk-reasoning-proofs";
+const GOVERNANCE_DECISIONS_KEY = "yieldboost:governance-decisions";
+const CROSS_AGENT_HANDSHAKES_KEY = "yieldboost:cross-agent-handshakes";
 const SETTINGS_KEY = "yieldboost:settings";
 const MAX_PROOFS = 50;
 const MAX_MEMORY_RECORDS = 50;
 const MAX_BLACKLIST_RECORDS = 80;
 const MAX_STRESS_REPORTS = 40;
+const MAX_ZK_REASONING_PROOFS = 40;
+const MAX_GOVERNANCE_DECISIONS = 60;
+const MAX_CROSS_AGENT_HANDSHAKES = 60;
 const LOCAL_STORE_PATH = path.join(process.cwd(), ".artifacts", "runtime-store.json");
 
 export function isRuntimeStoreKvConfigured() {
@@ -37,6 +47,9 @@ interface RuntimeStore {
   agentMemories: StoredAgentMemoryRecord[];
   blacklist: StoredBlacklistRecord[];
   stressReports: StoredStressTestReport[];
+  zkReasoningProofs: StoredZkReasoningProof[];
+  governanceDecisions: StoredGovernanceDecision[];
+  crossAgentHandshakes: StoredCrossAgentHandshake[];
   settings: SettingsState;
 }
 
@@ -51,6 +64,9 @@ function getLocalStore(): RuntimeStore {
       agentMemories: [],
       blacklist: [],
       stressReports: [],
+      zkReasoningProofs: [],
+      governanceDecisions: [],
+      crossAgentHandshakes: [],
       settings: getDefaultSettingsState(),
     };
   }
@@ -86,6 +102,15 @@ function sortTimestampedNewestFirst<T extends { timestamp: string }>(
 ) {
   return [...items]
     .sort((left, right) => parseProofTimestamp(right.timestamp) - parseProofTimestamp(left.timestamp))
+    .slice(0, maxItems);
+}
+
+function sortCreatedNewestFirst<T extends { createdAt: string }>(
+  items: T[],
+  maxItems: number,
+) {
+  return [...items]
+    .sort((left, right) => parseProofTimestamp(right.createdAt) - parseProofTimestamp(left.createdAt))
     .slice(0, maxItems);
 }
 
@@ -139,6 +164,15 @@ async function readLocalStoreFile(): Promise<RuntimeStore | null> {
       blacklist: Array.isArray(parsed.blacklist) ? parsed.blacklist : [],
       stressReports: Array.isArray(parsed.stressReports)
         ? parsed.stressReports
+        : [],
+      zkReasoningProofs: Array.isArray(parsed.zkReasoningProofs)
+        ? parsed.zkReasoningProofs
+        : [],
+      governanceDecisions: Array.isArray(parsed.governanceDecisions)
+        ? parsed.governanceDecisions
+        : [],
+      crossAgentHandshakes: Array.isArray(parsed.crossAgentHandshakes)
+        ? parsed.crossAgentHandshakes
         : [],
       settings: parsed.settings
         ? { ...getDefaultSettingsState(), ...parsed.settings }
@@ -433,6 +467,234 @@ export async function getLatestStressTestReport(
       (report) =>
         (!agentId || report.agentId === agentId) &&
         (!networkKey || report.networkKey === networkKey),
+    ) ?? null
+  );
+}
+
+export async function recordZkReasoningProof(
+  record: StoredZkReasoningProof,
+): Promise<StoredZkReasoningProof> {
+  if (isRuntimeStoreKvConfigured()) {
+    try {
+      const existing = await kv.lrange<StoredZkReasoningProof>(
+        ZK_REASONING_PROOFS_KEY,
+        0,
+        MAX_ZK_REASONING_PROOFS - 1,
+      );
+      const filtered = (existing ?? []).filter((item) => item.proofId !== record.proofId);
+      const next = sortCreatedNewestFirst(
+        [record, ...filtered],
+        MAX_ZK_REASONING_PROOFS,
+      );
+      await kv.del(ZK_REASONING_PROOFS_KEY);
+      if (next.length > 0) {
+        await kv.lpush(ZK_REASONING_PROOFS_KEY, ...next.slice().reverse());
+      }
+      return record;
+    } catch (error) {
+      console.warn("[runtime-store] KV ZK proof write failed, using local fallback:", error);
+    }
+  }
+
+  const store = await loadLocalStore();
+  store.zkReasoningProofs = sortCreatedNewestFirst(
+    [
+      record,
+      ...store.zkReasoningProofs.filter((item) => item.proofId !== record.proofId),
+    ],
+    MAX_ZK_REASONING_PROOFS,
+  );
+  globalStore.__yieldboostRuntimeStore = store;
+  await writeLocalStoreFile(store);
+  return record;
+}
+
+export async function getZkReasoningProofs(): Promise<StoredZkReasoningProof[]> {
+  if (isRuntimeStoreKvConfigured()) {
+    try {
+      const items = await kv.lrange<StoredZkReasoningProof>(
+        ZK_REASONING_PROOFS_KEY,
+        0,
+        MAX_ZK_REASONING_PROOFS - 1,
+      );
+      return sortCreatedNewestFirst(items ?? [], MAX_ZK_REASONING_PROOFS);
+    } catch (error) {
+      console.warn("[runtime-store] KV ZK proof read failed, using local fallback:", error);
+    }
+  }
+
+  return sortCreatedNewestFirst(
+    (await loadLocalStore()).zkReasoningProofs,
+    MAX_ZK_REASONING_PROOFS,
+  );
+}
+
+export async function getLatestZkReasoningProof(input: {
+  walletAddress?: string;
+  agentId?: string;
+  networkKey?: WalletNetworkKey;
+} = {}): Promise<StoredZkReasoningProof | null> {
+  const proofs = await getZkReasoningProofs();
+  return (
+    proofs.find(
+      (proof) =>
+        (!input.networkKey || proof.networkKey === input.networkKey) &&
+        (!input.walletAddress || sameWalletAddress(proof.walletAddress, input.walletAddress)) &&
+        (!input.agentId || proof.agentId === input.agentId),
+    ) ?? null
+  );
+}
+
+export async function recordGovernanceDecision(
+  record: StoredGovernanceDecision,
+): Promise<StoredGovernanceDecision> {
+  if (isRuntimeStoreKvConfigured()) {
+    try {
+      const existing = await kv.lrange<StoredGovernanceDecision>(
+        GOVERNANCE_DECISIONS_KEY,
+        0,
+        MAX_GOVERNANCE_DECISIONS - 1,
+      );
+      const filtered = (existing ?? []).filter((item) => item.governanceId !== record.governanceId);
+      const next = sortCreatedNewestFirst(
+        [record, ...filtered],
+        MAX_GOVERNANCE_DECISIONS,
+      );
+      await kv.del(GOVERNANCE_DECISIONS_KEY);
+      if (next.length > 0) {
+        await kv.lpush(GOVERNANCE_DECISIONS_KEY, ...next.slice().reverse());
+      }
+      return record;
+    } catch (error) {
+      console.warn("[runtime-store] KV governance write failed, using local fallback:", error);
+    }
+  }
+
+  const store = await loadLocalStore();
+  store.governanceDecisions = sortCreatedNewestFirst(
+    [
+      record,
+      ...store.governanceDecisions.filter(
+        (item) => item.governanceId !== record.governanceId,
+      ),
+    ],
+    MAX_GOVERNANCE_DECISIONS,
+  );
+  globalStore.__yieldboostRuntimeStore = store;
+  await writeLocalStoreFile(store);
+  return record;
+}
+
+export async function getGovernanceDecisions(): Promise<StoredGovernanceDecision[]> {
+  if (isRuntimeStoreKvConfigured()) {
+    try {
+      const items = await kv.lrange<StoredGovernanceDecision>(
+        GOVERNANCE_DECISIONS_KEY,
+        0,
+        MAX_GOVERNANCE_DECISIONS - 1,
+      );
+      return sortCreatedNewestFirst(items ?? [], MAX_GOVERNANCE_DECISIONS);
+    } catch (error) {
+      console.warn("[runtime-store] KV governance read failed, using local fallback:", error);
+    }
+  }
+
+  return sortCreatedNewestFirst(
+    (await loadLocalStore()).governanceDecisions,
+    MAX_GOVERNANCE_DECISIONS,
+  );
+}
+
+export async function getLatestGovernanceDecision(input: {
+  walletAddress?: string;
+  agentId?: string;
+  networkKey?: WalletNetworkKey;
+} = {}): Promise<StoredGovernanceDecision | null> {
+  const decisions = await getGovernanceDecisions();
+  return (
+    decisions.find(
+      (decision) =>
+        (!input.networkKey || decision.networkKey === input.networkKey) &&
+        (!input.walletAddress || sameWalletAddress(decision.walletAddress, input.walletAddress)) &&
+        (!input.agentId || decision.agentId === input.agentId),
+    ) ?? null
+  );
+}
+
+export async function recordCrossAgentHandshake(
+  record: StoredCrossAgentHandshake,
+): Promise<StoredCrossAgentHandshake> {
+  if (isRuntimeStoreKvConfigured()) {
+    try {
+      const existing = await kv.lrange<StoredCrossAgentHandshake>(
+        CROSS_AGENT_HANDSHAKES_KEY,
+        0,
+        MAX_CROSS_AGENT_HANDSHAKES - 1,
+      );
+      const filtered = (existing ?? []).filter((item) => item.handshakeId !== record.handshakeId);
+      const next = sortCreatedNewestFirst(
+        [record, ...filtered],
+        MAX_CROSS_AGENT_HANDSHAKES,
+      );
+      await kv.del(CROSS_AGENT_HANDSHAKES_KEY);
+      if (next.length > 0) {
+        await kv.lpush(CROSS_AGENT_HANDSHAKES_KEY, ...next.slice().reverse());
+      }
+      return record;
+    } catch (error) {
+      console.warn("[runtime-store] KV handshake write failed, using local fallback:", error);
+    }
+  }
+
+  const store = await loadLocalStore();
+  store.crossAgentHandshakes = sortCreatedNewestFirst(
+    [
+      record,
+      ...store.crossAgentHandshakes.filter(
+        (item) => item.handshakeId !== record.handshakeId,
+      ),
+    ],
+    MAX_CROSS_AGENT_HANDSHAKES,
+  );
+  globalStore.__yieldboostRuntimeStore = store;
+  await writeLocalStoreFile(store);
+  return record;
+}
+
+export async function getCrossAgentHandshakes(): Promise<StoredCrossAgentHandshake[]> {
+  if (isRuntimeStoreKvConfigured()) {
+    try {
+      const items = await kv.lrange<StoredCrossAgentHandshake>(
+        CROSS_AGENT_HANDSHAKES_KEY,
+        0,
+        MAX_CROSS_AGENT_HANDSHAKES - 1,
+      );
+      return sortCreatedNewestFirst(items ?? [], MAX_CROSS_AGENT_HANDSHAKES);
+    } catch (error) {
+      console.warn("[runtime-store] KV handshake read failed, using local fallback:", error);
+    }
+  }
+
+  return sortCreatedNewestFirst(
+    (await loadLocalStore()).crossAgentHandshakes,
+    MAX_CROSS_AGENT_HANDSHAKES,
+  );
+}
+
+export async function getLatestCrossAgentHandshake(input: {
+  walletAddress?: string;
+  requestingAgent?: string;
+  respondingAgent?: string;
+  networkKey?: WalletNetworkKey;
+} = {}): Promise<StoredCrossAgentHandshake | null> {
+  const handshakes = await getCrossAgentHandshakes();
+  return (
+    handshakes.find(
+      (handshake) =>
+        (!input.networkKey || handshake.networkKey === input.networkKey) &&
+        (!input.walletAddress || sameWalletAddress(handshake.walletAddress, input.walletAddress)) &&
+        (!input.requestingAgent || handshake.requestingAgent === input.requestingAgent) &&
+        (!input.respondingAgent || handshake.respondingAgent === input.respondingAgent),
     ) ?? null
   );
 }

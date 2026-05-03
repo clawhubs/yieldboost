@@ -18,10 +18,14 @@ import {
 } from "@/lib/wallet";
 import { getDocsRuntimeStatus } from "@/lib/docs/content";
 import type {
+  PortfolioResponse,
   StoredAgentMemoryRecord,
   StoredBlacklistRecord,
+  StoredCrossAgentHandshake,
+  StoredGovernanceDecision,
   StoredProofRecord,
   StoredStressTestReport,
+  StoredZkReasoningProof,
 } from "@/lib/backend-data";
 import { auditOptimizationDecision } from "@/lib/integrity-audit";
 import {
@@ -37,8 +41,11 @@ import {
 } from "@/lib/server/network-credentials";
 import {
   getBlacklistEntries,
+  getLatestCrossAgentHandshake,
   getLatestAgentMemory,
+  getLatestGovernanceDecision,
   getLatestStressTestReport,
+  getLatestZkReasoningProof,
 } from "@/lib/server/runtime-store";
 
 type BadgeTone = "teal" | "green" | "amber" | "white";
@@ -91,6 +98,9 @@ export interface JudgePageData {
   sovereignMemory: StoredAgentMemoryRecord | null;
   latestBlacklistEntry: StoredBlacklistRecord | null;
   latestStressReport: StoredStressTestReport | null;
+  latestZkReasoningProof: StoredZkReasoningProof | null;
+  latestGovernanceDecision: StoredGovernanceDecision | null;
+  latestCrossAgentHandshake: StoredCrossAgentHandshake | null;
   latestProofCards: JudgeStatusCard[];
   integrityStackCards: JudgeStatusCard[];
   efficiencyCards: JudgeStatusCard[];
@@ -169,8 +179,70 @@ function formatPortfolioSnapshotValue(value: number | undefined, unit: string | 
   return unit ? `${rounded} ${unit}` : `$${rounded}`;
 }
 
+function buildJudgePortfolioFallback(
+  walletAddress: string,
+  latestProof: StoredProofRecord | null,
+): PortfolioResponse {
+  const snapshot = latestProof?.portfolioSnapshot;
+  const totalUSD = snapshot?.totalUSD ?? latestProof?.decision.totalPortfolio ?? 0;
+
+  return {
+    tokens: snapshot?.tokens ?? [],
+    totalUSD,
+    currentAPY: snapshot?.currentAPY ?? latestProof?.decision.current_apy ?? 0,
+    walletAddress,
+    source: "judge_runtime_timeout_fallback",
+    latestTxHash: latestProof?.txHash,
+    displayTotal: snapshot?.displayTotal ?? totalUSD,
+    displayUnit: snapshot?.displayUnit,
+    displayLabel: snapshot?.displayLabel ?? "Runtime proof snapshot fallback",
+  };
+}
+
 function toHealthStatus(value: boolean): HealthStatus {
   return value ? "configured" : "pending";
+}
+
+async function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  fallback: T,
+  label: string,
+): Promise<T> {
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((resolve) => {
+        timeout = setTimeout(() => {
+          console.warn(`[review-mode] ${label} timed out after ${timeoutMs}ms`);
+          resolve(fallback);
+        }, timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
+}
+
+function formatFeatureStatus(value: string | undefined) {
+  if (!value) return "Pending";
+  return value
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function toneForRecordedFeature(status: string | undefined): BadgeTone {
+  if (!status) return "amber";
+  if (["active", "completed", "verified", "testnet-verified"].includes(status)) {
+    return "green";
+  }
+  if (["tee-envelope-recorded", "zk-ready", "warning"].includes(status)) {
+    return "teal";
+  }
+  return "amber";
 }
 
 function readEnv(name: string) {
@@ -280,7 +352,19 @@ async function buildDeploymentArtifacts({
   const oracleAddress = getYieldStrategyAttestationOracleAddress(artifactNetwork);
   const blacklistRegistryAddress = getGlobalBlacklistRegistryAddress(artifactNetwork);
   const validationRegistryAddress = getValidationRegistryAddress(artifactNetwork);
-  const latestMint = await resolveLatestAgentMintArtifact(reviewWallet, artifactNetwork);
+  const latestMint = await withTimeout(
+    resolveLatestAgentMintArtifact(reviewWallet, artifactNetwork),
+    3_500,
+    {
+      label: "Latest Agent NFT mint tx",
+      value: "Lookup timed out",
+      helper: "Contract lookup timed out, so Judge Mode is showing the rest of the deployment artifacts from configured env values.",
+      status: "partial",
+      href: buildExplorerAddressHref(artifactNetwork, inftAddress),
+      meta: "Contract lookup fallback",
+    },
+    "latest agent mint lookup",
+  );
 
   return [
     latestMint,
@@ -621,13 +705,23 @@ export async function getJudgePageData(): Promise<JudgePageData> {
     ? resolveWalletNetworkKey(reviewNetworkCookie)
     : defaultReviewNetwork;
   const reviewNetworkConfig = getServer0GNetworkConfig(reviewNetwork);
-  const rawLatestProof = await resolveLatestProofForWallet(reviewWallet, reviewNetwork);
+  const rawLatestProof = await withTimeout(
+    resolveLatestProofForWallet(reviewWallet, reviewNetwork),
+    4_500,
+    null,
+    "latest proof resolution",
+  );
   const latestIntegrityAudit = resolveProofIntegrityAudit(rawLatestProof);
   const latestProof =
     rawLatestProof && latestIntegrityAudit
       ? { ...rawLatestProof, integrityAudit: latestIntegrityAudit }
       : rawLatestProof;
-  const scopedProofs = await resolveProofHistoryForWallet(reviewWallet, reviewNetwork);
+  const scopedProofs = await withTimeout(
+    resolveProofHistoryForWallet(reviewWallet, reviewNetwork),
+    4_500,
+    [],
+    "proof history resolution",
+  );
   const sovereignMemory =
     (await getLatestAgentMemory(reviewWallet, reviewNetwork)) ??
     (await getLatestAgentMemory(reviewWallet));
@@ -642,12 +736,41 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   const latestStressReport =
     (await getLatestStressTestReport(reviewWallet, reviewNetwork)) ??
     (await getLatestStressTestReport(reviewWallet));
+  const latestZkReasoningProof =
+    (await getLatestZkReasoningProof({
+      walletAddress: reviewWallet,
+      networkKey: reviewNetwork,
+    })) ??
+    (await getLatestZkReasoningProof({ walletAddress: reviewWallet })) ??
+    (await getLatestZkReasoningProof({ networkKey: reviewNetwork })) ??
+    (await getLatestZkReasoningProof());
+  const latestGovernanceDecision =
+    (await getLatestGovernanceDecision({
+      walletAddress: reviewWallet,
+      networkKey: reviewNetwork,
+    })) ??
+    (await getLatestGovernanceDecision({ walletAddress: reviewWallet })) ??
+    (await getLatestGovernanceDecision({ networkKey: reviewNetwork })) ??
+    (await getLatestGovernanceDecision());
+  const latestCrossAgentHandshake =
+    (await getLatestCrossAgentHandshake({
+      walletAddress: reviewWallet,
+      networkKey: reviewNetwork,
+    })) ??
+    (await getLatestCrossAgentHandshake({ walletAddress: reviewWallet })) ??
+    (await getLatestCrossAgentHandshake({ networkKey: reviewNetwork })) ??
+    (await getLatestCrossAgentHandshake());
   const proofCount = scopedProofs.length;
   const proofNetwork = latestProof?.networkKey ?? reviewNetwork;
-  const judgePortfolio = await getLivePortfolioSnapshot(
-    reviewWallet,
-    proofNetwork,
-    { preferProofSnapshot: true, latestProof },
+  const judgePortfolio = await withTimeout(
+    getLivePortfolioSnapshot(
+      reviewWallet,
+      proofNetwork,
+      { preferProofSnapshot: true, latestProof },
+    ),
+    3_500,
+    buildJudgePortfolioFallback(reviewWallet, latestProof),
+    "judge portfolio snapshot",
   );
   const preferredConfig = getServer0GNetworkConfig(preferredNetwork);
   const computeProviderAddress = getComputeProviderAddress(reviewNetwork);
@@ -658,7 +781,12 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   const latestExplorer = trimUrl(latestProof?.explorerUrl);
   const latestRegistryExplorer = trimUrl(latestProof?.proofRegistryExplorerUrl);
   const envChecklist = buildEnvChecklist();
-  const latestProofAcrossNetworks = await resolveLatestProofForWalletAcrossNetworks(reviewWallet);
+  const latestProofAcrossNetworks = await withTimeout(
+    resolveLatestProofForWalletAcrossNetworks(reviewWallet),
+    4_500,
+    null,
+    "cross-network proof resolution",
+  );
   const mainnetChecklist = buildMainnetChecklist({
     runtimeStatus,
     latestProof: latestProofAcrossNetworks,
@@ -717,7 +845,37 @@ export async function getJudgePageData(): Promise<JudgePageData> {
           ? "green"
           : latestStressReport
             ? "amber"
-            : "white",
+          : "white",
+    },
+    {
+      label: "ZK-Proof",
+      value: latestZkReasoningProof
+        ? formatFeatureStatus(latestZkReasoningProof.status)
+        : "Pending",
+      helper: latestZkReasoningProof
+        ? `${getServer0GNetworkConfig(latestZkReasoningProof.networkKey).label} reasoning envelope CID ${shorten(latestZkReasoningProof.proofCid, 10)} (${latestZkReasoningProof.storageMode}); ${latestZkReasoningProof.proofType}.`
+        : "No TEE/ZK-ready reasoning proof envelope has been recorded yet.",
+      tone: toneForRecordedFeature(latestZkReasoningProof?.status),
+    },
+    {
+      label: "Governance",
+      value: latestGovernanceDecision
+        ? formatFeatureStatus(latestGovernanceDecision.status)
+        : "Pending",
+      helper: latestGovernanceDecision
+        ? `${getServer0GNetworkConfig(latestGovernanceDecision.networkKey).label} risk ${latestGovernanceDecision.riskScore}/100. ${latestGovernanceDecision.reason}`
+        : "No programmable governance decision has been evaluated yet.",
+      tone: toneForRecordedFeature(latestGovernanceDecision?.status),
+    },
+    {
+      label: "Neural Handshake",
+      value: latestCrossAgentHandshake
+        ? formatFeatureStatus(latestCrossAgentHandshake.status)
+        : "Pending",
+      helper: latestCrossAgentHandshake
+        ? `${getServer0GNetworkConfig(latestCrossAgentHandshake.networkKey).label} handshake CID ${shorten(latestCrossAgentHandshake.artifactCid, 10)} between ${latestCrossAgentHandshake.requestingAgent} and ${latestCrossAgentHandshake.respondingAgent}.`
+        : "No cross-agent transcript/proof envelope has been recorded yet.",
+      tone: toneForRecordedFeature(latestCrossAgentHandshake?.status),
     },
   ];
 
@@ -901,6 +1059,53 @@ export async function getJudgePageData(): Promise<JudgePageData> {
         : "Report card runner ready",
     },
     {
+      title: "Zero-Knowledge Reasoning",
+      status: latestZkReasoningProof
+        ? latestZkReasoningProof.status === "failed"
+          ? "partial"
+          : "live"
+        : "configured",
+      detail: latestZkReasoningProof
+        ? `${formatFeatureStatus(latestZkReasoningProof.status)} envelope stored as CID ${shorten(latestZkReasoningProof.proofCid, 12)}.`
+        : "ZKR route can record TEE/ZK-ready reasoning envelopes to 0G testnet without claiming full ZK cryptography.",
+      href: latestZkReasoningProof?.proofRegistryExplorerUrl ?? latestZkReasoningProof?.explorerUrl,
+      meta: latestZkReasoningProof
+        ? latestZkReasoningProof.proofType
+        : "ZK-ready artifact route available",
+    },
+    {
+      title: "Programmable AI Governance",
+      status: latestGovernanceDecision
+        ? latestGovernanceDecision.status === "active"
+          ? "live"
+          : "partial"
+        : "configured",
+      detail: latestGovernanceDecision
+        ? `Latest governance decision is ${formatFeatureStatus(latestGovernanceDecision.status)} with risk ${latestGovernanceDecision.riskScore}/100.`
+        : "Governance route evaluates strategy decisions and records deterministic kill-switch decisions before downstream flows rely on them.",
+      href: latestGovernanceDecision?.explorerUrl,
+      meta: latestGovernanceDecision
+        ? latestGovernanceDecision.killSwitchTriggered
+          ? "Kill switch triggered"
+          : "Guardrail active"
+        : "Policy evaluator ready",
+    },
+    {
+      title: "Cross-Agent Neural Handshake",
+      status: latestCrossAgentHandshake
+        ? latestCrossAgentHandshake.status === "completed"
+          ? "live"
+          : "partial"
+        : "configured",
+      detail: latestCrossAgentHandshake
+        ? `Latest handshake is ${formatFeatureStatus(latestCrossAgentHandshake.status)} with transcript digest ${shorten(latestCrossAgentHandshake.transcriptDigest, 12)}.`
+        : "Handshake route can persist requester/responder scope, transcript digest, and proof envelope to 0G testnet.",
+      href: latestCrossAgentHandshake?.explorerUrl,
+      meta: latestCrossAgentHandshake
+        ? latestCrossAgentHandshake.handshakeType
+        : "Agent coordination route ready",
+    },
+    {
       title: "Yield Strategy INFT",
       status: getYieldStrategyInftAddress(reviewNetwork) ? "configured" : "partial",
       detail: getYieldStrategyInftAddress(reviewNetwork)
@@ -971,6 +1176,9 @@ export async function getJudgePageData(): Promise<JudgePageData> {
     sovereignMemory,
     latestBlacklistEntry,
     latestStressReport,
+    latestZkReasoningProof,
+    latestGovernanceDecision,
+    latestCrossAgentHandshake,
     latestProofCards,
     integrityStackCards,
     efficiencyCards,
