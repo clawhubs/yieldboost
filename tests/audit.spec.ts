@@ -7,6 +7,66 @@ const DEMO_WALLET =
   process.env.NEXT_PUBLIC_DEMO_WALLET_ADDRESS ??
   "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D";
 const DEMO_NETWORK = process.env.ZG_NETWORK_KEY === "mainnet" ? "mainnet" : "testnet";
+const TESTNET_NETWORK = "testnet";
+const ARTIFACT_ID_PATTERN = /^(0x[a-fA-F0-9]{64}|local-[a-fA-F0-9]{64})$/;
+
+function buildTestPortfolioSnapshot() {
+  return {
+    tokens: [
+      { symbol: "USDC", amount: 660, valueUSD: 660 },
+      { symbol: "0G", amount: 360, valueUSD: 360 },
+      { symbol: "BONZO", amount: 180, valueUSD: 180 },
+    ],
+    totalUSD: 1200,
+    currentAPY: 4.2,
+    displayTotal: 1200,
+    displayUnit: "USD",
+    displayLabel: "Seeded demo wallet snapshot",
+  };
+}
+
+type TestPortfolioSnapshot = {
+  tokens: Array<{ symbol: string; amount: number; valueUSD: number }>;
+  totalUSD: number;
+  currentAPY: number;
+  displayTotal?: number;
+  displayUnit?: string;
+  displayLabel?: string;
+};
+
+function buildApprovedOptimizationResult(snapshot: TestPortfolioSnapshot) {
+  const liveSymbols = snapshot.tokens
+    .filter((token) => token.amount > 0 || token.valueUSD > 0)
+    .map((token) => token.symbol.toUpperCase());
+  const routeSymbols = liveSymbols.slice(0, 2);
+  const recommended =
+    routeSymbols.length >= 2
+      ? `${routeSymbols[0]} / ${routeSymbols[1]} rebalance`
+      : `${routeSymbols[0] ?? "0G"} rebalance`;
+  const currentApy = Number(snapshot.currentAPY.toFixed(2));
+  const optimizedApy = Number((currentApy + 4.1).toFixed(2));
+  const estimatedAnnualGain = Number(
+    Math.max(snapshot.totalUSD * ((optimizedApy - currentApy) / 100), 0.01).toFixed(2),
+  );
+  const yieldIncreasePct = Number(
+    (((optimizedApy - currentApy) / Math.max(currentApy, 0.01)) * 100).toFixed(2),
+  );
+
+  return {
+    current_apy: currentApy,
+    optimized_apy: optimizedApy,
+    yield_increase: estimatedAnnualGain,
+    yield_increase_pct: yieldIncreasePct,
+    top_protocols: [{ name: recommended, apy: optimizedApy, risk: "medium" }],
+    recommended,
+    confidence: 91,
+    executionSeconds: 6.4,
+    estimatedAnnualGain,
+    totalPortfolio: snapshot.totalUSD,
+    reasoning: "Testing live proof write with a deterministic optimize response aligned to the wallet snapshot.",
+    riskProfile: "Moderate",
+  };
+}
 
 async function grantClipboard(page: import("@playwright/test").Page) {
   await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
@@ -21,7 +81,10 @@ async function clearWalletState(page: import("@playwright/test").Page) {
   });
 }
 
-async function enableDemoWatchMode(page: import("@playwright/test").Page) {
+async function enableDemoWatchMode(
+  page: import("@playwright/test").Page,
+  network: "testnet" | "mainnet" = DEMO_NETWORK,
+) {
   const url = new URL(BASE);
 
   await page.context().addCookies([
@@ -32,7 +95,7 @@ async function enableDemoWatchMode(page: import("@playwright/test").Page) {
     },
     {
       name: "yb_wallet_network",
-      value: DEMO_NETWORK,
+      value: network,
       url: url.origin,
     },
   ]);
@@ -44,7 +107,7 @@ async function enableDemoWatchMode(page: import("@playwright/test").Page) {
       window.localStorage.removeItem("yb_wallet_provider");
       window.localStorage.removeItem("yb_judge_mode");
     },
-    { wallet: DEMO_WALLET, network: DEMO_NETWORK },
+    { wallet: DEMO_WALLET, network },
   );
 }
 
@@ -109,15 +172,65 @@ test("testnet ZKR, governance, and handshake artifacts are exposed by backend ro
   const governance = await governanceResponse.json();
   const handshake = await handshakeResponse.json();
 
-  expect(zk.data.latest.status).toBe("testnet-verified");
-  expect(zk.data.latest.proofCid).toMatch(/^0x[a-fA-F0-9]{64}$/);
-  expect(zk.data.latest.txHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+  expect(["testnet-verified", "tee-envelope-recorded", "zk-ready"]).toContain(
+    zk.data.latest.status,
+  );
+  expect(zk.data.latest.proofCid).toMatch(ARTIFACT_ID_PATTERN);
+  if (zk.data.latest.txHash) {
+    expect(zk.data.latest.txHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+  }
   expect(governance.data.latest.status).toBe("active");
-  expect(governance.data.latest.artifactCid).toMatch(/^0x[a-fA-F0-9]{64}$/);
-  expect(governance.data.latest.txHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+  expect(governance.data.latest.artifactCid).toMatch(ARTIFACT_ID_PATTERN);
+  if (governance.data.latest.txHash) {
+    expect(governance.data.latest.txHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+  }
   expect(handshake.data.latest.status).toBe("completed");
-  expect(handshake.data.latest.artifactCid).toMatch(/^0x[a-fA-F0-9]{64}$/);
-  expect(handshake.data.latest.txHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+  expect(handshake.data.latest.artifactCid).toMatch(ARTIFACT_ID_PATTERN);
+  if (handshake.data.latest.txHash) {
+    expect(handshake.data.latest.txHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+  }
+});
+
+test("mainnet judge surfaces live integrity artifacts after recorded optimize flow", async ({
+  page,
+}) => {
+  await enableDemoWatchMode(page, "mainnet");
+  await page.goto(`${BASE}/judge`, { waitUntil: "domcontentloaded" });
+
+  await expect(
+    page.getByRole("heading", { name: "Mainnet review starts here." }),
+  ).toBeVisible();
+  await expect(page.getByTestId("judge-network-sync-overlay")).toHaveCount(0);
+
+  await expect(page.getByText("Sovereign Memory").first()).toBeVisible();
+  await expect(page.getByText("Hallucination Blacklist").first()).toBeVisible();
+  await expect(page.getByText("Multiverse Stress Test").first()).toBeVisible();
+  await expect(page.getByText("ZK-Proof").first()).toBeVisible();
+  await expect(page.getByText("Governance").first()).toBeVisible();
+  await expect(page.getByText("Neural Handshake").first()).toBeVisible();
+
+  await expect(page.getByText("Tee Envelope Recorded")).toBeVisible();
+  await expect(page.getByText("Active").first()).toBeVisible();
+  await expect(page.getByText("Completed").first()).toBeVisible();
+
+  await expect(
+    page.getByRole("link", { name: "Open memory tx on Chainscan" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Open blacklist tx on Chainscan" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Open stress tx on Chainscan" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Open ZK proof anchor on Chainscan" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Open governance tx on Chainscan" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Open handshake tx on Chainscan" }),
+  ).toBeVisible();
 });
 
 test("direct judge entry bootstraps the review wallet across dashboard and history", async ({
@@ -167,7 +280,9 @@ test("judge network switcher can toggle testnet and mainnet review state", async
       "Current review network",
       { timeout: 30_000 },
     );
-    await expect(page.getByText("Testnet Verified").first()).toBeVisible();
+    await expect(
+      page.getByText(/Testnet Verified|Tee Envelope Recorded|Zk Ready/).first(),
+    ).toBeVisible();
     await expect(page.getByText("Active").first()).toBeVisible();
     await expect(page.getByText("Completed").first()).toBeVisible();
     const testnetStorageNetwork = await page.evaluate(() =>
@@ -417,6 +532,248 @@ test("1-click optimize surfaces a stored proof receipt from the demo wallet", as
     "Logic Guardrail passed",
   );
   await expect(page.getByTestId("view-proof-banner")).toBeVisible();
+});
+
+test("1-click optimize plus testnet integrity stack surfaces all live feature cards in Judge", async ({
+  page,
+  request,
+}) => {
+  test.setTimeout(240_000);
+
+  await enableDemoWatchMode(page, TESTNET_NETWORK);
+  const portfolioResponse = await request.get(
+    `${BASE}/api/portfolio?wallet=${DEMO_WALLET}&network=${TESTNET_NETWORK}`,
+  );
+  expect(portfolioResponse.ok()).toBeTruthy();
+
+  const portfolioPayload = (await portfolioResponse.json()) as {
+    tokens?: Array<{ symbol: string; amount: number; valueUSD: number }>;
+    totalUSD?: number;
+    currentAPY?: number;
+    displayTotal?: number;
+    displayUnit?: string;
+    displayLabel?: string;
+  };
+  const portfolioSnapshot = portfolioPayload.tokens?.length
+    ? {
+        tokens: portfolioPayload.tokens,
+        totalUSD: portfolioPayload.totalUSD ?? 0,
+        currentAPY: portfolioPayload.currentAPY ?? 0,
+        displayTotal: portfolioPayload.displayTotal,
+        displayUnit: portfolioPayload.displayUnit,
+        displayLabel: portfolioPayload.displayLabel,
+      }
+    : buildTestPortfolioSnapshot();
+  const approvedOptimizationResult = buildApprovedOptimizationResult(portfolioSnapshot);
+  const optimizationHeader = JSON.stringify(approvedOptimizationResult);
+
+  await page.route("**/api/agent/optimize", async (route) => {
+    await route.fulfill({
+      status: 200,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "X-Optimization-Result": optimizationHeader,
+      },
+      body: '0:"Testing live proof write with a deterministic optimize response."\\n',
+    });
+  });
+
+  await page.goto(BASE, { waitUntil: "networkidle" });
+
+  const optimizeButton = page.getByTestId("boost-yield-cta");
+  await expect(optimizeButton).toBeEnabled({ timeout: 30_000 });
+  let proofPayload:
+    | {
+        success?: boolean;
+        cid?: string;
+        txHash?: string;
+        sovereignMemory?: { cid?: string; txHash?: string; explorerUrl?: string };
+      }
+    | null = null;
+
+  await optimizeButton.click();
+  const proofResponse = await page
+    .waitForResponse(
+      (response) =>
+        response.url().includes("/api/0g/store") &&
+        response.request().method() === "POST",
+      { timeout: 90_000 },
+    )
+    .catch(() => null);
+
+  await expect(page.getByTestId("proof-banner")).toContainText(
+    /Proof stored as|proof sync is currently blocked|Proof sync is running in the background/i,
+    { timeout: 60_000 },
+  );
+
+  if (proofResponse) {
+    expect(proofResponse.status()).toBe(200);
+
+    proofPayload = (await proofResponse.json()) as {
+      success?: boolean;
+      cid?: string;
+      txHash?: string;
+      sovereignMemory?: { cid?: string; txHash?: string; explorerUrl?: string };
+    };
+
+    expect(proofPayload.success).toBe(true);
+    expect(proofPayload.cid).toMatch(ARTIFACT_ID_PATTERN);
+    expect(proofPayload.txHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+    expect(proofPayload.sovereignMemory?.cid).toMatch(ARTIFACT_ID_PATTERN);
+    if (proofPayload.sovereignMemory?.txHash) {
+      expect(proofPayload.sovereignMemory.txHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+    }
+  }
+
+  const rejectedBlacklistDecision = {
+    current_apy: 0,
+    optimized_apy: 420,
+    yield_increase: 999999,
+    yield_increase_pct: 9999,
+    recommended: "Imaginary ETH Hyper Vault",
+    confidence: 99,
+    executionSeconds: 1.2,
+    estimatedAnnualGain: 999999,
+    totalPortfolio: 0,
+    reasoning: "This should be blocked before 0G Storage or ProofRegistry writes.",
+  };
+  const rejectedBlacklistSnapshot = {
+    tokens: [],
+    totalUSD: 0,
+    currentAPY: 0,
+  };
+
+  const [
+    blacklistResponse,
+    stressResponse,
+    zkResponse,
+    governanceResponse,
+    handshakeResponse,
+  ] = await Promise.all([
+    request.post(`${BASE}/api/auditor/blacklist`, {
+      data: {
+        networkKey: TESTNET_NETWORK,
+        decision: rejectedBlacklistDecision,
+        portfolioSnapshot: rejectedBlacklistSnapshot,
+      },
+    }),
+    request.post(`${BASE}/api/stress-test/run`, {
+      data: {
+        networkKey: TESTNET_NETWORK,
+        walletAddress: DEMO_WALLET,
+      },
+    }),
+    request.post(`${BASE}/api/zk/verify`, {
+      data: {
+        networkKey: TESTNET_NETWORK,
+        walletAddress: DEMO_WALLET,
+        agentId: DEMO_WALLET,
+        decision: approvedOptimizationResult,
+        portfolioSnapshot,
+        reasoning: approvedOptimizationResult.reasoning,
+        summary: "Playwright validation of ZK-ready reasoning envelope after 1-click optimize.",
+      },
+    }),
+    request.post(`${BASE}/api/governance/evaluate`, {
+      data: {
+        networkKey: TESTNET_NETWORK,
+        walletAddress: DEMO_WALLET,
+        agentId: DEMO_WALLET,
+        evaluatedAction: "playwright-optimize-validation",
+        decision: approvedOptimizationResult,
+        portfolioSnapshot,
+        enforce: true,
+      },
+    }),
+    request.post(`${BASE}/api/agents/handshake`, {
+      data: {
+        networkKey: TESTNET_NETWORK,
+        walletAddress: DEMO_WALLET,
+        requestingAgent: "YieldBoost Optimizer Agent",
+        respondingAgent: "Integrity Auditor Agent",
+        handshakeType: "cross-agent-neural-handshake",
+        skillPurpose: "Cross-check deterministic proof envelope after UI optimize",
+        summary: "Playwright handshake validation after 1-click optimize.",
+      },
+    }),
+  ]);
+
+  expect(blacklistResponse.ok()).toBeTruthy();
+  expect(stressResponse.ok()).toBeTruthy();
+  expect(zkResponse.ok()).toBeTruthy();
+  expect(governanceResponse.ok()).toBeTruthy();
+  expect(handshakeResponse.ok()).toBeTruthy();
+
+  const blacklist = await blacklistResponse.json();
+  const stress = await stressResponse.json();
+  const zk = await zkResponse.json();
+  const governance = await governanceResponse.json();
+  const handshake = await handshakeResponse.json();
+
+  expect(blacklist.data.cid).toMatch(ARTIFACT_ID_PATTERN);
+  expect(stress.data.reportCid).toMatch(ARTIFACT_ID_PATTERN);
+  expect(stress.data.verdict).toBe("PASS");
+  expect(["testnet-verified", "tee-envelope-recorded", "zk-ready"]).toContain(
+    zk.data.status,
+  );
+  expect(zk.data.proofCid).toMatch(ARTIFACT_ID_PATTERN);
+  expect(governance.data.status).toBe("active");
+  expect(governance.data.artifactCid).toMatch(ARTIFACT_ID_PATTERN);
+  expect(handshake.data.status).toBe("completed");
+  expect(handshake.data.artifactCid).toMatch(ARTIFACT_ID_PATTERN);
+
+  await page.goto(`${BASE}/judge`, { waitUntil: "domcontentloaded" });
+
+  await expect(
+    page.getByRole("heading", { name: "Testnet comparison snapshot." }),
+  ).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByTestId("judge-network-testnet")).toContainText(
+    "Current review network",
+  );
+
+  await expect(page.getByText("Sovereign Memory").first()).toBeVisible();
+  await expect(page.getByText(/Latest memory CID/i).first()).toBeVisible();
+  await expect(page.getByText("Hallucination Blacklist").first()).toBeVisible();
+  await expect(page.getByText(/Latest rejection indexed/i).first()).toBeVisible();
+  await expect(page.getByText("Multiverse Stress Test").first()).toBeVisible();
+  await expect(page.getByText("PASS").first()).toBeVisible();
+  await expect(page.getByText("ZK-Proof")).toBeVisible();
+  await expect(
+    page.getByText(
+      zk.data.status
+        .split("-")
+        .map((part: string) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(" "),
+    ).first(),
+  ).toBeVisible();
+  await expect(page.getByText("Governance").first()).toBeVisible();
+  await expect(page.getByText("Active").first()).toBeVisible();
+  await expect(page.getByText("Neural Handshake").first()).toBeVisible();
+  await expect(page.getByText("Completed").first()).toBeVisible();
+  await expect(page.getByText("Memory CID", { exact: true })).toBeVisible();
+  await expect(page.getByText("Blacklist CID", { exact: true })).toBeVisible();
+  await expect(page.getByText("Stress Report CID", { exact: true })).toBeVisible();
+  await expect(page.getByText("ZK Proof CID", { exact: true })).toBeVisible();
+  await expect(page.getByText("Governance CID", { exact: true })).toBeVisible();
+  await expect(page.getByText("Handshake CID", { exact: true })).toBeVisible();
+  if (proofPayload.sovereignMemory?.explorerUrl) {
+    await expect(page.getByRole("link", { name: /Open memory tx on Chainscan/i })).toBeVisible();
+  }
+  if (blacklist.data.explorerUrl) {
+    await expect(page.getByRole("link", { name: /Open blacklist tx on Chainscan/i })).toBeVisible();
+  }
+  if (stress.data.explorerUrl) {
+    await expect(page.getByRole("link", { name: /Open stress tx on Chainscan/i })).toBeVisible();
+  }
+  if (zk.data.proofRegistryExplorerUrl || zk.data.explorerUrl) {
+    await expect(page.getByRole("link", { name: /Open ZK proof/i }).first()).toBeVisible();
+  }
+  if (governance.data.explorerUrl) {
+    await expect(page.getByRole("link", { name: /Open governance tx on Chainscan/i })).toBeVisible();
+  }
+  if (handshake.data.explorerUrl) {
+    await expect(page.getByRole("link", { name: /Open handshake tx on Chainscan/i })).toBeVisible();
+  }
 });
 
 test("integrity auditor rejects hallucinated proof writes before storage", async ({

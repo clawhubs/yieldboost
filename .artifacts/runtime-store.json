@@ -1,6 +1,306 @@
 {
   "proofs": [
     {
+      "cid": "0x8d5c9b9b819a4a286f5521a904aef6e8ea2fa13ace21612ad15a0d82b25a2938",
+      "txHash": "0x05e373cdeb70772a09f74ff6e584c8f344792e6dddc44c510739b9e3eb1afd80",
+      "blockNumber": 31255963,
+      "timestamp": "2026-05-03T07:37:20.649Z",
+      "networkKey": "testnet",
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x05e373cdeb70772a09f74ff6e584c8f344792e6dddc44c510739b9e3eb1afd80",
+      "decision": {
+        "current_apy": 12.38,
+        "optimized_apy": 16.48,
+        "yield_increase": 0.09,
+        "yield_increase_pct": 33.12,
+        "recommended": "0G rebalance",
+        "confidence": 91,
+        "executionSeconds": 6.4,
+        "estimatedAnnualGain": 0.09,
+        "totalPortfolio": 2.271181,
+        "reasoning": "Testing live proof write with a deterministic optimize response aligned to the wallet snapshot."
+      },
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "portfolioSnapshot": {
+        "tokens": [
+          {
+            "symbol": "0G",
+            "amount": 2.271181,
+            "valueUSD": 2.271181
+          }
+        ],
+        "totalUSD": 2.271181,
+        "currentAPY": 12.38,
+        "displayTotal": 2.271181,
+        "displayUnit": "0G",
+        "displayLabel": "Native 0G balance"
+      },
+      "integrityAudit": {
+        "status": "APPROVED",
+        "score": 100,
+        "reasons": [
+          "APY projection stays within deterministic guardrail bounds.",
+          "Snapshot or proof evidence supports the recommendation.",
+          "Route recommendation is compatible with available snapshot symbols."
+        ],
+        "checkedAt": "2026-05-03T07:37:20.649Z",
+        "source": "deterministic-logic-guardrail"
+      },
+      "note": "pending_registry_receipt",
+      "proofRegistryAddress": "0x516D005367045b1fc18c9c9a0Ff7bf8653d1B4e3",
+      "proofRegistryTxHash": "0xe96fd7f596aec3cc57202154003328d3bdfe562b8408c971e7ab86996cf44dda",
+      "proofRegistryExplorerUrl": "https://chainscan-galileo.0g.ai/tx/0xe96fd7f596aec3cc57202154003328d3bdfe562b8408c971e7ab86996cf44dda"
+    },
+    {
+      "cid": "0xa90aceaf5fe69a6e6ad48f88a4c740f590349bd8952abfb995821d5ec03e3515",
+      "txHash": "0x1cdaa8608b2d3b582d060147fc8652f92acf4b9e08a2e51fe85b442463255c76",
+      "blockNumber": 31255613,
+      "timestamp": "2026-05-03T07:34:47.059Z",
+      "networkKey": "testnet",
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x1cdaa8608b2d3b582d060147fc8652f92acf4b9e08a2e51fe85b442463255c76",
+      "decision": {
+        "current_apy": 12.38,
+        "optimized_apy": 16.48,
+        "yield_increase": 0.09,
+        "yield_increase_pct": 33.12,
+        "recommended": "0G rebalance",
+        "confidence": 91,
+        "executionSeconds": 6.4,
+        "estimatedAnnualGain": 0.09,
+        "totalPortfolio": 2.28199,
+        "reasoning": "Testing live proof write with a deterministic optimize response aligned to the wallet snapshot."
+      },
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "portfolioSnapshot": {
+        "tokens": [
+          {
+            "symbol": "0G",
+            "amount": 2.28199,
+            "valueUSD": 2.28199
+          }
+        ],
+        "totalUSD": 2.28199,
+        "currentAPY": 12.38,
+        "displayTotal": 2.28199,
+        "displayUnit": "0G",
+        "displayLabel": "Native 0G balance"
+      },
+      "integrityAudit": {
+        "status": "APPROVED",
+        "score": 100,
+        "reasons": [
+          "APY projection stays within deterministic guardrail bounds.",
+          "Snapshot or proof evidence supports the recommendation.",
+          "Route recommendation is compatible with available snapshot symbols."
+        ],
+        "checkedAt": "2026-05-03T07:34:47.059Z",
+        "source": "deterministic-logic-guardrail"
+      },
+      "note": "pending_registry_receipt",
+      "proofRegistryAddress": "0x516D005367045b1fc18c9c9a0Ff7bf8653d1B4e3",
+      "proofRegistryTxHash": "0xde905523fcbd0ec8e470fb72b02b7fe1e99c9947b1f6b8aa2ad585d83c181593",
+      "proofRegistryExplorerUrl": "https://chainscan-galileo.0g.ai/tx/0xde905523fcbd0ec8e470fb72b02b7fe1e99c9947b1f6b8aa2ad585d83c181593"
+    },
+    {
+      "cid": "0xb9dd35a3183a211e7a8debfc39a5d9443f53b59e653d2feb41949b6cd66acabc",
+      "txHash": "0x2d1b194b76e13b8c001e46f278da014b134f70ff7ae75469d4e4a13c77bcdfa7",
+      "blockNumber": 31255076,
+      "timestamp": "2026-05-03T07:30:53.554Z",
+      "networkKey": "testnet",
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x2d1b194b76e13b8c001e46f278da014b134f70ff7ae75469d4e4a13c77bcdfa7",
+      "decision": {
+        "current_apy": 12.38,
+        "optimized_apy": 16.48,
+        "yield_increase": 0.09,
+        "yield_increase_pct": 33.12,
+        "recommended": "0G rebalance",
+        "confidence": 91,
+        "executionSeconds": 6.4,
+        "estimatedAnnualGain": 0.09,
+        "totalPortfolio": 2.293502,
+        "reasoning": "Testing live proof write with a deterministic optimize response aligned to the wallet snapshot."
+      },
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "portfolioSnapshot": {
+        "tokens": [
+          {
+            "symbol": "0G",
+            "amount": 2.293502,
+            "valueUSD": 2.293502
+          }
+        ],
+        "totalUSD": 2.293502,
+        "currentAPY": 12.38,
+        "displayTotal": 2.293502,
+        "displayUnit": "0G",
+        "displayLabel": "Native 0G balance"
+      },
+      "integrityAudit": {
+        "status": "APPROVED",
+        "score": 100,
+        "reasons": [
+          "APY projection stays within deterministic guardrail bounds.",
+          "Snapshot or proof evidence supports the recommendation.",
+          "Route recommendation is compatible with available snapshot symbols."
+        ],
+        "checkedAt": "2026-05-03T07:30:53.554Z",
+        "source": "deterministic-logic-guardrail"
+      },
+      "note": "pending_registry_receipt",
+      "proofRegistryAddress": "0x516D005367045b1fc18c9c9a0Ff7bf8653d1B4e3",
+      "proofRegistryTxHash": "0x37230710286112e5791cc673540d74a82e45d1c370edf3f59083556ec5b1804e",
+      "proofRegistryExplorerUrl": "https://chainscan-galileo.0g.ai/tx/0x37230710286112e5791cc673540d74a82e45d1c370edf3f59083556ec5b1804e"
+    },
+    {
+      "cid": "0xd5fb36f5bf0bcee00f055a7cec4163cf842c6b5f399b492a833e8b10279eeb6f",
+      "txHash": "0xd810b2f9a18c322e25a316753b6e0196734754877de2d3b51622896d2f0a791a",
+      "blockNumber": 31254603,
+      "timestamp": "2026-05-03T07:27:29.527Z",
+      "networkKey": "testnet",
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0xd810b2f9a18c322e25a316753b6e0196734754877de2d3b51622896d2f0a791a",
+      "decision": {
+        "current_apy": 12.38,
+        "optimized_apy": 16.48,
+        "yield_increase": 0.09,
+        "yield_increase_pct": 33.12,
+        "recommended": "0G rebalance",
+        "confidence": 91,
+        "executionSeconds": 6.4,
+        "estimatedAnnualGain": 0.09,
+        "totalPortfolio": 2.299488,
+        "reasoning": "Testing live proof write with a deterministic optimize response aligned to the wallet snapshot."
+      },
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "portfolioSnapshot": {
+        "tokens": [
+          {
+            "symbol": "0G",
+            "amount": 2.299488,
+            "valueUSD": 2.299488
+          }
+        ],
+        "totalUSD": 2.299488,
+        "currentAPY": 12.38,
+        "displayTotal": 2.299488,
+        "displayUnit": "0G",
+        "displayLabel": "Native 0G balance"
+      },
+      "integrityAudit": {
+        "status": "APPROVED",
+        "score": 100,
+        "reasons": [
+          "APY projection stays within deterministic guardrail bounds.",
+          "Snapshot or proof evidence supports the recommendation.",
+          "Route recommendation is compatible with available snapshot symbols."
+        ],
+        "checkedAt": "2026-05-03T07:27:29.527Z",
+        "source": "deterministic-logic-guardrail"
+      },
+      "note": "pending_registry_receipt",
+      "proofRegistryAddress": "0x516D005367045b1fc18c9c9a0Ff7bf8653d1B4e3",
+      "proofRegistryTxHash": "0x0018ce77c2d5ba14d03631816b59c8dfbead8ae015b942cf4287832ddab5991f",
+      "proofRegistryExplorerUrl": "https://chainscan-galileo.0g.ai/tx/0x0018ce77c2d5ba14d03631816b59c8dfbead8ae015b942cf4287832ddab5991f"
+    },
+    {
+      "cid": "0x8acdbdb6cd5fbcf34dfd20d652f614bac1261495f20b8127f7c167e47417fbb4",
+      "txHash": "0x4a56ec84d013fe98286b3c01951cf0cfa1e36fcf2e381748f55afb4cd7f58201",
+      "blockNumber": 31253687,
+      "timestamp": "2026-05-03T07:20:52.910Z",
+      "networkKey": "testnet",
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x4a56ec84d013fe98286b3c01951cf0cfa1e36fcf2e381748f55afb4cd7f58201",
+      "decision": {
+        "current_apy": 12.38,
+        "optimized_apy": 16.48,
+        "yield_increase": 0.09,
+        "yield_increase_pct": 33.12,
+        "recommended": "0G rebalance",
+        "confidence": 91,
+        "executionSeconds": 6.4,
+        "estimatedAnnualGain": 0.09,
+        "totalPortfolio": 2.310881,
+        "reasoning": "Testing live proof write with a deterministic optimize response aligned to the wallet snapshot."
+      },
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "portfolioSnapshot": {
+        "tokens": [
+          {
+            "symbol": "0G",
+            "amount": 2.310881,
+            "valueUSD": 2.310881
+          }
+        ],
+        "totalUSD": 2.310881,
+        "currentAPY": 12.38,
+        "displayTotal": 2.310881,
+        "displayUnit": "0G",
+        "displayLabel": "Native 0G balance"
+      },
+      "integrityAudit": {
+        "status": "APPROVED",
+        "score": 100,
+        "reasons": [
+          "APY projection stays within deterministic guardrail bounds.",
+          "Snapshot or proof evidence supports the recommendation.",
+          "Route recommendation is compatible with available snapshot symbols."
+        ],
+        "checkedAt": "2026-05-03T07:20:52.910Z",
+        "source": "deterministic-logic-guardrail"
+      },
+      "note": "pending_registry_receipt",
+      "proofRegistryAddress": "0x516D005367045b1fc18c9c9a0Ff7bf8653d1B4e3",
+      "proofRegistryTxHash": "0x19f11feb74bfc7940f894a559693ab6f257cf7c5dcd36b12d68ff60d38d2c9f4",
+      "proofRegistryExplorerUrl": "https://chainscan-galileo.0g.ai/tx/0x19f11feb74bfc7940f894a559693ab6f257cf7c5dcd36b12d68ff60d38d2c9f4"
+    },
+    {
+      "cid": "0x0658c275b9ea851e01e12a8480501c2c2c153b732d100951e40fdb9ad6b13050",
+      "txHash": "0x763c992d35b36dcdf66fa1e6e4cda1675d84eeffd698e60b4cefd64b3745073d",
+      "blockNumber": 32170959,
+      "timestamp": "2026-05-03T07:16:21.522Z",
+      "networkKey": "mainnet",
+      "explorerUrl": "https://chainscan.0g.ai/tx/0x763c992d35b36dcdf66fa1e6e4cda1675d84eeffd698e60b4cefd64b3745073d",
+      "decision": {
+        "current_apy": 12.38,
+        "optimized_apy": 16.48,
+        "yield_increase": 0.12,
+        "yield_increase_pct": 33.12,
+        "recommended": "0G rebalance",
+        "confidence": 91,
+        "executionSeconds": 6.4,
+        "estimatedAnnualGain": 0.12,
+        "totalPortfolio": 2.912525,
+        "reasoning": "Mainnet validation optimize response aligned to the live wallet snapshot."
+      },
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "portfolioSnapshot": {
+        "tokens": [
+          {
+            "symbol": "0G",
+            "amount": 2.912525,
+            "valueUSD": 2.912525
+          }
+        ],
+        "totalUSD": 2.912525,
+        "currentAPY": 12.38,
+        "displayTotal": 2.912525,
+        "displayUnit": "0G",
+        "displayLabel": "Native 0G balance"
+      },
+      "integrityAudit": {
+        "status": "APPROVED",
+        "score": 100,
+        "reasons": [
+          "APY projection stays within deterministic guardrail bounds.",
+          "Snapshot or proof evidence supports the recommendation.",
+          "Route recommendation is compatible with available snapshot symbols."
+        ],
+        "checkedAt": "2026-05-03T07:16:21.522Z",
+        "source": "deterministic-logic-guardrail"
+      },
+      "note": "pending_registry_receipt",
+      "proofRegistryAddress": "0x8e63e117E71A80Cfc10fDF375F079e2e29cd7D7D",
+      "proofRegistryTxHash": "0xbe37a19217edd77026eaf659127ea8838d84fbc149a10e3f21ee0585dded99fb",
+      "proofRegistryExplorerUrl": "https://chainscan.0g.ai/tx/0xbe37a19217edd77026eaf659127ea8838d84fbc149a10e3f21ee0585dded99fb"
+    },
+    {
       "cid": "0xe8c827c03427e1cecc768ec2eb4f30b34ab3315e9979cd6568fafc76e1853d88",
       "txHash": "0xd086a8015810dfa8cb49242f0c9f2351407ff66d6b95c1eb5586581bdcc073b1",
       "blockNumber": 0,
@@ -364,6 +664,133 @@
   ],
   "agentMemories": [
     {
+      "id": "1e64beda-182a-4625-94f5-28dbd99070ce",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "networkKey": "testnet",
+      "cid": "0xdfc6dd07497f078751256039fa00ed025d744ee795c4af6d3e3eeee6a33ffb58",
+      "txHash": "0x8f2d123b2a4258f8e773b38422b327e28f191016aba1299056affab4fa27b6d1",
+      "blockNumber": 31255991,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x8f2d123b2a4258f8e773b38422b327e28f191016aba1299056affab4fa27b6d1",
+      "proofCid": "0x8d5c9b9b819a4a286f5521a904aef6e8ea2fa13ace21612ad15a0d82b25a2938",
+      "memoryVersion": 6,
+      "snapshot": {
+        "contextSummary": "Testing live proof write with a deterministic optimize response aligned to the wallet snapshot.",
+        "recentTask": "0G rebalance",
+        "lastRecommendation": "0G rebalance",
+        "auditStatus": "APPROVED",
+        "proofCid": "0x8d5c9b9b819a4a286f5521a904aef6e8ea2fa13ace21612ad15a0d82b25a2938"
+      },
+      "timestamp": "2026-05-03T07:37:32.688Z",
+      "storageMode": "0g"
+    },
+    {
+      "id": "69ca67be-96f2-4927-9d0a-88028709f792",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "networkKey": "testnet",
+      "cid": "0x71aad736089d5c7351026823a772b0a34f6333e1d68daf33b6215386383689f0",
+      "txHash": "0x8a734c8669a368f4849c9cada2d972798bf2f0d15d8f7a0c52d6b1a39eee280e",
+      "blockNumber": 31255652,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x8a734c8669a368f4849c9cada2d972798bf2f0d15d8f7a0c52d6b1a39eee280e",
+      "proofCid": "0xa90aceaf5fe69a6e6ad48f88a4c740f590349bd8952abfb995821d5ec03e3515",
+      "memoryVersion": 5,
+      "snapshot": {
+        "contextSummary": "Testing live proof write with a deterministic optimize response aligned to the wallet snapshot.",
+        "recentTask": "0G rebalance",
+        "lastRecommendation": "0G rebalance",
+        "auditStatus": "APPROVED",
+        "proofCid": "0xa90aceaf5fe69a6e6ad48f88a4c740f590349bd8952abfb995821d5ec03e3515"
+      },
+      "timestamp": "2026-05-03T07:35:04.103Z",
+      "storageMode": "0g"
+    },
+    {
+      "id": "725af3be-29cd-4373-8909-851de46bec5e",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "networkKey": "testnet",
+      "cid": "0x902130b138093172cdccb91390859886dcf6f35ede184a0a11dea55f153b94ae",
+      "txHash": "0x64dbcbc9563979199ef1523157db131a0d1e3a2170ad0dc7b62df10f540b848f",
+      "blockNumber": 0,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x64dbcbc9563979199ef1523157db131a0d1e3a2170ad0dc7b62df10f540b848f",
+      "proofCid": "0xb9dd35a3183a211e7a8debfc39a5d9443f53b59e653d2feb41949b6cd66acabc",
+      "memoryVersion": 4,
+      "snapshot": {
+        "contextSummary": "Testing live proof write with a deterministic optimize response aligned to the wallet snapshot.",
+        "recentTask": "0G rebalance",
+        "lastRecommendation": "0G rebalance",
+        "auditStatus": "APPROVED",
+        "proofCid": "0xb9dd35a3183a211e7a8debfc39a5d9443f53b59e653d2feb41949b6cd66acabc"
+      },
+      "timestamp": "2026-05-03T07:31:09.080Z",
+      "storageMode": "0g",
+      "note": "pending_receipt"
+    },
+    {
+      "id": "ac8feb3e-8bbb-4e1f-85ab-58dc4782a778",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "networkKey": "testnet",
+      "cid": "0x7d92235c5ddd91ef5ea395b138b82fc0f477e7b6756a478217b95fd801fad712",
+      "txHash": "0xc373d75b93347a25c4dcb24ed6055be1d9a5bc6314049e13748d65311e37acb3",
+      "blockNumber": 31254632,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0xc373d75b93347a25c4dcb24ed6055be1d9a5bc6314049e13748d65311e37acb3",
+      "proofCid": "0xd5fb36f5bf0bcee00f055a7cec4163cf842c6b5f399b492a833e8b10279eeb6f",
+      "memoryVersion": 3,
+      "snapshot": {
+        "contextSummary": "Testing live proof write with a deterministic optimize response aligned to the wallet snapshot.",
+        "recentTask": "0G rebalance",
+        "lastRecommendation": "0G rebalance",
+        "auditStatus": "APPROVED",
+        "proofCid": "0xd5fb36f5bf0bcee00f055a7cec4163cf842c6b5f399b492a833e8b10279eeb6f"
+      },
+      "timestamp": "2026-05-03T07:27:42.411Z",
+      "storageMode": "0g"
+    },
+    {
+      "id": "62f1565a-5fca-4604-a5bb-8baad71fd8e1",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "networkKey": "testnet",
+      "cid": "0x54247ee49bcdf59a2ec933d74f45a13a9c318e0bad37c2bcf674448945f524da",
+      "txHash": "0xc60129a71481cf1716465537651bf3c9841f597a601148d11b07fc43f4cc51aa",
+      "blockNumber": 31253713,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0xc60129a71481cf1716465537651bf3c9841f597a601148d11b07fc43f4cc51aa",
+      "proofCid": "0x8acdbdb6cd5fbcf34dfd20d652f614bac1261495f20b8127f7c167e47417fbb4",
+      "memoryVersion": 2,
+      "snapshot": {
+        "contextSummary": "Testing live proof write with a deterministic optimize response aligned to the wallet snapshot.",
+        "recentTask": "0G rebalance",
+        "lastRecommendation": "0G rebalance",
+        "auditStatus": "APPROVED",
+        "proofCid": "0x8acdbdb6cd5fbcf34dfd20d652f614bac1261495f20b8127f7c167e47417fbb4"
+      },
+      "timestamp": "2026-05-03T07:21:04.252Z",
+      "storageMode": "0g"
+    },
+    {
+      "id": "be019e5b-6dd1-4d44-8698-19257b55fb2c",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "networkKey": "mainnet",
+      "cid": "0xfe1444c405b9c65f4489fb66f8e2c919368619425bfb628f47089a9e76755d28",
+      "txHash": "0x00d7414c560af3a2d88f32b1b0d5a8dd896dcf6ef821ad877632f5be8d39a07b",
+      "blockNumber": 32170971,
+      "explorerUrl": "https://chainscan.0g.ai/tx/0x00d7414c560af3a2d88f32b1b0d5a8dd896dcf6ef821ad877632f5be8d39a07b",
+      "proofCid": "0x0658c275b9ea851e01e12a8480501c2c2c153b732d100951e40fdb9ad6b13050",
+      "memoryVersion": 2,
+      "snapshot": {
+        "contextSummary": "Mainnet validation optimize response aligned to the live wallet snapshot.",
+        "recentTask": "0G rebalance",
+        "lastRecommendation": "0G rebalance",
+        "auditStatus": "APPROVED",
+        "proofCid": "0x0658c275b9ea851e01e12a8480501c2c2c153b732d100951e40fdb9ad6b13050"
+      },
+      "timestamp": "2026-05-03T07:16:32.336Z",
+      "storageMode": "0g"
+    },
+    {
       "id": "0022fdef-b201-4d9b-9471-4ae697f0f84e",
       "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
       "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
@@ -403,6 +830,93 @@
   ],
   "blacklist": [
     {
+      "id": "a6b66138-1ba5-45e5-847d-a42f4492d1f2",
+      "networkKey": "testnet",
+      "cid": "0x0ea2d49e25fc4cf62f2267c796e228b9a62c4cd548d67d90c93052627e8471c2",
+      "txHash": "0x1db97b438b7f3b5fc5f8f6260cf84fb40b65a3509cd4edf2c56af34de6575170",
+      "blockNumber": 31256200,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x1db97b438b7f3b5fc5f8f6260cf84fb40b65a3509cd4edf2c56af34de6575170",
+      "fingerprint": "7d7b1e5a45e9a1ed1e3161e4fa92cdef856d5c3d1bb76d15a14813bb6c84622f",
+      "invalidInput": "imaginary eth hyper vault 0 420 this should be blocked before 0g storage or proofregistry writes.",
+      "hallucinatedOutput": "This should be blocked before 0G Storage or ProofRegistry writes.",
+      "auditorReasoning": [
+        "Optimized APY 420% exceeds the 75% deterministic guardrail.",
+        "APY lift 420.00 points is outside the deterministic guardrail.",
+        "Reported APY lift 9999% is above the 400% guardrail.",
+        "Estimated annual gain is larger than the available snapshot balance."
+      ],
+      "auditScore": 0,
+      "source": "integrity-auditor",
+      "timestamp": "2026-05-03T07:39:03.170Z",
+      "storageMode": "0g"
+    },
+    {
+      "id": "3ba25fdc-53d3-48a9-8de7-90d0ed777e51",
+      "networkKey": "testnet",
+      "cid": "0xb0dd8c61954ddab44782008b141fd124da4064f5d9663abd1fce85b706b64d96",
+      "txHash": "0x1913b4c1530da65e35339b1d3c3c19a48f430d836bd9a3d03e7163e22310b70b",
+      "blockNumber": 0,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x1913b4c1530da65e35339b1d3c3c19a48f430d836bd9a3d03e7163e22310b70b",
+      "fingerprint": "5252976c93a4665336d0ea9f67d42b5e54be226d9fc1253e1760de9711449a52",
+      "invalidInput": "imaginary eth hyper vault 0 420 this should be blocked before 0g storage or proofregistry writes.",
+      "hallucinatedOutput": "This should be blocked before 0G Storage or ProofRegistry writes.",
+      "auditorReasoning": [
+        "Optimized APY 420% exceeds the 75% deterministic guardrail.",
+        "APY lift 420.00 points is outside the deterministic guardrail.",
+        "Reported APY lift 9999% is above the 400% guardrail.",
+        "Prediction claims yield while snapshot balance/liquidity is zero."
+      ],
+      "auditScore": 0,
+      "source": "integrity-auditor",
+      "timestamp": "2026-05-03T07:38:32.805Z",
+      "storageMode": "0g",
+      "note": "pending_receipt"
+    },
+    {
+      "id": "b6b4634b-5c19-452b-a740-352fd20947bf",
+      "networkKey": "mainnet",
+      "cid": "0xd9c1059da11fc367f499e8b3533bda9b8b8459fe7c2f9e728a202499558216cb",
+      "txHash": "0x989505d362857748a55c570542b3751d45c5151747c528f685ff877e91f43d47",
+      "blockNumber": 32171087,
+      "explorerUrl": "https://chainscan.0g.ai/tx/0x989505d362857748a55c570542b3751d45c5151747c528f685ff877e91f43d47",
+      "fingerprint": "371e5956ca73aae93a5aed77d33a27d292d80a27e82c54695ee090dff12bd704",
+      "invalidInput": "0g 2.912525 0g bonzo emergency high apy vault retry 12.38 101 mainnet retry entry deliberately invalid high apy route captured by deterministic auditor before inference reuse.",
+      "hallucinatedOutput": "Mainnet retry entry deliberately invalid high APY route captured by deterministic auditor before inference reuse.",
+      "auditorReasoning": [
+        "Optimized APY 101% exceeds the 75% deterministic guardrail.",
+        "APY lift 88.62 points is outside the deterministic guardrail.",
+        "Optimized APY is more than 4x the current APY baseline.",
+        "Reported APY lift 715% is above the 400% guardrail.",
+        "Estimated annual gain is larger than the available snapshot balance.",
+        "Recommended route references asset(s) not present in the snapshot: BONZO."
+      ],
+      "auditScore": 0,
+      "source": "integrity-auditor",
+      "timestamp": "2026-05-03T07:18:22.387Z",
+      "storageMode": "0g"
+    },
+    {
+      "id": "67859aef-2d3e-4247-9fbd-2185a4aed940",
+      "networkKey": "mainnet",
+      "cid": "local-0d302514ace474344201285a3c878f729c7af51c4be63ae2b11055f6c738abd3",
+      "fingerprint": "462a8076175425e05ca235b2822fe99f392b7e96e558d6cf576723c0d8f72fc9",
+      "invalidInput": "0g 2.912525 0g bonzo emergency high apy vault 12.38 99 mainnet evidence entry deliberately invalid high apy route captured by deterministic auditor before inference reuse.",
+      "hallucinatedOutput": "Mainnet evidence entry deliberately invalid high APY route captured by deterministic auditor before inference reuse.",
+      "auditorReasoning": [
+        "Optimized APY 99% exceeds the 75% deterministic guardrail.",
+        "APY lift 86.62 points is outside the deterministic guardrail.",
+        "Optimized APY is more than 4x the current APY baseline.",
+        "Reported APY lift 700% is above the 400% guardrail.",
+        "Estimated annual gain is larger than the available snapshot balance.",
+        "Recommended route references asset(s) not present in the snapshot: BONZO."
+      ],
+      "auditScore": 0,
+      "source": "integrity-auditor",
+      "timestamp": "2026-05-03T07:17:50.684Z",
+      "storageMode": "local-fallback",
+      "note": "0G env incomplete; payload persisted locally at .artifacts/0g-fallback/yieldboost-blacklist-0d302514ace47434.json; upload fallback reason: replacement fee too low (transaction=\"0x02f901f88241152984ee6b280784ee6b2807830549639462d4144db0f0a6fbbaeb6296c785c71b3d57c5268523c757072ab90184bc8c11f8000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000400000000000000000000000008a3c7524aaed081825ac88ec7f4ccecfc583ee7d000000000000000000000000000000000000000000000000000000000000043700000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000024e339259fa2a462ee94ac3e34386302ce50d0c97765dbc4c8ce6c338b50e52ad0000000000000000000000000000000000000000000000000000000000000002a7e7ff2ef3edd59dc2eb1ef868f7962b8c3005ad29b24f93383589647a2856680000000000000000000000000000000000000000000000000000000000000000c080a0a8618209aaff0ffe99730ee46766c481328b06657b8e06f18e0c99ab406ce6bfa04644e8b4788cf0f347d5c2e0dc8398d15dc02e9991aaef072d92becc10fb0f50\", info={ \"error\": { \"code\": -32000, \"message\": \"replacement transaction underpriced\" } }, code=REPLACEMENT_UNDERPRICED, version=6.16.0)"
+    },
+    {
       "id": "222ba1f2-44d1-4a40-b823-c9a8bfb8832c",
       "networkKey": "mainnet",
       "cid": "0xd660cdb9aec29214736fcb5763ba80fe6a5d2dcfd6cc35d68d7a178372b21625",
@@ -421,27 +935,6 @@
       "auditScore": 0,
       "source": "integrity-auditor",
       "timestamp": "2026-05-02T20:11:02.025Z",
-      "storageMode": "0g"
-    },
-    {
-      "id": "aa454b8b-b437-4772-9b1b-d89e24445a62",
-      "networkKey": "testnet",
-      "cid": "0x09c1f8700849bc5e92e09469a6d24c110e5076cdaa1b3ecfc9017028581eacfd",
-      "txHash": "0xcb0d5cb2344a57b1e31d4ddbda1ebebb5dde6f53f68469a0846abbb2228551bd",
-      "blockNumber": 31151264,
-      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0xcb0d5cb2344a57b1e31d4ddbda1ebebb5dde6f53f68469a0846abbb2228551bd",
-      "fingerprint": "7d7b1e5a45e9a1ed1e3161e4fa92cdef856d5c3d1bb76d15a14813bb6c84622f",
-      "invalidInput": "imaginary eth hyper vault 0 420 this should be blocked before 0g storage or proofregistry writes.",
-      "hallucinatedOutput": "This should be blocked before 0G Storage or ProofRegistry writes.",
-      "auditorReasoning": [
-        "Optimized APY 420% exceeds the 75% deterministic guardrail.",
-        "APY lift 420.00 points is outside the deterministic guardrail.",
-        "Reported APY lift 9999% is above the 400% guardrail.",
-        "Estimated annual gain is larger than the available snapshot balance."
-      ],
-      "auditScore": 0,
-      "source": "integrity-auditor",
-      "timestamp": "2026-05-02T18:57:53.607Z",
       "storageMode": "0g"
     },
     {
@@ -465,6 +958,338 @@
     }
   ],
   "stressReports": [
+    {
+      "id": "98c6a229-9f42-41f4-be3f-7d80ba437b2d",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "networkKey": "testnet",
+      "datasetCid": "builtin-ohclv-0g-volatility-slice",
+      "reportCid": "local-787ca2c110f330acee4e4fae11f487efa5c33787241977adba5b6999ac207cb8",
+      "baselineApy": 12.38,
+      "verifiedApy": 23.84,
+      "simulatedProfit": 2815.75,
+      "maxDrawdown": 0.2653,
+      "decisions": [
+        {
+          "timestamp": "2026-04-24T00:00:00.000Z",
+          "marketClose": 1.04,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-25T00:00:00.000Z",
+          "marketClose": 1.1,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-26T00:00:00.000Z",
+          "marketClose": 0.91,
+          "standardAgentApy": 60,
+          "auditorApy": 23.84,
+          "auditorDecision": "REJECTED",
+          "reason": "Optimized APY is more than 4x the current APY baseline."
+        },
+        {
+          "timestamp": "2026-04-27T00:00:00.000Z",
+          "marketClose": 0.86,
+          "standardAgentApy": 61,
+          "auditorApy": 23.84,
+          "auditorDecision": "REJECTED",
+          "reason": "Optimized APY is more than 4x the current APY baseline."
+        },
+        {
+          "timestamp": "2026-04-28T00:00:00.000Z",
+          "marketClose": 0.92,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-29T00:00:00.000Z",
+          "marketClose": 1.01,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        }
+      ],
+      "verdict": "PASS",
+      "timestamp": "2026-05-03T07:38:32.785Z",
+      "storageMode": "local-fallback",
+      "note": "0G env incomplete; payload persisted locally at .artifacts/0g-fallback/yieldboost-stress-report-787ca2c110f330ac.json; upload fallback reason: Request failed with status code 503"
+    },
+    {
+      "id": "efa71c44-8107-4398-8f29-32bbe2ab46bd",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "networkKey": "testnet",
+      "datasetCid": "builtin-ohclv-0g-volatility-slice",
+      "reportCid": "local-9657158e0e3b32958b23b5a66afab3b825f3ce5973d7cb71c2813d8228c52249",
+      "baselineApy": 12.38,
+      "verifiedApy": 23.84,
+      "simulatedProfit": 2815.75,
+      "maxDrawdown": 0.2653,
+      "decisions": [
+        {
+          "timestamp": "2026-04-24T00:00:00.000Z",
+          "marketClose": 1.04,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-25T00:00:00.000Z",
+          "marketClose": 1.1,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-26T00:00:00.000Z",
+          "marketClose": 0.91,
+          "standardAgentApy": 60,
+          "auditorApy": 23.84,
+          "auditorDecision": "REJECTED",
+          "reason": "Optimized APY is more than 4x the current APY baseline."
+        },
+        {
+          "timestamp": "2026-04-27T00:00:00.000Z",
+          "marketClose": 0.86,
+          "standardAgentApy": 61,
+          "auditorApy": 23.84,
+          "auditorDecision": "REJECTED",
+          "reason": "Optimized APY is more than 4x the current APY baseline."
+        },
+        {
+          "timestamp": "2026-04-28T00:00:00.000Z",
+          "marketClose": 0.92,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-29T00:00:00.000Z",
+          "marketClose": 1.01,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        }
+      ],
+      "verdict": "PASS",
+      "timestamp": "2026-05-03T07:36:13.030Z",
+      "storageMode": "local-fallback",
+      "note": "0G env incomplete; payload persisted locally at .artifacts/0g-fallback/yieldboost-stress-report-9657158e0e3b3295.json; upload fallback reason: Request failed with status code 503"
+    },
+    {
+      "id": "e02f7ef2-16cb-438c-8b87-7d7f49d27570",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "networkKey": "testnet",
+      "datasetCid": "builtin-ohclv-0g-volatility-slice",
+      "reportCid": "local-2fa09498151f4b70642043354a96c6fed161e0679ee0ae2c4795f346721dcf56",
+      "baselineApy": 12.38,
+      "verifiedApy": 23.84,
+      "simulatedProfit": 2815.75,
+      "maxDrawdown": 0.2653,
+      "decisions": [
+        {
+          "timestamp": "2026-04-24T00:00:00.000Z",
+          "marketClose": 1.04,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-25T00:00:00.000Z",
+          "marketClose": 1.1,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-26T00:00:00.000Z",
+          "marketClose": 0.91,
+          "standardAgentApy": 60,
+          "auditorApy": 23.84,
+          "auditorDecision": "REJECTED",
+          "reason": "Optimized APY is more than 4x the current APY baseline."
+        },
+        {
+          "timestamp": "2026-04-27T00:00:00.000Z",
+          "marketClose": 0.86,
+          "standardAgentApy": 61,
+          "auditorApy": 23.84,
+          "auditorDecision": "REJECTED",
+          "reason": "Optimized APY is more than 4x the current APY baseline."
+        },
+        {
+          "timestamp": "2026-04-28T00:00:00.000Z",
+          "marketClose": 0.92,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-29T00:00:00.000Z",
+          "marketClose": 1.01,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        }
+      ],
+      "verdict": "PASS",
+      "timestamp": "2026-05-03T07:33:56.281Z",
+      "storageMode": "local-fallback",
+      "note": "0G env incomplete; payload persisted locally at .artifacts/0g-fallback/yieldboost-stress-report-2fa09498151f4b70.json; upload fallback reason: Request failed with status code 503"
+    },
+    {
+      "id": "365070ca-6c0f-44ae-a350-82b27335cf05",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "networkKey": "testnet",
+      "datasetCid": "builtin-ohclv-0g-volatility-slice",
+      "reportCid": "local-ec15cb460f33e39472e71b01665a4547f5d15bc9cacc59046f307cf938031919",
+      "baselineApy": 12.38,
+      "verifiedApy": 23.84,
+      "simulatedProfit": 2815.75,
+      "maxDrawdown": 0.2653,
+      "decisions": [
+        {
+          "timestamp": "2026-04-24T00:00:00.000Z",
+          "marketClose": 1.04,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-25T00:00:00.000Z",
+          "marketClose": 1.1,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-26T00:00:00.000Z",
+          "marketClose": 0.91,
+          "standardAgentApy": 60,
+          "auditorApy": 23.84,
+          "auditorDecision": "REJECTED",
+          "reason": "Optimized APY is more than 4x the current APY baseline."
+        },
+        {
+          "timestamp": "2026-04-27T00:00:00.000Z",
+          "marketClose": 0.86,
+          "standardAgentApy": 61,
+          "auditorApy": 23.84,
+          "auditorDecision": "REJECTED",
+          "reason": "Optimized APY is more than 4x the current APY baseline."
+        },
+        {
+          "timestamp": "2026-04-28T00:00:00.000Z",
+          "marketClose": 0.92,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-29T00:00:00.000Z",
+          "marketClose": 1.01,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        }
+      ],
+      "verdict": "PASS",
+      "timestamp": "2026-05-03T07:22:11.559Z",
+      "storageMode": "local-fallback",
+      "note": "0G env incomplete; payload persisted locally at .artifacts/0g-fallback/yieldboost-stress-report-ec15cb460f33e394.json; upload fallback reason: Request failed with status code 503"
+    },
+    {
+      "id": "2b051dc9-db8e-4138-8db0-a742628e7685",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "networkKey": "mainnet",
+      "datasetCid": "mainnet-ohclv-0g-volatility-slice",
+      "reportCid": "0x6901002bf56949a56fbc97305622e2023db5b833348ed995d7e9b3b2c3f141b9",
+      "txHash": "0xe76ff5180612b78c6a153b2fc323fbb064237a9050cd20aedb7fbeddb1aa410c",
+      "blockNumber": 32171053,
+      "explorerUrl": "https://chainscan.0g.ai/tx/0xe76ff5180612b78c6a153b2fc323fbb064237a9050cd20aedb7fbeddb1aa410c",
+      "baselineApy": 12.38,
+      "verifiedApy": 23.84,
+      "simulatedProfit": 2815.75,
+      "maxDrawdown": 0.2653,
+      "decisions": [
+        {
+          "timestamp": "2026-04-24T00:00:00.000Z",
+          "marketClose": 1.04,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-25T00:00:00.000Z",
+          "marketClose": 1.1,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-26T00:00:00.000Z",
+          "marketClose": 0.91,
+          "standardAgentApy": 60,
+          "auditorApy": 23.84,
+          "auditorDecision": "REJECTED",
+          "reason": "Optimized APY is more than 4x the current APY baseline."
+        },
+        {
+          "timestamp": "2026-04-27T00:00:00.000Z",
+          "marketClose": 0.86,
+          "standardAgentApy": 61,
+          "auditorApy": 23.84,
+          "auditorDecision": "REJECTED",
+          "reason": "Optimized APY is more than 4x the current APY baseline."
+        },
+        {
+          "timestamp": "2026-04-28T00:00:00.000Z",
+          "marketClose": 0.92,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-29T00:00:00.000Z",
+          "marketClose": 1.01,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        }
+      ],
+      "verdict": "PASS",
+      "timestamp": "2026-05-03T07:17:50.691Z",
+      "storageMode": "0g"
+    },
     {
       "id": "18a5276d-2321-41a0-9b52-2c8576b4ef44",
       "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
@@ -670,6 +1495,198 @@
   ],
   "zkReasoningProofs": [
     {
+      "proofId": "zkr-4efce83b-9698-4a9b-861c-26d6dfca56d2",
+      "proofCid": "local-9f9682c7f0898243f8a08907c7e58eb1719729a6f73f0d0c4fd0dfb67c414128",
+      "networkKey": "testnet",
+      "verifier": "0G Storage + YieldBoost deterministic verifier",
+      "proofType": "TEE/ZK-ready reasoning proof envelope",
+      "createdAt": "2026-05-03T07:38:32.796Z",
+      "status": "zk-ready",
+      "summary": "Playwright validation of ZK-ready reasoning envelope after 1-click optimize.",
+      "storageMode": "local-fallback",
+      "artifactHash": "3caa62baea0e1c1c9fdfeafa670b8c9a9ad541dde278c09b85cbbfeae01571e1",
+      "rootHash": "0x9f9682c7f0898243f8a08907c7e58eb1719729a6f73f0d0c4fd0dfb67c414128",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "proofRegistryAddress": "0x516D005367045b1fc18c9c9a0Ff7bf8653d1B4e3",
+      "proofRegistryTxHash": "0x63b96a2a22cec8b624d14c7035fe15b28668e4c580be28fb3bc6e7a79f54d922",
+      "proofRegistryProofId": "38",
+      "proofRegistryExplorerUrl": "https://chainscan-galileo.0g.ai/tx/0x63b96a2a22cec8b624d14c7035fe15b28668e4c580be28fb3bc6e7a79f54d922",
+      "note": "0G env incomplete; payload persisted locally at .artifacts/0g-fallback/yieldboost-zk-reasoning-9f9682c7f0898243.json; upload fallback reason: Request failed with status code 503"
+    },
+    {
+      "proofId": "zkr-d8f8ebaf-f910-49e0-8882-c4c52622aeb1",
+      "proofCid": "0x768392b94cd3019e52fed854323e5f5fbc4b5ae0d512dd198235df3d0fb736b4",
+      "txHash": "0xe1b63adc563d7d0edde473fb50e1432dcf1c93033bb79f8ca6fa0579d3cf964c",
+      "blockNumber": 31256020,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0xe1b63adc563d7d0edde473fb50e1432dcf1c93033bb79f8ca6fa0579d3cf964c",
+      "networkKey": "testnet",
+      "verifier": "0G Storage + YieldBoost deterministic verifier",
+      "proofType": "TEE/ZK-ready reasoning proof envelope",
+      "createdAt": "2026-05-03T07:37:44.470Z",
+      "status": "testnet-verified",
+      "summary": "TEE/ZK-ready reasoning envelope recorded after proof 0x8d5c9b9b819a4a286f5521a904aef6e8ea2fa13ace21612ad15a0d82b25a2938.",
+      "storageMode": "0g",
+      "artifactHash": "ff658cbcd1d66ea06095644a6eff5108417642a130629b987c4092a24fa2156d",
+      "rootHash": "0x768392b94cd3019e52fed854323e5f5fbc4b5ae0d512dd198235df3d0fb736b4",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "proofRegistryAddress": "0x516D005367045b1fc18c9c9a0Ff7bf8653d1B4e3",
+      "proofRegistryTxHash": "0x40ab8922f782b737009e76b7dd556a001c692c97bfb688c0fa4bbec24209351a",
+      "proofRegistryProofId": "37",
+      "proofRegistryExplorerUrl": "https://chainscan-galileo.0g.ai/tx/0x40ab8922f782b737009e76b7dd556a001c692c97bfb688c0fa4bbec24209351a"
+    },
+    {
+      "proofId": "zkr-82ce8105-f7fc-4399-a943-535cee855b58",
+      "proofCid": "local-55328ca2d16dc825856ac213ff8f34ac64e43d6fe0915faa764deaba628ca45c",
+      "networkKey": "testnet",
+      "verifier": "0G Storage + YieldBoost deterministic verifier",
+      "proofType": "TEE/ZK-ready reasoning proof envelope",
+      "createdAt": "2026-05-03T07:36:13.035Z",
+      "status": "zk-ready",
+      "summary": "Playwright validation of ZK-ready reasoning envelope after 1-click optimize.",
+      "storageMode": "local-fallback",
+      "artifactHash": "4b3fce50d1563e82dce575fe4a2f9862cc91c93afe5694bd81dd41547308fefe",
+      "rootHash": "0x55328ca2d16dc825856ac213ff8f34ac64e43d6fe0915faa764deaba628ca45c",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "proofRegistryAddress": "0x516D005367045b1fc18c9c9a0Ff7bf8653d1B4e3",
+      "proofRegistryTxHash": "0xece1868f7b1042c3755381f9a65d32edde5e0766e043eca789cc86c03d01c330",
+      "proofRegistryProofId": "35",
+      "proofRegistryExplorerUrl": "https://chainscan-galileo.0g.ai/tx/0xece1868f7b1042c3755381f9a65d32edde5e0766e043eca789cc86c03d01c330",
+      "note": "0G env incomplete; payload persisted locally at .artifacts/0g-fallback/yieldboost-zk-reasoning-55328ca2d16dc825.json; upload fallback reason: Request failed with status code 503"
+    },
+    {
+      "proofId": "zkr-8b04a53d-ae66-43ee-91d4-ee433d2576d0",
+      "proofCid": "0x1126843a6c02c1bff5621b2e71fd795c1df23368767daeb4d27081d2ff3e7a9a",
+      "txHash": "0x735a920af863d4ce6d6dd4c01031bfe44c1129ace60e50d0e4e9ada846d593a7",
+      "blockNumber": 31255686,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x735a920af863d4ce6d6dd4c01031bfe44c1129ace60e50d0e4e9ada846d593a7",
+      "networkKey": "testnet",
+      "verifier": "0G Storage + YieldBoost deterministic verifier",
+      "proofType": "TEE/ZK-ready reasoning proof envelope",
+      "createdAt": "2026-05-03T07:35:19.235Z",
+      "status": "testnet-verified",
+      "summary": "TEE/ZK-ready reasoning envelope recorded after proof 0xa90aceaf5fe69a6e6ad48f88a4c740f590349bd8952abfb995821d5ec03e3515.",
+      "storageMode": "0g",
+      "artifactHash": "7d5dc6f4ef337618c0fa37b31c5552f85e0b872bde0ad3493c84510044b8e79d",
+      "rootHash": "0x1126843a6c02c1bff5621b2e71fd795c1df23368767daeb4d27081d2ff3e7a9a",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "proofRegistryAddress": "0x516D005367045b1fc18c9c9a0Ff7bf8653d1B4e3",
+      "proofRegistryTxHash": "0xa1de0946fdb58f12dfd687f1b7e51830ec734791595f4199e745833e8e53d867",
+      "proofRegistryProofId": "34",
+      "proofRegistryExplorerUrl": "https://chainscan-galileo.0g.ai/tx/0xa1de0946fdb58f12dfd687f1b7e51830ec734791595f4199e745833e8e53d867"
+    },
+    {
+      "proofId": "zkr-e406e014-b1e1-4788-8aa8-4d2195585514",
+      "proofCid": "0x2384985a5bee4a0df121a3d0a4af8c49a45cd55624ecc6a74b59b41fb543aa96",
+      "txHash": "0x1e7de2d4f5e98d4330410155bd3f05b56454efa463c654389574211be81dd5ba",
+      "blockNumber": 31255496,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x1e7de2d4f5e98d4330410155bd3f05b56454efa463c654389574211be81dd5ba",
+      "networkKey": "testnet",
+      "verifier": "0G Storage + YieldBoost deterministic verifier",
+      "proofType": "TEE/ZK-ready reasoning proof envelope",
+      "createdAt": "2026-05-03T07:33:56.296Z",
+      "status": "testnet-verified",
+      "summary": "Playwright validation of ZK-ready reasoning envelope after 1-click optimize.",
+      "storageMode": "0g",
+      "artifactHash": "81cf14db4446d2ee9771bff601f8a050d36edff3f515fb968b010b6875487276",
+      "rootHash": "0x2384985a5bee4a0df121a3d0a4af8c49a45cd55624ecc6a74b59b41fb543aa96",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "proofRegistryAddress": "0x516D005367045b1fc18c9c9a0Ff7bf8653d1B4e3",
+      "proofRegistryTxHash": "0x4998d43a6bf6059a8ec32cd279650423d029e8c674a918b88cef592ab0224f0c",
+      "proofRegistryProofId": "32",
+      "proofRegistryExplorerUrl": "https://chainscan-galileo.0g.ai/tx/0x4998d43a6bf6059a8ec32cd279650423d029e8c674a918b88cef592ab0224f0c"
+    },
+    {
+      "proofId": "zkr-7e213e62-f896-4904-bcd5-3717995f5e21",
+      "proofCid": "0x3050c36593ebf8f00702384b9dd3565113ea4d19f3763aa7d6fba6c1102d88e0",
+      "txHash": "0x3657c9a1172cb2ca7281ea21294a1581a48c8a134eeb8df7bccdfcc7cc77308f",
+      "blockNumber": 31255130,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x3657c9a1172cb2ca7281ea21294a1581a48c8a134eeb8df7bccdfcc7cc77308f",
+      "networkKey": "testnet",
+      "verifier": "0G Storage + YieldBoost deterministic verifier",
+      "proofType": "TEE/ZK-ready reasoning proof envelope",
+      "createdAt": "2026-05-03T07:31:17.632Z",
+      "status": "testnet-verified",
+      "summary": "TEE/ZK-ready reasoning envelope recorded after proof 0xb9dd35a3183a211e7a8debfc39a5d9443f53b59e653d2feb41949b6cd66acabc.",
+      "storageMode": "0g",
+      "artifactHash": "028051a3f4a5cdcf31d5ac802f22d8dff000c9bf7719be66b02835302922feca",
+      "rootHash": "0x3050c36593ebf8f00702384b9dd3565113ea4d19f3763aa7d6fba6c1102d88e0",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "proofRegistryAddress": "0x516D005367045b1fc18c9c9a0Ff7bf8653d1B4e3",
+      "proofRegistryTxHash": "0xa35baaf59dfbacb1aaeff0ceb859625dbcee848500a0f073203200ddac8ea26b",
+      "proofRegistryProofId": "31",
+      "proofRegistryExplorerUrl": "https://chainscan-galileo.0g.ai/tx/0xa35baaf59dfbacb1aaeff0ceb859625dbcee848500a0f073203200ddac8ea26b"
+    },
+    {
+      "proofId": "zkr-8df521df-08a1-44a3-ac41-a132f05fe10b",
+      "proofCid": "local-3de9a345d5e2ff11fa81c5ccfb074477a1351880e1e0602516cd2d51a9edacb3",
+      "networkKey": "testnet",
+      "verifier": "0G Storage + YieldBoost deterministic verifier",
+      "proofType": "TEE/ZK-ready reasoning proof envelope",
+      "createdAt": "2026-05-03T07:22:11.566Z",
+      "status": "zk-ready",
+      "summary": "Playwright validation of ZK-ready reasoning envelope after 1-click optimize.",
+      "storageMode": "local-fallback",
+      "artifactHash": "74cfbf75f452a61ecfcf3b3dd5e537c33d6c5c6781d1234fde588533883d1858",
+      "rootHash": "0x3de9a345d5e2ff11fa81c5ccfb074477a1351880e1e0602516cd2d51a9edacb3",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "proofRegistryAddress": "0x516D005367045b1fc18c9c9a0Ff7bf8653d1B4e3",
+      "proofRegistryTxHash": "0x3c3a4483b92d955361a2095381c18b23f35e9a7e2309d2b6062ab9f7ca974fc3",
+      "proofRegistryProofId": "28",
+      "proofRegistryExplorerUrl": "https://chainscan-galileo.0g.ai/tx/0x3c3a4483b92d955361a2095381c18b23f35e9a7e2309d2b6062ab9f7ca974fc3",
+      "note": "0G env incomplete; payload persisted locally at .artifacts/0g-fallback/yieldboost-zk-reasoning-3de9a345d5e2ff11.json; upload fallback reason: Request failed with status code 503"
+    },
+    {
+      "proofId": "zkr-5150144a-e11f-4539-a4b4-d5740804d7a5",
+      "proofCid": "0xaa7f21905a83a13888eeda2322cab071323c314af43120db546e3387368386f9",
+      "txHash": "0x0d154aeafcfaf47212f41df3d3c2c33d7296315cae486ab17aac775a060576e1",
+      "blockNumber": 31253741,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x0d154aeafcfaf47212f41df3d3c2c33d7296315cae486ab17aac775a060576e1",
+      "networkKey": "testnet",
+      "verifier": "0G Storage + YieldBoost deterministic verifier",
+      "proofType": "TEE/ZK-ready reasoning proof envelope",
+      "createdAt": "2026-05-03T07:21:15.842Z",
+      "status": "testnet-verified",
+      "summary": "TEE/ZK-ready reasoning envelope recorded after proof 0x8acdbdb6cd5fbcf34dfd20d652f614bac1261495f20b8127f7c167e47417fbb4.",
+      "storageMode": "0g",
+      "artifactHash": "75eba0a49ac821c07b651c3e8b366ee9e3e4d15f0e1c000e86df052d8f5b4433",
+      "rootHash": "0xaa7f21905a83a13888eeda2322cab071323c314af43120db546e3387368386f9",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "proofRegistryAddress": "0x516D005367045b1fc18c9c9a0Ff7bf8653d1B4e3",
+      "proofRegistryTxHash": "0x841cfe371a31cfcea3dc9cf96e91335417dd9a267f078aa4432c5cb844df5e8e",
+      "proofRegistryProofId": "27",
+      "proofRegistryExplorerUrl": "https://chainscan-galileo.0g.ai/tx/0x841cfe371a31cfcea3dc9cf96e91335417dd9a267f078aa4432c5cb844df5e8e"
+    },
+    {
+      "proofId": "zkr-2f971051-31fe-4a79-9bb1-9366f4cbb87f",
+      "proofCid": "0x7c918f1e1bcc383e872eb1606d9ab6a494bf1e15e23d9f19d6127d82100bad82",
+      "txHash": "0xd5fa09bdea5adf83f7bd3697d28a97d4d0ed4a9b85d9349951c1586a4a15cf76",
+      "blockNumber": 32170982,
+      "explorerUrl": "https://chainscan.0g.ai/tx/0xd5fa09bdea5adf83f7bd3697d28a97d4d0ed4a9b85d9349951c1586a4a15cf76",
+      "networkKey": "mainnet",
+      "verifier": "0G Storage + YieldBoost deterministic verifier",
+      "proofType": "TEE/ZK-ready reasoning proof envelope",
+      "createdAt": "2026-05-03T07:16:42.334Z",
+      "status": "tee-envelope-recorded",
+      "summary": "TEE/ZK-ready reasoning envelope recorded after proof 0x0658c275b9ea851e01e12a8480501c2c2c153b732d100951e40fdb9ad6b13050.",
+      "storageMode": "0g",
+      "artifactHash": "86418f20bbe28cdad6b1f69deac9ec605053ed94c1baeb2b5d2a3db821305a7d",
+      "rootHash": "0x7c918f1e1bcc383e872eb1606d9ab6a494bf1e15e23d9f19d6127d82100bad82",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "proofRegistryAddress": "0x8e63e117E71A80Cfc10fDF375F079e2e29cd7D7D",
+      "proofRegistryTxHash": "0xa074e7f74aad61ece0be54766116cffc544e4a5eda96189bbc136ce14af6cd02",
+      "proofRegistryProofId": "8",
+      "proofRegistryExplorerUrl": "https://chainscan.0g.ai/tx/0xa074e7f74aad61ece0be54766116cffc544e4a5eda96189bbc136ce14af6cd02"
+    },
+    {
       "proofId": "zkr-bd1e3aef-38f7-4021-922b-a15fc68b5fc6",
       "proofCid": "0x196f445ce4dbe341e5bbc3faea0dc067c63430c1d6f120ba16ea8dbb1fd1a802",
       "txHash": "0x4c2e1327836021896d2516fe664b3e7ab9b8758dc5a7711dd90ee1ceab59bb5b",
@@ -694,6 +1711,180 @@
   ],
   "governanceDecisions": [
     {
+      "governanceId": "gov-67bc5840-06de-41e0-a841-3bd841b269e4",
+      "status": "active",
+      "reason": "Decision stayed inside deterministic governance policy limits.",
+      "riskScore": 12,
+      "killSwitchTriggered": false,
+      "artifactCid": "local-e0a731bdebdfff6ac94510e67f731df5d89464f915fb0ee0deb4ad7310768398",
+      "networkKey": "testnet",
+      "createdAt": "2026-05-03T07:38:32.791Z",
+      "storageMode": "local-fallback",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "evaluatedAction": "playwright-optimize-validation",
+      "deterministicReasons": [
+        "Decision stayed inside deterministic governance policy limits."
+      ],
+      "note": "0G env incomplete; payload persisted locally at .artifacts/0g-fallback/yieldboost-governance-e0a731bdebdfff6a.json; upload fallback reason: Request failed with status code 503"
+    },
+    {
+      "governanceId": "gov-67a529a9-5141-404d-905a-81e06bb3bd14",
+      "status": "active",
+      "reason": "Decision stayed inside deterministic governance policy limits.",
+      "riskScore": 12,
+      "killSwitchTriggered": false,
+      "artifactCid": "0xa45085b74d713942f4c3aa40fd217e75570003ff855ef4e48bced00573ba4d08",
+      "txHash": "0x1fc3c723755827b7774b195bec035266f74c5a01206231502e80aa5b7a9b2a9c",
+      "blockNumber": 31256072,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x1fc3c723755827b7774b195bec035266f74c5a01206231502e80aa5b7a9b2a9c",
+      "networkKey": "testnet",
+      "createdAt": "2026-05-03T07:38:07.618Z",
+      "storageMode": "0g",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "evaluatedAction": "proof-storage-follow-up",
+      "deterministicReasons": [
+        "Decision stayed inside deterministic governance policy limits."
+      ]
+    },
+    {
+      "governanceId": "gov-66fc4f1e-465b-4fc8-bc6d-bad1ca340583",
+      "status": "active",
+      "reason": "Decision stayed inside deterministic governance policy limits.",
+      "riskScore": 12,
+      "killSwitchTriggered": false,
+      "artifactCid": "0xb9961e1ada7c99a86ad6770fe52f1ecdfc9ca38dac825353721a14cf4a300379",
+      "txHash": "0x1af777e17d3bab51b9525e0ce49d4b3605c60538e51aa93d54084e06fc6a1b84",
+      "blockNumber": 31255809,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x1af777e17d3bab51b9525e0ce49d4b3605c60538e51aa93d54084e06fc6a1b84",
+      "networkKey": "testnet",
+      "createdAt": "2026-05-03T07:36:13.043Z",
+      "storageMode": "0g",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "evaluatedAction": "playwright-optimize-validation",
+      "deterministicReasons": [
+        "Decision stayed inside deterministic governance policy limits."
+      ]
+    },
+    {
+      "governanceId": "gov-4e46c4af-a86d-40a2-a524-4e6ed123eb16",
+      "status": "active",
+      "reason": "Decision stayed inside deterministic governance policy limits.",
+      "riskScore": 12,
+      "killSwitchTriggered": false,
+      "artifactCid": "0xcd3bf6314afc3f29c7b3717d0001c6fee10280053dab1dc23859bb073af6b425",
+      "txHash": "0x45b70965ff359878fd063c3e7fd17e3623181fe07affb4939362fb211f98a2e0",
+      "blockNumber": 31255753,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x45b70965ff359878fd063c3e7fd17e3623181fe07affb4939362fb211f98a2e0",
+      "networkKey": "testnet",
+      "createdAt": "2026-05-03T07:35:48.781Z",
+      "storageMode": "0g",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "evaluatedAction": "proof-storage-follow-up",
+      "deterministicReasons": [
+        "Decision stayed inside deterministic governance policy limits."
+      ]
+    },
+    {
+      "governanceId": "gov-9f807a5e-009f-489a-af04-3f4c650f3bd7",
+      "status": "active",
+      "reason": "Decision stayed inside deterministic governance policy limits.",
+      "riskScore": 12,
+      "killSwitchTriggered": false,
+      "artifactCid": "local-b3e7cac3d4d10e5df0c62e16e60859a3ff9422b68442e0c4e196851ffddf7ec3",
+      "networkKey": "testnet",
+      "createdAt": "2026-05-03T07:33:56.270Z",
+      "storageMode": "local-fallback",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "evaluatedAction": "playwright-optimize-validation",
+      "deterministicReasons": [
+        "Decision stayed inside deterministic governance policy limits."
+      ],
+      "note": "0G env incomplete; payload persisted locally at .artifacts/0g-fallback/yieldboost-governance-b3e7cac3d4d10e5d.json; upload fallback reason: Request failed with status code 503"
+    },
+    {
+      "governanceId": "gov-97441d7c-725e-49f2-b0c7-aeec1ab35dd2",
+      "status": "active",
+      "reason": "Decision stayed inside deterministic governance policy limits.",
+      "riskScore": 12,
+      "killSwitchTriggered": false,
+      "artifactCid": "0x809927063827ce50f59e9abb213c9d60d8412109510c41e6600e3d81531500bf",
+      "txHash": "0x99b4ad52586680d1afdd171e01170ca7e9b1d6fd95f3eb323d36bcbc96932622",
+      "blockNumber": 31255184,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x99b4ad52586680d1afdd171e01170ca7e9b1d6fd95f3eb323d36bcbc96932622",
+      "networkKey": "testnet",
+      "createdAt": "2026-05-03T07:31:40.574Z",
+      "storageMode": "0g",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "evaluatedAction": "proof-storage-follow-up",
+      "deterministicReasons": [
+        "Decision stayed inside deterministic governance policy limits."
+      ]
+    },
+    {
+      "governanceId": "gov-ba43a16a-1942-4b1f-936e-688bd190d963",
+      "status": "active",
+      "reason": "Decision stayed inside deterministic governance policy limits.",
+      "riskScore": 12,
+      "killSwitchTriggered": false,
+      "artifactCid": "local-bf83a472653464ec1560eb3d5ef28788502720a0899356acecd34b26a5ec5631",
+      "networkKey": "testnet",
+      "createdAt": "2026-05-03T07:22:11.574Z",
+      "storageMode": "local-fallback",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "evaluatedAction": "playwright-optimize-validation",
+      "deterministicReasons": [
+        "Decision stayed inside deterministic governance policy limits."
+      ],
+      "note": "0G env incomplete; payload persisted locally at .artifacts/0g-fallback/yieldboost-governance-bf83a472653464ec.json; upload fallback reason: Request failed with status code 503"
+    },
+    {
+      "governanceId": "gov-4fff20ff-fc3e-4b69-b251-edb6af743bf0",
+      "status": "active",
+      "reason": "Decision stayed inside deterministic governance policy limits.",
+      "riskScore": 12,
+      "killSwitchTriggered": false,
+      "artifactCid": "0x825d1d7e4965a85052da885d30ebaa2856b61af095107bcdffc1d3e931b2219d",
+      "txHash": "0xcb071582eea6db86aaf210afd5197fdd633e00d6b802ae63990201d2870bd02d",
+      "blockNumber": 31253807,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0xcb071582eea6db86aaf210afd5197fdd633e00d6b802ae63990201d2870bd02d",
+      "networkKey": "testnet",
+      "createdAt": "2026-05-03T07:21:44.645Z",
+      "storageMode": "0g",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "evaluatedAction": "proof-storage-follow-up",
+      "deterministicReasons": [
+        "Decision stayed inside deterministic governance policy limits."
+      ]
+    },
+    {
+      "governanceId": "gov-dc8dfc5f-222e-41fd-a6d8-16cfea5ad3aa",
+      "status": "active",
+      "reason": "Decision stayed inside deterministic governance policy limits.",
+      "riskScore": 12,
+      "killSwitchTriggered": false,
+      "artifactCid": "0xdd63ffff44f55f11f8a94ae93e19560ec25dca55c9b0ba7885e25a46925976ea",
+      "txHash": "0x81b7568f332d39ae47a7c8ddcc8e3f793c3c982e80a0f2a302c6bead4c75b2be",
+      "blockNumber": 32171002,
+      "explorerUrl": "https://chainscan.0g.ai/tx/0x81b7568f332d39ae47a7c8ddcc8e3f793c3c982e80a0f2a302c6bead4c75b2be",
+      "networkKey": "mainnet",
+      "createdAt": "2026-05-03T07:17:01.414Z",
+      "storageMode": "0g",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "evaluatedAction": "proof-storage-follow-up",
+      "deterministicReasons": [
+        "Decision stayed inside deterministic governance policy limits."
+      ]
+    },
+    {
       "governanceId": "gov-e368ead6-cfdb-4174-86f5-28bca51627b5",
       "status": "active",
       "reason": "Decision stayed inside deterministic governance policy limits.",
@@ -715,6 +1906,160 @@
     }
   ],
   "crossAgentHandshakes": [
+    {
+      "handshakeId": "handshake-2d24b378-75a5-4e34-9a3e-c0d789e923c2",
+      "requestingAgent": "YieldBoost Optimizer Agent",
+      "respondingAgent": "Integrity Auditor Agent",
+      "handshakeType": "cross-agent-neural-handshake",
+      "artifactCid": "local-629e6e822b1bb184cc1aaa4bf56fa18f2e271a99082782950345cc4aaef54310",
+      "networkKey": "testnet",
+      "status": "completed",
+      "createdAt": "2026-05-03T07:38:32.800Z",
+      "summary": "Playwright handshake validation after 1-click optimize.",
+      "storageMode": "local-fallback",
+      "skillPurpose": "Cross-check deterministic proof envelope after UI optimize",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "transcriptDigest": "7d8c70e848ead14912a6a34d68d4a14313b09afe7094d4c2bcd1b139cf7c0bfd",
+      "note": "0G env incomplete; payload persisted locally at .artifacts/0g-fallback/yieldboost-agent-handshake-629e6e822b1bb184.json; upload fallback reason: Request failed with status code 503"
+    },
+    {
+      "handshakeId": "handshake-d2d69b9e-33bc-4524-bea4-887ed95028d7",
+      "requestingAgent": "YieldBoost Optimizer Agent",
+      "respondingAgent": "Integrity Auditor Agent",
+      "handshakeType": "cross-agent-neural-handshake",
+      "artifactCid": "0x5e3ebd1cab7e18c2e7b6c9fbcc352fa97879ffc91763db2607cf972e74325fc7",
+      "txHash": "0x62099610c820af88441dffcfc19d477fd608a5703584d39d53a7776395f82743",
+      "blockNumber": 31256103,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x62099610c820af88441dffcfc19d477fd608a5703584d39d53a7776395f82743",
+      "networkKey": "testnet",
+      "status": "completed",
+      "createdAt": "2026-05-03T07:38:21.352Z",
+      "summary": "Handshake recorded after proof 0x8d5c9b9b819a4a286f5521a904aef6e8ea2fa13ace21612ad15a0d82b25a2938 to align optimizer and auditor agents.",
+      "storageMode": "0g",
+      "skillPurpose": "Cross-check proof-backed yield reasoning after storage",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "transcriptDigest": "fa163be095741fec71c45d2c2e91a14320ed01ebae04fca0686631bb180d9f29"
+    },
+    {
+      "handshakeId": "handshake-1fdc7d93-b4e2-41f1-a3fb-413015ecc70f",
+      "requestingAgent": "YieldBoost Optimizer Agent",
+      "respondingAgent": "Integrity Auditor Agent",
+      "handshakeType": "cross-agent-neural-handshake",
+      "artifactCid": "local-ea0765c702fc77154d2a68d9aeb722049009cd821823afed89fb1e26acab56e6",
+      "networkKey": "testnet",
+      "status": "completed",
+      "createdAt": "2026-05-03T07:36:13.038Z",
+      "summary": "Playwright handshake validation after 1-click optimize.",
+      "storageMode": "local-fallback",
+      "skillPurpose": "Cross-check deterministic proof envelope after UI optimize",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "transcriptDigest": "7d8c70e848ead14912a6a34d68d4a14313b09afe7094d4c2bcd1b139cf7c0bfd",
+      "note": "0G env incomplete; payload persisted locally at .artifacts/0g-fallback/yieldboost-agent-handshake-ea0765c702fc7715.json; upload fallback reason: Request failed with status code 503"
+    },
+    {
+      "handshakeId": "handshake-328d1063-5e5d-4eb3-9593-12e46fbdeb68",
+      "requestingAgent": "YieldBoost Optimizer Agent",
+      "respondingAgent": "Integrity Auditor Agent",
+      "handshakeType": "cross-agent-neural-handshake",
+      "artifactCid": "0xe2bb9f762d7b49fff965f350f1c36a9a7f4ffe7dd0e53d2b382de5157404bfd2",
+      "txHash": "0x34bb93671a3739203bf66a9a40cebc5d09702cabfb2af4a4dd28e727f1be375e",
+      "blockNumber": 31255781,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x34bb93671a3739203bf66a9a40cebc5d09702cabfb2af4a4dd28e727f1be375e",
+      "networkKey": "testnet",
+      "status": "completed",
+      "createdAt": "2026-05-03T07:36:01.005Z",
+      "summary": "Handshake recorded after proof 0xa90aceaf5fe69a6e6ad48f88a4c740f590349bd8952abfb995821d5ec03e3515 to align optimizer and auditor agents.",
+      "storageMode": "0g",
+      "skillPurpose": "Cross-check proof-backed yield reasoning after storage",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "transcriptDigest": "17287b057251fc32658b31e78c1b52b24e169f3142cacded31b61fbd3a5ef180"
+    },
+    {
+      "handshakeId": "handshake-3847a0f1-070f-4c03-87f8-e911974adf3f",
+      "requestingAgent": "YieldBoost Optimizer Agent",
+      "respondingAgent": "Integrity Auditor Agent",
+      "handshakeType": "cross-agent-neural-handshake",
+      "artifactCid": "local-ff19f666bf2dcc2b03f95ec39ddc032d3ca83cee696b47cd90c98b478e762ea5",
+      "networkKey": "testnet",
+      "status": "completed",
+      "createdAt": "2026-05-03T07:33:56.291Z",
+      "summary": "Playwright handshake validation after 1-click optimize.",
+      "storageMode": "local-fallback",
+      "skillPurpose": "Cross-check deterministic proof envelope after UI optimize",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "transcriptDigest": "7d8c70e848ead14912a6a34d68d4a14313b09afe7094d4c2bcd1b139cf7c0bfd",
+      "note": "0G env incomplete; payload persisted locally at .artifacts/0g-fallback/yieldboost-agent-handshake-ff19f666bf2dcc2b.json; upload fallback reason: Request failed with status code 503"
+    },
+    {
+      "handshakeId": "handshake-4ddd9759-ad4d-438d-ba0f-c14d2782d524",
+      "requestingAgent": "YieldBoost Optimizer Agent",
+      "respondingAgent": "Integrity Auditor Agent",
+      "handshakeType": "cross-agent-neural-handshake",
+      "artifactCid": "0xbf291630004a72e2e62d971a7edeeed7425660df72c4bea77c0acece642c4cd6",
+      "txHash": "0x79d60ba411c3d77266a9cf6b227371eb0abaee060119ffec29359f650e28668d",
+      "blockNumber": 31255213,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x79d60ba411c3d77266a9cf6b227371eb0abaee060119ffec29359f650e28668d",
+      "networkKey": "testnet",
+      "status": "completed",
+      "createdAt": "2026-05-03T07:31:53.405Z",
+      "summary": "Handshake recorded after proof 0xb9dd35a3183a211e7a8debfc39a5d9443f53b59e653d2feb41949b6cd66acabc to align optimizer and auditor agents.",
+      "storageMode": "0g",
+      "skillPurpose": "Cross-check proof-backed yield reasoning after storage",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "transcriptDigest": "a5b2f2a58b8cd8ccde2bf629f8da40380f28a089987718cd661873a74a91dc16"
+    },
+    {
+      "handshakeId": "handshake-70b8df7b-cab0-4496-8a10-03f4ef1e0a62",
+      "requestingAgent": "YieldBoost Optimizer Agent",
+      "respondingAgent": "Integrity Auditor Agent",
+      "handshakeType": "cross-agent-neural-handshake",
+      "artifactCid": "local-9936e70cc28eafdda9353883d8106330497b0d0b13233bd2ff1a949f3698959e",
+      "networkKey": "testnet",
+      "status": "completed",
+      "createdAt": "2026-05-03T07:22:11.580Z",
+      "summary": "Playwright handshake validation after 1-click optimize.",
+      "storageMode": "local-fallback",
+      "skillPurpose": "Cross-check deterministic proof envelope after UI optimize",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "transcriptDigest": "7d8c70e848ead14912a6a34d68d4a14313b09afe7094d4c2bcd1b139cf7c0bfd",
+      "note": "0G env incomplete; payload persisted locally at .artifacts/0g-fallback/yieldboost-agent-handshake-9936e70cc28eafdd.json; upload fallback reason: Request failed with status code 503"
+    },
+    {
+      "handshakeId": "handshake-445b56d9-af2d-4fe2-9b26-a9f641c0933b",
+      "requestingAgent": "YieldBoost Optimizer Agent",
+      "respondingAgent": "Integrity Auditor Agent",
+      "handshakeType": "cross-agent-neural-handshake",
+      "artifactCid": "0x34857af2f921c46400fd9f3652384720b859f46bb22c70aa39bab3e74d3b04ba",
+      "txHash": "0x26f2c68192494b63d3bbe93ebc083ccd8d5c29a88a7bdc80d5115e151234a054",
+      "blockNumber": 31253836,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x26f2c68192494b63d3bbe93ebc083ccd8d5c29a88a7bdc80d5115e151234a054",
+      "networkKey": "testnet",
+      "status": "completed",
+      "createdAt": "2026-05-03T07:21:57.684Z",
+      "summary": "Handshake recorded after proof 0x8acdbdb6cd5fbcf34dfd20d652f614bac1261495f20b8127f7c167e47417fbb4 to align optimizer and auditor agents.",
+      "storageMode": "0g",
+      "skillPurpose": "Cross-check proof-backed yield reasoning after storage",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "transcriptDigest": "ced13e2e97555c598aa09131450e0b291408b6bba745688817d3063b18cfbf2c"
+    },
+    {
+      "handshakeId": "handshake-ecefb99d-dc0f-4e57-96e1-2b6b938627ae",
+      "requestingAgent": "YieldBoost Optimizer Agent",
+      "respondingAgent": "Integrity Auditor Agent",
+      "handshakeType": "cross-agent-neural-handshake",
+      "artifactCid": "0x64fca7bce74e760b78ce89ffa9f57f8367182f5c3a330609a0d018305e7a2ee7",
+      "txHash": "0x91c94588d6729e8550bf782e99166151afbd15bd69bd3aec67dd76a72b155676",
+      "blockNumber": 32171015,
+      "explorerUrl": "https://chainscan.0g.ai/tx/0x91c94588d6729e8550bf782e99166151afbd15bd69bd3aec67dd76a72b155676",
+      "networkKey": "mainnet",
+      "status": "completed",
+      "createdAt": "2026-05-03T07:17:12.893Z",
+      "summary": "Handshake recorded after proof 0x0658c275b9ea851e01e12a8480501c2c2c153b732d100951e40fdb9ad6b13050 to align optimizer and auditor agents.",
+      "storageMode": "0g",
+      "skillPurpose": "Cross-check proof-backed yield reasoning after storage",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "transcriptDigest": "4cf730a8273118f9640197d7b52ac3f70b3cf6b6a6475e30e0833607400ad4ac"
+    },
     {
       "handshakeId": "handshake-b86a0a88-4bdf-4c0d-8f90-bd14f8bcd31b",
       "requestingAgent": "YieldBoost Optimizer Agent",

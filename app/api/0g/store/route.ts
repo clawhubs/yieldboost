@@ -26,8 +26,11 @@ import {
   getLatestStoredProofForWallet,
   recordStoredProof,
 } from "@/lib/server/runtime-store";
+import { evaluateAIGovernance } from "@/lib/server/ai-governance";
+import { createCrossAgentHandshake } from "@/lib/server/cross-agent-handshake";
 import { recordHallucinationBlacklistEntry } from "@/lib/server/hallucination-blacklist";
 import { syncSovereignMemory } from "@/lib/server/sovereign-memory";
+import { createZkReasoningProof } from "@/lib/server/zk-reasoning";
 
 export const runtime = "nodejs";
 
@@ -337,6 +340,55 @@ export async function POST(req: NextRequest) {
         console.warn("[sovereign-memory] Memory sync failed:", error);
         return null;
       });
+      const zkReasoningProof = await createZkReasoningProof({
+        networkKey,
+        walletAddress: proof.walletAddress,
+        agentId: proof.walletAddress,
+        decision,
+        portfolioSnapshot,
+        reasoning: decision.reasoning,
+        summary: `TEE/ZK-ready reasoning envelope recorded after proof ${proof.cid}.`,
+      }).catch((error) => {
+        console.warn("[zk-reasoning] ZK reasoning envelope sync failed:", error);
+        return null;
+      });
+      const governanceDecision = await evaluateAIGovernance({
+        networkKey,
+        walletAddress: proof.walletAddress,
+        agentId: proof.walletAddress,
+        evaluatedAction: "proof-storage-follow-up",
+        decision,
+        portfolioSnapshot,
+      }).catch((error) => {
+        console.warn("[ai-governance] Governance evaluation sync failed:", error);
+        return null;
+      });
+      const crossAgentHandshake = await createCrossAgentHandshake({
+        networkKey,
+        walletAddress: proof.walletAddress,
+        requestingAgent: "YieldBoost Optimizer Agent",
+        respondingAgent: "Integrity Auditor Agent",
+        handshakeType: "cross-agent-neural-handshake",
+        skillPurpose: "Cross-check proof-backed yield reasoning after storage",
+        transcript: [
+          {
+            role: "requester",
+            content: `YieldBoost Optimizer Agent requests a deterministic follow-up review for proof ${proof.cid}.`,
+          },
+          {
+            role: "responder",
+            content: `Integrity Auditor Agent confirms the reasoning envelope, governance policy, and stored proof metadata for ${networkKey}.`,
+          },
+          {
+            role: "system",
+            content: `Proof tx ${proof.txHash} and storage CID ${proof.cid} were recorded before the handshake envelope was persisted.`,
+          },
+        ],
+        summary: `Handshake recorded after proof ${proof.cid} to align optimizer and auditor agents.`,
+      }).catch((error) => {
+        console.warn("[cross-agent-handshake] Neural handshake sync failed:", error);
+        return null;
+      });
 
       return NextResponse.json({
         success: true,
@@ -354,6 +406,9 @@ export async function POST(req: NextRequest) {
         proofRegistryExplorerUrl: proof.proofRegistryExplorerUrl,
         integrityAudit: proof.integrityAudit,
         sovereignMemory: memoryRecord,
+        zkReasoningProof,
+        governanceDecision,
+        crossAgentHandshake,
         note: proof.note,
         // TEE / 0G Compute metadata
         teeProvider: proof.teeProvider,
