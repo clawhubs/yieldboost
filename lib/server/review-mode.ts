@@ -480,6 +480,18 @@ function buildEnvChecklist() {
       detail: "Without it, `/agents` falls back to proof-backed history instead of contract reads.",
     },
     {
+      name: "GLOBAL_BLACKLIST_REGISTRY_TESTNET_ADDRESS",
+      requiredFor: "Testnet Hallucination Blacklist anchoring",
+      status: hasValue(readEnv("GLOBAL_BLACKLIST_REGISTRY_TESTNET_ADDRESS")) ? "set" : "optional",
+      detail: "Preferred explicit testnet blacklist registry address instead of relying on the shared fallback env.",
+    },
+    {
+      name: "VALIDATION_REGISTRY_TESTNET_ADDRESS",
+      requiredFor: "Testnet Multiverse Stress Test anchoring",
+      status: hasValue(readEnv("VALIDATION_REGISTRY_TESTNET_ADDRESS")) ? "set" : "optional",
+      detail: "Preferred explicit testnet validation registry address instead of relying on the shared fallback env.",
+    },
+    {
       name: "YIELD_STRATEGY_INFT_MAINNET_ADDRESS",
       requiredFor: "Mainnet Agent NFT contract mode",
       status: hasValue(readEnv("YIELD_STRATEGY_INFT_MAINNET_ADDRESS")) ? "set" : "optional",

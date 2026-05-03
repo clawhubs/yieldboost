@@ -289,7 +289,10 @@ export function getGlobalBlacklistRegistryAddress(
     );
   }
 
-  return process.env.GLOBAL_BLACKLIST_REGISTRY_ADDRESS;
+  return (
+    process.env.GLOBAL_BLACKLIST_REGISTRY_TESTNET_ADDRESS ??
+    process.env.GLOBAL_BLACKLIST_REGISTRY_ADDRESS
+  );
 }
 
 export function getValidationRegistryAddress(
@@ -304,7 +307,10 @@ export function getValidationRegistryAddress(
     );
   }
 
-  return process.env.VALIDATION_REGISTRY_ADDRESS;
+  return (
+    process.env.VALIDATION_REGISTRY_TESTNET_ADDRESS ??
+    process.env.VALIDATION_REGISTRY_ADDRESS
+  );
 }
 
 export function isWalletAddress(value: string | null | undefined) {
