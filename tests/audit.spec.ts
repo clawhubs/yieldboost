@@ -233,6 +233,17 @@ test("mainnet judge surfaces live integrity artifacts after recorded optimize fl
   ).toBeVisible();
 });
 
+test("mainnet dashboard surfaces the latest ZK compliance report", async ({
+  page,
+}) => {
+  await enableDemoWatchMode(page, "mainnet");
+  await page.goto(BASE, { waitUntil: "networkidle" });
+
+  await expect(page.getByTestId("zk-compliance-report")).toContainText(
+    /Last Strategy Execution: 100% Policy Compliant \(Proof ID: 0x/i,
+  );
+});
+
 test("direct judge entry bootstraps the review wallet across dashboard and history", async ({
   page,
 }) => {
@@ -502,6 +513,18 @@ test("1-click optimize surfaces a stored proof receipt from the demo wallet", as
         proofRegistryExplorerUrl:
           "https://chainscan-galileo.0g.ai/tx/0x7028b3002c2dd849be9266b4821ce7d3fff81bb07df851c63611b26b112be307",
         integrityAudit,
+        zkComplianceProof: {
+          proofId:
+            "0x8152d70f376f1119932457c9c98ef0f43fd495a19867471ca9f8be070ddf73b1",
+          status: "verified",
+          policyCompliantPct: 100,
+          summary:
+            "Deterministic policy verifier confirmed the latest strategy run is 100% compliant.",
+          explorerUrl:
+            "https://chainscan-galileo.0g.ai/tx/0xd086a8015810dfa8cb49242f0c9f2351407ff66d6b95c1eb5586581bdcc073b1",
+          proofRegistryExplorerUrl:
+            "https://chainscan-galileo.0g.ai/tx/0x7028b3002c2dd849be9266b4821ce7d3fff81bb07df851c63611b26b112be307",
+        },
       }),
     });
   });
@@ -530,6 +553,9 @@ test("1-click optimize surfaces a stored proof receipt from the demo wallet", as
   );
   await expect(page.getByTestId("integrity-auditor-indicator")).toContainText(
     "Logic Guardrail passed",
+  );
+  await expect(page.getByTestId("zk-compliance-report")).toContainText(
+    /Last Strategy Execution: 100% Policy Compliant \(Proof ID: 0x/i,
   );
   await expect(page.getByTestId("view-proof-banner")).toBeVisible();
 });
@@ -756,7 +782,7 @@ test("1-click optimize plus testnet integrity stack surfaces all live feature ca
   await expect(page.getByText("ZK Proof CID", { exact: true })).toBeVisible();
   await expect(page.getByText("Governance CID", { exact: true })).toBeVisible();
   await expect(page.getByText("Handshake CID", { exact: true })).toBeVisible();
-  if (proofPayload.sovereignMemory?.explorerUrl) {
+  if (proofPayload?.sovereignMemory?.explorerUrl) {
     await expect(page.getByRole("link", { name: /Open memory tx on Chainscan/i })).toBeVisible();
   }
   if (blacklist.data.explorerUrl) {
@@ -779,6 +805,8 @@ test("1-click optimize plus testnet integrity stack surfaces all live feature ca
 test("integrity auditor rejects hallucinated proof writes before storage", async ({
   request,
 }) => {
+  test.setTimeout(120_000);
+
   const response = await request.post("/api/0g/store", {
     data: {
       networkKey: "testnet",

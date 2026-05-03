@@ -30,6 +30,7 @@ import { evaluateAIGovernance } from "@/lib/server/ai-governance";
 import { createCrossAgentHandshake } from "@/lib/server/cross-agent-handshake";
 import { recordHallucinationBlacklistEntry } from "@/lib/server/hallucination-blacklist";
 import { syncSovereignMemory } from "@/lib/server/sovereign-memory";
+import { createZkComplianceProof } from "@/lib/server/zk-compliance";
 import { createZkReasoningProof } from "@/lib/server/zk-reasoning";
 
 export const runtime = "nodejs";
@@ -389,6 +390,20 @@ export async function POST(req: NextRequest) {
         console.warn("[cross-agent-handshake] Neural handshake sync failed:", error);
         return null;
       });
+      const zkComplianceProof = governanceDecision
+        ? await createZkComplianceProof({
+            networkKey,
+            walletAddress: proof.walletAddress,
+            agentId: proof.walletAddress,
+            decision,
+            portfolioSnapshot,
+            governanceDecision,
+            proof,
+          }).catch((error) => {
+            console.warn("[zk-compliance] Deterministic compliance proof sync failed:", error);
+            return null;
+          })
+        : null;
 
       return NextResponse.json({
         success: true,
@@ -409,6 +424,7 @@ export async function POST(req: NextRequest) {
         zkReasoningProof,
         governanceDecision,
         crossAgentHandshake,
+        zkComplianceProof,
         note: proof.note,
         // TEE / 0G Compute metadata
         teeProvider: proof.teeProvider,

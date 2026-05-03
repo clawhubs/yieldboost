@@ -96,6 +96,12 @@ function formatPortfolioMetricValue(value: number, unit?: string) {
   return isNativeBalance ? `${formatted} ${unit}` : `$${formatted}`;
 }
 
+function formatProofId(value: string | undefined) {
+  if (!value) return "pending";
+  if (value.length <= 18) return value;
+  return `${value.slice(0, 10)}...${value.slice(-6)}`;
+}
+
 export default function DashboardView() {
   const [proofOpen, setProofOpen] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
@@ -588,6 +594,14 @@ export default function DashboardView() {
                         <span className="font-medium text-[#cfd9e1]">
                           {auditApproved ? "Logic Guardrail passed" : "Proof write blocked"}
                         </span>
+                      </div>
+                    ) : null}
+                    {latestResult?.zkCompliance ? (
+                      <div
+                        data-testid="zk-compliance-report"
+                        className="mt-2 text-[11px] text-[#d7e0e8]"
+                      >
+                        Last Strategy Execution: {latestResult.zkCompliance.policyCompliantPct}% Policy Compliant (Proof ID: {formatProofId(latestResult.zkCompliance.proofId)})
                       </div>
                     ) : null}
                   </div>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createDecisionSummary } from "@/lib/backend-data";
 import { type OptimizationResult } from "@/lib/optimizations";
 import { resolveLatestProofForWallet } from "@/lib/server/proof-resolution";
+import { getLatestZkComplianceProof } from "@/lib/server/runtime-store";
 import {
   resolveWalletNetworkKey,
   resolveWalletAddress,
@@ -32,6 +33,10 @@ export async function GET(req: NextRequest) {
   }
 
   const storedProof = await resolveLatestProofForWallet(requestedWallet, networkKey);
+  const latestZkCompliance = await getLatestZkComplianceProof({
+    walletAddress: requestedWallet,
+    networkKey,
+  });
 
   if (!storedProof) {
     return NextResponse.json({ success: true, data: null });
@@ -78,6 +83,16 @@ export async function GET(req: NextRequest) {
     proofRegistryProofId: storedProof.proofRegistryProofId,
     proofRegistryExplorerUrl: storedProof.proofRegistryExplorerUrl,
     integrityAudit: storedProof.integrityAudit,
+    zkCompliance: latestZkCompliance
+      ? {
+          proofId: latestZkCompliance.proofId,
+          status: latestZkCompliance.status,
+          policyCompliantPct: latestZkCompliance.policyCompliantPct,
+          summary: latestZkCompliance.summary,
+          explorerUrl: latestZkCompliance.explorerUrl,
+          proofRegistryExplorerUrl: latestZkCompliance.proofRegistryExplorerUrl,
+        }
+      : undefined,
   };
 
   return NextResponse.json({

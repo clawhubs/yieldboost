@@ -12,6 +12,7 @@ import {
 } from "react";
 import {
   type PortfolioResponse,
+  type ZkComplianceProofStatus,
 } from "@/lib/backend-data";
 import {
   type OptimizationResult,
@@ -290,6 +291,14 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           proofRegistryProofId?: string;
           proofRegistryExplorerUrl?: string;
           integrityAudit?: IntegrityAudit;
+          zkComplianceProof?: {
+            proofId: string;
+            status: ZkComplianceProofStatus;
+            policyCompliantPct: number;
+            summary: string;
+            explorerUrl?: string;
+            proofRegistryExplorerUrl?: string;
+          };
           note?: string;
         }
       | null = null;
@@ -380,6 +389,14 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           proofRegistryProofId?: string;
           proofRegistryExplorerUrl?: string;
           integrityAudit?: IntegrityAudit;
+          zkComplianceProof?: {
+            proofId: string;
+            status: ZkComplianceProofStatus;
+            policyCompliantPct: number;
+            summary: string;
+            explorerUrl?: string;
+            proofRegistryExplorerUrl?: string;
+          };
           note?: string;
         };
         storageAudit = storageData.integrityAudit;
@@ -418,6 +435,16 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         storageAudit ??
         optimizationData.integrityAudit ??
         fallbackResult.integrityAudit,
+      zkCompliance: storageData?.zkComplianceProof
+        ? {
+            proofId: storageData.zkComplianceProof.proofId,
+            status: storageData.zkComplianceProof.status,
+            policyCompliantPct: storageData.zkComplianceProof.policyCompliantPct,
+            summary: storageData.zkComplianceProof.summary,
+            explorerUrl: storageData.zkComplianceProof.explorerUrl,
+            proofRegistryExplorerUrl: storageData.zkComplianceProof.proofRegistryExplorerUrl,
+          }
+        : optimizationData.zkCompliance ?? fallbackResult.zkCompliance,
       proofStatus: storageData?.cid ? "stored" : storageErrorMessage ? "error" : "pending",
       proofStatusDetail:
         storageErrorMessage ??

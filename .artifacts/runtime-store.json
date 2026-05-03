@@ -830,12 +830,12 @@
   ],
   "blacklist": [
     {
-      "id": "a6b66138-1ba5-45e5-847d-a42f4492d1f2",
+      "id": "2e3bb042-d0cc-40e0-b5cd-d7235e83d9a3",
       "networkKey": "testnet",
-      "cid": "0x0ea2d49e25fc4cf62f2267c796e228b9a62c4cd548d67d90c93052627e8471c2",
-      "txHash": "0x1db97b438b7f3b5fc5f8f6260cf84fb40b65a3509cd4edf2c56af34de6575170",
-      "blockNumber": 31256200,
-      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x1db97b438b7f3b5fc5f8f6260cf84fb40b65a3509cd4edf2c56af34de6575170",
+      "cid": "0x9d9e77f8ef9cf5a61835d291dd77314af3255cae987293d24be18fe6f6120f8d",
+      "txHash": "0x904c46434ce6b8eb11d0c74c3ccd5be6924556b899092440daa923041bc9f3e5",
+      "blockNumber": 31260341,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x904c46434ce6b8eb11d0c74c3ccd5be6924556b899092440daa923041bc9f3e5",
       "fingerprint": "7d7b1e5a45e9a1ed1e3161e4fa92cdef856d5c3d1bb76d15a14813bb6c84622f",
       "invalidInput": "imaginary eth hyper vault 0 420 this should be blocked before 0g storage or proofregistry writes.",
       "hallucinatedOutput": "This should be blocked before 0G Storage or ProofRegistry writes.",
@@ -847,16 +847,13 @@
       ],
       "auditScore": 0,
       "source": "integrity-auditor",
-      "timestamp": "2026-05-03T07:39:03.170Z",
+      "timestamp": "2026-05-03T08:09:16.136Z",
       "storageMode": "0g"
     },
     {
-      "id": "3ba25fdc-53d3-48a9-8de7-90d0ed777e51",
+      "id": "d3523284-63ba-4ee1-ae1b-7656a6829335",
       "networkKey": "testnet",
-      "cid": "0xb0dd8c61954ddab44782008b141fd124da4064f5d9663abd1fce85b706b64d96",
-      "txHash": "0x1913b4c1530da65e35339b1d3c3c19a48f430d836bd9a3d03e7163e22310b70b",
-      "blockNumber": 0,
-      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x1913b4c1530da65e35339b1d3c3c19a48f430d836bd9a3d03e7163e22310b70b",
+      "cid": "local-18d5a79f8e6181cc0116aa87b7118c888f0011e785c9f8f3fc0b8de260c4fe4d",
       "fingerprint": "5252976c93a4665336d0ea9f67d42b5e54be226d9fc1253e1760de9711449a52",
       "invalidInput": "imaginary eth hyper vault 0 420 this should be blocked before 0g storage or proofregistry writes.",
       "hallucinatedOutput": "This should be blocked before 0G Storage or ProofRegistry writes.",
@@ -868,9 +865,9 @@
       ],
       "auditScore": 0,
       "source": "integrity-auditor",
-      "timestamp": "2026-05-03T07:38:32.805Z",
-      "storageMode": "0g",
-      "note": "pending_receipt"
+      "timestamp": "2026-05-03T08:08:46.933Z",
+      "storageMode": "local-fallback",
+      "note": "0G env incomplete; payload persisted locally at .artifacts/0g-fallback/yieldboost-blacklist-18d5a79f8e6181cc.json; upload fallback reason: Request failed with status code 503"
     },
     {
       "id": "b6b4634b-5c19-452b-a740-352fd20947bf",
@@ -958,6 +955,138 @@
     }
   ],
   "stressReports": [
+    {
+      "id": "0bf55224-0caf-49e2-bfdc-c9a4a9416091",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "networkKey": "testnet",
+      "datasetCid": "builtin-ohclv-0g-volatility-slice",
+      "reportCid": "local-dd3c9e85156aecfad783e853ec6f8df46041bfe0184c3a28f8e4edcdec15be9b",
+      "baselineApy": 12.38,
+      "verifiedApy": 23.84,
+      "simulatedProfit": 2815.75,
+      "maxDrawdown": 0.2653,
+      "decisions": [
+        {
+          "timestamp": "2026-04-24T00:00:00.000Z",
+          "marketClose": 1.04,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-25T00:00:00.000Z",
+          "marketClose": 1.1,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-26T00:00:00.000Z",
+          "marketClose": 0.91,
+          "standardAgentApy": 60,
+          "auditorApy": 23.84,
+          "auditorDecision": "REJECTED",
+          "reason": "Optimized APY is more than 4x the current APY baseline."
+        },
+        {
+          "timestamp": "2026-04-27T00:00:00.000Z",
+          "marketClose": 0.86,
+          "standardAgentApy": 61,
+          "auditorApy": 23.84,
+          "auditorDecision": "REJECTED",
+          "reason": "Optimized APY is more than 4x the current APY baseline."
+        },
+        {
+          "timestamp": "2026-04-28T00:00:00.000Z",
+          "marketClose": 0.92,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-29T00:00:00.000Z",
+          "marketClose": 1.01,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        }
+      ],
+      "verdict": "PASS",
+      "timestamp": "2026-05-03T08:08:46.910Z",
+      "storageMode": "local-fallback",
+      "note": "0G env incomplete; payload persisted locally at .artifacts/0g-fallback/yieldboost-stress-report-dd3c9e85156aecfa.json; upload fallback reason: Request failed with status code 503"
+    },
+    {
+      "id": "e4b3aa06-9f9f-429f-a5b9-24d8b5f80aa6",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "networkKey": "testnet",
+      "datasetCid": "builtin-ohclv-0g-volatility-slice",
+      "reportCid": "local-40d276a7bc41926c58bc470418efbc6b0c071a621c7d1194a81a00943a6d649a",
+      "baselineApy": 12.38,
+      "verifiedApy": 23.84,
+      "simulatedProfit": 2815.75,
+      "maxDrawdown": 0.2653,
+      "decisions": [
+        {
+          "timestamp": "2026-04-24T00:00:00.000Z",
+          "marketClose": 1.04,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-25T00:00:00.000Z",
+          "marketClose": 1.1,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-26T00:00:00.000Z",
+          "marketClose": 0.91,
+          "standardAgentApy": 60,
+          "auditorApy": 23.84,
+          "auditorDecision": "REJECTED",
+          "reason": "Optimized APY is more than 4x the current APY baseline."
+        },
+        {
+          "timestamp": "2026-04-27T00:00:00.000Z",
+          "marketClose": 0.86,
+          "standardAgentApy": 61,
+          "auditorApy": 23.84,
+          "auditorDecision": "REJECTED",
+          "reason": "Optimized APY is more than 4x the current APY baseline."
+        },
+        {
+          "timestamp": "2026-04-28T00:00:00.000Z",
+          "marketClose": 0.92,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        },
+        {
+          "timestamp": "2026-04-29T00:00:00.000Z",
+          "marketClose": 1.01,
+          "standardAgentApy": 23.84,
+          "auditorApy": 23.84,
+          "auditorDecision": "APPROVED",
+          "reason": "APY projection stays within deterministic guardrail bounds."
+        }
+      ],
+      "verdict": "PASS",
+      "timestamp": "2026-05-03T08:04:09.562Z",
+      "storageMode": "local-fallback",
+      "note": "0G env incomplete; payload persisted locally at .artifacts/0g-fallback/yieldboost-stress-report-40d276a7bc41926c.json; upload fallback reason: Request failed with status code 503"
+    },
     {
       "id": "98c6a229-9f42-41f4-be3f-7d80ba437b2d",
       "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
@@ -1495,6 +1624,46 @@
   ],
   "zkReasoningProofs": [
     {
+      "proofId": "zkr-a936040f-7675-4da1-926f-20c6f85114df",
+      "proofCid": "local-8abf22d7ea867db738ffb7abaea1635ee8960bdf29f8bf3e3838733481ad4c85",
+      "networkKey": "testnet",
+      "verifier": "0G Storage + YieldBoost deterministic verifier",
+      "proofType": "TEE/ZK-ready reasoning proof envelope",
+      "createdAt": "2026-05-03T08:08:46.929Z",
+      "status": "zk-ready",
+      "summary": "Playwright validation of ZK-ready reasoning envelope after 1-click optimize.",
+      "storageMode": "local-fallback",
+      "artifactHash": "852f735486e5453ee5fca791f3f79659a795e24678ec51930a46b94b3cc96fd3",
+      "rootHash": "0x8abf22d7ea867db738ffb7abaea1635ee8960bdf29f8bf3e3838733481ad4c85",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "proofRegistryAddress": "0x516D005367045b1fc18c9c9a0Ff7bf8653d1B4e3",
+      "proofRegistryTxHash": "0x0effd21f5d0fedbca8372b0a7099a7ba0fca1c144b0199a599fc5d64eea6fb75",
+      "proofRegistryProofId": "40",
+      "proofRegistryExplorerUrl": "https://chainscan-galileo.0g.ai/tx/0x0effd21f5d0fedbca8372b0a7099a7ba0fca1c144b0199a599fc5d64eea6fb75",
+      "note": "0G env incomplete; payload persisted locally at .artifacts/0g-fallback/yieldboost-zk-reasoning-8abf22d7ea867db7.json; upload fallback reason: Request failed with status code 503"
+    },
+    {
+      "proofId": "zkr-1e23ddc9-5b53-434b-876e-b723a0a66689",
+      "proofCid": "local-756bf5bd539e9bd3d517686f81f964bc2c8c57cf57ee4e72b62587a3364c8f65",
+      "networkKey": "testnet",
+      "verifier": "0G Storage + YieldBoost deterministic verifier",
+      "proofType": "TEE/ZK-ready reasoning proof envelope",
+      "createdAt": "2026-05-03T08:04:09.523Z",
+      "status": "zk-ready",
+      "summary": "Playwright validation of ZK-ready reasoning envelope after 1-click optimize.",
+      "storageMode": "local-fallback",
+      "artifactHash": "01e60303be54f266a464535f3df29e2da1c26befdd00d585c0f3238e9095aee4",
+      "rootHash": "0x756bf5bd539e9bd3d517686f81f964bc2c8c57cf57ee4e72b62587a3364c8f65",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "proofRegistryAddress": "0x516D005367045b1fc18c9c9a0Ff7bf8653d1B4e3",
+      "proofRegistryTxHash": "0x06c2a6ff392489cd2546c32983c291fd8718d1d292dee0a699ac0b59b9aa70ba",
+      "proofRegistryProofId": "39",
+      "proofRegistryExplorerUrl": "https://chainscan-galileo.0g.ai/tx/0x06c2a6ff392489cd2546c32983c291fd8718d1d292dee0a699ac0b59b9aa70ba",
+      "note": "0G env incomplete; payload persisted locally at .artifacts/0g-fallback/yieldboost-zk-reasoning-756bf5bd539e9bd3.json; upload fallback reason: Request failed with status code 503"
+    },
+    {
       "proofId": "zkr-4efce83b-9698-4a9b-861c-26d6dfca56d2",
       "proofCid": "local-9f9682c7f0898243f8a08907c7e58eb1719729a6f73f0d0c4fd0dfb67c414128",
       "networkKey": "testnet",
@@ -1711,6 +1880,66 @@
   ],
   "governanceDecisions": [
     {
+      "governanceId": "gov-4d041c9d-4d36-45a3-9321-669273f0126c",
+      "status": "active",
+      "reason": "Decision stayed inside deterministic governance policy limits.",
+      "riskScore": 12,
+      "killSwitchTriggered": false,
+      "artifactCid": "0x60a71b6a3313159e3f4b0b723528132d506edc8756713dc64b3bc9369a5671cd",
+      "txHash": "0xfead9f4ce66839d0c6e7e1648f3ad8db7de8fb1edc0a89bae5f4326d1021e168",
+      "blockNumber": 31260274,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0xfead9f4ce66839d0c6e7e1648f3ad8db7de8fb1edc0a89bae5f4326d1021e168",
+      "networkKey": "testnet",
+      "createdAt": "2026-05-03T08:08:46.924Z",
+      "storageMode": "0g",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "evaluatedAction": "playwright-optimize-validation",
+      "deterministicReasons": [
+        "Decision stayed inside deterministic governance policy limits."
+      ]
+    },
+    {
+      "governanceId": "gov-bfe80698-26e5-4bae-89ad-4116e02ae3c1",
+      "status": "active",
+      "reason": "Decision stayed inside deterministic governance policy limits.",
+      "riskScore": 12,
+      "killSwitchTriggered": false,
+      "artifactCid": "0xa574e3af1ba12f7faa5efb4bfd5b92c46e99e2da287aabb3fff4492349f5a4d1",
+      "txHash": "0x810ad759f3319e93f4154001aca62932357521fe925497dfd1be33c9c86d5950",
+      "blockNumber": 31259649,
+      "explorerUrl": "https://chainscan-galileo.0g.ai/tx/0x810ad759f3319e93f4154001aca62932357521fe925497dfd1be33c9c86d5950",
+      "networkKey": "testnet",
+      "createdAt": "2026-05-03T08:04:09.522Z",
+      "storageMode": "0g",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "evaluatedAction": "playwright-optimize-validation",
+      "deterministicReasons": [
+        "Decision stayed inside deterministic governance policy limits."
+      ]
+    },
+    {
+      "governanceId": "gov-2a41dd86-7be0-43e7-9cb2-92a750d33354",
+      "status": "active",
+      "reason": "Decision stayed inside deterministic governance policy limits.",
+      "riskScore": 12,
+      "killSwitchTriggered": false,
+      "artifactCid": "0x2e1363b94f490765bd8841f5eff8d0b31b4f328017fae1920a429ffbd2b964ef",
+      "txHash": "0xf7672e2367a880e57961ece7621138c3be870ef8541affdd28c657b5654e620e",
+      "blockNumber": 32173711,
+      "explorerUrl": "https://chainscan.0g.ai/tx/0xf7672e2367a880e57961ece7621138c3be870ef8541affdd28c657b5654e620e",
+      "networkKey": "mainnet",
+      "createdAt": "2026-05-03T08:00:50.025Z",
+      "storageMode": "0g",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "evaluatedAction": "zk-compliance-proof",
+      "deterministicReasons": [
+        "Decision stayed inside deterministic governance policy limits."
+      ]
+    },
+    {
       "governanceId": "gov-67bc5840-06de-41e0-a841-3bd841b269e4",
       "status": "active",
       "reason": "Decision stayed inside deterministic governance policy limits.",
@@ -1907,6 +2136,38 @@
   ],
   "crossAgentHandshakes": [
     {
+      "handshakeId": "handshake-b73320c8-8ea7-48ce-bcd6-d6ca2e82a4d2",
+      "requestingAgent": "YieldBoost Optimizer Agent",
+      "respondingAgent": "Integrity Auditor Agent",
+      "handshakeType": "cross-agent-neural-handshake",
+      "artifactCid": "local-32b5e9c26d2c98f8b7d688dab4f11f680c42d6d4fd6bde40026dd25f06d8a1af",
+      "networkKey": "testnet",
+      "status": "completed",
+      "createdAt": "2026-05-03T08:08:46.919Z",
+      "summary": "Playwright handshake validation after 1-click optimize.",
+      "storageMode": "local-fallback",
+      "skillPurpose": "Cross-check deterministic proof envelope after UI optimize",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "transcriptDigest": "7d8c70e848ead14912a6a34d68d4a14313b09afe7094d4c2bcd1b139cf7c0bfd",
+      "note": "0G env incomplete; payload persisted locally at .artifacts/0g-fallback/yieldboost-agent-handshake-32b5e9c26d2c98f8.json; upload fallback reason: Request failed with status code 503"
+    },
+    {
+      "handshakeId": "handshake-a17dca53-3909-4eed-ba02-f86ec3fc525c",
+      "requestingAgent": "YieldBoost Optimizer Agent",
+      "respondingAgent": "Integrity Auditor Agent",
+      "handshakeType": "cross-agent-neural-handshake",
+      "artifactCid": "local-53e996ff3a16c12654b72942f106b26328ac7de10a6f9e7d08979cb60ab6f3a2",
+      "networkKey": "testnet",
+      "status": "completed",
+      "createdAt": "2026-05-03T08:04:09.521Z",
+      "summary": "Playwright handshake validation after 1-click optimize.",
+      "storageMode": "local-fallback",
+      "skillPurpose": "Cross-check deterministic proof envelope after UI optimize",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "transcriptDigest": "7d8c70e848ead14912a6a34d68d4a14313b09afe7094d4c2bcd1b139cf7c0bfd",
+      "note": "0G env incomplete; payload persisted locally at .artifacts/0g-fallback/yieldboost-agent-handshake-53e996ff3a16c126.json; upload fallback reason: Request failed with status code 503"
+    },
+    {
       "handshakeId": "handshake-2d24b378-75a5-4e34-9a3e-c0d789e923c2",
       "requestingAgent": "YieldBoost Optimizer Agent",
       "respondingAgent": "Integrity Auditor Agent",
@@ -2077,6 +2338,35 @@
       "skillPurpose": "Cross-check yield reasoning, governance status, and proof-readiness before Judge Mode display.",
       "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
       "transcriptDigest": "bca1cab283a22b2bd1ec879906c9ba6d48980803ed0f2b7f0171c801720824bb"
+    }
+  ],
+  "zkComplianceProofs": [
+    {
+      "proofId": "0x0119fc5c1febedbef1b3e8b934d6999c7e80f26ecb2d8fc2b826370c14ace7da",
+      "artifactCid": "0xc8b7e448ef15d2132f0fb4cae9621a68a0ae7450bc6370c3641dc7df64aa00c8",
+      "txHash": "0x3a11e091491d9f77ae37c384c71c905e3d1187078d0f7902281957986d46034b",
+      "blockNumber": 32173722,
+      "explorerUrl": "https://chainscan.0g.ai/tx/0x3a11e091491d9f77ae37c384c71c905e3d1187078d0f7902281957986d46034b",
+      "networkKey": "mainnet",
+      "proofType": "Deterministic optimizer + governance compliance proof",
+      "verifier": "YieldBoost deterministic policy verifier",
+      "status": "verified",
+      "policyCompliantPct": 100,
+      "governanceStatus": "active",
+      "riskScore": 12,
+      "createdAt": "2026-05-03T08:01:03.885Z",
+      "storageMode": "0g",
+      "summary": "Deterministic policy verifier confirmed the latest strategy run is 100% compliant.",
+      "decisionCommitment": "0xbafec44cc2ea769ca1b2fd2bc7f0620c9be6487fb74fa1a25122c212b617bb8e",
+      "portfolioCommitment": "0x78273ba05db131f689add5cc21b7eee6dff232331dc60d22c459a79e37546f9b",
+      "policyDigest": "0x9c86786f30ca729657b72abc34779f02f4b95cce53bee151831aaeb4be3cf829",
+      "witnessDigest": "0x0119fc5c1febedbef1b3e8b934d6999c7e80f26ecb2d8fc2b826370c14ace7da",
+      "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "agentId": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      "proofRegistryAddress": "0x8e63e117E71A80Cfc10fDF375F079e2e29cd7D7D",
+      "proofRegistryTxHash": "0xd5c33366a40960c1e2903b47f1fa699f39ffbb1ab7532fc544b53571bd7e2be7",
+      "proofRegistryProofId": "9",
+      "proofRegistryExplorerUrl": "https://chainscan.0g.ai/tx/0xd5c33366a40960c1e2903b47f1fa699f39ffbb1ab7532fc544b53571bd7e2be7"
     }
   ],
   "settings": {

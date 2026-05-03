@@ -10,6 +10,7 @@ import {
   type StoredAgentMemoryRecord,
   type StoredBlacklistRecord,
   type StoredCrossAgentHandshake,
+  type StoredZkComplianceProof,
   type StoredGovernanceDecision,
   type StoredProofRecord,
   type StoredStressTestReport,
@@ -27,6 +28,7 @@ const STRESS_REPORTS_KEY = "yieldboost:stress-reports";
 const ZK_REASONING_PROOFS_KEY = "yieldboost:zk-reasoning-proofs";
 const GOVERNANCE_DECISIONS_KEY = "yieldboost:governance-decisions";
 const CROSS_AGENT_HANDSHAKES_KEY = "yieldboost:cross-agent-handshakes";
+const ZK_COMPLIANCE_PROOFS_KEY = "yieldboost:zk-compliance-proofs";
 const SETTINGS_KEY = "yieldboost:settings";
 const MAX_PROOFS = 50;
 const MAX_MEMORY_RECORDS = 50;
@@ -35,6 +37,7 @@ const MAX_STRESS_REPORTS = 40;
 const MAX_ZK_REASONING_PROOFS = 40;
 const MAX_GOVERNANCE_DECISIONS = 60;
 const MAX_CROSS_AGENT_HANDSHAKES = 60;
+const MAX_ZK_COMPLIANCE_PROOFS = 60;
 const LOCAL_STORE_PATH = path.join(process.cwd(), ".artifacts", "runtime-store.json");
 
 export function isRuntimeStoreKvConfigured() {
@@ -50,6 +53,7 @@ interface RuntimeStore {
   zkReasoningProofs: StoredZkReasoningProof[];
   governanceDecisions: StoredGovernanceDecision[];
   crossAgentHandshakes: StoredCrossAgentHandshake[];
+  zkComplianceProofs: StoredZkComplianceProof[];
   settings: SettingsState;
 }
 
@@ -67,6 +71,7 @@ function getLocalStore(): RuntimeStore {
       zkReasoningProofs: [],
       governanceDecisions: [],
       crossAgentHandshakes: [],
+      zkComplianceProofs: [],
       settings: getDefaultSettingsState(),
     };
   }
@@ -173,6 +178,9 @@ async function readLocalStoreFile(): Promise<RuntimeStore | null> {
         : [],
       crossAgentHandshakes: Array.isArray(parsed.crossAgentHandshakes)
         ? parsed.crossAgentHandshakes
+        : [],
+      zkComplianceProofs: Array.isArray(parsed.zkComplianceProofs)
+        ? parsed.zkComplianceProofs
         : [],
       settings: parsed.settings
         ? { ...getDefaultSettingsState(), ...parsed.settings }
@@ -659,6 +667,80 @@ export async function recordCrossAgentHandshake(
   globalStore.__yieldboostRuntimeStore = store;
   await writeLocalStoreFile(store);
   return record;
+}
+
+export async function recordZkComplianceProof(
+  record: StoredZkComplianceProof,
+): Promise<StoredZkComplianceProof> {
+  if (isRuntimeStoreKvConfigured()) {
+    try {
+      const existing = await kv.lrange<StoredZkComplianceProof>(
+        ZK_COMPLIANCE_PROOFS_KEY,
+        0,
+        MAX_ZK_COMPLIANCE_PROOFS - 1,
+      );
+      const filtered = (existing ?? []).filter((item) => item.proofId !== record.proofId);
+      const next = sortCreatedNewestFirst(
+        [record, ...filtered],
+        MAX_ZK_COMPLIANCE_PROOFS,
+      );
+      await kv.del(ZK_COMPLIANCE_PROOFS_KEY);
+      if (next.length > 0) {
+        await kv.lpush(ZK_COMPLIANCE_PROOFS_KEY, ...next.slice().reverse());
+      }
+      return record;
+    } catch (error) {
+      console.warn("[runtime-store] KV ZK compliance write failed, using local fallback:", error);
+    }
+  }
+
+  const store = await loadLocalStore();
+  store.zkComplianceProofs = sortCreatedNewestFirst(
+    [
+      record,
+      ...store.zkComplianceProofs.filter((item) => item.proofId !== record.proofId),
+    ],
+    MAX_ZK_COMPLIANCE_PROOFS,
+  );
+  globalStore.__yieldboostRuntimeStore = store;
+  await writeLocalStoreFile(store);
+  return record;
+}
+
+export async function getZkComplianceProofs(): Promise<StoredZkComplianceProof[]> {
+  if (isRuntimeStoreKvConfigured()) {
+    try {
+      const items = await kv.lrange<StoredZkComplianceProof>(
+        ZK_COMPLIANCE_PROOFS_KEY,
+        0,
+        MAX_ZK_COMPLIANCE_PROOFS - 1,
+      );
+      return sortCreatedNewestFirst(items ?? [], MAX_ZK_COMPLIANCE_PROOFS);
+    } catch (error) {
+      console.warn("[runtime-store] KV ZK compliance read failed, using local fallback:", error);
+    }
+  }
+
+  return sortCreatedNewestFirst(
+    (await loadLocalStore()).zkComplianceProofs,
+    MAX_ZK_COMPLIANCE_PROOFS,
+  );
+}
+
+export async function getLatestZkComplianceProof(input: {
+  walletAddress?: string;
+  agentId?: string;
+  networkKey?: WalletNetworkKey;
+} = {}): Promise<StoredZkComplianceProof | null> {
+  const proofs = await getZkComplianceProofs();
+  return (
+    proofs.find(
+      (proof) =>
+        (!input.networkKey || proof.networkKey === input.networkKey) &&
+        (!input.walletAddress || sameWalletAddress(proof.walletAddress, input.walletAddress)) &&
+        (!input.agentId || proof.agentId === input.agentId),
+    ) ?? null
+  );
 }
 
 export async function getCrossAgentHandshakes(): Promise<StoredCrossAgentHandshake[]> {

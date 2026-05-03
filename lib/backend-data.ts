@@ -318,6 +318,37 @@ export interface StoredZkReasoningProof {
   note?: string;
 }
 
+export type ZkComplianceProofStatus = "verified" | "pending" | "failed";
+
+export interface StoredZkComplianceProof {
+  proofId: string;
+  artifactCid: string;
+  txHash?: string;
+  blockNumber?: number;
+  explorerUrl?: string;
+  networkKey: WalletNetworkKey;
+  proofType: string;
+  verifier: string;
+  status: ZkComplianceProofStatus;
+  policyCompliantPct: number;
+  governanceStatus: AIGovernanceStatus;
+  riskScore: number;
+  createdAt: string;
+  storageMode: ProofStorageMode;
+  summary: string;
+  decisionCommitment: string;
+  portfolioCommitment: string;
+  policyDigest: string;
+  witnessDigest: string;
+  walletAddress?: string;
+  agentId?: string;
+  proofRegistryAddress?: string;
+  proofRegistryTxHash?: string;
+  proofRegistryProofId?: string;
+  proofRegistryExplorerUrl?: string;
+  note?: string;
+}
+
 export type AIGovernanceStatus = "active" | "warning" | "throttled" | "halted";
 
 export interface StoredGovernanceDecision {

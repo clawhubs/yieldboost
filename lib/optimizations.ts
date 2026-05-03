@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { IntegrityAudit } from "@/lib/integrity-audit";
+import type { ZkComplianceProofStatus } from "@/lib/backend-data";
 
 export type OptimizationState = "analyzing" | "optimizing" | "executing" | "done";
 export type FeedState = "analyzing" | "optimizing" | "complete";
@@ -37,6 +38,14 @@ export interface OptimizationResult {
   proofStatus?: "stored" | "error" | "pending";
   proofStatusDetail?: string;
   integrityAudit?: IntegrityAudit;
+  zkCompliance?: {
+    proofId: string;
+    status: ZkComplianceProofStatus;
+    policyCompliantPct: number;
+    summary: string;
+    explorerUrl?: string;
+    proofRegistryExplorerUrl?: string;
+  };
 }
 
 export interface OptimizationFeedItem {
