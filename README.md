@@ -34,6 +34,7 @@
   <a href="#the-problem">Problem</a> •
   <a href="#the-solution">Solution</a> •
   <a href="#hackathon-track-alignment">Track alignment</a> •
+  <a href="#showcase">Showcase</a> •
   <a href="#fast-judge-review">Fast judge review</a> •
   <a href="#architecture">Architecture</a> •
   <a href="#0g-native-data-flow">0G data flow</a> •
@@ -59,12 +60,12 @@ The active implementation in this repository is now centered on a **mainnet-firs
 - **Hallucination Blacklist** for pre-inference rejection of known bad patterns.
 - **Multiverse Stress Test** for historical replay and 0G-backed Integrity Report Cards.
 
-On top of that integrity memory stack, the repo now adds a second control plane for verifiable reasoning and policy enforcement:
+On top of that integrity memory stack, the repo now adds three review-grade control-plane features for verifiable reasoning and policy enforcement:
 
 - **Zero-Knowledge Reasoning (ZKR)** as a live TEE/ZK-ready reasoning proof envelope persisted to 0G and anchored for Judge review.
 - **Programmable AI Governance** as a deterministic policy engine that can keep a strategy `active`, `warning`, `throttled`, or `halted`.
 - **Cross-Agent Neural Handshake** as a persisted optimizer-to-auditor transcript envelope recorded on 0G mainnet.
-- **Deterministic ZK Compliance** as a policy proof that the latest strategy execution stayed 100% inside governance limits.
+- **Deterministic ZK Compliance** as the policy proof tying ZKR and governance back to the latest stored strategy execution.
 
 The result is a product story judges can verify quickly: a user runs an optimization, the app persists the reasoning and decision payload on 0G infrastructure, and `/judge` exposes the latest mainnet review snapshot without requiring wallet connection, faucet setup, or rerunning the flow.
 
@@ -225,6 +226,18 @@ The submission story, however, is clearest when framed as **verifiable DeFi inte
     <td align="center"><strong>Dashboard</strong><br />Portfolio intelligence, proof-aware UX, and optimization entry point.</td>
     <td align="center"><strong>Judge Mode</strong><br />Read-only audit route with latest proof, wallet snapshot, and verification links.</td>
   </tr>
+  <tr>
+    <td width="50%">
+      <img src="./public/readme/integrity-stack.png" alt="YieldBoost AI integrity stack" />
+    </td>
+    <td width="50%">
+      <img src="./public/readme/roadmap.png" alt="YieldBoost AI roadmap" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Integrity Stack</strong><br />ZKR, programmable governance, neural handshake, compliance proof, memory, blacklist, and stress evidence in one judge-readable package.</td>
+    <td align="center"><strong>Sovereign Roadmap</strong><br />What already exists, how 0G stays central, and how the protocol expands into revenue-grade trust infrastructure.</td>
+  </tr>
 </table>
 
 ## Fast Judge Review
@@ -234,7 +247,9 @@ The submission story, however, is clearest when framed as **verifiable DeFi inte
 | 1 | Open `/judge` | Starts directly on the audit-first route instead of a wallet setup screen. |
 | 2 | Review latest proof snapshot | Shows route recommendation, APY lift, wallet snapshot, and reasoning in one place. |
 | 3 | Open explorer links | Lets the judge inspect the latest 0G mainnet storage tx and ProofRegistry anchor directly. |
-| 4 | Navigate deeper only if needed | `/history` and `/agents` remain available without breaking the review flow. |
+| 4 | Inspect Integrity memory stack | Shows the three latest upgrades together: ZKR, programmable AI governance, and cross-agent neural handshake, plus their evidence anchors. |
+| 5 | Open `Roadmap` beside the pitch/PDF links | Frames what is already live, what becomes monetizable next, and why 0G remains the execution and verification base layer. |
+| 6 | Navigate deeper only if needed | `/history`, `/agents`, and `/marketplace` remain available without breaking the review flow. |
 
 ## Architecture
 
@@ -265,11 +280,25 @@ flowchart TD
     JSON --> ZGS[0G Storage Indexer.upload]
     ZGS --> PROOF[StoredProofRecord]
     STORE -->|optional| REG[ProofRegistry.recordProof]
+
+    PROOF --> ZKR[/api/zk/verify/]
+    ZKR --> ZKENV[Zero-Knowledge Reasoning envelope]
+    PROOF --> GOV[/api/governance/evaluate/]
+    GOV --> GOVART[Programmable AI Governance artifact]
+    GOVART --> ZKCOMP[/api/zk/compliance/]
+    ZKCOMP --> ZKART[Deterministic ZK Compliance proof]
+    PROOF --> HANDSHAKE[/api/agents/handshake/]
+    HANDSHAKE --> TRANSCRIPT[Cross-Agent Neural Handshake transcript]
+
     PROOF --> MEMORY[/api/agent/memory/]
     MEMORY --> MEMSTORE[0G Storage memory snapshot]
 
     PROOF --> RUNTIME[Vercel KV or .artifacts/runtime-store.json]
     REG --> RUNTIME
+    ZKENV --> RUNTIME
+    GOVART --> RUNTIME
+    ZKART --> RUNTIME
+    TRANSCRIPT --> RUNTIME
     MEMSTORE --> RUNTIME
 
     UI --> STRESS[/api/stress-test/run/]
@@ -283,6 +312,10 @@ flowchart TD
     RUNTIME --> MEMORYAPI[/api/agent/memory/]
     RUNTIME --> BLACKLISTAPI[/api/auditor/blacklist/]
     RUNTIME --> STRESSAPI[/api/stress-test/run/]
+    RUNTIME --> ZKRAPI[/api/zk/verify/]
+    RUNTIME --> GOVAPI[/api/governance/evaluate/]
+    RUNTIME --> ZKCOMPAPI[/api/zk/compliance/]
+    RUNTIME --> HANDSHAKEAPI[/api/agents/handshake/]
     RUNTIME --> LIST[/api/agent/list/]
     RUNTIME --> HISTORY[/api/history/]
 
@@ -294,8 +327,14 @@ flowchart TD
     REVIEW --> MEMORYAPI
     REVIEW --> BLACKLISTAPI
     REVIEW --> STRESSAPI
+    REVIEW --> ZKRAPI
+    REVIEW --> GOVAPI
+    REVIEW --> ZKCOMPAPI
+    REVIEW --> HANDSHAKEAPI
     REVIEW --> HISTORY
     REVIEW --> LIST
+    JUDGE --> ROADMAP[/judge/roadmap/]
+    ROADMAP --> VALUE[Value capture + 2026-2027 0G roadmap]
 ```
 
 ## 0G-Native Data Flow
@@ -310,27 +349,39 @@ flowchart TD
 8. If the audit is `APPROVED`, the route writes a JSON proof artifact, uploads it through **0G Storage** using `Indexer.upload`, and records the resulting storage hash and tx metadata.
 9. If `ProofRegistry` is configured, the same route calls `recordProof(...)` on the on-chain registry contract defined in [`contracts/ProofRegistry.sol`](contracts/ProofRegistry.sol).
 10. After a successful proof write, [`lib/server/sovereign-memory.ts`](lib/server/sovereign-memory.ts) syncs the agent's latest context snapshot to 0G Storage and records the memory CID.
-11. [`/api/stress-test/run`](app/api/stress-test/run/route.ts) can replay historical OHLCV/oracle slices, produce an Integrity Report Card, and store that report on 0G Storage.
-12. The full proof, memory, blacklist, and stress-test records are persisted into the runtime ledger managed by [`lib/server/runtime-store.ts`](lib/server/runtime-store.ts), backed by **Vercel KV** when available or `.artifacts/runtime-store.json` as a local fallback.
-13. The proof can then be rehydrated across the product through:
+11. [`/api/zk/verify`](app/api/zk/verify/route.ts) can persist a **Zero-Knowledge Reasoning** envelope for the decision narrative, public signals, verifier identity, and portfolio snapshot.
+12. [`/api/governance/evaluate`](app/api/governance/evaluate/route.ts) evaluates the strategy against programmable risk policy and records whether the strategy remains `active`, `warning`, `throttled`, or `halted`.
+13. [`/api/agents/handshake`](app/api/agents/handshake/route.ts) records the optimizer-to-auditor **Cross-Agent Neural Handshake** transcript digest so the reasoning handoff is inspectable.
+14. [`/api/zk/compliance`](app/api/zk/compliance/route.ts) ties governance and the latest stored proof into a deterministic compliance artifact.
+15. [`/api/stress-test/run`](app/api/stress-test/run/route.ts) can replay historical OHLCV/oracle slices, produce an Integrity Report Card, and store that report on 0G Storage.
+16. The full proof, memory, blacklist, stress-test, ZKR, governance, compliance, and handshake records are persisted into the runtime ledger managed by [`lib/server/runtime-store.ts`](lib/server/runtime-store.ts), backed by **Vercel KV** when available or `.artifacts/runtime-store.json` as a local fallback.
+17. The proof can then be rehydrated across the product through:
    - [`/api/agent/latest`](app/api/agent/latest/route.ts)
    - [`/api/0g/proof`](app/api/0g/proof/route.ts)
    - [`/api/agent/memory`](app/api/agent/memory/route.ts)
    - [`/api/auditor/blacklist`](app/api/auditor/blacklist/route.ts)
    - [`/api/stress-test/run`](app/api/stress-test/run/route.ts)
+   - [`/api/zk/verify`](app/api/zk/verify/route.ts)
+   - [`/api/governance/evaluate`](app/api/governance/evaluate/route.ts)
+   - [`/api/zk/compliance`](app/api/zk/compliance/route.ts)
+   - [`/api/agents/handshake`](app/api/agents/handshake/route.ts)
    - [`/api/history`](app/api/history/route.ts)
    - [`/api/agent/list`](app/api/agent/list/route.ts)
-14. The judge opens [`/judge`](<app/(workspace)/judge/page.tsx>), which surfaces the latest proof, wallet snapshot, memory CID, blacklist CID, stress-test report CID, explorer links, registry status, and Integrity Auditor state in one audit-first page.
+18. The judge opens [`/judge`](<app/(workspace)/judge/page.tsx>), which surfaces the latest proof, wallet snapshot, memory CID, blacklist CID, stress-test report CID, ZKR CID, governance CID, handshake CID, explorer links, registry status, and Integrity Auditor state in one audit-first page.
+19. If a reviewer wants the business expansion path, [`/judge/roadmap`](<app/(workspace)/judge/roadmap/page.tsx>) keeps the roadmap adjacent to the pitch deck and PDF links without adding sidebar clutter.
 
 ## 0G Integration Upgrade
 
-The repo now includes three additional 0G-native integrity layers.
+The repo includes the original integrity memory stack plus three newer control-plane additions: **Zero-Knowledge Reasoning**, **Programmable AI Governance**, and **Cross-Agent Neural Handshake**.
 
 | Layer | Backend path | Storage artifact | Contract path |
 | --- | --- | --- | --- |
 | Sovereign Memory | [`/api/agent/memory`](app/api/agent/memory/route.ts), [`lib/server/sovereign-memory.ts`](lib/server/sovereign-memory.ts) | Agent context snapshot JSON on 0G Storage | `agentMemory[tokenId]` in [`YieldStrategyINFT.sol`](contracts/YieldStrategyINFT.sol) |
 | Hallucination Blacklist | [`/api/auditor/blacklist`](app/api/auditor/blacklist/route.ts), [`lib/server/hallucination-blacklist.ts`](lib/server/hallucination-blacklist.ts) | Invalid input + hallucinated output + auditor reasoning | [`GlobalBlacklistRegistry.sol`](contracts/GlobalBlacklistRegistry.sol) |
 | Multiverse Stress Test | [`/api/stress-test/run`](app/api/stress-test/run/route.ts), [`lib/server/multiverse-stress-test.ts`](lib/server/multiverse-stress-test.ts) | Integrity Report Card from historical replay | [`ValidationRegistry.sol`](contracts/ValidationRegistry.sol) |
+| Zero-Knowledge Reasoning | [`/api/zk/verify`](app/api/zk/verify/route.ts), [`lib/server/zk-reasoning.ts`](lib/server/zk-reasoning.ts) | TEE/ZK-ready reasoning envelope with public signals and verifier context | Anchored through 0G storage tx metadata and surfaced in Judge Mode |
+| Programmable AI Governance | [`/api/governance/evaluate`](app/api/governance/evaluate/route.ts), [`lib/server/ai-governance.ts`](lib/server/ai-governance.ts) | Deterministic policy decision with risk score, kill switch, and status | Designed to gate future guardian / strategy governance flows |
+| Cross-Agent Neural Handshake | [`/api/agents/handshake`](app/api/agents/handshake/route.ts), [`lib/server/cross-agent-handshake.ts`](lib/server/cross-agent-handshake.ts) | Optimizer-to-auditor transcript digest and coordination envelope | Anchored as an inspectable 0G artifact before downstream review |
 
 ### Sovereign Memory
 
@@ -369,6 +420,7 @@ Why this matters for judging:
 - **0G Compute-first inference path**: the live optimize route attempts TEE-ready inference through the 0G broker and falls back honestly when the provider is unavailable.
 - **0G Storage proof persistence**: every successful proof write stores decision metadata, timestamps, wallet scope, and explorer links.
 - **Integrity Auditor guardrail**: before a proof is stored or a strategy can be promoted, a deterministic rule-based backend auditor checks APY bounds, lift sanity, snapshot presence, route/asset compatibility, and zero-balance hallucination cases.
+- **ZKR, governance, and neural handshake artifacts**: the latest control-plane additions store reasoning envelopes, deterministic policy outcomes, and optimizer-to-auditor transcript digests as 0G-backed evidence.
 - **Optional on-chain ProofRegistry anchoring**: if the registry contract env is present, the proof is also recorded on-chain and surfaced with a registry tx hash and proof id.
 - **Runtime proof ledger**: proofs are queryable later without re-running the optimization.
 
@@ -392,13 +444,14 @@ Why this matters for judging:
 
 `/judge` is not a cosmetic dashboard variant. It is a purpose-built audit surface for hackathon evaluation.
 
-It does four important things:
+It does six important things:
 
 - **Bootstraps a review wallet automatically** when no wallet is connected.
 - **Pins the review flow to the latest recorded proof**, so judges see a concrete result first.
 - **Defaults the review path to mainnet**, which matches the current live submission story.
 - **Keeps proof links, CID/root hash, registry status, and snapshot details on one page**, minimizing review friction.
 - **Shows the Integrity Auditor result** so reviewers can see whether the deterministic guardrail approved the prediction before proof persistence.
+- **Groups ZKR, programmable governance, and neural handshake evidence together**, so reviewers can see the reasoning control plane instead of hunting through API responses.
 
 This is the UX decision that makes YieldBoost AI unusually judge-friendly: the verification path is short, visible, and does not depend on extension setup.
 
@@ -420,6 +473,9 @@ This is the UX decision that makes YieldBoost AI unusually judge-friendly: the v
 | Sovereign Memory | [`app/api/agent/memory/route.ts`](app/api/agent/memory/route.ts) and [`contracts/YieldStrategyINFT.sol`](contracts/YieldStrategyINFT.sol) | Stores agent state snapshots on 0G Storage and exposes `agentMemory[tokenId]`. |
 | Hallucination Blacklist | [`app/api/auditor/blacklist/route.ts`](app/api/auditor/blacklist/route.ts) and [`contracts/GlobalBlacklistRegistry.sol`](contracts/GlobalBlacklistRegistry.sol) | Indexes rejected auditor outputs and checks similar requests before inference. |
 | Multiverse Stress Test | [`app/api/stress-test/run/route.ts`](app/api/stress-test/run/route.ts) and [`contracts/ValidationRegistry.sol`](contracts/ValidationRegistry.sol) | Replays historical slices and stores Integrity Report Cards as 0G artifacts. |
+| Zero-Knowledge Reasoning | [`app/api/zk/verify/route.ts`](app/api/zk/verify/route.ts) and [`lib/server/zk-reasoning.ts`](lib/server/zk-reasoning.ts) | Persists TEE/ZK-ready reasoning envelopes with public signals and verifier context. |
+| Programmable AI Governance | [`app/api/governance/evaluate/route.ts`](app/api/governance/evaluate/route.ts) and [`lib/server/ai-governance.ts`](lib/server/ai-governance.ts) | Applies deterministic policy status, risk scoring, and kill-switch semantics before downstream reliance. |
+| Cross-Agent Neural Handshake | [`app/api/agents/handshake/route.ts`](app/api/agents/handshake/route.ts) and [`lib/server/cross-agent-handshake.ts`](lib/server/cross-agent-handshake.ts) | Records optimizer-to-auditor coordination transcripts as inspectable 0G artifacts. |
 
 ### Token / Prompt Efficiency
 
@@ -478,6 +534,7 @@ That behavior is much better for judge trust than pretending every subsystem is 
 | Route | Purpose |
 | --- | --- |
 | `/judge` | Read-only judge entry point with latest proof, wallet snapshot, and infra status. |
+| `/judge/roadmap` | Judge-adjacent roadmap and value-capture story, linked beside the pitch deck and PDF actions. |
 | `/agent` | Main optimization execution experience. |
 | `/agents` | Agent gallery, backed by contract mode or proof fallback mode. |
 | `/api/agent/optimize` | 0G Compute-first optimization narration endpoint. |
@@ -487,16 +544,20 @@ That behavior is much better for judge trust than pretending every subsystem is 
 | `/api/agent/memory` | Sync and read Sovereign Memory snapshots for an agent or wallet. |
 | `/api/auditor/blacklist` | Index rejected auditor outputs and query blacklist matches. |
 | `/api/stress-test/run` | Run historical replay and store Integrity Report Cards. |
+| `/api/zk/verify` | Store and read Zero-Knowledge Reasoning proof envelopes. |
+| `/api/governance/evaluate` | Evaluate programmable AI policy status, risk, and kill-switch outcome. |
+| `/api/zk/compliance` | Create deterministic compliance proofs from governance plus latest strategy proof. |
+| `/api/agents/handshake` | Store and read Cross-Agent Neural Handshake transcript envelopes. |
 | `/api/history` | Proof-backed execution history for the active wallet. |
 
 ## README Stats
 
 | Metric | Value |
 | --- | --- |
-| 0G-facing API routes | 6: optimize, store, proof, memory, blacklist, stress test |
+| 0G-facing API routes | 10: optimize, store, proof, memory, blacklist, stress test, ZKR, governance, ZK compliance, neural handshake |
 | Solidity contracts in scope | 6: ProofRegistry, YieldStrategyINFT, AttestationRegistryOracle, AdoptionMarket, GlobalBlacklistRegistry, ValidationRegistry |
-| Verifiable artifact types | Proof receipt, memory snapshot, blacklist entry, stress-test report, Agent NFT metadata |
-| Judge proof surfaces | `/judge`, proof modal, history, agents, marketplace |
+| Verifiable artifact types | Proof receipt, memory snapshot, blacklist entry, stress-test report, ZKR envelope, governance decision, ZK compliance proof, neural handshake transcript, Agent NFT metadata |
+| Judge proof surfaces | `/judge`, `/judge/roadmap`, proof modal, history, agents, marketplace, pitch deck |
 | Validation commands | `npm run lint`, `npx tsc --noEmit`, `npm run build`, `solcjs`, Playwright |
 
 ## Local Installation
@@ -640,8 +701,13 @@ npm run setup:tee-broker:mainnet
 | [`app/api/agent/memory/route.ts`](app/api/agent/memory/route.ts) | Sovereign Memory sync and read API. |
 | [`app/api/auditor/blacklist/route.ts`](app/api/auditor/blacklist/route.ts) | Hallucination Blacklist write/read API. |
 | [`app/api/stress-test/run/route.ts`](app/api/stress-test/run/route.ts) | Multiverse Stress Test runner and report API. |
+| [`app/api/zk/verify/route.ts`](app/api/zk/verify/route.ts) | Zero-Knowledge Reasoning proof envelope API. |
+| [`app/api/governance/evaluate/route.ts`](app/api/governance/evaluate/route.ts) | Programmable AI Governance evaluator. |
+| [`app/api/zk/compliance/route.ts`](app/api/zk/compliance/route.ts) | Deterministic compliance proof builder. |
+| [`app/api/agents/handshake/route.ts`](app/api/agents/handshake/route.ts) | Cross-Agent Neural Handshake transcript API. |
 | [`lib/server/runtime-store.ts`](lib/server/runtime-store.ts) | Proof persistence layer. |
 | [`app/(workspace)/judge/page.tsx`](<app/(workspace)/judge/page.tsx>) | Main judge review surface. |
+| [`app/(workspace)/judge/roadmap/page.tsx`](<app/(workspace)/judge/roadmap/page.tsx>) | Judge-adjacent roadmap and value-capture surface. |
 | [`components/judge/JudgeModeBootstrap.tsx`](components/judge/JudgeModeBootstrap.tsx) | Wallet-free review bootstrap behavior. |
 | [`contracts/ProofRegistry.sol`](contracts/ProofRegistry.sol) | On-chain proof registry. |
 | [`contracts/YieldStrategyINFT.sol`](contracts/YieldStrategyINFT.sol) | Strategy Agent NFT contract. |
@@ -651,6 +717,12 @@ npm run setup:tee-broker:mainnet
 ## Roadmap: $YA0G and Proof-of-Optimization
 
 The items below are **future roadmap**, not current live functionality in this repository.
+
+Current shipped base for that roadmap:
+
+- **Zero-Knowledge Reasoning (ZKR)** records the reasoning envelope as a reviewable 0G artifact.
+- **Programmable AI Governance** turns strategy policy into deterministic status, risk, and kill-switch output.
+- **Cross-Agent Neural Handshake** records the optimizer-to-auditor coordination transcript for external inspection.
 
 ### `$YA0G` Utility Layer
 
