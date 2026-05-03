@@ -40,6 +40,19 @@ const liveProofHistoryCache = new Map<
   string,
   { fetchedAt: number; proofs: StoredProofRecord[] }
 >();
+const latestLiveProofPromiseCache = new Map<string, Promise<StoredProofRecord | null>>();
+const liveProofHistoryPromiseCache = new Map<string, Promise<StoredProofRecord[]>>();
+const storagePayloadCache = new Map<
+  string,
+  {
+    fetchedAt: number;
+    payload: Awaited<ReturnType<typeof readProofPayloadFromStorageUncached>>;
+  }
+>();
+const storagePayloadPromiseCache = new Map<
+  string,
+  Promise<Awaited<ReturnType<typeof readProofPayloadFromStorageUncached>>>
+>();
 
 type ProofRegistryLog = Awaited<
   ReturnType<Contract["queryFilter"]>
@@ -165,7 +178,11 @@ function mergeProofRecords(
   } satisfies StoredProofRecord;
 }
 
-async function readProofPayloadFromStorage(
+function getStoragePayloadCacheKey(cid: string, networkKey: WalletNetworkKey) {
+  return `${networkKey}::${cid}`;
+}
+
+async function readProofPayloadFromStorageUncached(
   cid: string,
   networkKey: WalletNetworkKey,
 ) {
@@ -212,6 +229,37 @@ async function readProofPayloadFromStorage(
   } finally {
     await fs.rm(tempFile, { force: true }).catch(() => undefined);
   }
+}
+
+async function readProofPayloadFromStorage(
+  cid: string,
+  networkKey: WalletNetworkKey,
+) {
+  const cacheKey = getStoragePayloadCacheKey(cid, networkKey);
+  const cached = storagePayloadCache.get(cacheKey);
+  if (cached && Date.now() - cached.fetchedAt < LIVE_PROOF_CACHE_TTL_MS) {
+    return cached.payload;
+  }
+
+  const inFlight = storagePayloadPromiseCache.get(cacheKey);
+  if (inFlight) {
+    return inFlight;
+  }
+
+  const nextPromise = readProofPayloadFromStorageUncached(cid, networkKey)
+    .then((payload) => {
+      storagePayloadCache.set(cacheKey, {
+        fetchedAt: Date.now(),
+        payload,
+      });
+      return payload;
+    })
+    .finally(() => {
+      storagePayloadPromiseCache.delete(cacheKey);
+    });
+
+  storagePayloadPromiseCache.set(cacheKey, nextPromise);
+  return nextPromise;
 }
 
 function compareProofRecency(left: StoredProofRecord | null, right: StoredProofRecord | null) {
@@ -430,37 +478,51 @@ async function getLatestLiveProofFromRegistry(
     return cached.proof;
   }
 
+  const inFlight = latestLiveProofPromiseCache.get(cacheKey);
+  if (inFlight) {
+    return inFlight;
+  }
+
   const config = getServer0GNetworkConfig(networkKey);
   if (!config.rpcUrl || !config.proofRegistryAddress) {
     return null;
   }
+  const registryAddress = config.proofRegistryAddress;
+  const explorerBase = config.explorerBase;
 
-  try {
-    const provider = new JsonRpcProvider(config.rpcUrl);
-    const contract = new Contract(config.proofRegistryAddress, proofRegistryAbi, provider);
-    const latestLog = await findLatestRegistryProofLog(contract, walletAddress, networkKey);
-    if (!isEventLog(latestLog)) {
+  const nextPromise = (async () => {
+    try {
+      const provider = new JsonRpcProvider(config.rpcUrl);
+      const contract = new Contract(registryAddress, proofRegistryAbi, provider);
+      const latestLog = await findLatestRegistryProofLog(contract, walletAddress, networkKey);
+      if (!isEventLog(latestLog)) {
+        latestLiveProofCache.set(cacheKey, { fetchedAt: Date.now(), proof: null });
+        return null;
+      }
+
+      const liveProof = await buildLiveProofFromRegistryLog({
+        provider,
+        log: latestLog,
+        walletAddress,
+        networkKey,
+        registryAddress,
+        explorerBase,
+        storedProof,
+        hydrateStoragePayload: true,
+      });
+
+      latestLiveProofCache.set(cacheKey, { fetchedAt: Date.now(), proof: liveProof });
+      return liveProof;
+    } catch {
       latestLiveProofCache.set(cacheKey, { fetchedAt: Date.now(), proof: null });
       return null;
     }
+  })().finally(() => {
+    latestLiveProofPromiseCache.delete(cacheKey);
+  });
 
-    const liveProof = await buildLiveProofFromRegistryLog({
-      provider,
-      log: latestLog,
-      walletAddress,
-      networkKey,
-      registryAddress: config.proofRegistryAddress,
-      explorerBase: config.explorerBase,
-      storedProof,
-      hydrateStoragePayload: true,
-    });
-
-    latestLiveProofCache.set(cacheKey, { fetchedAt: Date.now(), proof: liveProof });
-    return liveProof;
-  } catch {
-    latestLiveProofCache.set(cacheKey, { fetchedAt: Date.now(), proof: null });
-    return null;
-  }
+  latestLiveProofPromiseCache.set(cacheKey, nextPromise);
+  return nextPromise;
 }
 
 async function getLiveProofHistoryFromRegistry(
@@ -474,58 +536,71 @@ async function getLiveProofHistoryFromRegistry(
     return cached.proofs;
   }
 
+  const inFlight = liveProofHistoryPromiseCache.get(cacheKey);
+  if (inFlight) {
+    return inFlight;
+  }
+
   const config = getServer0GNetworkConfig(networkKey);
   if (!config.rpcUrl || !config.proofRegistryAddress) {
     return [];
   }
+  const registryAddress = config.proofRegistryAddress;
+  const explorerBase = config.explorerBase;
 
-  try {
-    const registryAddress = config.proofRegistryAddress;
-    const provider = new JsonRpcProvider(config.rpcUrl);
-    const contract = new Contract(registryAddress, proofRegistryAbi, provider);
-    const logs = await findRegistryProofLogs(contract, walletAddress, networkKey);
-    const eventLogs = logs.filter(isEventLog);
-    const liveProofs = await Promise.all(
-      eventLogs.map((log) => {
-        const storedProof = storedProofs.find((proof) =>
-          sameProofIdentity(proof, {
-            cid: String(log.args.cid),
-            txHash: String(log.args.storageTxHash),
-            blockNumber: log.blockNumber,
-            timestamp: new Date(Number(log.args.timestamp) * 1000).toISOString(),
-            networkKey,
-            explorerUrl: "",
-            decision: buildDecisionFromLiveProof(
-              toPercent(log.args.currentApyBps),
-              toPercent(log.args.optimizedApyBps),
-            ),
+  const nextPromise = (async () => {
+    try {
+      const provider = new JsonRpcProvider(config.rpcUrl);
+      const contract = new Contract(registryAddress, proofRegistryAbi, provider);
+      const logs = await findRegistryProofLogs(contract, walletAddress, networkKey);
+      const eventLogs = logs.filter(isEventLog);
+      const liveProofs = await Promise.all(
+        eventLogs.map((log) => {
+          const storedProof = storedProofs.find((proof) =>
+            sameProofIdentity(proof, {
+              cid: String(log.args.cid),
+              txHash: String(log.args.storageTxHash),
+              blockNumber: log.blockNumber,
+              timestamp: new Date(Number(log.args.timestamp) * 1000).toISOString(),
+              networkKey,
+              explorerUrl: "",
+              decision: buildDecisionFromLiveProof(
+                toPercent(log.args.currentApyBps),
+                toPercent(log.args.optimizedApyBps),
+              ),
+              walletAddress,
+              proofRegistryAddress: registryAddress,
+              proofRegistryTxHash: log.transactionHash,
+              proofRegistryProofId: log.args.proofId.toString(),
+            }),
+          );
+
+          return buildLiveProofFromRegistryLog({
+            provider,
+            log,
             walletAddress,
-            proofRegistryAddress: registryAddress,
-            proofRegistryTxHash: log.transactionHash,
-            proofRegistryProofId: log.args.proofId.toString(),
-          }),
-        );
+            networkKey,
+            registryAddress,
+            explorerBase,
+            storedProof,
+            hydrateStoragePayload: false,
+          });
+        }),
+      );
 
-        return buildLiveProofFromRegistryLog({
-          provider,
-          log,
-          walletAddress,
-          networkKey,
-          registryAddress,
-          explorerBase: config.explorerBase,
-          storedProof,
-          hydrateStoragePayload: false,
-        });
-      }),
-    );
+      const sorted = liveProofs.sort((left, right) => compareProofRecency(right, left));
+      liveProofHistoryCache.set(cacheKey, { fetchedAt: Date.now(), proofs: sorted });
+      return sorted;
+    } catch {
+      liveProofHistoryCache.set(cacheKey, { fetchedAt: Date.now(), proofs: [] });
+      return [];
+    }
+  })().finally(() => {
+    liveProofHistoryPromiseCache.delete(cacheKey);
+  });
 
-    const sorted = liveProofs.sort((left, right) => compareProofRecency(right, left));
-    liveProofHistoryCache.set(cacheKey, { fetchedAt: Date.now(), proofs: sorted });
-    return sorted;
-  } catch {
-    liveProofHistoryCache.set(cacheKey, { fetchedAt: Date.now(), proofs: [] });
-    return [];
-  }
+  liveProofHistoryPromiseCache.set(cacheKey, nextPromise);
+  return nextPromise;
 }
 
 export async function resolveLatestProofForWallet(

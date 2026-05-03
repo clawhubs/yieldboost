@@ -237,6 +237,14 @@ function formatFeatureStatus(value: string | undefined) {
     .join(" ");
 }
 
+function formatRiskLabel(score: number | undefined) {
+  if (typeof score !== "number") return "Risk pending";
+  if (score >= 85) return `Critical risk (${score}/100)`;
+  if (score >= 65) return `High risk (${score}/100)`;
+  if (score >= 45) return `Elevated risk (${score}/100)`;
+  return `Low risk (${score}/100)`;
+}
+
 function toneForRecordedFeature(status: string | undefined): BadgeTone {
   if (!status) return "amber";
   if (["active", "completed", "verified", "testnet-verified"].includes(status)) {
@@ -708,65 +716,96 @@ export async function getJudgePageData(): Promise<JudgePageData> {
     ? resolveWalletNetworkKey(reviewNetworkCookie)
     : defaultReviewNetwork;
   const reviewNetworkConfig = getServer0GNetworkConfig(reviewNetwork);
-  const rawLatestProof = await withTimeout(
-    resolveLatestProofForWallet(reviewWallet, reviewNetwork),
-    4_500,
-    null,
-    "latest proof resolution",
-  );
+  const [
+    rawLatestProof,
+    scopedProofs,
+    scopedMemory,
+    fallbackMemory,
+    blacklistEntries,
+    scopedStressReport,
+    fallbackStressReport,
+    scopedZkReasoningProof,
+    fallbackZkReasoningProof,
+    scopedZkComplianceProof,
+    fallbackZkComplianceProof,
+    scopedGovernanceDecision,
+    fallbackGovernanceDecision,
+    scopedCrossAgentHandshake,
+    fallbackCrossAgentHandshake,
+    latestProofAcrossNetworks,
+    deploymentArtifacts,
+  ] = await Promise.all([
+    withTimeout(
+      resolveLatestProofForWallet(reviewWallet, reviewNetwork),
+      3_000,
+      null,
+      "latest proof resolution",
+    ),
+    withTimeout(
+      resolveProofHistoryForWallet(reviewWallet, reviewNetwork),
+      3_000,
+      [],
+      "proof history resolution",
+    ),
+    getLatestAgentMemory(reviewWallet, reviewNetwork),
+    getLatestAgentMemory(reviewWallet),
+    getBlacklistEntries(),
+    getLatestStressTestReport(reviewWallet, reviewNetwork),
+    getLatestStressTestReport(reviewWallet),
+    getLatestZkReasoningProof({
+      walletAddress: reviewWallet,
+      networkKey: reviewNetwork,
+    }),
+    getLatestZkReasoningProof({ networkKey: reviewNetwork }),
+    getLatestZkComplianceProof({
+      walletAddress: reviewWallet,
+      networkKey: reviewNetwork,
+    }),
+    getLatestZkComplianceProof({ networkKey: reviewNetwork }),
+    getLatestGovernanceDecision({
+      walletAddress: reviewWallet,
+      networkKey: reviewNetwork,
+    }),
+    getLatestGovernanceDecision({ networkKey: reviewNetwork }),
+    getLatestCrossAgentHandshake({
+      walletAddress: reviewWallet,
+      networkKey: reviewNetwork,
+    }),
+    getLatestCrossAgentHandshake({ networkKey: reviewNetwork }),
+    withTimeout(
+      resolveLatestProofForWalletAcrossNetworks(reviewWallet),
+      1_000,
+      null,
+      "cross-network proof resolution",
+    ),
+    withTimeout(
+      buildDeploymentArtifacts({
+        reviewWallet,
+        reviewNetwork,
+      }),
+      2_500,
+      [],
+      "deployment artifacts resolution",
+    ),
+  ]);
   const latestIntegrityAudit = resolveProofIntegrityAudit(rawLatestProof);
   const latestProof =
     rawLatestProof && latestIntegrityAudit
       ? { ...rawLatestProof, integrityAudit: latestIntegrityAudit }
       : rawLatestProof;
-  const scopedProofs = await withTimeout(
-    resolveProofHistoryForWallet(reviewWallet, reviewNetwork),
-    4_500,
-    [],
-    "proof history resolution",
-  );
-  const sovereignMemory =
-    (await getLatestAgentMemory(reviewWallet, reviewNetwork)) ??
-    (await getLatestAgentMemory(reviewWallet));
-  const scopedBlacklistEntries = (await getBlacklistEntries()).filter(
+  const sovereignMemory = scopedMemory ?? fallbackMemory;
+  const scopedBlacklistEntries = blacklistEntries.filter(
     (entry) => !entry.networkKey || entry.networkKey === reviewNetwork,
   );
-  const allBlacklistEntries = await getBlacklistEntries();
-  const blacklistEntries = scopedBlacklistEntries.length
+  const activeBlacklistEntries = scopedBlacklistEntries.length
     ? scopedBlacklistEntries
-    : allBlacklistEntries;
-  const latestBlacklistEntry = blacklistEntries[0] ?? null;
-  const latestStressReport =
-    (await getLatestStressTestReport(reviewWallet, reviewNetwork)) ??
-    (await getLatestStressTestReport(reviewWallet));
-  const latestZkReasoningProof =
-    (await getLatestZkReasoningProof({
-      walletAddress: reviewWallet,
-      networkKey: reviewNetwork,
-    })) ??
-    (await getLatestZkReasoningProof({ networkKey: reviewNetwork })) ??
-    null;
-  const latestZkComplianceProof =
-    (await getLatestZkComplianceProof({
-      walletAddress: reviewWallet,
-      networkKey: reviewNetwork,
-    })) ??
-    (await getLatestZkComplianceProof({ networkKey: reviewNetwork })) ??
-    null;
-  const latestGovernanceDecision =
-    (await getLatestGovernanceDecision({
-      walletAddress: reviewWallet,
-      networkKey: reviewNetwork,
-    })) ??
-    (await getLatestGovernanceDecision({ networkKey: reviewNetwork })) ??
-    null;
-  const latestCrossAgentHandshake =
-    (await getLatestCrossAgentHandshake({
-      walletAddress: reviewWallet,
-      networkKey: reviewNetwork,
-    })) ??
-    (await getLatestCrossAgentHandshake({ networkKey: reviewNetwork })) ??
-    null;
+    : blacklistEntries;
+  const latestBlacklistEntry = activeBlacklistEntries[0] ?? null;
+  const latestStressReport = scopedStressReport ?? fallbackStressReport;
+  const latestZkReasoningProof = scopedZkReasoningProof ?? fallbackZkReasoningProof ?? null;
+  const latestZkComplianceProof = scopedZkComplianceProof ?? fallbackZkComplianceProof ?? null;
+  const latestGovernanceDecision = scopedGovernanceDecision ?? fallbackGovernanceDecision ?? null;
+  const latestCrossAgentHandshake = scopedCrossAgentHandshake ?? fallbackCrossAgentHandshake ?? null;
   const proofCount = scopedProofs.length;
   const proofNetwork = latestProof?.networkKey ?? reviewNetwork;
   const judgePortfolio = await withTimeout(
@@ -788,19 +827,9 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   const latestExplorer = trimUrl(latestProof?.explorerUrl);
   const latestRegistryExplorer = trimUrl(latestProof?.proofRegistryExplorerUrl);
   const envChecklist = buildEnvChecklist();
-  const latestProofAcrossNetworks = await withTimeout(
-    resolveLatestProofForWalletAcrossNetworks(reviewWallet),
-    4_500,
-    null,
-    "cross-network proof resolution",
-  );
   const mainnetChecklist = buildMainnetChecklist({
     runtimeStatus,
     latestProof: latestProofAcrossNetworks,
-  });
-  const deploymentArtifacts = await buildDeploymentArtifacts({
-    reviewWallet,
-    reviewNetwork,
   });
   const efficiencyCards: JudgeStatusCard[] = [
     {
@@ -835,7 +864,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
     },
     {
       label: "Hallucination Blacklist",
-      value: `${blacklistEntries.length} entr${blacklistEntries.length === 1 ? "y" : "ies"}`,
+      value: `${activeBlacklistEntries.length} entr${activeBlacklistEntries.length === 1 ? "y" : "ies"}`,
       helper: latestBlacklistEntry
         ? `Latest rejection indexed as ${shorten(latestBlacklistEntry.cid, 10)} before future inference.`
         : "No rejected output has been indexed yet.",
@@ -880,7 +909,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
         ? formatFeatureStatus(latestGovernanceDecision.status)
         : "Pending",
       helper: latestGovernanceDecision
-        ? `${getServer0GNetworkConfig(latestGovernanceDecision.networkKey).label} risk ${latestGovernanceDecision.riskScore}/100. ${latestGovernanceDecision.reason}`
+        ? `${getServer0GNetworkConfig(latestGovernanceDecision.networkKey).label} ${formatRiskLabel(latestGovernanceDecision.riskScore).toLowerCase()}. ${latestGovernanceDecision.reason}`
         : "No programmable governance decision has been evaluated yet.",
       tone: toneForRecordedFeature(latestGovernanceDecision?.status),
     },
@@ -1115,7 +1144,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
           : "partial"
         : "configured",
       detail: latestGovernanceDecision
-        ? `Latest governance decision is ${formatFeatureStatus(latestGovernanceDecision.status)} with risk ${latestGovernanceDecision.riskScore}/100.`
+        ? `Latest governance decision is ${formatFeatureStatus(latestGovernanceDecision.status)} with ${formatRiskLabel(latestGovernanceDecision.riskScore).toLowerCase()}.`
         : "Governance route evaluates strategy decisions and records deterministic kill-switch decisions before downstream flows rely on them.",
       href: latestGovernanceDecision?.explorerUrl,
       meta: latestGovernanceDecision
