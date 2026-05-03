@@ -12,6 +12,7 @@ import {
   GitBranch,
   Hash,
   Layers,
+  Map,
   Network,
   ShieldCheck,
   Sparkles,
@@ -153,6 +154,7 @@ export default async function JudgePage() {
       sublabel: "clawhubs/yieldboost",
       icon: GitBranch,
       download: false,
+      external: true,
     },
     {
       label: "X",
@@ -160,6 +162,7 @@ export default async function JudgePage() {
       sublabel: "@YieldboostAi",
       icon: ArrowUpRight,
       download: false,
+      external: true,
     },
     {
       label: "Pitch Deck",
@@ -167,6 +170,15 @@ export default async function JudgePage() {
       sublabel: "HTML preview",
       icon: ExternalLink,
       download: false,
+      external: true,
+    },
+    {
+      label: "Roadmap",
+      href: "/judge/roadmap",
+      sublabel: "2026-2027 plan",
+      icon: Map,
+      download: false,
+      external: false,
     },
     {
       label: "PDF",
@@ -174,6 +186,7 @@ export default async function JudgePage() {
       sublabel: "Download deck",
       icon: ExternalLink,
       download: true,
+      external: false,
     },
   ];
   const reasoningNarrative =
@@ -326,9 +339,10 @@ export default async function JudgePage() {
                   <a
                     key={profile.label}
                     href={profile.href}
-                    target="_blank"
-                    rel="noreferrer"
+                    target={profile.external ? "_blank" : undefined}
+                    rel={profile.external ? "noreferrer" : undefined}
                     download={profile.download ? "" : undefined}
+                    data-testid={profile.label === "Roadmap" ? "judge-roadmap-link" : undefined}
                     className="glass-inset inline-flex items-center gap-2 rounded-full px-3 py-2 text-[12px] text-[#d8e1e8] transition hover:border-[rgba(34,221,208,0.28)] hover:text-white"
                   >
                     <Icon className="h-3.5 w-3.5 text-[#22ddd0]" />

@@ -555,6 +555,87 @@
         margin-top: 10px;
       }
 
+      .phase-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 22px;
+      }
+
+      .phase-card {
+        min-height: 245px;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background:
+          linear-gradient(180deg, rgba(49, 245, 200, 0.08), rgba(255, 255, 255, 0.025)),
+          rgba(5, 14, 20, 0.86);
+      }
+
+      .phase-card .tag {
+        display: inline-flex;
+        margin-bottom: 12px;
+        padding: 5px 9px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 999px;
+        color: #b8ffc8;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .phase-card strong {
+        display: block;
+        color: #fff;
+        font-size: 18px;
+        line-height: 1.2;
+      }
+
+      .phase-card span,
+      .phase-card li {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.42;
+      }
+
+      .phase-card ul {
+        margin: 12px 0 0;
+        padding-left: 17px;
+      }
+
+      .money-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 20px;
+      }
+
+      .money-card {
+        min-height: 190px;
+        padding: 15px;
+        border: 1px solid rgba(77, 255, 143, 0.18);
+        border-radius: 8px;
+        background:
+          linear-gradient(180deg, rgba(77, 255, 143, 0.075), rgba(255, 255, 255, 0.025)),
+          rgba(5, 14, 20, 0.86);
+      }
+
+      .money-card strong {
+        display: block;
+        color: #fff;
+        font-size: 16px;
+        line-height: 1.2;
+      }
+
+      .money-card span {
+        display: block;
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
       @keyframes pulse {
         0%,
         100% {
@@ -817,6 +898,8 @@
         .four,
         .flow,
         .flow-wide,
+        .phase-row,
+        .money-grid,
         .mock-grid,
         .ledger {
           grid-template-columns: 1fr;
@@ -872,7 +955,7 @@
               <p class="mini">Live app: yieldboost-ai.vercel.app/judge</p>
             </div>
           </div>
-          <div class="footer"><span>YieldBoost AI</span><span class="slide-no">01 / 11</span></div>
+          <div class="footer"><span>YieldBoost AI</span><span class="slide-no">01 / 12</span></div>
         </article>
       </section>
 
@@ -909,7 +992,7 @@
               </div>
             </div>
           </div>
-          <div class="footer"><span>Problem</span><span class="slide-no">02 / 11</span></div>
+          <div class="footer"><span>Problem</span><span class="slide-no">02 / 12</span></div>
         </article>
       </section>
 
@@ -959,7 +1042,7 @@
               </div>
             </div>
           </div>
-          <div class="footer"><span>Solution</span><span class="slide-no">03 / 11</span></div>
+          <div class="footer"><span>Solution</span><span class="slide-no">03 / 12</span></div>
         </article>
       </section>
 
@@ -1016,7 +1099,7 @@
               </div>
             </div>
           </div>
-          <div class="footer"><span>System flow</span><span class="slide-no">04 / 11</span></div>
+          <div class="footer"><span>System flow</span><span class="slide-no">04 / 12</span></div>
         </article>
       </section>
 
@@ -1062,7 +1145,7 @@
               <span>The proof stack compounds: each accepted or rejected strategy improves reviewability, repeatability, and defensibility for downstream users and partners.</span>
             </div>
           </div>
-          <div class="footer"><span>Control plane</span><span class="slide-no">05 / 11</span></div>
+          <div class="footer"><span>Control plane</span><span class="slide-no">05 / 12</span></div>
         </article>
       </section>
 
@@ -1113,7 +1196,7 @@
               </div>
             </div>
           </div>
-          <div class="footer"><span>Frictionless audit</span><span class="slide-no">06 / 11</span></div>
+          <div class="footer"><span>Frictionless audit</span><span class="slide-no">06 / 12</span></div>
         </article>
       </section>
 
@@ -1165,7 +1248,7 @@
               </div>
             </div>
           </div>
-          <div class="footer"><span>0G mainnet verification</span><span class="slide-no">07 / 11</span></div>
+          <div class="footer"><span>0G mainnet verification</span><span class="slide-no">07 / 12</span></div>
         </article>
       </section>
 
@@ -1207,7 +1290,7 @@
               </div>
             </div>
           </div>
-          <div class="footer"><span>Latest tx trail</span><span class="slide-no">08 / 11</span></div>
+          <div class="footer"><span>Latest tx trail</span><span class="slide-no">08 / 12</span></div>
         </article>
       </section>
 
@@ -1241,7 +1324,7 @@
               <div class="node" data-step="4"><strong>Scale</strong><span class="mini">Protocols and agents consume trusted strategy artifacts</span></div>
             </div>
           </div>
-          <div class="footer"><span>Company thesis</span><span class="slide-no">09 / 11</span></div>
+          <div class="footer"><span>Company thesis</span><span class="slide-no">09 / 12</span></div>
         </article>
       </section>
 
@@ -1287,40 +1370,95 @@
               </div>
             </div>
           </div>
-          <div class="footer"><span>NFT layer</span><span class="slide-no">10 / 11</span></div>
+          <div class="footer"><span>NFT layer</span><span class="slide-no">10 / 12</span></div>
         </article>
       </section>
 
       <section class="slide">
         <article class="sheet">
           <div class="inner">
-            <div class="kicker"><span class="dot"></span>Roadmap and use of capital</div>
-            <h2>From mainnet proof product to a Proof-of-Optimization network.</h2>
-            <div class="grid three" style="margin-top: 34px">
-              <div class="card">
-                <strong>Now: mainnet proof product</strong>
-                <span>Live Judge Mode, 0G proof trail, Integrity Auditor, ZKR envelope, governance, compliance, handshake, and Agent NFT minting.</span>
+            <div class="kicker"><span class="dot"></span>Sovereign roadmap</div>
+            <h2 style="max-width: 850px">From mainnet proof product to the 0G trust economy.</h2>
+            <div class="phase-row">
+              <div class="phase-card">
+                <span class="tag">Q3 - Q4 2026</span>
+                <strong>Integrity Genesis</strong>
+                <span>Turn today's Judge proof trail into a rewardable integrity network for AI decisions.</span>
+                <ul>
+                  <li>Neural Handshake mainnet expansion</li>
+                  <li>$YA0G Proof of Integrity incentives</li>
+                  <li>Sovereign Memory V3 anomaly context</li>
+                </ul>
               </div>
-              <div class="card">
-                <strong>Next: partner pilots</strong>
-                <span>Package the proof-backed strategy flow for wallets, DeFi protocols, and agent marketplaces that need trusted AI decisions.</span>
+              <div class="phase-card">
+                <span class="tag">Q1 - Q2 2027</span>
+                <strong>Quantum Liquidity Layer</strong>
+                <span>Use 0G Compute for private intent routing and programmable governance around capital movement.</span>
+                <ul>
+                  <li>Sovereign ZK-DEX and intent routing</li>
+                  <li>Institutional Guardian controls</li>
+                  <li>Trinity Vault exploit-aware automation</li>
+                </ul>
               </div>
-              <div class="card">
-                <strong>Scale: optimization economy</strong>
-                <span>Reward high-quality optimization events using ProofRegistry anchors, outcome metadata, confidence, impact, and durable proof coverage.</span>
+              <div class="phase-card">
+                <span class="tag">Q3 2027+</span>
+                <strong>Omniscient Orchestration</strong>
+                <span>Expand the proof graph across chains, assets, and real-world markets with 0G as source of truth.</span>
+                <ul>
+                  <li>Cross-chain intelligence bridge</li>
+                  <li>$YA governance and agent reputation</li>
+                  <li>RWA Sovereign Bridge strategy rails</li>
+                </ul>
               </div>
             </div>
-            <div class="flow" style="margin-top: 34px">
-              <div class="node" data-step="1"><strong>Reliability</strong><span class="mini">Deeper testing, monitoring, and proof quality scoring</span></div>
-              <div class="node" data-step="2"><strong>Integrations</strong><span class="mini">Wallet, protocol, and marketplace distribution</span></div>
-              <div class="node" data-step="3"><strong>Automation</strong><span class="mini">Policy-aware execution and risk controls</span></div>
-              <div class="node" data-step="4"><strong>Network</strong><span class="mini">Incentives for verified optimization quality</span></div>
+            <div class="callout">
+              <strong>Roadmap discipline</strong>
+              <span>Every phase starts from live evidence: 0G Storage, ProofRegistry, Judge Mode, Integrity memory stack, and Strategy Agent NFTs.</span>
             </div>
-            <p class="lead">
-              The near-term goal is simple: become the trusted proof surface that makes AI-generated DeFi strategy safe enough to adopt, automate, and distribute.
-            </p>
           </div>
-          <div class="footer"><span>Roadmap</span><span class="slide-no">11 / 11</span></div>
+          <div class="footer"><span>Roadmap</span><span class="slide-no">11 / 12</span></div>
+        </article>
+      </section>
+
+      <section class="slide">
+        <article class="sheet">
+          <div class="inner">
+            <div class="kicker"><span class="dot"></span>Value capture layer</div>
+            <h2 style="max-width: 860px">A protocol that does not just work, but lasts.</h2>
+            <div class="money-grid">
+              <div class="money-card">
+                <strong>Performance-based incentives</strong>
+                <span>Target 5% performance fee only on measured APY Lift. Zero-cost entry keeps retail adoption open; YieldBoost earns when users see additional upside.</span>
+              </div>
+              <div class="money-card">
+                <strong>B2B Integrity-as-a-Service</strong>
+                <span>ZK-Reasoning, Sovereign Memory, blacklist checks, stress reports, and governance artifacts become API modules for 0G ecosystem dApps.</span>
+              </div>
+              <div class="money-card">
+                <strong>Premium NFT and $YA utility</strong>
+                <span>Strategy Agent NFTs become access passes for advanced models and Guardian controls. $YA can reduce fees and govern strategy policy.</span>
+              </div>
+              <div class="money-card">
+                <strong>0G Exchange and Intent Network</strong>
+                <span>Future exchange layer where 0G Compute routes private intents, 0G Storage records proofs, and 0G Chain anchors settlement receipts.</span>
+              </div>
+            </div>
+            <div class="grid three compact-grid" style="margin-top: 18px">
+              <div class="card compact">
+                <strong>Why it can scale</strong>
+                <span>Proof-backed strategies create repeatable data, not one-off recommendations.</span>
+              </div>
+              <div class="card compact">
+                <strong>Why 0G matters</strong>
+                <span>Storage, compute, and chain anchors turn AI output into a monetizable verification layer.</span>
+              </div>
+              <div class="card compact">
+                <strong>Why now</strong>
+                <span>AI finance needs auditability before capital allocators trust autonomous strategy execution.</span>
+              </div>
+            </div>
+          </div>
+          <div class="footer"><span>Revenue model</span><span class="slide-no">12 / 12</span></div>
         </article>
       </section>
     </main>

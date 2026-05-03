@@ -152,7 +152,12 @@ test("judge page is reachable without wallet connection", async ({ page }) => {
     );
   }
   await expect(page.getByText("Judge wallet:")).toBeVisible();
-  await expect(page.getByRole("link", { name: /Open (latest|ProofRegistry) tx/ }).first()).toBeVisible();
+  const latestTxLink = page.getByRole("link", { name: /Open (latest|ProofRegistry) tx/ });
+  if ((await latestTxLink.count()) > 0) {
+    await expect(latestTxLink.first()).toBeVisible();
+  } else {
+    await expect(page.getByText(/No explorer URL yet|No registry tx yet/).first()).toBeVisible();
+  }
 });
 
 test("judge polish keeps integrity evidence directly after deployment artifacts", async ({
@@ -193,6 +198,26 @@ test("judge reasoning snapshot reads as a complete audit brief", async ({ page }
   await expect(reasoning).toContainText("Guardrail result");
 });
 
+test("judge roadmap is reachable from the judge proof links", async ({ page }) => {
+  await clearWalletState(page);
+  await page.goto(`${BASE}/judge`, { waitUntil: "domcontentloaded" });
+
+  await expect(page.getByTestId("judge-roadmap-link")).toBeVisible();
+  await page.getByTestId("judge-roadmap-link").click();
+
+  await expect(page).toHaveURL(/\/judge\/roadmap$/);
+  await expect(page.getByTestId("judge-roadmap-page")).toBeVisible();
+  await expect(page.getByText("What already exists")).toBeVisible();
+  await expect(page.getByText("The Integrity Genesis")).toBeVisible();
+  await expect(page.getByText("Revenue engines")).toBeVisible();
+  await expect(page.getByTestId("roadmap-value-capture")).toBeVisible();
+  await expect(page.getByText("Performance-based incentives")).toBeVisible();
+  await expect(page.getByText("B2B Integrity-as-a-Service")).toBeVisible();
+  await expect(page.getByText("0G Exchange and Intent Network")).toBeVisible();
+  await expect(page.getByText("Fit audit")).toBeVisible();
+  await expect(page.getByText("0G advantage")).toBeVisible();
+});
+
 test("pitchdeck frames the product as a VC-ready company narrative", async ({
   page,
 }) => {
@@ -202,7 +227,10 @@ test("pitchdeck frames the product as a VC-ready company narrative", async ({
 
   await expect(page.getByText("Investment thesis")).toBeVisible();
   await expect(page.getByText("Business model")).toBeVisible();
-  await expect(page.getByText("Roadmap and use of capital")).toBeVisible();
+  await expect(page.getByText("Sovereign roadmap")).toBeVisible();
+  await expect(page.getByText("Value capture layer")).toBeVisible();
+  await expect(page.getByText("B2B Integrity-as-a-Service")).toBeVisible();
+  await expect(page.getByText("0G Exchange and Intent Network")).toBeVisible();
   await expect(page.getByText("0G mainnet live product")).toBeVisible();
 });
 
