@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   getAvailableWalletNetworks,
   WALLET_NETWORK_CHANGE_REQUEST_EVENT,
@@ -25,7 +25,6 @@ export default function JudgeNetworkSwitcher({
   reviewNetworkKey,
 }: JudgeNetworkSwitcherProps) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [selectedNetwork, setSelectedNetwork] = useState(reviewNetworkKey);
   const [pendingNetwork, setPendingNetwork] = useState<WalletNetworkKey | null>(null);
   const orderedNetworks = useMemo(
@@ -42,8 +41,6 @@ export default function JudgeNetworkSwitcher({
   }, [reviewNetworkKey]);
 
   function switchNetwork(nextNetwork: WalletNetworkKey) {
-    const nextSearchParams = new URLSearchParams(searchParams.toString());
-    nextSearchParams.set("network", nextNetwork);
     setSelectedNetwork(nextNetwork);
     setPendingNetwork(nextNetwork);
     window.localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, nextNetwork);
@@ -54,7 +51,7 @@ export default function JudgeNetworkSwitcher({
       }),
     );
     window.requestAnimationFrame(() => {
-      window.location.assign(`${pathname}?${nextSearchParams.toString()}`);
+      window.location.assign(pathname);
     });
   }
 

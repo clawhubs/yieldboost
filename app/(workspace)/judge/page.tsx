@@ -17,10 +17,6 @@ import { getJudgePageData } from "@/lib/server/review-mode";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-interface JudgePageProps {
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
-}
-
 function toneClass(tone: "teal" | "green" | "amber" | "white" = "white") {
   if (tone === "green") return "text-[#68ff7a]";
   if (tone === "amber") return "text-[#f6c166]";
@@ -41,12 +37,8 @@ function statusBadgeClass(status: "live" | "configured" | "partial" | "pending")
   return "border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-[#d7e0e8]";
 }
 
-export default async function JudgePage({ searchParams }: JudgePageProps) {
-  const resolvedSearchParams = searchParams ? await searchParams : undefined;
-  const requestedNetwork = Array.isArray(resolvedSearchParams?.network)
-    ? resolvedSearchParams.network[0]
-    : resolvedSearchParams?.network;
-  const data = await getJudgePageData(requestedNetwork);
+export default async function JudgePage() {
+  const data = await getJudgePageData();
   const reviewingMainnet = data.reviewNetwork === "mainnet";
   const primaryComponents = data.components.filter((component) =>
     ["0G Storage", "0G Compute Network", "ProofRegistry"].includes(component.title),
@@ -129,7 +121,7 @@ export default async function JudgePage({ searchParams }: JudgePageProps) {
 
   return (
     <section data-testid="judge-page" className="space-y-[10px] p-[10px]">
-      <JudgeModeBootstrap reviewNetworkKey={data.reviewNetwork} />
+      <JudgeModeBootstrap />
       <JudgeSnapshotAutoRefresh />
       <header className="yb-card rounded-[18px] px-5 py-5">
         <div className="mx-auto max-w-5xl">

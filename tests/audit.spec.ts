@@ -115,16 +115,19 @@ test("judge network switcher can toggle testnet and mainnet review state", async
   await expect(testnetButton).toBeVisible();
 
   if (!(await testnetButton.isDisabled())) {
-    const waitForTestnet = page.waitForURL(/\/judge\?network=testnet$/);
-    await testnetButton.click();
-    await waitForTestnet;
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: "networkidle" }),
+      testnetButton.click(),
+    ]);
     await expect(page.getByTestId("judge-network-testnet")).toContainText("Current review network");
   }
 
-  if (!(await mainnetButton.isDisabled())) {
-    const waitForMainnet = page.waitForURL(/\/judge\?network=mainnet$/);
-    await mainnetButton.click();
-    await waitForMainnet;
+  const refreshedMainnetButton = page.getByTestId("judge-network-mainnet");
+  if (!(await refreshedMainnetButton.isDisabled())) {
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: "networkidle" }),
+      refreshedMainnetButton.click(),
+    ]);
     await expect(page.getByTestId("judge-network-mainnet")).toContainText("Current review network");
   }
 });
