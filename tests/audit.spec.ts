@@ -205,10 +205,12 @@ test("mainnet judge surfaces live integrity artifacts after recorded optimize fl
   await expect(page.getByText("Sovereign Memory").first()).toBeVisible();
   await expect(page.getByText("Hallucination Blacklist").first()).toBeVisible();
   await expect(page.getByText("Multiverse Stress Test").first()).toBeVisible();
+  await expect(page.getByText("ZK-Compliance").first()).toBeVisible();
   await expect(page.getByText("ZK-Proof").first()).toBeVisible();
   await expect(page.getByText("Governance").first()).toBeVisible();
   await expect(page.getByText("Neural Handshake").first()).toBeVisible();
 
+  await expect(page.getByText("100%").first()).toBeVisible();
   await expect(page.getByText("Tee Envelope Recorded")).toBeVisible();
   await expect(page.getByText("Active").first()).toBeVisible();
   await expect(page.getByText("Completed").first()).toBeVisible();
@@ -221,6 +223,9 @@ test("mainnet judge surfaces live integrity artifacts after recorded optimize fl
   ).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Open stress tx on Chainscan" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Open compliance anchor on Chainscan" }),
   ).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Open ZK proof anchor on Chainscan" }),
@@ -242,6 +247,7 @@ test("mainnet dashboard surfaces the latest ZK compliance report", async ({
   await expect(page.getByTestId("zk-compliance-report")).toContainText(
     /Last Strategy Execution: 100% Policy Compliant \(Proof ID: 0x/i,
   );
+  await expect(page.getByTestId("zk-compliance-report").getByRole("link")).toBeVisible();
 });
 
 test("direct judge entry bootstraps the review wallet across dashboard and history", async ({

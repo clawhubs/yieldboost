@@ -82,6 +82,17 @@ export default async function JudgePage() {
       linkLabel: "Open stress tx on Chainscan",
     },
     {
+      label: "Compliance CID",
+      value: data.latestZkComplianceProof?.artifactCid,
+      empty: "No compliance CID yet",
+      href:
+        data.latestZkComplianceProof?.proofRegistryExplorerUrl ??
+        data.latestZkComplianceProof?.explorerUrl,
+      linkLabel: data.latestZkComplianceProof?.proofRegistryExplorerUrl
+        ? "Open compliance anchor on Chainscan"
+        : "Open compliance tx on Chainscan",
+    },
+    {
       label: "ZK Proof CID",
       value: data.latestZkReasoningProof?.proofCid,
       empty: "No ZK proof CID yet",

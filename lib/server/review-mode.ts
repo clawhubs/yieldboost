@@ -25,6 +25,7 @@ import type {
   StoredGovernanceDecision,
   StoredProofRecord,
   StoredStressTestReport,
+  StoredZkComplianceProof,
   StoredZkReasoningProof,
 } from "@/lib/backend-data";
 import { auditOptimizationDecision } from "@/lib/integrity-audit";
@@ -45,6 +46,7 @@ import {
   getLatestAgentMemory,
   getLatestGovernanceDecision,
   getLatestStressTestReport,
+  getLatestZkComplianceProof,
   getLatestZkReasoningProof,
 } from "@/lib/server/runtime-store";
 
@@ -98,6 +100,7 @@ export interface JudgePageData {
   sovereignMemory: StoredAgentMemoryRecord | null;
   latestBlacklistEntry: StoredBlacklistRecord | null;
   latestStressReport: StoredStressTestReport | null;
+  latestZkComplianceProof: StoredZkComplianceProof | null;
   latestZkReasoningProof: StoredZkReasoningProof | null;
   latestGovernanceDecision: StoredGovernanceDecision | null;
   latestCrossAgentHandshake: StoredCrossAgentHandshake | null;
@@ -743,6 +746,13 @@ export async function getJudgePageData(): Promise<JudgePageData> {
     })) ??
     (await getLatestZkReasoningProof({ networkKey: reviewNetwork })) ??
     null;
+  const latestZkComplianceProof =
+    (await getLatestZkComplianceProof({
+      walletAddress: reviewWallet,
+      networkKey: reviewNetwork,
+    })) ??
+    (await getLatestZkComplianceProof({ networkKey: reviewNetwork })) ??
+    null;
   const latestGovernanceDecision =
     (await getLatestGovernanceDecision({
       walletAddress: reviewWallet,
@@ -843,6 +853,16 @@ export async function getJudgePageData(): Promise<JudgePageData> {
           : latestStressReport
             ? "amber"
           : "white",
+    },
+    {
+      label: "ZK-Compliance",
+      value: latestZkComplianceProof
+        ? `${latestZkComplianceProof.policyCompliantPct}%`
+        : "Pending",
+      helper: latestZkComplianceProof
+        ? `${getServer0GNetworkConfig(latestZkComplianceProof.networkKey).label} compliance proof ${shorten(latestZkComplianceProof.proofId, 10)} with governance ${formatFeatureStatus(latestZkComplianceProof.governanceStatus)}.`
+        : "No deterministic compliance proof has been recorded yet.",
+      tone: toneForRecordedFeature(latestZkComplianceProof?.status),
     },
     {
       label: "ZK-Proof",
@@ -1056,6 +1076,23 @@ export async function getJudgePageData(): Promise<JudgePageData> {
         : "Report card runner ready",
     },
     {
+      title: "Deterministic ZK Compliance",
+      status: latestZkComplianceProof
+        ? latestZkComplianceProof.status === "verified"
+          ? "live"
+          : "partial"
+        : "configured",
+      detail: latestZkComplianceProof
+        ? `Latest compliance proof is ${formatFeatureStatus(latestZkComplianceProof.status)} at ${latestZkComplianceProof.policyCompliantPct}% policy compliance.`
+        : "Compliance route can persist deterministic optimizer and governance verification artifacts to 0G.",
+      href:
+        latestZkComplianceProof?.proofRegistryExplorerUrl ??
+        latestZkComplianceProof?.explorerUrl,
+      meta: latestZkComplianceProof
+        ? `Risk ${latestZkComplianceProof.riskScore}/100`
+        : "Compliance verifier ready",
+    },
+    {
       title: "Zero-Knowledge Reasoning",
       status: latestZkReasoningProof
         ? latestZkReasoningProof.status === "failed"
@@ -1173,6 +1210,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
     sovereignMemory,
     latestBlacklistEntry,
     latestStressReport,
+    latestZkComplianceProof,
     latestZkReasoningProof,
     latestGovernanceDecision,
     latestCrossAgentHandshake,

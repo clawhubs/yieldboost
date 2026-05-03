@@ -235,6 +235,9 @@ export default function DashboardView() {
     : latestResult?.proofUrl
       ? "Open latest proof tx"
       : "Open 0G Explorer";
+  const zkComplianceLink =
+    latestResult?.zkCompliance?.proofRegistryExplorerUrl ??
+    latestResult?.zkCompliance?.explorerUrl;
   const integrityAudit = latestResult?.integrityAudit;
   const auditApproved = integrityAudit?.status === "APPROVED";
 
@@ -601,7 +604,20 @@ export default function DashboardView() {
                         data-testid="zk-compliance-report"
                         className="mt-2 text-[11px] text-[#d7e0e8]"
                       >
-                        Last Strategy Execution: {latestResult.zkCompliance.policyCompliantPct}% Policy Compliant (Proof ID: {formatProofId(latestResult.zkCompliance.proofId)})
+                        Last Strategy Execution: {latestResult.zkCompliance.policyCompliantPct}% Policy Compliant (Proof ID:{" "}
+                        {zkComplianceLink ? (
+                          <a
+                            href={zkComplianceLink}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="font-medium text-[#22ddd0] underline decoration-[rgba(34,221,208,0.45)] underline-offset-2 transition hover:text-white"
+                          >
+                            {formatProofId(latestResult.zkCompliance.proofId)}
+                          </a>
+                        ) : (
+                          formatProofId(latestResult.zkCompliance.proofId)
+                        )}
+                        )
                       </div>
                     ) : null}
                   </div>
