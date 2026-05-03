@@ -479,6 +479,56 @@
         animation: pulse 2.4s ease-in-out infinite;
       }
 
+      .compact-grid {
+        gap: 12px;
+      }
+
+      .card.compact {
+        min-height: 0;
+        padding: 16px;
+      }
+
+      .card.compact strong {
+        font-size: 16px;
+      }
+
+      .card.compact .address {
+        font-size: 10px;
+        line-height: 1.45;
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .chip {
+        padding: 6px 10px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.04);
+        color: #dffdf9;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .ledger {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 26px;
+      }
+
+      .ledger .card {
+        min-height: 0;
+      }
+
+      .ledger .address {
+        margin-top: 10px;
+      }
+
       @keyframes pulse {
         0%,
         100% {
@@ -741,7 +791,8 @@
         .four,
         .flow,
         .flow-wide,
-        .mock-grid {
+        .mock-grid,
+        .ledger {
           grid-template-columns: 1fr;
         }
 
@@ -782,7 +833,7 @@
             <div class="kicker"><span class="dot"></span>0G Labs Global Hackathon</div>
             <h1>Verifiable yield optimization for the AI-native Web3.</h1>
             <p class="lead">
-              Mainnet-first optimizer, anti-hallucination guardrails, 0G proof trail, Sovereign Memory, Hallucination Blacklist, Multiverse Stress Test, frictionless judge review, Agent NFT minting, and strategy marketplace adoption.
+              Mainnet-first optimizer, anti-hallucination guardrails, 0G proof trail, Sovereign Memory, Hallucination Blacklist, Multiverse Stress Test, Zero-Knowledge Reasoning, programmable AI governance, cross-agent neural handshake, frictionless judge review, and Strategy Agent NFT adoption.
             </p>
             <div class="hero-row">
               <div class="pill-row">
@@ -790,12 +841,14 @@
                 <span class="pill">0G Storage + ProofRegistry</span>
                 <span class="pill">Sovereign Memory</span>
                 <span class="pill">Blacklist + Stress Test</span>
+                <span class="pill">ZKR + Governance</span>
+                <span class="pill">Neural Handshake + Compliance</span>
                 <span class="pill">Agent NFT + Marketplace</span>
               </div>
               <p class="mini">Live app: yieldboost-ai.vercel.app/judge</p>
             </div>
           </div>
-          <div class="footer"><span>YieldBoost AI</span><span class="slide-no">01 / 09</span></div>
+          <div class="footer"><span>YieldBoost AI</span><span class="slide-no">01 / 11</span></div>
         </article>
       </section>
 
@@ -832,7 +885,7 @@
               </div>
             </div>
           </div>
-          <div class="footer"><span>Problem</span><span class="slide-no">02 / 09</span></div>
+          <div class="footer"><span>Problem</span><span class="slide-no">02 / 11</span></div>
         </article>
       </section>
 
@@ -862,12 +915,12 @@
             <div class="grid four" style="margin-top: 28px">
               <div class="card metric">
                 <span class="mini">Projected APY</span>
-                <span class="value">23.84%</span>
+                <span class="value">16.48%</span>
                 <span>latest proof snapshot</span>
               </div>
               <div class="card metric">
                 <span class="mini">Confidence</span>
-                <span class="value">96%</span>
+                <span class="value">91%</span>
                 <span>route scoring</span>
               </div>
               <div class="card metric">
@@ -877,12 +930,12 @@
               </div>
               <div class="card metric">
                 <span class="mini">Agent NFTs</span>
-                <span class="value">3</span>
+                <span class="value">4</span>
                 <span>mainnet minted strategies</span>
               </div>
             </div>
           </div>
-          <div class="footer"><span>Solution</span><span class="slide-no">03 / 09</span></div>
+          <div class="footer"><span>Solution</span><span class="slide-no">03 / 11</span></div>
         </article>
       </section>
 
@@ -890,7 +943,7 @@
         <article class="sheet">
           <div class="inner">
             <div class="kicker"><span class="dot"></span>0G-native architecture</div>
-            <h2>The system is built around a verifiable data path.</h2>
+            <h2>The system is built around a verifiable data and control path.</h2>
             <div class="flow flow-wide">
               <div class="node" data-step="A">
                 <strong>User input</strong>
@@ -939,7 +992,49 @@
               </div>
             </div>
           </div>
-          <div class="footer"><span>System flow</span><span class="slide-no">04 / 09</span></div>
+          <div class="footer"><span>System flow</span><span class="slide-no">04 / 11</span></div>
+        </article>
+      </section>
+
+      <section class="slide">
+        <article class="sheet">
+          <div class="inner">
+            <div class="kicker"><span class="dot"></span>AI control plane</div>
+            <h2>Six live backend artifacts keep the optimizer honest after every run.</h2>
+            <div class="grid three compact-grid" style="margin-top: 28px">
+              <div class="card compact">
+                <strong>Sovereign Memory</strong>
+                <span>Latest agent context is pinned to 0G Storage so the proof-backed state can be rehydrated across sessions.</span>
+              </div>
+              <div class="card compact">
+                <strong>Hallucination Blacklist</strong>
+                <span>Known-bad input and output pairs become pre-inference rejection signals instead of repeated failure modes.</span>
+              </div>
+              <div class="card compact">
+                <strong>Multiverse Stress Test</strong>
+                <span>Historical replay stores an Integrity Report Card so the strategy can be checked outside the latest market moment.</span>
+              </div>
+              <div class="card compact">
+                <strong>Zero-Knowledge Reasoning</strong>
+                <span>TEE/ZK-ready reasoning envelope is written to 0G and anchored on-chain with an honest `tee-envelope-recorded` status.</span>
+              </div>
+              <div class="card compact">
+                <strong>Programmable AI Governance</strong>
+                <span>Deterministic risk policy can keep a run active, warn, throttle, or halt before the next state transition.</span>
+              </div>
+              <div class="card compact">
+                <strong>Cross-Agent Neural Handshake</strong>
+                <span>Optimizer and Integrity Auditor leave behind a persisted transcript envelope so the handoff is reviewable.</span>
+              </div>
+            </div>
+            <div class="chip-row">
+              <span class="chip">ZKR status: tee-envelope-recorded</span>
+              <span class="chip">Governance: active, low risk 12/100</span>
+              <span class="chip">Handshake: completed</span>
+              <span class="chip">ZK-Compliance: verified, 100%</span>
+            </div>
+          </div>
+          <div class="footer"><span>Control plane</span><span class="slide-no">05 / 11</span></div>
         </article>
       </section>
 
@@ -976,20 +1071,21 @@
                   <div class="mock-grid" style="margin-top: 12px">
                     <div class="card metric">
                       <span class="mini">APY lift</span>
-                      <span class="value" style="font-size: 26px">12.38 -> 23.84%</span>
+                      <span class="value" style="font-size: 26px">12.38 -> 16.48%</span>
                     </div>
                     <div class="card metric">
                       <span class="mini">Proof history</span>
-                      <span class="value" style="font-size: 26px">Live runs</span>
+                      <span class="value" style="font-size: 26px">8 runs</span>
                     </div>
                   </div>
                   <div class="mock-line"></div>
                   <div class="mock-line" style="width: 78%"></div>
+                  <p class="mini" style="margin-top: 12px">ZK-Compliance: 100% policy compliant | Governance: active low risk | ZKR anchor visible</p>
                 </div>
               </div>
             </div>
           </div>
-          <div class="footer"><span>Frictionless audit</span><span class="slide-no">05 / 09</span></div>
+          <div class="footer"><span>Frictionless audit</span><span class="slide-no">06 / 11</span></div>
         </article>
       </section>
 
@@ -997,85 +1093,127 @@
         <article class="sheet">
           <div class="inner">
             <div class="kicker"><span class="dot"></span>Mainnet evidence</div>
-            <h2>Live contracts and latest proof trail are already on 0G mainnet.</h2>
-            <div class="grid two" style="margin-top: 26px">
-              <div class="card">
+            <h2 style="max-width: 700px; font-size: clamp(31px, 3.4vw, 52px); line-height: 1.02;">Live contracts and latest proof trail are already on 0G mainnet.</h2>
+            <div class="grid two compact-grid" style="margin-top: 20px">
+              <div class="card compact">
                 <strong>ProofRegistry</strong>
                 <span class="address">0x8e63e117E71A80Cfc10fDF375F079e2e29cd7D7D</span>
                 <span class="mini">Anchors proof metadata and emits the reviewable proof event.</span>
               </div>
-              <div class="card">
+              <div class="card compact">
                 <strong>GlobalBlacklistRegistry</strong>
                 <span class="address">0xbc576EA5a68ED9d217299c107C801445e9A5a7BE</span>
                 <span class="mini">Mainnet registry for public rejection anchors from the Hallucination Blacklist layer.</span>
               </div>
-              <div class="card">
+              <div class="card compact">
                 <strong>ValidationRegistry</strong>
                 <span class="address">0x62aa83b0A610BE298dF08004d764229B8f2aC219</span>
                 <span class="mini">Mainnet registry for Multiverse Stress Test report anchors and integrity validation evidence.</span>
               </div>
-              <div class="card">
+              <div class="card compact">
                 <strong>YieldStrategyINFT</strong>
                 <span class="address">0xb264D861264B0e4f8fb98A61B7694BA8a3B6BBe3</span>
                 <span class="mini">Mainnet Agent NFT contract for strategy ownership.</span>
               </div>
-              <div class="card">
+              <div class="card compact">
                 <strong>Attestation Oracle</strong>
                 <span class="address">0x216E7880D64D94335B583c539802d3e61958d4A2</span>
                 <span class="mini">Registers verified attestation hashes before INFT verification is marked on-chain.</span>
               </div>
-              <div class="card">
+              <div class="card compact">
                 <strong>Strategy Marketplace</strong>
                 <span class="address">0x48F989C7f41056509980731C1b4D59164C0C1A40</span>
                 <span class="mini">Mainnet adoption contract for listed proof-backed Strategy NFTs.</span>
               </div>
-              <div class="card">
+              <div class="card compact">
                 <strong>Latest ProofRegistry tx</strong>
-                <span class="address">0xcb0bb6f4f61de4a2e8f7e29ddbbbb1dd56814ed2eee4731450669756006a02f4</span>
+                <span class="address">0xbe37a19217edd77026eaf659127ea8838d84fbc149a10e3f21ee0585dded99fb</span>
                 <span class="mini">Latest tested mainnet proof anchor from the product flow.</span>
               </div>
-              <div class="card">
+              <div class="card compact">
                 <strong>Latest Agent NFT mint tx</strong>
                 <span class="address">0x2d4e074e9239f17db837fdfcc5ffa77393f292b7699836a79da260aefdddcb18</span>
                 <span class="mini">Token #4 minted to the connected demo wallet during live validation.</span>
               </div>
             </div>
           </div>
-          <div class="footer"><span>0G mainnet verification</span><span class="slide-no">06 / 09</span></div>
+          <div class="footer"><span>0G mainnet verification</span><span class="slide-no">07 / 11</span></div>
         </article>
       </section>
 
       <section class="slide">
         <article class="sheet">
           <div class="inner">
-            <div class="kicker"><span class="dot"></span>Integrity stack</div>
-            <h2>YieldBoost hardens inference before and after every proof write.</h2>
+            <div class="kicker"><span class="dot"></span>Live artifact ledger</div>
+            <h2>The newest tx and anchor trail is already readable from Judge Mode.</h2>
+            <div class="ledger">
+              <div class="card compact">
+                <strong>Latest proof write</strong>
+                <span>Main proof CID `0x0658...3050`</span>
+                <span class="address">0x763c992d35b36dcdf66fa1e6e4cda1675d84eeffd698e60b4cefd64b3745073d</span>
+              </div>
+              <div class="card compact">
+                <strong>Proof anchor</strong>
+                <span>ProofRegistry proof ID 7</span>
+                <span class="address">0xbe37a19217edd77026eaf659127ea8838d84fbc149a10e3f21ee0585dded99fb</span>
+              </div>
+              <div class="card compact">
+                <strong>ZKR envelope</strong>
+                <span>CID `0x7c91...ad82` with proof ID 8</span>
+                <span class="address">0xa074e7f74aad61ece0be54766116cffc544e4a5eda96189bbc136ce14af6cd02</span>
+              </div>
+              <div class="card compact">
+                <strong>ZK-Compliance proof</strong>
+                <span>100% policy compliant, proof ID 9</span>
+                <span class="address">0xd5c33366a40960c1e2903b47f1fa699f39ffbb1ab7532fc544b53571bd7e2be7</span>
+              </div>
+              <div class="card compact">
+                <strong>Governance decision</strong>
+                <span>Active with low risk 12/100</span>
+                <span class="address">0xf7672e2367a880e57961ece7621138c3be870ef8541affdd28c657b5654e620e</span>
+              </div>
+              <div class="card compact">
+                <strong>Neural handshake</strong>
+                <span>Completed optimizer to auditor transcript</span>
+                <span class="address">0x91c94588d6729e8550bf782e99166151afbd15bd69bd3aec67dd76a72b155676</span>
+              </div>
+            </div>
+          </div>
+          <div class="footer"><span>Latest tx trail</span><span class="slide-no">08 / 11</span></div>
+        </article>
+      </section>
+
+      <section class="slide">
+        <article class="sheet">
+          <div class="inner">
+            <div class="kicker"><span class="dot"></span>Review stack</div>
+            <h2>Judge Mode keeps proof, memory, compliance, and control signals in one route.</h2>
             <div class="grid four" style="margin-top: 32px">
               <div class="card">
-                <strong>Sovereign Memory</strong>
-                <span>Latest agent state is snapshotted to 0G Storage so verified context survives past the session window.</span>
+                <strong>Latest proof</strong>
+                <span>Current APY, optimized APY, reasoning, proof history, and tx links stay above the fold for judges.</span>
               </div>
               <div class="card">
-                <strong>Hallucination Blacklist</strong>
-                <span>Known-bad patterns are checked before new inference so repeated hallucinations can be rejected early.</span>
+                <strong>Integrity memory stack</strong>
+                <span>Sovereign Memory, Hallucination Blacklist, and Multiverse Stress Test appear as separate evidence cards with explorer links.</span>
               </div>
               <div class="card">
-                <strong>Multiverse Stress Test</strong>
-                <span>Historical replay compares standard output versus audited decisions and stores an Integrity Report Card.</span>
+                <strong>ZK and governance status</strong>
+                <span>ZKR, Governance, Neural Handshake, and ZK-Compliance show honest live statuses instead of decorative UI badges.</span>
               </div>
               <div class="card">
-                <strong>Integrity Auditor</strong>
-                <span>Checks AI recommendations against the real snapshot before proof writing, memory sync, blacklist promotion, or NFT minting.</span>
+                <strong>Cross-network review</strong>
+                <span>Mainnet is the default review path, while testnet stays available for comparison without changing the clean `/judge` URL.</span>
               </div>
             </div>
             <div class="flow" style="grid-template-columns: repeat(4, 1fr)">
-              <div class="node" data-step="1"><strong>Pre-check</strong><span class="mini">Blacklist lookup before inference</span></div>
-              <div class="node" data-step="2"><strong>Audit</strong><span class="mini">Deterministic portfolio sanity checks</span></div>
-              <div class="node" data-step="3"><strong>Persist</strong><span class="mini">Proof + Sovereign Memory on 0G</span></div>
-              <div class="node" data-step="4"><strong>Replay</strong><span class="mini">Stress test and report card validation</span></div>
+              <div class="node" data-step="1"><strong>Open</strong><span class="mini">Jump straight into `/judge`</span></div>
+              <div class="node" data-step="2"><strong>Inspect</strong><span class="mini">Check tx, CID, proof count, and latest timestamps</span></div>
+              <div class="node" data-step="3"><strong>Cross-check</strong><span class="mini">Review governance, ZKR, handshake, and compliance state</span></div>
+              <div class="node" data-step="4"><strong>Deep dive</strong><span class="mini">Open Chainscan links only where more proof is needed</span></div>
             </div>
           </div>
-          <div class="footer"><span>AI integrity</span><span class="slide-no">07 / 09</span></div>
+          <div class="footer"><span>Judge evidence</span><span class="slide-no">09 / 11</span></div>
         </article>
       </section>
 
@@ -1083,34 +1221,34 @@
         <article class="sheet">
           <div class="inner">
             <div class="kicker"><span class="dot"></span>Strategy Agent NFT</div>
-            <h2>Optimization results become ownable agent artifacts.</h2>
-            <div class="split">
+            <h2 style="max-width: 700px; font-size: clamp(31px, 3.4vw, 52px); line-height: 1.03;">Optimization results become ownable agent artifacts.</h2>
+            <div class="split" style="margin-top: 18px">
               <div>
                 <p class="lead">
                   After a proof-backed optimization, the user can mint the strategy through YieldStrategyINFT. The NFT is not the proof itself; it is the portable strategy artifact linked to the verified runtime output.
                 </p>
-                <div class="grid" style="margin-top: 22px">
-                  <div class="card">
+                <div class="grid compact-grid" style="margin-top: 18px">
+                  <div class="card compact">
                     <strong>Minted to the connected wallet</strong>
                     <span>Agent ownership follows the user wallet, not the server signer.</span>
                   </div>
-                  <div class="card">
+                  <div class="card compact">
                     <strong>Marketplace adoption</strong>
                     <span>Listed strategy NFTs can be inspected through proof metadata before adoption.</span>
                   </div>
-                  <div class="card">
+                  <div class="card compact">
                     <strong>Auditor-gated mint</strong>
                     <span>Rejected recommendations do not enter the proof-to-NFT path.</span>
                   </div>
                 </div>
               </div>
-              <div class="screen">
+              <div class="screen" style="min-height: 360px">
                 <div class="browser-bar"><i></i><i></i><i></i><span class="mini">/agents</span></div>
                 <div class="mock-ui">
-                  <div class="card" style="min-height: 320px">
+                  <div class="card compact" style="min-height: 290px">
                     <div class="kicker"><span class="dot"></span>Agent NFT</div>
                     <h3 style="margin-top: 18px">SaucerSwap LP Strategy Agent</h3>
-                    <p class="mini" style="margin-top: 10px">Confidence 96% | APY 23.84% | Proof-linked mint | Listed strategy-ready</p>
+                    <p class="mini" style="margin-top: 10px">Confidence 91% | APY 16.48% | Proof-linked mint | Listed strategy-ready</p>
                     <div class="chart">
                       <svg viewBox="0 0 600 180">
                         <path d="M36 132 C108 88 158 118 220 74 C286 28 332 88 398 48 C462 12 504 46 568 22" fill="none" stroke="#22d3ee" stroke-width="5" stroke-linecap="round" />
@@ -1121,7 +1259,7 @@
               </div>
             </div>
           </div>
-          <div class="footer"><span>NFT layer</span><span class="slide-no">08 / 09</span></div>
+          <div class="footer"><span>NFT layer</span><span class="slide-no">10 / 11</span></div>
         </article>
       </section>
 
@@ -1133,7 +1271,7 @@
             <div class="grid three" style="margin-top: 34px">
               <div class="card">
                 <strong>Phase 1: Mainnet proof product</strong>
-                <span>Live proof trail, Judge Mode, Integrity Auditor, Agent NFT minting, marketplace, and dual-network review.</span>
+                <span>Live proof trail, Judge Mode, Integrity Auditor, ZKR envelope, governance, handshake, compliance proof, and Agent NFT minting.</span>
               </div>
               <div class="card">
                 <strong>Phase 2: $YA0G reward logic</strong>
@@ -1154,7 +1292,7 @@
               YieldBoost AI is strongest as a mainnet-live verifiable finance product: AI recommendations with a proof trail judges can inspect in seconds.
             </p>
           </div>
-          <div class="footer"><span>Future economy</span><span class="slide-no">09 / 09</span></div>
+          <div class="footer"><span>Future economy</span><span class="slide-no">11 / 11</span></div>
         </article>
       </section>
     </main>

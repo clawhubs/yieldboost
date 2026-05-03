@@ -13,6 +13,9 @@
   <img src="https://img.shields.io/badge/Sovereign%20Memory-0G%20Storage-18c6ff?style=for-the-badge" alt="Sovereign Memory on 0G Storage" />
   <img src="https://img.shields.io/badge/Hallucination%20Blacklist-Pre--Inference%20Defense-ff5c7a?style=for-the-badge" alt="Hallucination Blacklist" />
   <img src="https://img.shields.io/badge/Stress%20Test-Integrity%20Report%20Card-f6c166?style=for-the-badge" alt="Multiverse Stress Test" />
+  <img src="https://img.shields.io/badge/ZK--Reasoning-TEE%20%2F%20ZK--Ready%20Envelope-8b5cf6?style=for-the-badge" alt="Zero-Knowledge Reasoning" />
+  <img src="https://img.shields.io/badge/AI%20Governance-Deterministic%20Policy%20Guard-22c55e?style=for-the-badge" alt="Programmable AI Governance" />
+  <img src="https://img.shields.io/badge/Neural%20Handshake-Cross--Agent%20Transcript-0ea5e9?style=for-the-badge" alt="Cross-Agent Neural Handshake" />
   <img src="https://img.shields.io/badge/Judge%20Mode-/judge-7c5cff?style=for-the-badge" alt="Judge Mode" />
   <img src="https://img.shields.io/badge/Proof%20Layer-0G%20Storage%20%2B%20ProofRegistry-0f172a?style=for-the-badge" alt="Proof Layer" />
   <img src="https://img.shields.io/badge/Agent%20NFT-YieldStrategyINFT-00a86b?style=for-the-badge" alt="Agent NFT YieldStrategyINFT" />
@@ -55,6 +58,10 @@ The active implementation in this repository is now centered on a **mainnet-firs
 - **Sovereign Memory** for persistent agent state snapshots on 0G Storage.
 - **Hallucination Blacklist** for pre-inference rejection of known bad patterns.
 - **Multiverse Stress Test** for historical replay and 0G-backed Integrity Report Cards.
+- **Zero-Knowledge Reasoning (ZKR)** as a live TEE/ZK-ready reasoning proof envelope persisted to 0G and anchored for Judge review.
+- **Programmable AI Governance** as a deterministic policy engine that can keep a strategy `active`, `warning`, `throttled`, or `halted`.
+- **Cross-Agent Neural Handshake** as a persisted optimizer-to-auditor transcript envelope recorded on 0G mainnet.
+- **Deterministic ZK Compliance** as a policy proof that the latest strategy execution stayed 100% inside governance limits.
 
 The result is a product story judges can verify quickly: a user runs an optimization, the app persists the reasoning and decision payload on 0G infrastructure, and `/judge` exposes the latest mainnet review snapshot without requiring wallet connection, faucet setup, or rerunning the flow.
 
@@ -105,26 +112,45 @@ The current public deployment is now **mainnet-default**.
 | Mainnet strategy marketplace | [`0x48F989C7f41056509980731C1b4D59164C0C1A40`](https://chainscan.0g.ai/address/0x48F989C7f41056509980731C1b4D59164C0C1A40) |
 | Mainnet `GlobalBlacklistRegistry` | [`0xbc576EA5a68ED9d217299c107C801445e9A5a7BE`](https://chainscan.0g.ai/address/0xbc576EA5a68ED9d217299c107C801445e9A5a7BE) |
 | Mainnet `ValidationRegistry` | [`0x62aa83b0A610BE298dF08004d764229B8f2aC219`](https://chainscan.0g.ai/address/0x62aa83b0A610BE298dF08004d764229B8f2aC219) |
-| Latest proof CID | `0x2298be9fc73b1defab97956b4973bbf0aca38cf198f7a2da8c674d7b05ec054c` |
-| Latest 0G Storage tx | [`0x7d069e8231bb639242fda1127e4062715e08e05bcfb7c41b80dc1f79fdd7743a`](https://chainscan.0g.ai/tx/0x7d069e8231bb639242fda1127e4062715e08e05bcfb7c41b80dc1f79fdd7743a) |
-| Latest `ProofRegistry` anchor tx | [`0xcb0bb6f4f61de4a2e8f7e29ddbbbb1dd56814ed2eee4731450669756006a02f4`](https://chainscan.0g.ai/tx/0xcb0bb6f4f61de4a2e8f7e29ddbbbb1dd56814ed2eee4731450669756006a02f4) |
-| Latest `ProofRegistry` proof ID | `6` |
+| Latest proof CID | `0x0658c275b9ea851e01e12a8480501c2c2c153b732d100951e40fdb9ad6b13050` |
+| Latest 0G Storage tx | [`0x763c992d35b36dcdf66fa1e6e4cda1675d84eeffd698e60b4cefd64b3745073d`](https://chainscan.0g.ai/tx/0x763c992d35b36dcdf66fa1e6e4cda1675d84eeffd698e60b4cefd64b3745073d) |
+| Latest `ProofRegistry` anchor tx | [`0xbe37a19217edd77026eaf659127ea8838d84fbc149a10e3f21ee0585dded99fb`](https://chainscan.0g.ai/tx/0xbe37a19217edd77026eaf659127ea8838d84fbc149a10e3f21ee0585dded99fb) |
+| Latest `ProofRegistry` proof ID | `7` |
 | Latest Agent NFT | `Token #4` |
 | Latest Agent NFT mint tx | [`0x2d4e074e9239f17db837fdfcc5ffa77393f292b7699836a79da260aefdddcb18`](https://chainscan.0g.ai/tx/0x2d4e074e9239f17db837fdfcc5ffa77393f292b7699836a79da260aefdddcb18) |
 | Judge entry point | [`/judge`](https://yieldboost-ai.vercel.app/judge) |
 
 ### Latest Integrity Stack Evidence
 
-These mainnet artifacts prove the newly added agent memory, blacklist, and stress-test layers are operational in the same codebase:
+These mainnet artifacts prove the integrity and compliance stack is operational in the same codebase. Where a subsystem has not produced a newer mainnet write in the latest optimize run, the README keeps the most recent recorded artifact instead of inventing one:
 
 | Artifact | CID / tx |
 | --- | --- |
-| Sovereign Memory CID | `0x71bcddb1ba132b9c12b8a06d09b34ff1622bde7eaae6526dfba1cd4d699b7b5b` |
-| Sovereign Memory tx | [`0xa3a5f72d2ff4b6c451421a4e9ae215bf94f79d4cece599d19cbe9227abf0ca5e`](https://chainscan.0g.ai/tx/0xa3a5f72d2ff4b6c451421a4e9ae215bf94f79d4cece599d19cbe9227abf0ca5e) |
-| Hallucination Blacklist CID | `0xd660cdb9aec29214736fcb5763ba80fe6a5d2dcfd6cc35d68d7a178372b21625` |
-| Hallucination Blacklist tx | [`0x4eaee2337e0ffbec64b43e85c4619768071a0ff11c6a0b6c7a6c65a6a4521cb3`](https://chainscan.0g.ai/tx/0x4eaee2337e0ffbec64b43e85c4619768071a0ff11c6a0b6c7a6c65a6a4521cb3) |
-| Multiverse Stress Report CID | `0xf6fa5153b7df915b06b29e1e713a408ca1a79059a8538f22172bb1ded0f876b7` |
-| Multiverse Stress Report tx | [`0x2626de40d4640e99aef1c72fd7cd3b1eea0952036aefb96e863b25bf86b6f78f`](https://chainscan.0g.ai/tx/0x2626de40d4640e99aef1c72fd7cd3b1eea0952036aefb96e863b25bf86b6f78f) |
+| Sovereign Memory CID | `0xfe1444c405b9c65f4489fb66f8e2c919368619425bfb628f47089a9e76755d28` |
+| Sovereign Memory tx | [`0x00d7414c560af3a2d88f32b1b0d5a8dd896dcf6ef821ad877632f5be8d39a07b`](https://chainscan.0g.ai/tx/0x00d7414c560af3a2d88f32b1b0d5a8dd896dcf6ef821ad877632f5be8d39a07b) |
+| Latest recorded Hallucination Blacklist CID | `0xd660cdb9aec29214736fcb5763ba80fe6a5d2dcfd6cc35d68d7a178372b21625` |
+| Latest recorded Hallucination Blacklist tx | [`0x4eaee2337e0ffbec64b43e85c4619768071a0ff11c6a0b6c7a6c65a6a4521cb3`](https://chainscan.0g.ai/tx/0x4eaee2337e0ffbec64b43e85c4619768071a0ff11c6a0b6c7a6c65a6a4521cb3) |
+| Latest recorded Multiverse Stress Report CID | `0xf6fa5153b7df915b06b29e1e713a408ca1a79059a8538f22172bb1ded0f876b7` |
+| Latest recorded Multiverse Stress Report tx | [`0x2626de40d4640e99aef1c72fd7cd3b1eea0952036aefb96e863b25bf86b6f78f`](https://chainscan.0g.ai/tx/0x2626de40d4640e99aef1c72fd7cd3b1eea0952036aefb96e863b25bf86b6f78f) |
+| ZKR proof CID | `0x7c918f1e1bcc383e872eb1606d9ab6a494bf1e15e23d9f19d6127d82100bad82` |
+| ZKR storage tx | [`0xd5fa09bdea5adf83f7bd3697d28a97d4d0ed4a9b85d9349951c1586a4a15cf76`](https://chainscan.0g.ai/tx/0xd5fa09bdea5adf83f7bd3697d28a97d4d0ed4a9b85d9349951c1586a4a15cf76) |
+| ZKR `ProofRegistry` anchor tx | [`0xa074e7f74aad61ece0be54766116cffc544e4a5eda96189bbc136ce14af6cd02`](https://chainscan.0g.ai/tx/0xa074e7f74aad61ece0be54766116cffc544e4a5eda96189bbc136ce14af6cd02) |
+| Governance artifact CID | `0x2e1363b94f490765bd8841f5eff8d0b31b4f328017fae1920a429ffbd2b964ef` |
+| Governance tx | [`0xf7672e2367a880e57961ece7621138c3be870ef8541affdd28c657b5654e620e`](https://chainscan.0g.ai/tx/0xf7672e2367a880e57961ece7621138c3be870ef8541affdd28c657b5654e620e) |
+| Neural Handshake CID | `0x64fca7bce74e760b78ce89ffa9f57f8367182f5c3a330609a0d018305e7a2ee7` |
+| Neural Handshake tx | [`0x91c94588d6729e8550bf782e99166151afbd15bd69bd3aec67dd76a72b155676`](https://chainscan.0g.ai/tx/0x91c94588d6729e8550bf782e99166151afbd15bd69bd3aec67dd76a72b155676) |
+| ZK-Compliance CID | `0xc8b7e448ef15d2132f0fb4cae9621a68a0ae7450bc6370c3641dc7df64aa00c8` |
+| ZK-Compliance tx | [`0x3a11e091491d9f77ae37c384c71c905e3d1187078d0f7902281957986d46034b`](https://chainscan.0g.ai/tx/0x3a11e091491d9f77ae37c384c71c905e3d1187078d0f7902281957986d46034b) |
+| ZK-Compliance `ProofRegistry` anchor tx | [`0xd5c33366a40960c1e2903b47f1fa699f39ffbb1ab7532fc544b53571bd7e2be7`](https://chainscan.0g.ai/tx/0xd5c33366a40960c1e2903b47f1fa699f39ffbb1ab7532fc544b53571bd7e2be7) |
+
+### Zero-Knowledge Reasoning, Governance, and Handshake
+
+The newest control-plane features now surface real mainnet artifacts instead of UI placeholders:
+
+- **Zero-Knowledge Reasoning (ZKR)** records a TEE/ZK-ready reasoning proof envelope to 0G Storage and anchors it on-chain. Current mainnet status: `tee-envelope-recorded`.
+- **Programmable AI Governance** evaluates the latest strategy output against deterministic risk rules and can return `active`, `warning`, `throttled`, or `halted`. Current mainnet status: `active` with low risk `12/100`.
+- **Cross-Agent Neural Handshake** stores an optimizer-to-auditor coordination transcript so the reasoning handoff is externally inspectable. Current mainnet status: `completed`.
+- **Deterministic ZK Compliance** proves that the last execution stayed `100%` inside the active governance policy and links that result into both the dashboard and `/judge`.
 
 What this means in practice:
 
