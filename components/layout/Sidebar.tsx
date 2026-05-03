@@ -98,6 +98,16 @@ function clearCookie(name: string) {
   document.cookie = `${name}=; path=/; max-age=0; SameSite=Lax`;
 }
 
+function getCookieValue(name: string) {
+  const prefix = `${name}=`;
+  const match = document.cookie
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(prefix));
+
+  return match ? match.slice(prefix.length) : undefined;
+}
+
 function hasJudgeModeFlag() {
   return (
     typeof window !== "undefined" &&
@@ -426,7 +436,9 @@ export default function Sidebar() {
     window.addEventListener("focus", refreshWalletOptions);
     const intervalId = window.setInterval(refreshWalletOptions, 1500);
 
-    const savedNetworkValue = localStorage.getItem(WALLET_NETWORK_STORAGE_KEY);
+    const savedNetworkValue =
+      localStorage.getItem(WALLET_NETWORK_STORAGE_KEY) ??
+      getCookieValue(WALLET_NETWORK_COOKIE_KEY);
     const savedNetwork = savedNetworkValue
       ? resolveWalletNetworkKey(savedNetworkValue)
       : getDefaultWalletNetworkKey();

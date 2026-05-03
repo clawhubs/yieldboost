@@ -588,9 +588,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     const initialJudgeMode =
       typeof window !== "undefined" &&
       window.localStorage.getItem(JUDGE_MODE_STORAGE_KEY) === "true";
-    const initialNetwork = initialJudgeMode
-      ? "mainnet"
-      : savedNetwork ?? getDefaultWalletNetworkKey();
+    const initialNetwork = savedNetwork ?? getDefaultWalletNetworkKey();
     const initialWallet = initialJudgeMode
       ? DEFAULT_WALLET_ADDRESS
       : isWalletAddress(savedWallet)

@@ -74,16 +74,14 @@ test("judge page is reachable without wallet connection", async ({ page }) => {
 
   await expect(page.getByTestId("judge-page")).toBeVisible();
   await expect(page.getByTestId("judge-network-sync-overlay")).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Mainnet review starts here." })).toBeVisible();
   await expect(page.getByText("Latest proof and wallet snapshot")).toBeVisible();
   await expect(page.getByText("ZK-Proof")).toBeVisible();
-  await expect(page.getByText(/Testnet Verified|TEE Envelope Recorded|Zk Ready|Verified/).first()).toBeVisible();
   await expect(page.getByText("Governance").first()).toBeVisible();
-  await expect(page.getByText("Active").first()).toBeVisible();
   await expect(page.getByText("Neural Handshake").first()).toBeVisible();
-  await expect(page.getByText("ZK Proof CID")).toBeVisible();
-  await expect(page.getByText("Governance CID")).toBeVisible();
+  await expect(page.getByText("ZK Proof CID", { exact: true })).toBeVisible();
+  await expect(page.getByText("Governance CID", { exact: true })).toBeVisible();
   await expect(page.getByText("Handshake CID", { exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Open ZK proof/i }).first()).toBeVisible();
   const integrityAuditor = page.getByTestId("judge-integrity-auditor");
   if ((await integrityAuditor.count()) > 0) {
     await expect(integrityAuditor).toContainText(
@@ -160,10 +158,26 @@ test("judge network switcher can toggle testnet and mainnet review state", async
     await expect(page.getByTestId("judge-network-sync-overlay")).toHaveCount(0, {
       timeout: 30_000,
     });
+    await expect(
+      page.getByRole("heading", { name: "Testnet comparison snapshot." }),
+    ).toBeVisible({
+      timeout: 30_000,
+    });
     await expect(page.getByTestId("judge-network-testnet")).toContainText(
       "Current review network",
       { timeout: 30_000 },
     );
+    await expect(page.getByText("Testnet Verified").first()).toBeVisible();
+    await expect(page.getByText("Active").first()).toBeVisible();
+    await expect(page.getByText("Completed").first()).toBeVisible();
+    const testnetStorageNetwork = await page.evaluate(() =>
+      window.localStorage.getItem("yb_wallet_network"),
+    );
+    expect(testnetStorageNetwork).toBe("testnet");
+    const testnetCookies = await page.context().cookies();
+    expect(
+      testnetCookies.find((cookie) => cookie.name === "yb_wallet_network")?.value,
+    ).toBe("testnet");
   }
 
   const refreshedMainnetButton = page.getByTestId("judge-network-mainnet");
@@ -176,6 +190,19 @@ test("judge network switcher can toggle testnet and mainnet review state", async
       "Current review network",
       { timeout: 30_000 },
     );
+    await expect(
+      page.getByRole("heading", { name: "Mainnet review starts here." }),
+    ).toBeVisible({
+      timeout: 30_000,
+    });
+    const mainnetStorageNetwork = await page.evaluate(() =>
+      window.localStorage.getItem("yb_wallet_network"),
+    );
+    expect(mainnetStorageNetwork).toBe("mainnet");
+    const mainnetCookies = await page.context().cookies();
+    expect(
+      mainnetCookies.find((cookie) => cookie.name === "yb_wallet_network")?.value,
+    ).toBe("mainnet");
   }
 });
 

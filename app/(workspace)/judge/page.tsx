@@ -109,7 +109,7 @@ export default async function JudgePage() {
   ];
   const quickReviewPoints = [
     "Open `/judge` as the submission entry point to see the latest wallet result first.",
-    "Follow the latest tx link and the CID to verify the current mainnet proof externally.",
+    `Follow the latest tx link and the CID to verify the current ${data.reviewNetworkLabel.toLowerCase()} proof externally.`,
     "Jump to `/history` or `/agents` only if you want more context on the same snapshot.",
     "Use `Exit judge mode` in the sidebar anytime to return to the normal wallet flow.",
   ];

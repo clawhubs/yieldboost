@@ -741,25 +741,22 @@ export async function getJudgePageData(): Promise<JudgePageData> {
       walletAddress: reviewWallet,
       networkKey: reviewNetwork,
     })) ??
-    (await getLatestZkReasoningProof({ walletAddress: reviewWallet })) ??
     (await getLatestZkReasoningProof({ networkKey: reviewNetwork })) ??
-    (await getLatestZkReasoningProof());
+    null;
   const latestGovernanceDecision =
     (await getLatestGovernanceDecision({
       walletAddress: reviewWallet,
       networkKey: reviewNetwork,
     })) ??
-    (await getLatestGovernanceDecision({ walletAddress: reviewWallet })) ??
     (await getLatestGovernanceDecision({ networkKey: reviewNetwork })) ??
-    (await getLatestGovernanceDecision());
+    null;
   const latestCrossAgentHandshake =
     (await getLatestCrossAgentHandshake({
       walletAddress: reviewWallet,
       networkKey: reviewNetwork,
     })) ??
-    (await getLatestCrossAgentHandshake({ walletAddress: reviewWallet })) ??
     (await getLatestCrossAgentHandshake({ networkKey: reviewNetwork })) ??
-    (await getLatestCrossAgentHandshake());
+    null;
   const proofCount = scopedProofs.length;
   const proofNetwork = latestProof?.networkKey ?? reviewNetwork;
   const judgePortfolio = await withTimeout(
