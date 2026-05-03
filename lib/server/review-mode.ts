@@ -608,7 +608,9 @@ function resolveProofIntegrityAudit(proof: StoredProofRecord | null) {
   );
 }
 
-export async function getJudgePageData(): Promise<JudgePageData> {
+export async function getJudgePageData(
+  reviewNetworkOverride?: string | null,
+): Promise<JudgePageData> {
   const runtimeStatus = getDocsRuntimeStatus();
   const reviewWallet = DEFAULT_WALLET_ADDRESS;
   const preferredNetwork = getServerDefaultNetworkKey();
@@ -617,9 +619,11 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   const defaultReviewNetwork: WalletNetworkKey = getServer0GNetworkConfig("mainnet").enabled
     ? "mainnet"
     : preferredNetwork;
-  const reviewNetwork = reviewNetworkCookie
-    ? resolveWalletNetworkKey(reviewNetworkCookie)
-    : defaultReviewNetwork;
+  const reviewNetwork = reviewNetworkOverride
+    ? resolveWalletNetworkKey(reviewNetworkOverride)
+    : reviewNetworkCookie
+      ? resolveWalletNetworkKey(reviewNetworkCookie)
+      : defaultReviewNetwork;
   const reviewNetworkConfig = getServer0GNetworkConfig(reviewNetwork);
   const rawLatestProof = await resolveLatestProofForWallet(reviewWallet, reviewNetwork);
   const latestIntegrityAudit = resolveProofIntegrityAudit(rawLatestProof);
