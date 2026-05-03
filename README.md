@@ -58,6 +58,9 @@ The active implementation in this repository is now centered on a **mainnet-firs
 - **Sovereign Memory** for persistent agent state snapshots on 0G Storage.
 - **Hallucination Blacklist** for pre-inference rejection of known bad patterns.
 - **Multiverse Stress Test** for historical replay and 0G-backed Integrity Report Cards.
+
+On top of that integrity memory stack, the repo now adds a second control plane for verifiable reasoning and policy enforcement:
+
 - **Zero-Knowledge Reasoning (ZKR)** as a live TEE/ZK-ready reasoning proof envelope persisted to 0G and anchored for Judge review.
 - **Programmable AI Governance** as a deterministic policy engine that can keep a strategy `active`, `warning`, `throttled`, or `halted`.
 - **Cross-Agent Neural Handshake** as a persisted optimizer-to-auditor transcript envelope recorded on 0G mainnet.
@@ -122,16 +125,30 @@ The current public deployment is now **mainnet-default**.
 
 ### Latest Integrity Stack Evidence
 
-These mainnet artifacts prove the integrity and compliance stack is operational in the same codebase. Where a subsystem has not produced a newer mainnet write in the latest optimize run, the README keeps the most recent recorded artifact instead of inventing one:
+These mainnet artifacts prove the newly added agent memory, blacklist, and stress-test layers are operational in the same codebase:
 
 | Artifact | CID / tx |
 | --- | --- |
 | Sovereign Memory CID | `0xfe1444c405b9c65f4489fb66f8e2c919368619425bfb628f47089a9e76755d28` |
 | Sovereign Memory tx | [`0x00d7414c560af3a2d88f32b1b0d5a8dd896dcf6ef821ad877632f5be8d39a07b`](https://chainscan.0g.ai/tx/0x00d7414c560af3a2d88f32b1b0d5a8dd896dcf6ef821ad877632f5be8d39a07b) |
-| Latest recorded Hallucination Blacklist CID | `0xd660cdb9aec29214736fcb5763ba80fe6a5d2dcfd6cc35d68d7a178372b21625` |
-| Latest recorded Hallucination Blacklist tx | [`0x4eaee2337e0ffbec64b43e85c4619768071a0ff11c6a0b6c7a6c65a6a4521cb3`](https://chainscan.0g.ai/tx/0x4eaee2337e0ffbec64b43e85c4619768071a0ff11c6a0b6c7a6c65a6a4521cb3) |
-| Latest recorded Multiverse Stress Report CID | `0xf6fa5153b7df915b06b29e1e713a408ca1a79059a8538f22172bb1ded0f876b7` |
-| Latest recorded Multiverse Stress Report tx | [`0x2626de40d4640e99aef1c72fd7cd3b1eea0952036aefb96e863b25bf86b6f78f`](https://chainscan.0g.ai/tx/0x2626de40d4640e99aef1c72fd7cd3b1eea0952036aefb96e863b25bf86b6f78f) |
+| Hallucination Blacklist CID | `0xd660cdb9aec29214736fcb5763ba80fe6a5d2dcfd6cc35d68d7a178372b21625` |
+| Hallucination Blacklist tx | [`0x4eaee2337e0ffbec64b43e85c4619768071a0ff11c6a0b6c7a6c65a6a4521cb3`](https://chainscan.0g.ai/tx/0x4eaee2337e0ffbec64b43e85c4619768071a0ff11c6a0b6c7a6c65a6a4521cb3) |
+| Multiverse Stress Report CID | `0xf6fa5153b7df915b06b29e1e713a408ca1a79059a8538f22172bb1ded0f876b7` |
+| Multiverse Stress Report tx | [`0x2626de40d4640e99aef1c72fd7cd3b1eea0952036aefb96e863b25bf86b6f78f`](https://chainscan.0g.ai/tx/0x2626de40d4640e99aef1c72fd7cd3b1eea0952036aefb96e863b25bf86b6f78f) |
+
+What this means in practice:
+
+- `mainnet` is the default review path in the live app.
+- `/judge` can still switch between mainnet and testnet when a reviewer wants comparison context.
+- testnet remains available for iteration and fallback, but it is no longer the primary submission narrative.
+- the same live stack also exposes a mainnet `YieldStrategyINFT` contract for strategy-agent minting.
+
+### Additional Control Plane Evidence
+
+These newer artifacts extend the original integrity stack without replacing it. They document how reasoning, governance, and agent-to-agent coordination are now persisted as first-class backend outputs:
+
+| Artifact | CID / tx |
+| --- | --- |
 | ZKR proof CID | `0x7c918f1e1bcc383e872eb1606d9ab6a494bf1e15e23d9f19d6127d82100bad82` |
 | ZKR storage tx | [`0xd5fa09bdea5adf83f7bd3697d28a97d4d0ed4a9b85d9349951c1586a4a15cf76`](https://chainscan.0g.ai/tx/0xd5fa09bdea5adf83f7bd3697d28a97d4d0ed4a9b85d9349951c1586a4a15cf76) |
 | ZKR `ProofRegistry` anchor tx | [`0xa074e7f74aad61ece0be54766116cffc544e4a5eda96189bbc136ce14af6cd02`](https://chainscan.0g.ai/tx/0xa074e7f74aad61ece0be54766116cffc544e4a5eda96189bbc136ce14af6cd02) |
@@ -151,13 +168,6 @@ The newest control-plane features now surface real mainnet artifacts instead of 
 - **Programmable AI Governance** evaluates the latest strategy output against deterministic risk rules and can return `active`, `warning`, `throttled`, or `halted`. Current mainnet status: `active` with low risk `12/100`.
 - **Cross-Agent Neural Handshake** stores an optimizer-to-auditor coordination transcript so the reasoning handoff is externally inspectable. Current mainnet status: `completed`.
 - **Deterministic ZK Compliance** proves that the last execution stayed `100%` inside the active governance policy and links that result into both the dashboard and `/judge`.
-
-What this means in practice:
-
-- `mainnet` is the default review path in the live app.
-- `/judge` can still switch between mainnet and testnet when a reviewer wants comparison context.
-- testnet remains available for iteration and fallback, but it is no longer the primary submission narrative.
-- the same live stack also exposes a mainnet `YieldStrategyINFT` contract for strategy-agent minting.
 
 ## Why This Matters
 
