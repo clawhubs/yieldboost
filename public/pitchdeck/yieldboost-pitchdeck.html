@@ -782,13 +782,14 @@
             <div class="kicker"><span class="dot"></span>0G Labs Global Hackathon</div>
             <h1>Verifiable yield optimization for the AI-native Web3.</h1>
             <p class="lead">
-              Mainnet-first optimizer, anti-hallucination guardrails, 0G proof trail, frictionless judge review, Agent NFT minting, and strategy marketplace adoption.
+              Mainnet-first optimizer, anti-hallucination guardrails, 0G proof trail, Sovereign Memory, Hallucination Blacklist, Multiverse Stress Test, frictionless judge review, Agent NFT minting, and strategy marketplace adoption.
             </p>
             <div class="hero-row">
               <div class="pill-row">
                 <span class="pill">0G Mainnet default</span>
                 <span class="pill">0G Storage + ProofRegistry</span>
-                <span class="pill">Integrity Auditor</span>
+                <span class="pill">Sovereign Memory</span>
+                <span class="pill">Blacklist + Stress Test</span>
                 <span class="pill">Agent NFT + Marketplace</span>
               </div>
               <p class="mini">Live app: yieldboost-ai.vercel.app/judge</p>
@@ -923,6 +924,20 @@
             <p class="lead">
               The key design choice: AI output is treated as a proposal until it passes guardrails and becomes a durable, wallet-scoped proof artifact.
             </p>
+            <div class="grid three" style="margin-top: 24px">
+              <div class="card">
+                <strong>Sovereign Memory</strong>
+                <span>Agent state snapshots are persisted on 0G Storage so the strategy context can be rehydrated across sessions.</span>
+              </div>
+              <div class="card">
+                <strong>Hallucination Blacklist</strong>
+                <span>Rejected input and output pairs are indexed before future inference, turning repeated failure modes into pre-inference blocks.</span>
+              </div>
+              <div class="card">
+                <strong>Multiverse Stress Test</strong>
+                <span>Historical replay turns market slices into Integrity Report Cards backed by 0G Storage and on-chain validation evidence.</span>
+              </div>
+            </div>
           </div>
           <div class="footer"><span>System flow</span><span class="slide-no">04 / 09</span></div>
         </article>
@@ -946,7 +961,7 @@
                   </div>
                   <div class="card">
                     <strong>Direct explorer path</strong>
-                    <span>Latest storage tx, ProofRegistry anchor, Agent NFT mint tx, marketplace, oracle, contract addresses, and proof history are surfaced in one place.</span>
+                    <span>Latest storage tx, ProofRegistry anchor, Sovereign Memory CID, blacklist CID, stress report CID, Agent NFT mint tx, marketplace, oracle, and contract addresses are surfaced in one place.</span>
                   </div>
                 </div>
               </div>
@@ -990,6 +1005,16 @@
                 <span class="mini">Anchors proof metadata and emits the reviewable proof event.</span>
               </div>
               <div class="card">
+                <strong>GlobalBlacklistRegistry</strong>
+                <span class="address">0xbc576EA5a68ED9d217299c107C801445e9A5a7BE</span>
+                <span class="mini">Mainnet registry for public rejection anchors from the Hallucination Blacklist layer.</span>
+              </div>
+              <div class="card">
+                <strong>ValidationRegistry</strong>
+                <span class="address">0x62aa83b0A610BE298dF08004d764229B8f2aC219</span>
+                <span class="mini">Mainnet registry for Multiverse Stress Test report anchors and integrity validation evidence.</span>
+              </div>
+              <div class="card">
                 <strong>YieldStrategyINFT</strong>
                 <span class="address">0xb264D861264B0e4f8fb98A61B7694BA8a3B6BBe3</span>
                 <span class="mini">Mainnet Agent NFT contract for strategy ownership.</span>
@@ -1006,13 +1031,13 @@
               </div>
               <div class="card">
                 <strong>Latest ProofRegistry tx</strong>
-                <span class="address">0x2c50807ad1b35cda372f420f1a996dfa7a6555d4b7672f265fbb60d79bcd82b1</span>
+                <span class="address">0xcb0bb6f4f61de4a2e8f7e29ddbbbb1dd56814ed2eee4731450669756006a02f4</span>
                 <span class="mini">Latest tested mainnet proof anchor from the product flow.</span>
               </div>
               <div class="card">
                 <strong>Latest Agent NFT mint tx</strong>
-                <span class="address">0x5fa0bdd16f914941d127aaa2cefcedeccc48d9b1d7bd31f52605b5a901aaf4ff</span>
-                <span class="mini">Token #3 minted to the connected demo wallet during live validation.</span>
+                <span class="address">0x2d4e074e9239f17db837fdfcc5ffa77393f292b7699836a79da260aefdddcb18</span>
+                <span class="mini">Token #4 minted to the connected demo wallet during live validation.</span>
               </div>
             </div>
           </div>
@@ -1023,34 +1048,34 @@
       <section class="slide">
         <article class="sheet">
           <div class="inner">
-            <div class="kicker"><span class="dot"></span>Runtime efficiency</div>
-            <h2>Inference is optimized before the system spends compute.</h2>
+            <div class="kicker"><span class="dot"></span>Integrity stack</div>
+            <h2>YieldBoost hardens inference before and after every proof write.</h2>
             <div class="grid four" style="margin-top: 32px">
               <div class="card">
-                <strong>Semantic Cache</strong>
-                <span>Scoped by wallet, network, normalized prompt, and portfolio digest before new inference runs.</span>
+                <strong>Sovereign Memory</strong>
+                <span>Latest agent state is snapshotted to 0G Storage so verified context survives past the session window.</span>
               </div>
               <div class="card">
-                <strong>Embedding Reuse</strong>
-                <span>Alibaba text-embedding-v4 can reuse similar optimization requests for the same wallet and asset signature.</span>
+                <strong>Hallucination Blacklist</strong>
+                <span>Known-bad patterns are checked before new inference so repeated hallucinations can be rejected early.</span>
               </div>
               <div class="card">
-                <strong>Prompt Compression</strong>
-                <span>The optimizer rewrites noisy input into compact intent, constraints, and portfolio facts.</span>
+                <strong>Multiverse Stress Test</strong>
+                <span>Historical replay compares standard output versus audited decisions and stores an Integrity Report Card.</span>
               </div>
               <div class="card">
                 <strong>Integrity Auditor</strong>
-                <span>Checks AI recommendations against the real snapshot before proof writing or NFT minting.</span>
+                <span>Checks AI recommendations against the real snapshot before proof writing, memory sync, blacklist promotion, or NFT minting.</span>
               </div>
             </div>
             <div class="flow" style="grid-template-columns: repeat(4, 1fr)">
-              <div class="node" data-step="1"><strong>Raw intent</strong><span class="mini">User request + portfolio</span></div>
-              <div class="node" data-step="2"><strong>Compacted prompt</strong><span class="mini">Less noise, same decision context</span></div>
-              <div class="node" data-step="3"><strong>Reuse check</strong><span class="mini">Exact cache or vector similarity</span></div>
-              <div class="node" data-step="4"><strong>Audit then store</strong><span class="mini">Reject unsafe or unrealistic output</span></div>
+              <div class="node" data-step="1"><strong>Pre-check</strong><span class="mini">Blacklist lookup before inference</span></div>
+              <div class="node" data-step="2"><strong>Audit</strong><span class="mini">Deterministic portfolio sanity checks</span></div>
+              <div class="node" data-step="3"><strong>Persist</strong><span class="mini">Proof + Sovereign Memory on 0G</span></div>
+              <div class="node" data-step="4"><strong>Replay</strong><span class="mini">Stress test and report card validation</span></div>
             </div>
           </div>
-          <div class="footer"><span>Token efficiency</span><span class="slide-no">07 / 09</span></div>
+          <div class="footer"><span>AI integrity</span><span class="slide-no">07 / 09</span></div>
         </article>
       </section>
 
