@@ -64,6 +64,21 @@ function getStreamingFallback(progress: OptimizationState) {
   }
 }
 
+function getChecklistStatus(
+  progress: OptimizationState,
+  startsAt: OptimizationState,
+  doneAt: OptimizationState = "done",
+) {
+  const order: OptimizationState[] = ["analyzing", "optimizing", "executing", "anchoring", "done"];
+  const currentIndex = order.indexOf(progress);
+  const startIndex = order.indexOf(startsAt);
+  const doneIndex = order.indexOf(doneAt);
+
+  if (currentIndex >= doneIndex) return "done";
+  if (currentIndex >= startIndex) return "active";
+  return "queued";
+}
+
 export default function OptimizationLoadingModal({
   open,
   progress,
@@ -87,6 +102,58 @@ export default function OptimizationLoadingModal({
     progressSteps.find((step) => step.key === progress)?.percent ??
     (progress === "done" ? 100 : 28);
   const copy = progressCopy[progress];
+  const proofChecklist = [
+    {
+      label: "Wallet snapshot",
+      detail: "Live balance and APY baseline captured",
+      status: getChecklistStatus(progress, "analyzing", "optimizing"),
+    },
+    {
+      label: "AI route selected",
+      detail: "Best low-risk route computed",
+      status: getChecklistStatus(progress, "optimizing", "executing"),
+    },
+    {
+      label: "Integrity Auditor",
+      detail: "Deterministic guardrail approval",
+      status: getChecklistStatus(progress, "executing", "anchoring"),
+    },
+    {
+      label: "0G Storage CID",
+      detail: "Primary proof payload upload",
+      status: getChecklistStatus(progress, "anchoring"),
+    },
+    {
+      label: "ProofRegistry tx",
+      detail: "On-chain proof anchor",
+      status: getChecklistStatus(progress, "anchoring"),
+    },
+    {
+      label: "Sovereign Memory",
+      detail: "Agent memory snapshot",
+      status: getChecklistStatus(progress, "anchoring"),
+    },
+    {
+      label: "ZK Reasoning",
+      detail: "Reasoning proof envelope",
+      status: getChecklistStatus(progress, "anchoring"),
+    },
+    {
+      label: "Governance",
+      detail: "Policy decision record",
+      status: getChecklistStatus(progress, "anchoring"),
+    },
+    {
+      label: "Neural Handshake",
+      detail: "Optimizer-auditor transcript",
+      status: getChecklistStatus(progress, "anchoring"),
+    },
+    {
+      label: "ZK Compliance",
+      detail: "Final deterministic compliance proof",
+      status: getChecklistStatus(progress, "anchoring"),
+    },
+  ] as const;
 
   return (
     <AnimatePresence>
@@ -200,6 +267,65 @@ export default function OptimizationLoadingModal({
                           </div>
                         </div>
                         <div className="mt-2 text-[11px] leading-4">{step.label}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="mt-5 rounded-[20px] border border-[rgba(42,215,200,0.14)] bg-[linear-gradient(180deg,rgba(10,26,30,0.58)_0%,rgba(6,13,18,0.72)_100%)] p-4">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <div className="text-[11px] uppercase tracking-[0.14em] text-[#7feee4]">
+                      Proof checklist
+                    </div>
+                    <div className="mt-1 text-[13px] text-[#d7e1e9]">
+                      Primary proof first, then the integrity memory stack.
+                    </div>
+                  </div>
+                  <div className="text-[11px] text-[#8fa3b0]">
+                    {progress === "done" ? "All verified" : "Running"}
+                  </div>
+                </div>
+                <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                  {proofChecklist.map((item) => {
+                    const isDone = item.status === "done";
+                    const isActive = item.status === "active";
+
+                    return (
+                      <div
+                        key={item.label}
+                        className={`flex items-start gap-3 rounded-[14px] border px-3 py-3 transition ${
+                          isDone
+                            ? "border-[#1d6a4a] bg-[rgba(31,225,123,0.08)]"
+                            : isActive
+                              ? "border-[#2ad7c8] bg-[rgba(34,221,208,0.1)]"
+                              : "border-white/8 bg-[rgba(255,255,255,0.025)]"
+                        }`}
+                      >
+                        <div
+                          className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border ${
+                            isDone
+                              ? "border-[#2fe06d] text-[#2fe06d]"
+                              : isActive
+                                ? "border-[#2ad7c8] text-[#7feee4]"
+                                : "border-[#31404a] text-[#7d909d]"
+                          }`}
+                        >
+                          {isDone ? (
+                            <CheckCheck className="h-3.5 w-3.5" />
+                          ) : isActive ? (
+                            <CircleDashed className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <div className={`text-[13px] font-semibold ${isDone || isActive ? "text-white" : "text-[#9fb0bd]"}`}>
+                            {item.label}
+                          </div>
+                          <div className="mt-0.5 text-[11px] text-[#8fa3b0]">{item.detail}</div>
+                        </div>
                       </div>
                     );
                   })}
