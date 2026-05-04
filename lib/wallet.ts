@@ -10,6 +10,9 @@ export const WALLET_NETWORK_CHANGE_REQUEST_EVENT = "yb:wallet-network-change-req
 export const PROOF_STORED_EVENT = "yb:proof-stored";
 export const JUDGE_MODE_COOKIE_KEY = "yb_judge_mode";
 export const JUDGE_MODE_STORAGE_KEY = "yb_judge_mode";
+export const JUDGE_PREVIOUS_WALLET_STORAGE_KEY = "yb_judge_previous_wallet";
+export const JUDGE_PREVIOUS_PROVIDER_STORAGE_KEY = "yb_judge_previous_provider";
+export const JUDGE_PREVIOUS_NETWORK_STORAGE_KEY = "yb_judge_previous_network";
 
 export const WALLET_OVERRIDE_STORAGE_KEY = "yb_wallet_override";
 export const WALLET_NETWORK_STORAGE_KEY = "yb_wallet_network";

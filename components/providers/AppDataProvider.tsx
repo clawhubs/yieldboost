@@ -102,6 +102,10 @@ function parseStreamingChunk(
 }
 
 function getClientActiveWalletAddress(fallback?: string): string | undefined {
+  if (isWalletAddress(fallback)) {
+    return fallback;
+  }
+
   if (typeof window === "undefined") {
     return isWalletAddress(fallback) ? fallback : undefined;
   }

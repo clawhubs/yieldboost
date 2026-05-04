@@ -46,6 +46,9 @@ import {
   getAvailableWalletNetworks,
   getDefaultWalletNetworkKey,
   isWalletAddress,
+  JUDGE_PREVIOUS_NETWORK_STORAGE_KEY,
+  JUDGE_PREVIOUS_PROVIDER_STORAGE_KEY,
+  JUDGE_PREVIOUS_WALLET_STORAGE_KEY,
   JUDGE_MODE_STORAGE_KEY,
   resolveWalletNetworkKey,
   sameWalletAddress,
@@ -113,6 +116,58 @@ function hasJudgeModeFlag() {
     typeof window !== "undefined" &&
     window.localStorage.getItem(JUDGE_MODE_STORAGE_KEY) === "true"
   );
+}
+
+function rememberPreJudgeWalletState(input: {
+  walletAddress?: string | null;
+  providerId?: string | null;
+  networkKey: WalletNetworkKey;
+}) {
+  if (typeof window === "undefined") return;
+
+  if (input.walletAddress && isWalletAddress(input.walletAddress)) {
+    window.localStorage.setItem(JUDGE_PREVIOUS_WALLET_STORAGE_KEY, input.walletAddress);
+  } else {
+    window.localStorage.removeItem(JUDGE_PREVIOUS_WALLET_STORAGE_KEY);
+  }
+
+  if (input.providerId) {
+    window.localStorage.setItem(JUDGE_PREVIOUS_PROVIDER_STORAGE_KEY, input.providerId);
+  } else {
+    window.localStorage.removeItem(JUDGE_PREVIOUS_PROVIDER_STORAGE_KEY);
+  }
+
+  window.localStorage.setItem(JUDGE_PREVIOUS_NETWORK_STORAGE_KEY, input.networkKey);
+}
+
+function readPreJudgeWalletState() {
+  if (typeof window === "undefined") {
+    return {
+      walletAddress: null,
+      providerId: null,
+      networkKey: getDefaultWalletNetworkKey(),
+    };
+  }
+
+  const walletAddress = window.localStorage.getItem(JUDGE_PREVIOUS_WALLET_STORAGE_KEY);
+  const providerId = window.localStorage.getItem(JUDGE_PREVIOUS_PROVIDER_STORAGE_KEY);
+  const networkValue = window.localStorage.getItem(JUDGE_PREVIOUS_NETWORK_STORAGE_KEY);
+
+  return {
+    walletAddress: isWalletAddress(walletAddress) ? walletAddress : null,
+    providerId,
+    networkKey: networkValue
+      ? resolveWalletNetworkKey(networkValue)
+      : getDefaultWalletNetworkKey(),
+  };
+}
+
+function clearPreJudgeWalletState() {
+  if (typeof window === "undefined") return;
+
+  window.localStorage.removeItem(JUDGE_PREVIOUS_WALLET_STORAGE_KEY);
+  window.localStorage.removeItem(JUDGE_PREVIOUS_PROVIDER_STORAGE_KEY);
+  window.localStorage.removeItem(JUDGE_PREVIOUS_NETWORK_STORAGE_KEY);
 }
 
 export default function Sidebar() {
@@ -649,6 +704,13 @@ export default function Sidebar() {
   function activateJudgeReviewMode() {
     setWalletModalOpen(false);
     setErrorText(null);
+    rememberPreJudgeWalletState({
+      walletAddress:
+        walletAddrRef.current ?? localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY),
+      providerId:
+        providerIdRef.current ?? localStorage.getItem(WALLET_PROVIDER_STORAGE_KEY),
+      networkKey: selectedNetworkRef.current,
+    });
     enterJudgeMode();
     broadcastWalletChange(
       DEFAULT_WALLET_ADDRESS,
@@ -659,25 +721,39 @@ export default function Sidebar() {
   }
 
   function handleExitJudgeMode() {
+    const snapshot = readPreJudgeWalletState();
     exitJudgeMode();
-    const restoredNetwork = selectedNetworkRef.current;
-    const restoredWallet = walletAddrRef.current ?? localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY);
+    const restoredNetwork = snapshot.networkKey ?? selectedNetworkRef.current;
+    const restoredWallet =
+      snapshot.walletAddress ??
+      walletAddrRef.current ??
+      localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY);
     const restoredProviderId =
-      providerIdRef.current ?? localStorage.getItem(WALLET_PROVIDER_STORAGE_KEY);
+      snapshot.providerId ??
+      providerIdRef.current ??
+      localStorage.getItem(WALLET_PROVIDER_STORAGE_KEY);
     const restoredProvider = restoredProviderId
       ? getInjectedWalletById(restoredProviderId)
       : null;
+
+    clearPreJudgeWalletState();
 
     if (restoredProvider && restoredWallet && isWalletAddress(restoredWallet)) {
       setWalletAddr(restoredWallet);
       setConnected(true);
       setErrorText(null);
+      localStorage.setItem(WALLET_OVERRIDE_STORAGE_KEY, restoredWallet);
+      localStorage.setItem(WALLET_PROVIDER_STORAGE_KEY, restoredProvider.id);
+      localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, restoredNetwork);
       attachProviderListeners(restoredProvider.provider, restoredProvider.id, restoredProvider.name);
       broadcastWalletChange(restoredWallet, restoredNetwork, restoredProvider.name, true);
     } else if (restoredWallet && isWalletAddress(restoredWallet)) {
       setWalletAddr(restoredWallet);
       setConnected(false);
       setErrorText(null);
+      localStorage.setItem(WALLET_OVERRIDE_STORAGE_KEY, restoredWallet);
+      localStorage.removeItem(WALLET_PROVIDER_STORAGE_KEY);
+      localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, restoredNetwork);
       broadcastWalletChange(restoredWallet, restoredNetwork, null, false);
     } else {
       applyDisconnectedState(restoredNetwork);
