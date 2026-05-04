@@ -1317,9 +1317,9 @@ export default function DashboardView() {
       {entryModeOpen ? (
         <div
           data-testid="entry-mode-modal"
-          className="fixed inset-0 z-[70] flex items-center justify-center bg-black/75 px-4 py-6 backdrop-blur-md"
+          className="fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto bg-black/75 px-3 py-3 backdrop-blur-md sm:items-center sm:px-4 sm:py-6"
         >
-          <div className="relative w-full max-w-3xl overflow-hidden rounded-[30px] border border-[rgba(42,215,200,0.22)] bg-[radial-gradient(circle_at_top_left,rgba(34,221,208,0.2),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(31,225,123,0.14),transparent_32%),linear-gradient(180deg,#071018_0%,#04080d_100%)] p-5 shadow-[0_30px_90px_rgba(0,0,0,0.6)] sm:p-7"
+          <div className="relative max-h-[calc(100dvh-1.5rem)] w-full max-w-3xl overflow-y-auto overscroll-contain rounded-[24px] border border-[rgba(42,215,200,0.22)] bg-[radial-gradient(circle_at_top_left,rgba(34,221,208,0.2),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(31,225,123,0.14),transparent_32%),linear-gradient(180deg,#071018_0%,#04080d_100%)] p-4 shadow-[0_30px_90px_rgba(0,0,0,0.6)] sm:max-h-[calc(100dvh-3rem)] sm:rounded-[30px] sm:p-7"
         >
           <div className="absolute -right-16 -top-16 h-44 w-44 rounded-full bg-[#22ddd0]/10 blur-3xl" />
           <div className="absolute -bottom-20 left-10 h-48 w-48 rounded-full bg-[#1fe17b]/10 blur-3xl" />
@@ -1329,35 +1329,35 @@ export default function DashboardView() {
               <Zap className="h-3.5 w-3.5" />
               Choose your path
             </div>
-            <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_0.8fr] lg:items-end">
+            <div className="mt-3 grid gap-3 sm:mt-4 lg:grid-cols-[1fr_0.8fr] lg:items-end">
               <div>
-                <h2 className="font-[family-name:var(--font-display)] text-[30px] font-semibold leading-tight text-white sm:text-[42px]">
+                <h2 className="font-[family-name:var(--font-display)] text-[25px] font-semibold leading-tight text-white sm:text-[42px]">
                   Welcome to YieldBoost AI
                 </h2>
-                <p className="mt-3 max-w-2xl text-[14px] leading-6 text-[#b8c7d4] sm:text-[15px]">
+                <p className="mt-2 max-w-2xl text-[13px] leading-5 text-[#b8c7d4] sm:mt-3 sm:text-[15px] sm:leading-6">
                   Pick the review surface you need. Judges can inspect the proof-backed 0G snapshot instantly, while users can continue into the normal dashboard and connect a wallet only when ready.
                 </p>
               </div>
-              <div className="rounded-[20px] border border-white/10 bg-white/[0.035] px-4 py-3 text-[12px] leading-5 text-[#94a8b6]">
+              <div className="rounded-[18px] border border-white/10 bg-white/[0.035] px-3 py-2 text-[11px] leading-5 text-[#94a8b6] sm:rounded-[20px] sm:px-4 sm:py-3 sm:text-[12px]">
                 Mainnet-first proof trail, 0G Storage CIDs, ProofRegistry anchors, and integrity memory are available from Judge Mode.
               </div>
             </div>
 
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            <div className="mt-4 grid gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4">
               <Link
                 href="/judge"
                 data-testid="entry-judge-mode"
                 onClick={markJudgeModeSelected}
-                className="group rounded-[24px] border border-[#2ad7c8]/35 bg-[linear-gradient(135deg,rgba(34,221,208,0.18),rgba(8,24,28,0.76))] p-5 text-left transition hover:-translate-y-0.5 hover:border-[#7feee4] hover:shadow-[0_18px_55px_rgba(34,221,208,0.18)]"
+                className="group rounded-[20px] border border-[#2ad7c8]/35 bg-[linear-gradient(135deg,rgba(34,221,208,0.18),rgba(8,24,28,0.76))] p-4 text-left transition hover:-translate-y-0.5 hover:border-[#7feee4] hover:shadow-[0_18px_55px_rgba(34,221,208,0.18)] sm:rounded-[24px] sm:p-5"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-[16px] border border-[#2ad7c8]/35 bg-[#06191b] text-[#22ddd0]">
-                  <ShieldCheck className="h-6 w-6" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-[14px] border border-[#2ad7c8]/35 bg-[#06191b] text-[#22ddd0] sm:h-12 sm:w-12 sm:rounded-[16px]">
+                  <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
-                <div className="mt-5 text-[20px] font-semibold text-white">Judge Mode</div>
-                <p className="mt-2 text-[13px] leading-6 text-[#aec0cd]">
+                <div className="mt-3 text-[18px] font-semibold text-white sm:mt-5 sm:text-[20px]">Judge Mode</div>
+                <p className="mt-1.5 text-[12px] leading-5 text-[#aec0cd] sm:mt-2 sm:text-[13px] sm:leading-6">
                   Open the read-only review route with the latest stored proof, 0G evidence anchors, and verifier-friendly audit trail.
                 </p>
-                <div className="mt-5 flex items-center justify-between text-[12px] uppercase tracking-[0.12em] text-[#7feee4]">
+                <div className="mt-3 flex items-center justify-between text-[11px] uppercase tracking-[0.12em] text-[#7feee4] sm:mt-5 sm:text-[12px]">
                   <span>Review proof</span>
                   <ExternalLink className="h-4 w-4 transition group-hover:translate-x-0.5" />
                 </div>
@@ -1367,16 +1367,16 @@ export default function DashboardView() {
                 type="button"
                 data-testid="entry-user-mode"
                 onClick={enterUserMode}
-                className="group rounded-[24px] border border-white/12 bg-[linear-gradient(135deg,rgba(255,255,255,0.075),rgba(7,13,18,0.9))] p-5 text-left transition hover:-translate-y-0.5 hover:border-[#3b4b58] hover:shadow-[0_18px_55px_rgba(0,0,0,0.25)]"
+                className="group rounded-[20px] border border-white/12 bg-[linear-gradient(135deg,rgba(255,255,255,0.075),rgba(7,13,18,0.9))] p-4 text-left transition hover:-translate-y-0.5 hover:border-[#3b4b58] hover:shadow-[0_18px_55px_rgba(0,0,0,0.25)] sm:rounded-[24px] sm:p-5"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-[16px] border border-white/12 bg-[#0b1218] text-[#dce7ef]">
-                  <UserRound className="h-6 w-6" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-[14px] border border-white/12 bg-[#0b1218] text-[#dce7ef] sm:h-12 sm:w-12 sm:rounded-[16px]">
+                  <UserRound className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
-                <div className="mt-5 text-[20px] font-semibold text-white">User Mode</div>
-                <p className="mt-2 text-[13px] leading-6 text-[#aec0cd]">
+                <div className="mt-3 text-[18px] font-semibold text-white sm:mt-5 sm:text-[20px]">User Mode</div>
+                <p className="mt-1.5 text-[12px] leading-5 text-[#aec0cd] sm:mt-2 sm:text-[13px] sm:leading-6">
                   Continue to the normal dashboard. No wallet is required until you decide to connect and run a live optimization.
                 </p>
-                <div className="mt-5 flex items-center justify-between text-[12px] uppercase tracking-[0.12em] text-[#dce7ef]">
+                <div className="mt-3 flex items-center justify-between text-[11px] uppercase tracking-[0.12em] text-[#dce7ef] sm:mt-5 sm:text-[12px]">
                   <span>Enter dashboard</span>
                   <CheckCheck className="h-4 w-4 transition group-hover:translate-x-0.5" />
                 </div>
