@@ -3,6 +3,23 @@ import { Plus_Jakarta_Sans, Space_Grotesk, Barlow_Condensed } from "next/font/go
 import { AppDataProvider } from "@/components/providers/AppDataProvider";
 import "./globals.css";
 
+function resolveMetadataBase() {
+  const raw =
+    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
+    process.env.APP_URL?.trim() ||
+    "https://yield.raisurge.com";
+
+  try {
+    return new URL(raw);
+  } catch {
+    return new URL("https://yield.raisurge.com");
+  }
+}
+
+const metadataBase = resolveMetadataBase();
+const metadataDescription =
+  "Mainnet-first verifiable AI yield optimization on 0G, with judge-friendly proof review and Agent NFT minting.";
+
 const display = Space_Grotesk({
   variable: "--font-display",
   subsets: ["latin"],
@@ -20,9 +37,9 @@ const condensed = Barlow_Condensed({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://yieldboost-ai.vercel.app"),
+  metadataBase,
   title: "YieldBoost AI",
-  description: "Mainnet-first verifiable AI yield optimization on 0G, with judge-friendly proof review and Agent NFT minting.",
+  description: metadataDescription,
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
@@ -30,8 +47,8 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "YieldBoost AI",
-    description: "Mainnet-first verifiable AI yield optimization on 0G, with judge-friendly proof review and Agent NFT minting.",
-    url: "https://yieldboost-ai.vercel.app",
+    description: metadataDescription,
+    url: metadataBase.toString(),
     siteName: "YieldBoost AI",
     images: [
       {
@@ -46,7 +63,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "YieldBoost AI",
-    description: "Mainnet-first verifiable AI yield optimization on 0G, with judge-friendly proof review and Agent NFT minting.",
+    description: metadataDescription,
     images: ["/readme/branding/banner.png"],
   },
 };

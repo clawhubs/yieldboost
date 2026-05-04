@@ -5,6 +5,7 @@ Runbook ini untuk deploy `YieldBoost AI` ke VPS yang sekarang memakai:
 - host alias SSH: `hackaton-do`
 - app path: `/opt/yieldboost/current`
 - shared env path: `/opt/yieldboost/shared/.env.production.local`
+- shared artifacts path: `/opt/yieldboost/shared/artifacts`
 - process manager: `PM2`
 - public app port: `3000`
 
@@ -63,5 +64,7 @@ curl -I http://127.0.0.1:3000/judge
 
 - `deploy:vps` akan memaksa `NEXT_PUBLIC_APP_URL` ke `APP_URL`
 - `deploy:vps` juga memaksa `NEXT_PUBLIC_DEFAULT_NETWORK_KEY=mainnet`
+- `deploy:vps` akan menghapus `KV_REST_*` dan `UPSTASH_REDIS_*` dari env production VPS
+- `.artifacts` di app active directory adalah symlink ke `/opt/yieldboost/shared/artifacts`
 - source dikirim sebagai tarball agar tidak tergantung git checkout di server
 - `ecosystem.config.cjs` menjadi source of truth untuk process PM2

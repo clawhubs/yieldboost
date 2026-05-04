@@ -4,6 +4,7 @@ set -euo pipefail
 VPS_HOST_ALIAS="${VPS_HOST_ALIAS:-hackaton-do}"
 APP_DIR="${APP_DIR:-/opt/yieldboost/current}"
 SHARED_DIR="${SHARED_DIR:-/opt/yieldboost/shared}"
+SHARED_ARTIFACTS_DIR="${SHARED_ARTIFACTS_DIR:-$SHARED_DIR/artifacts}"
 APP_NAME="${APP_NAME:-yieldboost}"
 APP_URL="${APP_URL:-http://68.183.227.162:3000}"
 ENV_SOURCE="${ENV_SOURCE:-.env.local}"
@@ -37,11 +38,20 @@ append_or_replace_env() {
   fi
 }
 
+remove_env() {
+  local key="$1"
+  sed -i "/^${key}=.*/d" "$TMP_ENV"
+}
+
 append_or_replace_env "NEXT_PUBLIC_APP_URL" "$APP_URL"
 append_or_replace_env "NEXT_PUBLIC_DEFAULT_NETWORK_KEY" "mainnet"
+remove_env "KV_REST_API_URL"
+remove_env "KV_REST_API_TOKEN"
+remove_env "UPSTASH_REDIS_REST_URL"
+remove_env "UPSTASH_REDIS_REST_TOKEN"
 
 echo "Syncing env to ${VPS_HOST_ALIAS}:${SHARED_DIR}"
-ssh "$VPS_HOST_ALIAS" "mkdir -p '$APP_DIR' '$SHARED_DIR'"
+ssh "$VPS_HOST_ALIAS" "mkdir -p '$APP_DIR' '$SHARED_DIR' '$SHARED_ARTIFACTS_DIR'"
 scp -q "$TMP_ENV" "${VPS_HOST_ALIAS}:${SHARED_DIR}/.env.production.local"
 ssh "$VPS_HOST_ALIAS" "chmod 600 '${SHARED_DIR}/.env.production.local'"
 
@@ -50,15 +60,22 @@ tar \
   --exclude=node_modules \
   --exclude=.next \
   --exclude=.git \
+  --exclude=.artifacts \
+  --exclude=.env.local \
+  --exclude=.env.production.local \
+  --exclude=.env.development.local \
+  --exclude=.env.test.local \
   --exclude=test-results \
   --exclude=playwright-report \
   --exclude=coverage \
   --exclude=.vercel \
-  -czf - . | ssh "$VPS_HOST_ALIAS" "rm -rf '${APP_DIR}'/* && tar -xzf - -C '${APP_DIR}'"
+  -czf - . | ssh "$VPS_HOST_ALIAS" "find '${APP_DIR}' -mindepth 1 -maxdepth 1 -exec rm -rf {} + && tar -xzf - -C '${APP_DIR}'"
 
 echo "Building and reloading ${APP_NAME}"
 ssh "$VPS_HOST_ALIAS" "set -e
   cd '${APP_DIR}'
+  mkdir -p '${SHARED_ARTIFACTS_DIR}/0g-fallback'
+  ln -sfn '${SHARED_ARTIFACTS_DIR}' .artifacts
   ln -sfn '${SHARED_DIR}/.env.production.local' .env.production.local
   npm ci
   npm run build
