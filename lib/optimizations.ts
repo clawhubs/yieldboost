@@ -46,6 +46,13 @@ export interface OptimizationResult {
     explorerUrl?: string;
     proofRegistryExplorerUrl?: string;
   };
+  integrityLayers?: {
+    sovereignMemory?: boolean;
+    zkReasoning?: boolean;
+    governance?: boolean;
+    neuralHandshake?: boolean;
+    zkCompliance?: boolean;
+  };
 }
 
 export interface OptimizationFeedItem {

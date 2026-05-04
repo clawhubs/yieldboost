@@ -1239,6 +1239,7 @@ export default function DashboardView() {
           streamingText={streamingText}
           walletLabel={portfolio?.walletAddress ? portfolioWalletLabel : "Wallet not connected"}
           portfolioValue={portfolioMetricValue}
+          integrityLayers={latestResult?.integrityLayers}
           onMinimize={() => setOptimizationModalMinimized(true)}
           onClose={() => {
             if (progress === "done") {

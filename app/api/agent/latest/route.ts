@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { createDecisionSummary } from "@/lib/backend-data";
 import { type OptimizationResult } from "@/lib/optimizations";
 import { resolveLatestProofForWallet } from "@/lib/server/proof-resolution";
-import { getLatestZkComplianceProof } from "@/lib/server/runtime-store";
+import {
+  getLatestAgentMemory,
+  getLatestCrossAgentHandshake,
+  getLatestGovernanceDecision,
+  getLatestZkComplianceProof,
+  getLatestZkReasoningProof,
+} from "@/lib/server/runtime-store";
 import {
   resolveWalletNetworkKey,
   resolveWalletAddress,
@@ -33,10 +39,19 @@ export async function GET(req: NextRequest) {
   }
 
   const storedProof = await resolveLatestProofForWallet(requestedWallet, networkKey);
-  const latestZkCompliance = await getLatestZkComplianceProof({
-    walletAddress: requestedWallet,
-    networkKey,
-  });
+  const [
+    latestAgentMemory,
+    latestZkReasoning,
+    latestGovernance,
+    latestHandshake,
+    latestZkCompliance,
+  ] = await Promise.all([
+    getLatestAgentMemory(requestedWallet, networkKey),
+    getLatestZkReasoningProof({ walletAddress: requestedWallet, networkKey }),
+    getLatestGovernanceDecision({ walletAddress: requestedWallet, networkKey }),
+    getLatestCrossAgentHandshake({ walletAddress: requestedWallet, networkKey }),
+    getLatestZkComplianceProof({ walletAddress: requestedWallet, networkKey }),
+  ]);
 
   if (!storedProof) {
     return NextResponse.json({ success: true, data: null });
@@ -93,6 +108,13 @@ export async function GET(req: NextRequest) {
           proofRegistryExplorerUrl: latestZkCompliance.proofRegistryExplorerUrl,
         }
       : undefined,
+    integrityLayers: {
+      sovereignMemory: Boolean(latestAgentMemory),
+      zkReasoning: Boolean(latestZkReasoning),
+      governance: Boolean(latestGovernance),
+      neuralHandshake: Boolean(latestHandshake),
+      zkCompliance: Boolean(latestZkCompliance),
+    },
   };
 
   return NextResponse.json({

@@ -587,7 +587,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         storageAudit ??
         optimizationData.integrityAudit ??
         fallbackResult.integrityAudit,
-      zkCompliance: storageData?.zkComplianceProof
+        zkCompliance: storageData?.zkComplianceProof
         ? {
             proofId: storageData.zkComplianceProof.proofId,
             status: storageData.zkComplianceProof.status,
@@ -597,6 +597,18 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
             proofRegistryExplorerUrl: storageData.zkComplianceProof.proofRegistryExplorerUrl,
           }
         : optimizationData.zkCompliance ?? fallbackResult.zkCompliance,
+      integrityLayers: {
+        sovereignMemory: Boolean(optimizationData.integrityLayers?.sovereignMemory),
+        zkReasoning: Boolean(optimizationData.integrityLayers?.zkReasoning),
+        governance: Boolean(optimizationData.integrityLayers?.governance),
+        neuralHandshake: Boolean(optimizationData.integrityLayers?.neuralHandshake),
+        zkCompliance: Boolean(
+          storageData?.zkComplianceProof ??
+            optimizationData.integrityLayers?.zkCompliance ??
+            optimizationData.zkCompliance ??
+            fallbackResult.zkCompliance,
+        ),
+      },
       proofStatus: storageData?.cid ? "stored" : storageErrorMessage ? "error" : "pending",
       proofStatusDetail:
         storageErrorMessage ??

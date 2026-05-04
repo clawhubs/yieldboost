@@ -11,6 +11,13 @@ interface OptimizationLoadingModalProps {
   streamingText: string;
   walletLabel: string;
   portfolioValue: string;
+  integrityLayers?: {
+    sovereignMemory?: boolean;
+    zkReasoning?: boolean;
+    governance?: boolean;
+    neuralHandshake?: boolean;
+    zkCompliance?: boolean;
+  };
   onClose?: () => void;
   onMinimize?: () => void;
 }
@@ -87,6 +94,7 @@ export default function OptimizationLoadingModal({
   streamingText,
   walletLabel,
   portfolioValue,
+  integrityLayers,
   onClose,
   onMinimize,
 }: OptimizationLoadingModalProps) {
@@ -107,6 +115,10 @@ export default function OptimizationLoadingModal({
     (progress === "done" ? 100 : 28);
   const copy = progressCopy[progress];
   const canClose = progress === "done";
+  const getBackgroundStatus = (verified?: boolean) => {
+    if (verified) return "done";
+    return progress === "done" ? "active" : getChecklistStatus(progress, "anchoring");
+  };
   const proofChecklist = [
     {
       label: "Wallet snapshot",
@@ -136,27 +148,27 @@ export default function OptimizationLoadingModal({
     {
       label: "Sovereign Memory",
       detail: "Agent memory snapshot",
-      status: progress === "done" ? "queued" : getChecklistStatus(progress, "anchoring"),
+      status: getBackgroundStatus(integrityLayers?.sovereignMemory),
     },
     {
       label: "ZK Reasoning",
       detail: "Reasoning proof envelope",
-      status: progress === "done" ? "queued" : getChecklistStatus(progress, "anchoring"),
+      status: getBackgroundStatus(integrityLayers?.zkReasoning),
     },
     {
       label: "Governance",
       detail: "Policy decision record",
-      status: progress === "done" ? "queued" : getChecklistStatus(progress, "anchoring"),
+      status: getBackgroundStatus(integrityLayers?.governance),
     },
     {
       label: "Neural Handshake",
       detail: "Optimizer-auditor transcript",
-      status: progress === "done" ? "queued" : getChecklistStatus(progress, "anchoring"),
+      status: getBackgroundStatus(integrityLayers?.neuralHandshake),
     },
     {
       label: "ZK Compliance",
       detail: "Final deterministic compliance proof",
-      status: progress === "done" ? "queued" : getChecklistStatus(progress, "anchoring"),
+      status: getBackgroundStatus(integrityLayers?.zkCompliance),
     },
   ] as const;
 
@@ -319,7 +331,7 @@ export default function OptimizationLoadingModal({
                     </div>
                   </div>
                   <div className="text-[11px] text-[#8fa3b0]">
-                    {progress === "done" ? "Receipt ready" : "Running"}
+                    {progress === "done" ? "Primary ready; background syncing" : "Running"}
                   </div>
                 </div>
                 <div className="mt-4 grid gap-2 sm:grid-cols-2">
@@ -359,7 +371,9 @@ export default function OptimizationLoadingModal({
                           <div className={`text-[13px] font-semibold ${isDone || isActive ? "text-white" : "text-[#9fb0bd]"}`}>
                             {item.label}
                           </div>
-                          <div className="mt-0.5 text-[11px] text-[#8fa3b0]">{item.detail}</div>
+                          <div className="mt-0.5 text-[11px] text-[#8fa3b0]">
+                            {isDone ? "Verified" : isActive ? "Syncing..." : item.detail}
+                          </div>
                         </div>
                       </div>
                     );
