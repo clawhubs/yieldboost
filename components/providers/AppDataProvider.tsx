@@ -29,6 +29,7 @@ import {
   JUDGE_MODE_STORAGE_KEY,
   PROOF_STORED_EVENT,
   PROOF_STORED_STORAGE_KEY,
+  sameWalletAddress,
   WALLET_CHANGE_EVENT,
   WALLET_NETWORK_STORAGE_KEY,
   WALLET_OVERRIDE_STORAGE_KEY,
@@ -197,6 +198,16 @@ function applyStorageProofEvent(
         cid,
       },
     }),
+  );
+}
+
+function isStaleDemoTrackedWallet(
+  savedWallet: string | undefined,
+  judgeModeActive: boolean,
+) {
+  return (
+    !judgeModeActive &&
+    sameWalletAddress(savedWallet, DEFAULT_WALLET_ADDRESS)
   );
 }
 
@@ -619,10 +630,17 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     const initialJudgeMode =
       typeof window !== "undefined" &&
       window.localStorage.getItem(JUDGE_MODE_STORAGE_KEY) === "true";
+    const staleDemoTrackedWallet = isStaleDemoTrackedWallet(
+      savedWallet,
+      Boolean(initialJudgeMode),
+    );
+    if (typeof window !== "undefined" && staleDemoTrackedWallet) {
+      window.localStorage.removeItem(WALLET_OVERRIDE_STORAGE_KEY);
+    }
     const initialNetwork = savedNetwork ?? getDefaultWalletNetworkKey();
     const initialWallet = initialJudgeMode
       ? DEFAULT_WALLET_ADDRESS
-      : isWalletAddress(savedWallet)
+      : isWalletAddress(savedWallet) && !staleDemoTrackedWallet
         ? savedWallet
         : undefined;
     activeScopeRef.current = buildWalletScopeKey(initialWallet, initialNetwork);

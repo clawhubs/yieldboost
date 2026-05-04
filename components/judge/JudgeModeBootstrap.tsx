@@ -5,6 +5,9 @@ import { usePortfolio } from "@/hooks/usePortfolio";
 import {
   DEFAULT_WALLET_ADDRESS,
   getDefaultWalletNetworkKey,
+  getServer0GNetworkConfig,
+  JUDGE_NETWORK_COOKIE_KEY,
+  JUDGE_NETWORK_STORAGE_KEY,
   JUDGE_MODE_COOKIE_KEY,
   JUDGE_MODE_STORAGE_KEY,
   resolveWalletNetworkKey,
@@ -33,15 +36,19 @@ export default function JudgeModeBootstrap() {
   useEffect(() => {
     enterJudgeMode();
 
-    const savedNetwork =
-      window.localStorage.getItem(WALLET_NETWORK_STORAGE_KEY) ??
-      getCookieValue(WALLET_NETWORK_COOKIE_KEY);
-    const preferredNetwork = savedNetwork
-      ? resolveWalletNetworkKey(savedNetwork)
-      : getDefaultWalletNetworkKey();
+    const savedJudgeNetwork =
+      window.localStorage.getItem(JUDGE_NETWORK_STORAGE_KEY) ??
+      getCookieValue(JUDGE_NETWORK_COOKIE_KEY);
+    const preferredNetwork = savedJudgeNetwork
+      ? resolveWalletNetworkKey(savedJudgeNetwork)
+      : getServer0GNetworkConfig("mainnet").enabled
+        ? "mainnet"
+        : getDefaultWalletNetworkKey();
 
     window.localStorage.setItem(JUDGE_MODE_STORAGE_KEY, "true");
     setCookie(JUDGE_MODE_COOKIE_KEY, "true");
+    window.localStorage.setItem(JUDGE_NETWORK_STORAGE_KEY, preferredNetwork);
+    setCookie(JUDGE_NETWORK_COOKIE_KEY, preferredNetwork);
     window.localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, preferredNetwork);
     setCookie(WALLET_NETWORK_COOKIE_KEY, preferredNetwork);
     window.dispatchEvent(

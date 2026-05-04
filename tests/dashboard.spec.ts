@@ -197,3 +197,68 @@ test("desktop wallet connect then disconnect clears wallet session", async ({ pa
   expect(walletState.walletOverride).toBeNull();
   expect(walletState.walletProvider).toBeNull();
 });
+
+test("legacy demo wallet cookie does not keep dashboard in tracked-wallet mode", async ({ page, context, baseURL }) => {
+  const origin = baseURL ?? "http://127.0.0.1:3020";
+
+  await context.addCookies([
+    {
+      name: "yb_wallet",
+      value: "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      url: origin,
+    },
+    {
+      name: "yb_wallet_network",
+      value: "mainnet",
+      url: origin,
+    },
+  ]);
+
+  await page.addInitScript(() => {
+    window.localStorage.removeItem("yb_wallet_override");
+    window.localStorage.removeItem("yb_wallet_network");
+    window.localStorage.removeItem("yb_wallet_provider");
+    window.localStorage.removeItem("yb_judge_mode");
+    window.localStorage.removeItem("yb_judge_previous_wallet");
+    window.localStorage.removeItem("yb_judge_previous_provider");
+    window.localStorage.removeItem("yb_judge_previous_network");
+  });
+
+  await page.goto("/", { waitUntil: "networkidle" });
+
+  await expect(page.getByRole("button", { name: "Connect wallet" }).first()).toBeVisible();
+  await expect(page.getByText("Tracked wallet")).toHaveCount(0);
+
+  const cookies = await context.cookies(origin);
+  const walletCookie = cookies.find((cookie) => cookie.name === "yb_wallet");
+  expect(walletCookie?.value ?? null).toBeNull();
+});
+
+test("judge route defaults to mainnet even if wallet network cookie is stale testnet", async ({ page, context, baseURL }) => {
+  const origin = baseURL ?? "http://127.0.0.1:3020";
+
+  await context.addCookies([
+    {
+      name: "yb_wallet_network",
+      value: "testnet",
+      url: origin,
+    },
+  ]);
+
+  await page.addInitScript(() => {
+    window.localStorage.removeItem("yb_wallet_override");
+    window.localStorage.removeItem("yb_wallet_provider");
+    window.localStorage.removeItem("yb_wallet_network");
+    window.localStorage.removeItem("yb_judge_mode");
+    window.localStorage.removeItem("yb_judge_network");
+  });
+
+  await page.goto("/judge", { waitUntil: "networkidle" });
+
+  await expect(page.getByTestId("judge-page")).toBeVisible();
+  await expect(page.getByTestId("judge-network-mainnet")).toContainText("Current review network");
+
+  const cookies = await context.cookies(origin);
+  const judgeNetworkCookie = cookies.find((cookie) => cookie.name === "yb_judge_network");
+  expect(judgeNetworkCookie?.value).toBe("mainnet");
+});

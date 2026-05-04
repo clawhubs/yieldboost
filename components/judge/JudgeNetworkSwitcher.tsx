@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   getAvailableWalletNetworks,
+  JUDGE_NETWORK_COOKIE_KEY,
+  JUDGE_NETWORK_STORAGE_KEY,
   WALLET_NETWORK_CHANGE_REQUEST_EVENT,
   WALLET_NETWORK_COOKIE_KEY,
   WALLET_NETWORK_STORAGE_KEY,
@@ -43,6 +45,8 @@ export default function JudgeNetworkSwitcher({
   function switchNetwork(nextNetwork: WalletNetworkKey) {
     setSelectedNetwork(nextNetwork);
     setPendingNetwork(nextNetwork);
+    window.localStorage.setItem(JUDGE_NETWORK_STORAGE_KEY, nextNetwork);
+    setCookie(JUDGE_NETWORK_COOKIE_KEY, nextNetwork);
     window.localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, nextNetwork);
     setCookie(WALLET_NETWORK_COOKIE_KEY, nextNetwork);
     window.dispatchEvent(

@@ -170,6 +170,18 @@ function clearPreJudgeWalletState() {
   window.localStorage.removeItem(JUDGE_PREVIOUS_NETWORK_STORAGE_KEY);
 }
 
+function isStaleDemoWalletState(input: {
+  judgeModeActive: boolean;
+  savedWallet: string | null;
+  savedProviderId: string | null;
+}) {
+  return (
+    !input.judgeModeActive &&
+    !input.savedProviderId &&
+    sameWalletAddress(input.savedWallet, DEFAULT_WALLET_ADDRESS)
+  );
+}
+
 export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
@@ -506,6 +518,16 @@ export default function Sidebar() {
 
     const savedProviderId = localStorage.getItem(WALLET_PROVIDER_STORAGE_KEY);
     const savedWallet = localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY);
+    const staleDemoWalletState = isStaleDemoWalletState({
+      judgeModeActive,
+      savedWallet,
+      savedProviderId,
+    });
+
+    if (staleDemoWalletState) {
+      localStorage.removeItem(WALLET_OVERRIDE_STORAGE_KEY);
+      clearCookie(WALLET_COOKIE_KEY);
+    }
 
     void (async () => {
       if (judgeModeActive) {
@@ -550,7 +572,7 @@ export default function Sidebar() {
         if (restored) return;
       }
 
-      if (isWalletAddress(savedWallet)) {
+      if (isWalletAddress(savedWallet) && !staleDemoWalletState) {
         const nextWallet = savedWallet!;
         setWalletAddr(nextWallet);
         setErrorText(null);
@@ -736,7 +758,9 @@ export default function Sidebar() {
     const restoredNetwork = snapshot.networkKey ?? selectedNetworkRef.current;
     const restoredWallet =
       snapshot.walletAddress ??
-      walletAddrRef.current ??
+      (sameWalletAddress(walletAddrRef.current, DEFAULT_WALLET_ADDRESS)
+        ? null
+        : walletAddrRef.current) ??
       localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY);
     const restoredProviderId =
       snapshot.providerId ??

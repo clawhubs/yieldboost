@@ -12,10 +12,10 @@ import {
   getYieldStrategyAttestationOracleAddress,
   getYieldStrategyInftAddress,
   getYieldStrategyMarketplaceAddress,
+  JUDGE_NETWORK_COOKIE_KEY,
   resolveWalletAddress,
   resolveWalletNetworkKey,
   WALLET_COOKIE_KEY,
-  WALLET_NETWORK_COOKIE_KEY,
   type WalletNetworkKey,
 } from "@/lib/wallet";
 import { getDocsRuntimeStatus } from "@/lib/docs/content";
@@ -713,7 +713,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   const reviewWallet =
     resolveWalletAddress(cookieStore.get(WALLET_COOKIE_KEY)?.value) ??
     DEFAULT_WALLET_ADDRESS;
-  const reviewNetworkCookie = cookieStore.get(WALLET_NETWORK_COOKIE_KEY)?.value;
+  const reviewNetworkCookie = cookieStore.get(JUDGE_NETWORK_COOKIE_KEY)?.value;
   const defaultReviewNetwork: WalletNetworkKey = getServer0GNetworkConfig("mainnet").enabled
     ? "mainnet"
     : preferredNetwork;
