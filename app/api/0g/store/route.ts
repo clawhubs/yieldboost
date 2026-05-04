@@ -207,6 +207,7 @@ export async function POST(req: NextRequest) {
     portfolioSnapshot?: unknown;
     networkKey?: WalletNetworkKey;
     walletAddress?: string;
+    proofRegistryMode?: "backend" | "user";
     // TEE metadata from client
     teeProvider?: string;
     teeModel?: string;
@@ -222,6 +223,7 @@ export async function POST(req: NextRequest) {
   ) as StoredPortfolioSnapshot | undefined;
   const walletAddress = walletAddressSchema.safeParse(payload.walletAddress).data;
   const networkKey = resolveMainnetFirstNetwork(payload.networkKey);
+  const proofRegistryMode = payload.proofRegistryMode === "user" ? "user" : "backend";
   const config = getServer0GNetworkConfig(networkKey);
   const comparisonProof = walletAddress
     ? await getLatestStoredProofForWallet(walletAddress, networkKey)
@@ -399,7 +401,7 @@ export async function POST(req: NextRequest) {
         proof.note = joinNotes(proof.note, "proof_registry_not_configured");
       }
 
-      if (config.proofRegistryAddress) {
+      if (config.proofRegistryAddress && proofRegistryMode === "backend") {
         try {
           const proofRegistry = new Contract(
             config.proofRegistryAddress,
@@ -424,6 +426,9 @@ export async function POST(req: NextRequest) {
           const message = error instanceof Error ? error.message : "proof_registry_failed";
           proof.note = joinNotes(proof.note, `proof_registry_failed:${message}`);
         }
+      } else if (config.proofRegistryAddress && proofRegistryMode === "user") {
+        proof.proofRegistryAddress = config.proofRegistryAddress;
+        proof.note = joinNotes(proof.note, "awaiting_user_registry_signature");
       }
 
       await recordStoredProof(proof);
@@ -452,6 +457,7 @@ export async function POST(req: NextRequest) {
         proofRegistryTxHash: proof.proofRegistryTxHash,
         proofRegistryProofId: proof.proofRegistryProofId,
         proofRegistryExplorerUrl: proof.proofRegistryExplorerUrl,
+        proofRegistryMode,
         integrityAudit: proof.integrityAudit,
         backgroundIntegrityStatus: "syncing",
         note: proof.note,

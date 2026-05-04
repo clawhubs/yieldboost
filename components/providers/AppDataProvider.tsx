@@ -203,6 +203,25 @@ function applyStorageProofEvent(
   );
 }
 
+const proofRegistryAbi = [
+  "function recordProof(string cid, bytes32 rootHash, bytes32 storageTxHash, uint256 currentApyBps, uint256 optimizedApyBps) external returns (uint256 proofId)",
+] as const;
+
+function toBasisPoints(value: number | undefined) {
+  return Math.round((value ?? 0) * 100);
+}
+
+function canUseConnectedWalletSigner(walletAddress: string | undefined) {
+  if (typeof window === "undefined" || !isWalletAddress(walletAddress)) {
+    return false;
+  }
+
+  return Boolean(
+    window.localStorage.getItem(WALLET_PROVIDER_STORAGE_KEY) &&
+      (window as unknown as { ethereum?: unknown }).ethereum,
+  );
+}
+
 function isStaleDemoTrackedWallet(
   savedWallet: string | undefined,
   judgeModeActive: boolean,
@@ -238,6 +257,86 @@ function scheduleFollowUpProofRefresh(
       void hydrateLatest(walletAddress, networkKey);
     }, delayMs);
   }
+}
+
+async function anchorProofWithConnectedWallet({
+  currentApy,
+  optimizedApy,
+  storageData,
+  walletAddress,
+  networkKey,
+}: {
+  currentApy: number;
+  optimizedApy: number;
+  storageData: {
+    cid: string;
+    txHash: string;
+    proofRegistryAddress?: string;
+  };
+  walletAddress: string;
+  networkKey: WalletNetworkKey;
+}) {
+  const ethereum = (window as unknown as { ethereum?: unknown }).ethereum;
+  if (!ethereum || !storageData.proofRegistryAddress) {
+    return null;
+  }
+
+  const { BrowserProvider, Contract } = await import("ethers");
+  const provider = new BrowserProvider(
+    ethereum as {
+      request: (request: {
+        method: string;
+        params?: unknown[] | Record<string, unknown>;
+      }) => Promise<unknown>;
+    },
+  );
+  const signer = await provider.getSigner();
+  const signerAddress = await signer.getAddress();
+
+  if (!sameWalletAddress(signerAddress, walletAddress)) {
+    throw new Error("Connected wallet changed before ProofRegistry signing.");
+  }
+
+  const proofRegistry = new Contract(
+    storageData.proofRegistryAddress,
+    proofRegistryAbi,
+    signer,
+  );
+  const tx = await proofRegistry.recordProof(
+    storageData.cid,
+    storageData.cid,
+    storageData.txHash,
+    toBasisPoints(currentApy),
+    toBasisPoints(optimizedApy),
+  );
+  await tx.wait();
+
+  const response = await fetch("/api/0g/anchor", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      cid: storageData.cid,
+      networkKey,
+      walletAddress,
+      proofRegistryTxHash: tx.hash,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`ProofRegistry anchor sync failed with status ${response.status}`);
+  }
+
+  const payload = (await response.json()) as {
+    data?: {
+      proofRegistryAddress?: string;
+      proofRegistryTxHash?: string;
+      proofRegistryProofId?: string;
+      proofRegistryExplorerUrl?: string;
+      walletAddress?: string;
+    };
+  };
+
+  return payload.data ?? null;
 }
 
 export function AppDataProvider({ children }: { children: ReactNode }) {
@@ -307,6 +406,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           proofRegistryTxHash?: string;
           proofRegistryProofId?: string;
           proofRegistryExplorerUrl?: string;
+          proofRegistryMode?: "backend" | "user";
           integrityAudit?: IntegrityAudit;
           zkComplianceProof?: {
             proofId: string;
@@ -321,12 +421,15 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       | null = null;
 
     try {
+      const proofRegistryMode =
+        canUseConnectedWalletSigner(activeWalletAddress) ? "user" : "backend";
       const storageResponse = await fetch("/api/0g/store", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           networkKey,
           walletAddress: activeWalletAddress,
+          proofRegistryMode,
           decision: {
             current_apy:
               optimizationData.current_apy ?? fallbackResult.current_apy,
@@ -405,6 +508,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           proofRegistryTxHash?: string;
           proofRegistryProofId?: string;
           proofRegistryExplorerUrl?: string;
+          proofRegistryMode?: "backend" | "user";
           integrityAudit?: IntegrityAudit;
           zkComplianceProof?: {
             proofId: string;
@@ -417,6 +521,37 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           note?: string;
         };
         storageAudit = storageData.integrityAudit;
+
+        if (
+          storageData.cid &&
+          storageData.txHash &&
+          storageData.proofRegistryMode === "user" &&
+          storageData.proofRegistryAddress &&
+          activeWalletAddress
+        ) {
+          const anchor = await anchorProofWithConnectedWallet({
+            currentApy:
+              optimizationData.current_apy ?? fallbackResult.current_apy,
+            optimizedApy:
+              optimizationData.optimized_apy ?? fallbackResult.optimized_apy,
+            storageData,
+            walletAddress: activeWalletAddress,
+            networkKey,
+          });
+
+          if (anchor) {
+            storageData = {
+              ...storageData,
+              walletAddress: anchor.walletAddress ?? storageData.walletAddress,
+              proofRegistryAddress:
+                anchor.proofRegistryAddress ?? storageData.proofRegistryAddress,
+              proofRegistryTxHash: anchor.proofRegistryTxHash,
+              proofRegistryProofId: anchor.proofRegistryProofId,
+              proofRegistryExplorerUrl: anchor.proofRegistryExplorerUrl,
+              note: undefined,
+            };
+          }
+        }
 
         if (storageData.cid) {
           applyStorageProofEvent(
