@@ -85,6 +85,7 @@ const footerItems = [
 ] as const;
 
 const walletNetworks = getAvailableWalletNetworks();
+const ENTRY_MODE_STORAGE_KEY = "yb_entry_mode_selected";
 
 function formatPortfolioMetricValue(value: number, unit?: string) {
   const isNativeBalance = unit === "0G";
@@ -104,6 +105,7 @@ function formatProofId(value: string | undefined) {
 
 export default function DashboardView() {
   const [proofOpen, setProofOpen] = useState(false);
+  const [entryModeOpen, setEntryModeOpen] = useState(false);
   const [optimizationModalMinimized, setOptimizationModalMinimized] = useState(false);
   const [optimizationModalDismissed, setOptimizationModalDismissed] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
@@ -124,6 +126,27 @@ export default function DashboardView() {
       setOptimizationModalMinimized(false);
     }
   }, [isOptimizing]);
+
+  useEffect(() => {
+    if (judgeMode || typeof window === "undefined") return;
+    const alreadySelected = window.localStorage.getItem(ENTRY_MODE_STORAGE_KEY);
+    if (!alreadySelected) {
+      setEntryModeOpen(true);
+    }
+  }, [judgeMode]);
+
+  function enterUserMode() {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(ENTRY_MODE_STORAGE_KEY, "user");
+    }
+    setEntryModeOpen(false);
+  }
+
+  function markJudgeModeSelected() {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(ENTRY_MODE_STORAGE_KEY, "judge");
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -1289,6 +1312,79 @@ export default function DashboardView() {
             </span>
           </span>
         </button>
+      ) : null}
+
+      {entryModeOpen ? (
+        <div
+          data-testid="entry-mode-modal"
+          className="fixed inset-0 z-[70] flex items-center justify-center bg-black/75 px-4 py-6 backdrop-blur-md"
+        >
+          <div className="relative w-full max-w-3xl overflow-hidden rounded-[30px] border border-[rgba(42,215,200,0.22)] bg-[radial-gradient(circle_at_top_left,rgba(34,221,208,0.2),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(31,225,123,0.14),transparent_32%),linear-gradient(180deg,#071018_0%,#04080d_100%)] p-5 shadow-[0_30px_90px_rgba(0,0,0,0.6)] sm:p-7"
+        >
+          <div className="absolute -right-16 -top-16 h-44 w-44 rounded-full bg-[#22ddd0]/10 blur-3xl" />
+          <div className="absolute -bottom-20 left-10 h-48 w-48 rounded-full bg-[#1fe17b]/10 blur-3xl" />
+
+          <div className="relative">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#2ad7c8]/25 bg-[#092022] px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-[#7feee4]">
+              <Zap className="h-3.5 w-3.5" />
+              Choose your path
+            </div>
+            <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_0.8fr] lg:items-end">
+              <div>
+                <h2 className="font-[family-name:var(--font-display)] text-[30px] font-semibold leading-tight text-white sm:text-[42px]">
+                  Welcome to YieldBoost AI
+                </h2>
+                <p className="mt-3 max-w-2xl text-[14px] leading-6 text-[#b8c7d4] sm:text-[15px]">
+                  Pick the review surface you need. Judges can inspect the proof-backed 0G snapshot instantly, while users can continue into the normal dashboard and connect a wallet only when ready.
+                </p>
+              </div>
+              <div className="rounded-[20px] border border-white/10 bg-white/[0.035] px-4 py-3 text-[12px] leading-5 text-[#94a8b6]">
+                Mainnet-first proof trail, 0G Storage CIDs, ProofRegistry anchors, and integrity memory are available from Judge Mode.
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              <Link
+                href="/judge"
+                data-testid="entry-judge-mode"
+                onClick={markJudgeModeSelected}
+                className="group rounded-[24px] border border-[#2ad7c8]/35 bg-[linear-gradient(135deg,rgba(34,221,208,0.18),rgba(8,24,28,0.76))] p-5 text-left transition hover:-translate-y-0.5 hover:border-[#7feee4] hover:shadow-[0_18px_55px_rgba(34,221,208,0.18)]"
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-[16px] border border-[#2ad7c8]/35 bg-[#06191b] text-[#22ddd0]">
+                  <ShieldCheck className="h-6 w-6" />
+                </div>
+                <div className="mt-5 text-[20px] font-semibold text-white">Judge Mode</div>
+                <p className="mt-2 text-[13px] leading-6 text-[#aec0cd]">
+                  Open the read-only review route with the latest stored proof, 0G evidence anchors, and verifier-friendly audit trail.
+                </p>
+                <div className="mt-5 flex items-center justify-between text-[12px] uppercase tracking-[0.12em] text-[#7feee4]">
+                  <span>Review proof</span>
+                  <ExternalLink className="h-4 w-4 transition group-hover:translate-x-0.5" />
+                </div>
+              </Link>
+
+              <button
+                type="button"
+                data-testid="entry-user-mode"
+                onClick={enterUserMode}
+                className="group rounded-[24px] border border-white/12 bg-[linear-gradient(135deg,rgba(255,255,255,0.075),rgba(7,13,18,0.9))] p-5 text-left transition hover:-translate-y-0.5 hover:border-[#3b4b58] hover:shadow-[0_18px_55px_rgba(0,0,0,0.25)]"
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-[16px] border border-white/12 bg-[#0b1218] text-[#dce7ef]">
+                  <UserRound className="h-6 w-6" />
+                </div>
+                <div className="mt-5 text-[20px] font-semibold text-white">User Mode</div>
+                <p className="mt-2 text-[13px] leading-6 text-[#aec0cd]">
+                  Continue to the normal dashboard. No wallet is required until you decide to connect and run a live optimization.
+                </p>
+                <div className="mt-5 flex items-center justify-between text-[12px] uppercase tracking-[0.12em] text-[#dce7ef]">
+                  <span>Enter dashboard</span>
+                  <CheckCheck className="h-4 w-4 transition group-hover:translate-x-0.5" />
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+        </div>
       ) : null}
 
       <Suspense fallback={null}>
