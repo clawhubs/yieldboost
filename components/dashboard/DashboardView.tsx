@@ -104,6 +104,8 @@ function formatProofId(value: string | undefined) {
 
 export default function DashboardView() {
   const [proofOpen, setProofOpen] = useState(false);
+  const [optimizationModalMinimized, setOptimizationModalMinimized] = useState(false);
+  const [optimizationModalDismissed, setOptimizationModalDismissed] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [alertsOpen, setAlertsOpen] = useState(false);
   const [walletMenuOpen, setWalletMenuOpen] = useState(false);
@@ -115,6 +117,13 @@ export default function DashboardView() {
     hasData: boolean;
     formatted: { users: string; computeJobs: string; tvl: string; recentJobs24h: string; protocols: string };
   } | null>(null);
+
+  useEffect(() => {
+    if (isOptimizing) {
+      setOptimizationModalDismissed(false);
+      setOptimizationModalMinimized(false);
+    }
+  }, [isOptimizing]);
 
   useEffect(() => {
     let cancelled = false;
@@ -330,7 +339,11 @@ export default function DashboardView() {
     { label: "Done", key: "done" },
   ] as const;
   const activeProgressIndex = progressSteps.findIndex((step) => step.key === progress);
-  const showOptimizationModal = isOptimizing || progress === "done";
+  const hasOptimizationProgress = isOptimizing || progress === "done";
+  const showOptimizationModal =
+    hasOptimizationProgress && !optimizationModalDismissed && !optimizationModalMinimized;
+  const showOptimizationProgressChip =
+    hasOptimizationProgress && !optimizationModalDismissed && optimizationModalMinimized;
   const strategyPlan = useMemo(() => buildStrategyPlan(latestResult), [latestResult]);
 
   return (
@@ -1226,8 +1239,41 @@ export default function DashboardView() {
           streamingText={streamingText}
           walletLabel={portfolio?.walletAddress ? portfolioWalletLabel : "Wallet not connected"}
           portfolioValue={portfolioMetricValue}
+          onMinimize={() => setOptimizationModalMinimized(true)}
+          onClose={() => {
+            if (progress === "done") {
+              setOptimizationModalDismissed(true);
+            }
+          }}
         />
       </Suspense>
+
+      {showOptimizationProgressChip ? (
+        <button
+          type="button"
+          data-testid="optimization-progress-chip"
+          onClick={() => setOptimizationModalMinimized(false)}
+          className="fixed bottom-4 right-4 z-[55] flex max-w-[calc(100vw-2rem)] items-center gap-3 rounded-[18px] border border-[rgba(42,215,200,0.28)] bg-[rgba(5,12,17,0.94)] px-4 py-3 text-left shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur md:bottom-6 md:right-6"
+        >
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#2ad7c8]/35 bg-[#07191a] text-[#22ddd0]">
+            {progress === "done" ? (
+              <CheckCheck className="h-4 w-4" />
+            ) : (
+              <CircleDashed className="h-4 w-4 animate-spin" />
+            )}
+          </span>
+          <span className="min-w-0">
+            <span className="block text-[13px] font-semibold text-white">
+              {progress === "done" ? "Primary proof ready" : "Optimization running"}
+            </span>
+            <span className="block truncate text-[11px] text-[#8fa3b0]">
+              {progress === "done"
+                ? "Open progress to review receipt and background sync."
+                : "Open progress to see ProofRegistry, memory, ZK, and compliance steps."}
+            </span>
+          </span>
+        </button>
+      ) : null}
 
       <Suspense fallback={null}>
         <ProofModal

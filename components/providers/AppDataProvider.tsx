@@ -943,7 +943,6 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         });
         persistLatestResult(optimisticScopeKey, nextResult);
         setProgress("done");
-        window.setTimeout(() => setProgress("analyzing"), 1200);
         setIsOptimizing(false);
         return nextResult;
       }
@@ -963,7 +962,6 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       });
 
       setProgress("done");
-      window.setTimeout(() => setProgress("analyzing"), 1200);
       setIsOptimizing(false);
 
       return proofBackedResult;

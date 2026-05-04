@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { CheckCheck, CircleDashed, ShieldCheck, Wallet2, Zap } from "lucide-react";
+import { CheckCheck, CircleDashed, Minus, ShieldCheck, Wallet2, X, Zap } from "lucide-react";
 import { useEffect } from "react";
 import type { OptimizationState } from "@/lib/optimizations";
 
@@ -11,6 +11,8 @@ interface OptimizationLoadingModalProps {
   streamingText: string;
   walletLabel: string;
   portfolioValue: string;
+  onClose?: () => void;
+  onMinimize?: () => void;
 }
 
 const progressSteps = [
@@ -85,6 +87,8 @@ export default function OptimizationLoadingModal({
   streamingText,
   walletLabel,
   portfolioValue,
+  onClose,
+  onMinimize,
 }: OptimizationLoadingModalProps) {
   useEffect(() => {
     if (!open) return;
@@ -102,6 +106,7 @@ export default function OptimizationLoadingModal({
     progressSteps.find((step) => step.key === progress)?.percent ??
     (progress === "done" ? 100 : 28);
   const copy = progressCopy[progress];
+  const canClose = progress === "done";
   const proofChecklist = [
     {
       label: "Wallet snapshot",
@@ -176,6 +181,36 @@ export default function OptimizationLoadingModal({
             transition={{ duration: 0.2 }}
             className="surface-panel teal-ring relative flex max-h-[88vh] w-full max-w-xl flex-col overflow-hidden rounded-t-[28px] border border-[rgba(42,215,200,0.18)] bg-[radial-gradient(circle_at_top_right,rgba(34,221,208,0.18),transparent_38%),linear-gradient(180deg,rgba(8,16,22,0.98)_0%,rgba(4,9,14,0.98)_100%)] px-4 pb-4 pt-5 shadow-[0_30px_80px_rgba(0,0,0,0.55)] sm:max-h-[calc(100vh-2rem)] sm:rounded-[28px] sm:px-6 sm:pb-6 sm:pt-6"
           >
+            <div className="absolute right-4 top-4 z-10 flex items-center gap-2">
+              {onMinimize ? (
+                <button
+                  type="button"
+                  onClick={onMinimize}
+                  data-testid="optimization-minimize"
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/20 text-[#b8c6d1] transition hover:border-[#2ad7c8]/50 hover:text-[#7feee4]"
+                  aria-label="Minimize optimization progress"
+                >
+                  <Minus className="h-4 w-4" />
+                </button>
+              ) : null}
+              {onClose ? (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  disabled={!canClose}
+                  data-testid="optimization-close"
+                  className={`flex h-9 w-9 items-center justify-center rounded-full border transition ${
+                    canClose
+                      ? "border-white/10 bg-black/20 text-[#b8c6d1] hover:border-[#2ad7c8]/50 hover:text-[#7feee4]"
+                      : "cursor-not-allowed border-white/5 bg-black/10 text-[#53616c]"
+                  }`}
+                  aria-label={canClose ? "Close optimization progress" : "Close is available after primary proof is ready"}
+                  title={canClose ? "Close" : "Available after primary proof is ready"}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              ) : null}
+            </div>
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(42,215,200,0.2)] bg-[rgba(34,221,208,0.08)] px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-[#7feee4]">
