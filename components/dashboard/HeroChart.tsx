@@ -2,7 +2,11 @@
 
 import { useId } from "react";
 
-export default function HeroChart() {
+interface HeroChartProps {
+  hasData?: boolean;
+}
+
+export default function HeroChart({ hasData = true }: HeroChartProps) {
   const chartId = useId().replace(/:/g, "");
   const fillId = `${chartId}-fill`;
   const glowId = `${chartId}-glow`;
@@ -13,10 +17,12 @@ export default function HeroChart() {
 
   return (
     <div data-testid="yield-chart" className="relative h-[176px] overflow-hidden">
-      <div
-        className="pointer-events-none absolute inset-x-4 top-8 h-20 animate-[chartGlow_4.8s_ease-in-out_infinite] rounded-full bg-[radial-gradient(circle,rgba(40,224,215,0.28),transparent_68%)] blur-2xl"
-        aria-hidden="true"
-      />
+      {hasData ? (
+        <div
+          className="pointer-events-none absolute inset-x-4 top-8 h-20 animate-[chartGlow_4.8s_ease-in-out_infinite] rounded-full bg-[radial-gradient(circle,rgba(40,224,215,0.28),transparent_68%)] blur-2xl"
+          aria-hidden="true"
+        />
+      ) : null}
       <svg
         viewBox="0 0 640 176"
         className="absolute inset-0 h-full w-full"
@@ -41,22 +47,26 @@ export default function HeroChart() {
           </filter>
         </defs>
         <path id={pathId} d={curve} fill="none" />
-        <rect
-          className="animate-[chartScan_5.5s_linear_infinite]"
-          x="-160"
-          y="2"
-          width="180"
-          height="150"
-          fill={`url(#${beamId})`}
-          opacity="0.28"
-        />
-        <path
-          d={`${curve}V157H24V132Z`}
-          fill={`url(#${fillId})`}
-          filter={`url(#${glowId})`}
-          opacity="0.6"
-          className="animate-[chartFill_3.4s_ease-in-out_infinite]"
-        />
+        {hasData ? (
+          <>
+            <rect
+              className="animate-[chartScan_5.5s_linear_infinite]"
+              x="-160"
+              y="2"
+              width="180"
+              height="150"
+              fill={`url(#${beamId})`}
+              opacity="0.28"
+            />
+            <path
+              d={`${curve}V157H24V132Z`}
+              fill={`url(#${fillId})`}
+              filter={`url(#${glowId})`}
+              opacity="0.6"
+              className="animate-[chartFill_3.4s_ease-in-out_infinite]"
+            />
+          </>
+        ) : null}
         {[36, 78, 120, 162].map((y) => (
           <line
             key={y}
@@ -70,44 +80,64 @@ export default function HeroChart() {
             opacity="0.08"
           />
         ))}
-        <path
-          d={curve}
-          fill="none"
-          stroke="#28e0d7"
-          strokeWidth="10"
-          strokeLinecap="round"
-          opacity="0.08"
-        />
-        <path
-          d={curve}
-          fill="none"
-          stroke="#3FF3E9"
-          strokeWidth="3.5"
-          strokeLinecap="round"
-          filter={`url(#${glowId})`}
-          className="animate-[chartDraw_2.2s_ease-out_both]"
-        />
-        <path
-          d={curve}
-          fill="none"
-          stroke="#bafffb"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeDasharray="18 560"
-          className="animate-[chartTrace_4.5s_linear_infinite]"
-        />
-        <line x1="23" y1="129" x2="618" y2="129" stroke="#c6d0d9" strokeDasharray="4 6" strokeOpacity="0.24" />
-        <circle cx="24" cy="132" r="5" fill="#3FF3E9" className="animate-[chartPulse_2.2s_ease-in-out_infinite]" />
-        <circle cx="616" cy="11" r="6" fill="#A7FFF8" stroke="#3FF3E9" strokeWidth="3" className="animate-[chartPulse_2.2s_ease-in-out_infinite_0.4s]" />
-        <circle r="4.5" fill="#ecfffd" stroke="#22ddd0" strokeWidth="2">
-          <animateMotion dur="5s" repeatCount="indefinite" calcMode="spline" keySplines="0.42 0 0.58 1">
-            <mpath href={`#${pathId}`} />
-          </animateMotion>
-        </circle>
+        {hasData ? (
+          <>
+            <path
+              d={curve}
+              fill="none"
+              stroke="#28e0d7"
+              strokeWidth="10"
+              strokeLinecap="round"
+              opacity="0.08"
+            />
+            <path
+              d={curve}
+              fill="none"
+              stroke="#3FF3E9"
+              strokeWidth="3.5"
+              strokeLinecap="round"
+              filter={`url(#${glowId})`}
+              className="animate-[chartDraw_2.2s_ease-out_both]"
+            />
+            <path
+              d={curve}
+              fill="none"
+              stroke="#bafffb"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeDasharray="18 560"
+              className="animate-[chartTrace_4.5s_linear_infinite]"
+            />
+            <line x1="23" y1="129" x2="618" y2="129" stroke="#c6d0d9" strokeDasharray="4 6" strokeOpacity="0.24" />
+            <circle cx="24" cy="132" r="5" fill="#3FF3E9" className="animate-[chartPulse_2.2s_ease-in-out_infinite]" />
+            <circle cx="616" cy="11" r="6" fill="#A7FFF8" stroke="#3FF3E9" strokeWidth="3" className="animate-[chartPulse_2.2s_ease-in-out_infinite_0.4s]" />
+            <circle r="4.5" fill="#ecfffd" stroke="#22ddd0" strokeWidth="2">
+              <animateMotion dur="5s" repeatCount="indefinite" calcMode="spline" keySplines="0.42 0 0.58 1">
+                <mpath href={`#${pathId}`} />
+              </animateMotion>
+            </circle>
+          </>
+        ) : (
+          <>
+            <line x1="24" y1="129" x2="616" y2="129" stroke="#6f7b86" strokeDasharray="4 8" strokeOpacity="0.36" />
+            <rect x="210" y="62" width="220" height="54" rx="12" fill="#0b1218" stroke="#1d2a34" opacity="0.92" />
+          </>
+        )}
       </svg>
       <div className="absolute right-2 top-0 text-[14px] font-semibold text-white">APY</div>
-      <div className="absolute left-0 top-[128px] text-[11px] text-white/90">Live wallet</div>
-      <div className="absolute right-0 bottom-0 text-[11px] text-[#cfd8e0]">After Optimization</div>
+      {hasData ? (
+        <>
+          <div className="absolute left-0 top-[128px] text-[11px] text-white/90">Live wallet</div>
+          <div className="absolute right-0 bottom-0 text-[11px] text-[#cfd8e0]">After Optimization</div>
+        </>
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center px-6 text-center">
+          <div>
+            <div className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[#c7d0d8]">No live APY data yet</div>
+            <div className="mt-2 text-[12px] leading-5 text-[#8fa0ae]">Connect a wallet or open Judge mode to review a proof-backed snapshot.</div>
+          </div>
+        </div>
+      )}
       <style jsx>{`
         @keyframes chartDraw {
           from {

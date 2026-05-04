@@ -548,7 +548,7 @@ export default function DashboardView() {
                 </div>
 
                 <Suspense fallback={<div className="h-[176px] animate-pulse bg-[#0a1218] rounded-lg" />}>
-                  <HeroChart />
+                  <HeroChart hasData={Boolean(latestResult || hasDetectedAssets)} />
                 </Suspense>
               </div>
             </div>
