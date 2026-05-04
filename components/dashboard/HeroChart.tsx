@@ -34,7 +34,7 @@ export default function HeroChart({ hasData = true, mode = "live" }: HeroChartPr
         <div className="absolute inset-0 flex items-center justify-center px-6 text-center">
           <div>
             <div className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[#d5dee6]">
-              No live APY route yet
+              No live route yet
             </div>
             <div className="mt-2 max-w-[360px] text-[12px] leading-5 text-[#8fa0ae]">
               Connect a wallet or open Judge mode to review a stored 0G proof snapshot.
@@ -60,7 +60,7 @@ export default function HeroChart({ hasData = true, mode = "live" }: HeroChartPr
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#3ff3e9]">
-              Proof route, not APY trend
+              Proof route, not trend chart
             </div>
             <p className="mt-1 max-w-[520px] text-[12px] leading-5 text-[#a9b7c2]">{description}</p>
           </div>
