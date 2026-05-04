@@ -228,7 +228,7 @@ function scheduleFollowUpProofRefresh(
     return;
   }
 
-  for (const delayMs of [1500, 4500, 9000]) {
+  for (const delayMs of [1500, 4500, 9000, 30000, 90000, 180000]) {
     window.setTimeout(() => {
       if (activeScopeRef.current !== scopeKey) {
         return;

@@ -43,9 +43,9 @@ const progressCopy: Record<OptimizationState, { title: string; message: string; 
     helper: "This can take around 1-3 minutes because multiple integrity layers are written.",
   },
   done: {
-    title: "Optimization finished",
-    message: "The fresh optimization result and proof receipt are ready.",
-    helper: "The popup will close automatically.",
+    title: "Primary proof ready",
+    message: "The fresh optimization result, 0G Storage CID, and ProofRegistry receipt are ready.",
+    helper: "The integrity memory stack continues syncing in the background.",
   },
 };
 
@@ -131,27 +131,27 @@ export default function OptimizationLoadingModal({
     {
       label: "Sovereign Memory",
       detail: "Agent memory snapshot",
-      status: getChecklistStatus(progress, "anchoring"),
+      status: progress === "done" ? "queued" : getChecklistStatus(progress, "anchoring"),
     },
     {
       label: "ZK Reasoning",
       detail: "Reasoning proof envelope",
-      status: getChecklistStatus(progress, "anchoring"),
+      status: progress === "done" ? "queued" : getChecklistStatus(progress, "anchoring"),
     },
     {
       label: "Governance",
       detail: "Policy decision record",
-      status: getChecklistStatus(progress, "anchoring"),
+      status: progress === "done" ? "queued" : getChecklistStatus(progress, "anchoring"),
     },
     {
       label: "Neural Handshake",
       detail: "Optimizer-auditor transcript",
-      status: getChecklistStatus(progress, "anchoring"),
+      status: progress === "done" ? "queued" : getChecklistStatus(progress, "anchoring"),
     },
     {
       label: "ZK Compliance",
       detail: "Final deterministic compliance proof",
-      status: getChecklistStatus(progress, "anchoring"),
+      status: progress === "done" ? "queued" : getChecklistStatus(progress, "anchoring"),
     },
   ] as const;
 
@@ -284,7 +284,7 @@ export default function OptimizationLoadingModal({
                     </div>
                   </div>
                   <div className="text-[11px] text-[#8fa3b0]">
-                    {progress === "done" ? "All verified" : "Running"}
+                    {progress === "done" ? "Receipt ready" : "Running"}
                   </div>
                 </div>
                 <div className="mt-4 grid gap-2 sm:grid-cols-2">

@@ -106,6 +106,101 @@ function getStorageUrlCandidates(
   );
 }
 
+async function runBackgroundIntegrityStack(input: {
+  networkKey: WalletNetworkKey;
+  walletAddress: string;
+  proof: StoredProofRecord;
+  decision: StoredDecisionPayload;
+  portfolioSnapshot?: StoredPortfolioSnapshot;
+}) {
+  const { decision, networkKey, portfolioSnapshot, proof, walletAddress } = input;
+
+  const memoryRecord = await syncSovereignMemory({
+    agentId: walletAddress,
+    walletAddress,
+    networkKey,
+    proof,
+  }).catch((error) => {
+    console.warn("[sovereign-memory] Memory sync failed:", error);
+    return null;
+  });
+
+  const zkReasoningProof = await createZkReasoningProof({
+    networkKey,
+    walletAddress,
+    agentId: walletAddress,
+    decision,
+    portfolioSnapshot,
+    reasoning: decision.reasoning,
+    summary: `TEE/ZK-ready reasoning envelope recorded after proof ${proof.cid}.`,
+  }).catch((error) => {
+    console.warn("[zk-reasoning] ZK reasoning envelope sync failed:", error);
+    return null;
+  });
+
+  const governanceDecision = await evaluateAIGovernance({
+    networkKey,
+    walletAddress,
+    agentId: walletAddress,
+    evaluatedAction: "proof-storage-follow-up",
+    decision,
+    portfolioSnapshot,
+  }).catch((error) => {
+    console.warn("[ai-governance] Governance evaluation sync failed:", error);
+    return null;
+  });
+
+  const crossAgentHandshake = await createCrossAgentHandshake({
+    networkKey,
+    walletAddress,
+    requestingAgent: "YieldBoost Optimizer Agent",
+    respondingAgent: "Integrity Auditor Agent",
+    handshakeType: "cross-agent-neural-handshake",
+    skillPurpose: "Cross-check proof-backed yield reasoning after storage",
+    transcript: [
+      {
+        role: "requester",
+        content: `YieldBoost Optimizer Agent requests a deterministic follow-up review for proof ${proof.cid}.`,
+      },
+      {
+        role: "responder",
+        content: `Integrity Auditor Agent confirms the reasoning envelope, governance policy, and stored proof metadata for ${networkKey}.`,
+      },
+      {
+        role: "system",
+        content: `Proof tx ${proof.txHash} and storage CID ${proof.cid} were recorded before the handshake envelope was persisted.`,
+      },
+    ],
+    summary: `Handshake recorded after proof ${proof.cid} to align optimizer and auditor agents.`,
+  }).catch((error) => {
+    console.warn("[cross-agent-handshake] Neural handshake sync failed:", error);
+    return null;
+  });
+
+  const zkComplianceProof = governanceDecision
+    ? await createZkComplianceProof({
+        networkKey,
+        walletAddress,
+        agentId: walletAddress,
+        decision,
+        portfolioSnapshot,
+        governanceDecision,
+        proof,
+      }).catch((error) => {
+        console.warn("[zk-compliance] Deterministic compliance proof sync failed:", error);
+        return null;
+      })
+    : null;
+
+  return {
+    memoryRecord,
+    zkReasoningProof,
+    governanceDecision,
+    crossAgentHandshake,
+    zkComplianceProof,
+  };
+}
+
 export async function POST(req: NextRequest) {
   const payload = (await req.json()) as {
     decision?: unknown;
@@ -332,78 +427,16 @@ export async function POST(req: NextRequest) {
       }
 
       await recordStoredProof(proof);
-      const memoryRecord = await syncSovereignMemory({
-        agentId: walletAddress ?? signer.address,
-        walletAddress: walletAddress ?? signer.address,
+
+      void runBackgroundIntegrityStack({
         networkKey,
+        walletAddress: proof.walletAddress ?? signer.address,
         proof,
-      }).catch((error) => {
-        console.warn("[sovereign-memory] Memory sync failed:", error);
-        return null;
-      });
-      const zkReasoningProof = await createZkReasoningProof({
-        networkKey,
-        walletAddress: proof.walletAddress,
-        agentId: proof.walletAddress,
-        decision,
-        portfolioSnapshot,
-        reasoning: decision.reasoning,
-        summary: `TEE/ZK-ready reasoning envelope recorded after proof ${proof.cid}.`,
-      }).catch((error) => {
-        console.warn("[zk-reasoning] ZK reasoning envelope sync failed:", error);
-        return null;
-      });
-      const governanceDecision = await evaluateAIGovernance({
-        networkKey,
-        walletAddress: proof.walletAddress,
-        agentId: proof.walletAddress,
-        evaluatedAction: "proof-storage-follow-up",
         decision,
         portfolioSnapshot,
       }).catch((error) => {
-        console.warn("[ai-governance] Governance evaluation sync failed:", error);
-        return null;
+        console.warn("[integrity-stack] Background integrity stack failed:", error);
       });
-      const crossAgentHandshake = await createCrossAgentHandshake({
-        networkKey,
-        walletAddress: proof.walletAddress,
-        requestingAgent: "YieldBoost Optimizer Agent",
-        respondingAgent: "Integrity Auditor Agent",
-        handshakeType: "cross-agent-neural-handshake",
-        skillPurpose: "Cross-check proof-backed yield reasoning after storage",
-        transcript: [
-          {
-            role: "requester",
-            content: `YieldBoost Optimizer Agent requests a deterministic follow-up review for proof ${proof.cid}.`,
-          },
-          {
-            role: "responder",
-            content: `Integrity Auditor Agent confirms the reasoning envelope, governance policy, and stored proof metadata for ${networkKey}.`,
-          },
-          {
-            role: "system",
-            content: `Proof tx ${proof.txHash} and storage CID ${proof.cid} were recorded before the handshake envelope was persisted.`,
-          },
-        ],
-        summary: `Handshake recorded after proof ${proof.cid} to align optimizer and auditor agents.`,
-      }).catch((error) => {
-        console.warn("[cross-agent-handshake] Neural handshake sync failed:", error);
-        return null;
-      });
-      const zkComplianceProof = governanceDecision
-        ? await createZkComplianceProof({
-            networkKey,
-            walletAddress: proof.walletAddress,
-            agentId: proof.walletAddress,
-            decision,
-            portfolioSnapshot,
-            governanceDecision,
-            proof,
-          }).catch((error) => {
-            console.warn("[zk-compliance] Deterministic compliance proof sync failed:", error);
-            return null;
-          })
-        : null;
 
       return NextResponse.json({
         success: true,
@@ -420,11 +453,7 @@ export async function POST(req: NextRequest) {
         proofRegistryProofId: proof.proofRegistryProofId,
         proofRegistryExplorerUrl: proof.proofRegistryExplorerUrl,
         integrityAudit: proof.integrityAudit,
-        sovereignMemory: memoryRecord,
-        zkReasoningProof,
-        governanceDecision,
-        crossAgentHandshake,
-        zkComplianceProof,
+        backgroundIntegrityStatus: "syncing",
         note: proof.note,
         // TEE / 0G Compute metadata
         teeProvider: proof.teeProvider,
