@@ -9,7 +9,6 @@ import {
   JUDGE_MODE_STORAGE_KEY,
   resolveWalletNetworkKey,
   WALLET_CHANGE_EVENT,
-  WALLET_COOKIE_KEY,
   WALLET_NETWORK_COOKIE_KEY,
   WALLET_NETWORK_STORAGE_KEY,
 } from "@/lib/wallet";
@@ -43,7 +42,6 @@ export default function JudgeModeBootstrap() {
 
     window.localStorage.setItem(JUDGE_MODE_STORAGE_KEY, "true");
     setCookie(JUDGE_MODE_COOKIE_KEY, "true");
-    setCookie(WALLET_COOKIE_KEY, DEFAULT_WALLET_ADDRESS);
     window.localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, preferredNetwork);
     setCookie(WALLET_NETWORK_COOKIE_KEY, preferredNetwork);
     window.dispatchEvent(

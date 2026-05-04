@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getLivePortfolioSnapshot } from "@/lib/server/live-portfolio";
 import {
+  DEFAULT_WALLET_ADDRESS,
   JUDGE_MODE_COOKIE_KEY,
   getServerDefaultNetworkKey,
   resolveWalletAddress,
@@ -23,9 +24,11 @@ export async function GET(req: NextRequest) {
     ? resolveWalletNetworkKey(requestedNetwork)
     : getServerDefaultNetworkKey();
   const judgeMode = req.cookies.get(JUDGE_MODE_COOKIE_KEY)?.value === "true";
+  const effectiveWalletAddress =
+    walletAddress ?? (judgeMode ? DEFAULT_WALLET_ADDRESS : undefined);
 
   return NextResponse.json(
-    await getLivePortfolioSnapshot(walletAddress, networkKey, {
+    await getLivePortfolioSnapshot(effectiveWalletAddress, networkKey, {
       preferProofSnapshot: judgeMode,
     }),
   );

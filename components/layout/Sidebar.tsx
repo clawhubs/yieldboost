@@ -285,10 +285,11 @@ export default function Sidebar() {
     nextNetwork: WalletNetworkKey,
     nextWalletLabel?: string | null,
     isConnected = false,
+    persistWalletCookie = true,
   ) => {
-    if (nextWalletAddress) {
+    if (persistWalletCookie && nextWalletAddress) {
       setCookie(WALLET_COOKIE_KEY, nextWalletAddress);
-    } else {
+    } else if (persistWalletCookie) {
       clearCookie(WALLET_COOKIE_KEY);
     }
     setCookie(WALLET_NETWORK_COOKIE_KEY, nextNetwork);
@@ -333,6 +334,7 @@ export default function Sidebar() {
       nextNetwork,
       judgeModeActive ? "Judge demo wallet" : null,
       false,
+      !judgeModeActive,
     );
   }, [broadcastWalletChange, cleanupProviderListeners]);
 
@@ -474,6 +476,7 @@ export default function Sidebar() {
         nextNetwork,
         judgeModeActive ? "Judge demo wallet" : providerName,
         connected && !judgeModeActive,
+        !judgeModeActive,
       );
     } else {
       broadcastWalletChange(undefined, nextNetwork, null, false);
@@ -509,7 +512,13 @@ export default function Sidebar() {
         setWalletAddr(null);
         setConnected(false);
         setErrorText(null);
-        broadcastWalletChange(DEFAULT_WALLET_ADDRESS, savedNetwork, "Judge demo wallet", false);
+        broadcastWalletChange(
+          DEFAULT_WALLET_ADDRESS,
+          savedNetwork,
+          "Judge demo wallet",
+          false,
+          false,
+        );
         return;
       }
 
@@ -716,6 +725,7 @@ export default function Sidebar() {
       DEFAULT_WALLET_ADDRESS,
       selectedNetwork,
       "Judge demo wallet",
+      false,
       false,
     );
   }
