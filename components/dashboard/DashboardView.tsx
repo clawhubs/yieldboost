@@ -222,7 +222,11 @@ export default function DashboardView() {
     const totalPortfolio = portfolio?.totalUSD ?? 0;
     const currentApy = portfolio?.currentAPY ?? latestResult?.current_apy ?? 0;
     const optimizedApy = latestResult?.optimized_apy ?? currentApy;
-    const yieldIncreasePct = latestResult?.yield_increase_pct ?? 0;
+    const relativeApyLiftPct =
+      currentApy > 0 && optimizedApy > currentApy
+        ? Number((((optimizedApy - currentApy) / currentApy) * 100).toFixed(2))
+        : 0;
+    const yieldIncreasePct = latestResult ? relativeApyLiftPct : 0;
     const estimatedAnnualGain = latestResult?.estimatedAnnualGain ?? 0;
     const confidence = latestResult?.confidence ?? 0;
     return { totalPortfolio, currentApy, optimizedApy, yieldIncreasePct, estimatedAnnualGain, confidence };
@@ -524,11 +528,11 @@ export default function DashboardView() {
                   <div className="mt-6 grid gap-5 sm:grid-cols-2">
                     <div className="sm:border-r sm:border-[#182028] sm:pr-4">
                       <div className="text-[11px] uppercase tracking-[0.08em] text-[#a9b5c0]">
-                        Estimated Yield Increase
+                        Relative APY Lift
                       </div>
                       <div className="mt-2 text-[26px] font-semibold text-[#22e070]">+{live.yieldIncreasePct}%</div>
                       <div className="mt-1 text-[13px] text-[#29e072]">
-                        +${live.estimatedAnnualGain.toLocaleString()} <span className="text-[#d8e1e9]">/ year</span>
+                        <span className="text-[#d8e1e9]">vs current APY baseline</span>
                       </div>
                     </div>
                     <div>
@@ -697,7 +701,7 @@ export default function DashboardView() {
                   {
                     label: "POTENTIAL AFTER AI",
                     value: `${live.optimizedApy}%`,
-                    change: `↑ ${live.yieldIncreasePct}%`,
+                    change: `↑ ${live.yieldIncreasePct}% relative lift`,
                     icon: Plane,
                     accent: true,
                   },
@@ -759,7 +763,7 @@ export default function DashboardView() {
                   </div>
                 </div>
                 <div className="mt-3 grid gap-2 text-[11px] sm:grid-cols-3">
-                  <div className="rounded-[10px] bg-[#0d1811] p-2 text-[#2fe06d]">+{live.yieldIncreasePct}%<div className="mt-1 text-[#cad4dd]">Improve</div></div>
+                  <div className="rounded-[10px] bg-[#0d1811] p-2 text-[#2fe06d]">+{live.yieldIncreasePct}%<div className="mt-1 text-[#cad4dd]">Relative lift</div></div>
                   <div className="rounded-[10px] bg-[#0d1811] p-2 text-[#2fe06d]">+${live.estimatedAnnualGain.toLocaleString()}<div className="mt-1 text-[#cad4dd]">More per year</div></div>
                   <div className="rounded-[10px] bg-[#0d1811] p-2 text-[#2fe06d]">Lower<div className="mt-1 text-[#cad4dd]">Risk</div></div>
                 </div>
@@ -1086,7 +1090,7 @@ export default function DashboardView() {
                     <>
                       You can increase your yield by
                       <br />
-                      <span className="text-[16px] font-semibold text-[#2fe06d]">+{live.yieldIncreasePct}% (+${live.estimatedAnnualGain.toLocaleString()}/year)</span>
+                      <span className="text-[16px] font-semibold text-[#2fe06d]">+{live.yieldIncreasePct}% relative APY lift (+${live.estimatedAnnualGain.toLocaleString()}/year)</span>
                       <br />
                       with low risk.
                     </>
