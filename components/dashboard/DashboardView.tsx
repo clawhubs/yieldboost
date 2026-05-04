@@ -339,12 +339,27 @@ export default function DashboardView() {
     { label: "Done", key: "done" },
   ] as const;
   const activeProgressIndex = progressSteps.findIndex((step) => step.key === progress);
-  const hasOptimizationProgress = isOptimizing || progress === "done";
+  const integrityStackVerified = Boolean(
+    latestResult?.storageProof &&
+      latestResult?.proofRegistryTxHash &&
+      latestResult.integrityLayers?.sovereignMemory &&
+      latestResult.integrityLayers?.zkReasoning &&
+      latestResult.integrityLayers?.governance &&
+      latestResult.integrityLayers?.neuralHandshake &&
+      latestResult.integrityLayers?.zkCompliance,
+  );
+  const hasOptimizationProgress = isOptimizing || (progress === "done" && !integrityStackVerified);
   const showOptimizationModal =
     hasOptimizationProgress && !optimizationModalDismissed && !optimizationModalMinimized;
   const showOptimizationProgressChip =
     hasOptimizationProgress && !optimizationModalDismissed && optimizationModalMinimized;
   const strategyPlan = useMemo(() => buildStrategyPlan(latestResult), [latestResult]);
+
+  useEffect(() => {
+    if (!integrityStackVerified) return;
+    setOptimizationModalDismissed(true);
+    setOptimizationModalMinimized(false);
+  }, [integrityStackVerified]);
 
   return (
     <>
