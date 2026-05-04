@@ -1,210 +1,95 @@
 "use client";
 
-import { useId } from "react";
-
 interface HeroChartProps {
   hasData?: boolean;
   mode?: "live" | "snapshot";
 }
 
-export default function HeroChart({ hasData = true, mode = "live" }: HeroChartProps) {
-  const chartId = useId().replace(/:/g, "");
-  const fillId = `${chartId}-fill`;
-  const glowId = `${chartId}-glow`;
-  const beamId = `${chartId}-beam`;
-  const pathId = `${chartId}-path`;
-  const curve =
-    "M24 132C48 125 61 114 79 107C97 100 121 105 139 96C157 87 176 71 193 70C210 69 233 75 249 67C265 59 284 46 301 47C317 48 333 57 350 52C367 47 382 31 399 32C416 33 438 44 456 40C474 36 490 20 507 21C525 22 541 30 557 26C573 22 594 10 616 11";
+const proofSteps = [
+  {
+    title: "Wallet input",
+    live: "Live wallet snapshot",
+    snapshot: "Stored judge snapshot",
+  },
+  {
+    title: "0G proof layer",
+    live: "Storage + ProofRegistry",
+    snapshot: "Anchored proof record",
+  },
+  {
+    title: "Optimized route",
+    live: "Ready for execution",
+    snapshot: "Read-only review result",
+  },
+] as const;
 
-  return (
-    <div data-testid="yield-chart" className="relative h-[176px] overflow-hidden">
-      {hasData ? (
-        <div
-          className="pointer-events-none absolute inset-x-4 top-8 h-20 animate-[chartGlow_4.8s_ease-in-out_infinite] rounded-full bg-[radial-gradient(circle,rgba(40,224,215,0.28),transparent_68%)] blur-2xl"
-          aria-hidden="true"
-        />
-      ) : null}
-      <svg
-        viewBox="0 0 640 176"
-        className="absolute inset-0 h-full w-full"
-        aria-hidden="true"
+export default function HeroChart({ hasData = true, mode = "live" }: HeroChartProps) {
+  if (!hasData) {
+    return (
+      <div
+        data-testid="yield-chart"
+        className="relative h-[176px] overflow-hidden rounded-[16px] border border-[#13222a] bg-[radial-gradient(circle_at_top,rgba(34,221,208,0.08),transparent_46%)]"
       >
-        <defs>
-          <linearGradient id={fillId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#28e0d7" stopOpacity="0.78" />
-            <stop offset="100%" stopColor="#28e0d7" stopOpacity="0" />
-          </linearGradient>
-          <linearGradient id={beamId} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#28e0d7" stopOpacity="0" />
-            <stop offset="48%" stopColor="#9efff7" stopOpacity="0.75" />
-            <stop offset="100%" stopColor="#28e0d7" stopOpacity="0" />
-          </linearGradient>
-          <filter id={glowId} x="-20%" y="-40%" width="140%" height="200%">
-            <feGaussianBlur stdDeviation="4" result="coloredBlur" />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-        <path id={pathId} d={curve} fill="none" />
-        {hasData ? (
-          <>
-            <rect
-              className="animate-[chartScan_5.5s_linear_infinite]"
-              x="-160"
-              y="2"
-              width="180"
-              height="150"
-              fill={`url(#${beamId})`}
-              opacity="0.28"
-            />
-            <path
-              d={`${curve}V157H24V132Z`}
-              fill={`url(#${fillId})`}
-              filter={`url(#${glowId})`}
-              opacity="0.6"
-              className="animate-[chartFill_3.4s_ease-in-out_infinite]"
-            />
-          </>
-        ) : null}
-        {[36, 78, 120, 162].map((y) => (
-          <line
-            key={y}
-            x1="24"
-            y1={y}
-            x2="616"
-            y2={y}
-            stroke="#28e0d7"
-            strokeWidth="1"
-            strokeDasharray="3 12"
-            opacity="0.08"
-          />
-        ))}
-        {hasData ? (
-          <>
-            <path
-              d={curve}
-              fill="none"
-              stroke="#28e0d7"
-              strokeWidth="10"
-              strokeLinecap="round"
-              opacity="0.08"
-            />
-            <path
-              d={curve}
-              fill="none"
-              stroke="#3FF3E9"
-              strokeWidth="3.5"
-              strokeLinecap="round"
-              filter={`url(#${glowId})`}
-              className="animate-[chartDraw_2.2s_ease-out_both]"
-            />
-            <path
-              d={curve}
-              fill="none"
-              stroke="#bafffb"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeDasharray="18 560"
-              className="animate-[chartTrace_4.5s_linear_infinite]"
-            />
-            <line x1="23" y1="129" x2="618" y2="129" stroke="#c6d0d9" strokeDasharray="4 6" strokeOpacity="0.24" />
-            <circle cx="24" cy="132" r="5" fill="#3FF3E9" className="animate-[chartPulse_2.2s_ease-in-out_infinite]" />
-            <circle cx="616" cy="11" r="6" fill="#A7FFF8" stroke="#3FF3E9" strokeWidth="3" className="animate-[chartPulse_2.2s_ease-in-out_infinite_0.4s]" />
-            <circle r="4.5" fill="#ecfffd" stroke="#22ddd0" strokeWidth="2">
-              <animateMotion dur="5s" repeatCount="indefinite" calcMode="spline" keySplines="0.42 0 0.58 1">
-                <mpath href={`#${pathId}`} />
-              </animateMotion>
-            </circle>
-          </>
-        ) : (
-          <>
-            <line x1="24" y1="129" x2="616" y2="129" stroke="#6f7b86" strokeDasharray="4 8" strokeOpacity="0.36" />
-            <rect x="210" y="62" width="220" height="54" rx="12" fill="#0b1218" stroke="#1d2a34" opacity="0.92" />
-          </>
-        )}
-      </svg>
-      <div className="absolute right-2 top-0 text-[14px] font-semibold text-white">APY</div>
-      {hasData ? (
-        <>
-          <div className="absolute left-0 top-[128px] text-[11px] text-white/90">
-            {mode === "snapshot" ? "Proof snapshot" : "Live wallet"}
-          </div>
-          <div className="absolute right-0 bottom-0 text-[11px] text-[#cfd8e0]">
-            {mode === "snapshot" ? "Optimized proof route" : "After Optimization"}
-          </div>
-        </>
-      ) : (
+        <div className="absolute inset-0 opacity-35 [background-image:linear-gradient(rgba(40,224,215,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(40,224,215,0.08)_1px,transparent_1px)] [background-size:42px_28px]" />
         <div className="absolute inset-0 flex items-center justify-center px-6 text-center">
           <div>
-            <div className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[#c7d0d8]">No live APY data yet</div>
-            <div className="mt-2 text-[12px] leading-5 text-[#8fa0ae]">Connect a wallet or open Judge mode to review a proof-backed snapshot.</div>
+            <div className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[#d5dee6]">
+              No live APY route yet
+            </div>
+            <div className="mt-2 max-w-[360px] text-[12px] leading-5 text-[#8fa0ae]">
+              Connect a wallet or open Judge mode to review a stored 0G proof snapshot.
+            </div>
           </div>
         </div>
-      )}
-      <style jsx>{`
-        @keyframes chartDraw {
-          from {
-            stroke-dasharray: 0 900;
-          }
-          to {
-            stroke-dasharray: 900 0;
-          }
-        }
+      </div>
+    );
+  }
 
-        @keyframes chartTrace {
-          from {
-            stroke-dashoffset: 620;
-          }
-          to {
-            stroke-dashoffset: 0;
-          }
-        }
+  const description =
+    mode === "snapshot"
+      ? "This panel shows the review path for the stored 0G proof. It is not a market trend chart."
+      : "This panel shows the live proof route used before executing an optimization.";
 
-        @keyframes chartScan {
-          from {
-            transform: translateX(0);
-          }
-          to {
-            transform: translateX(820px);
-          }
-        }
+  return (
+    <div
+      data-testid="yield-chart"
+      className="relative h-[176px] overflow-hidden rounded-[16px] border border-[#123038] bg-[linear-gradient(135deg,rgba(5,13,18,0.98),rgba(6,28,27,0.88))] p-4"
+    >
+      <div className="absolute inset-0 opacity-30 [background-image:radial-gradient(circle,rgba(63,243,233,0.15)_1px,transparent_1px)] [background-size:18px_18px]" />
+      <div className="relative flex h-full flex-col justify-between">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#3ff3e9]">
+              Proof route, not APY trend
+            </div>
+            <p className="mt-1 max-w-[520px] text-[12px] leading-5 text-[#a9b7c2]">{description}</p>
+          </div>
+          <div className="shrink-0 rounded-full border border-[#1f4d49] bg-[#09211f] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8ffdf5]">
+            {mode === "snapshot" ? "Judge snapshot" : "Live route"}
+          </div>
+        </div>
 
-        @keyframes chartFill {
-          0%,
-          100% {
-            opacity: 0.44;
-          }
-          50% {
-            opacity: 0.72;
-          }
-        }
-
-        @keyframes chartGlow {
-          0%,
-          100% {
-            opacity: 0.35;
-            transform: translateY(0) scaleX(0.92);
-          }
-          50% {
-            opacity: 0.75;
-            transform: translateY(-4px) scaleX(1.06);
-          }
-        }
-
-        @keyframes chartPulse {
-          0%,
-          100% {
-            opacity: 0.72;
-            transform: scale(0.95);
-          }
-          50% {
-            opacity: 1;
-            transform: scale(1.2);
-          }
-        }
-      `}</style>
+        <div className="grid items-center gap-2 md:grid-cols-[1fr_32px_1fr_32px_1fr]">
+          {proofSteps.map((step, index) => (
+            <div key={step.title} className="contents">
+              <div className="rounded-[14px] border border-[#1d3840] bg-[#07151b]/90 p-3 shadow-[0_0_24px_rgba(34,221,208,0.08)]">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full border border-[#2ae8dc]/50 bg-[#0b2928] text-[11px] font-semibold text-[#75fff6]">
+                    {index + 1}
+                  </span>
+                  <div className="text-[12px] font-semibold text-white">{step.title}</div>
+                </div>
+                <div className="mt-2 text-[11px] leading-4 text-[#91a1ad]">
+                  {mode === "snapshot" ? step.snapshot : step.live}
+                </div>
+              </div>
+              {index < proofSteps.length - 1 ? (
+                <div className="hidden h-px bg-gradient-to-r from-[#21404a] via-[#3ff3e9] to-[#21404a] md:block" />
+              ) : null}
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
