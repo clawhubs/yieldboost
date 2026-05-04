@@ -30,9 +30,11 @@ import {
   PROOF_STORED_EVENT,
   PROOF_STORED_STORAGE_KEY,
   sameWalletAddress,
+  WALLET_COOKIE_KEY,
   WALLET_CHANGE_EVENT,
   WALLET_NETWORK_STORAGE_KEY,
   WALLET_OVERRIDE_STORAGE_KEY,
+  WALLET_PROVIDER_STORAGE_KEY,
   isWalletAddress,
   resolveWalletNetworkKey,
 } from "@/lib/wallet";
@@ -495,7 +497,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setJudgeMode(true);
     if (typeof window !== "undefined") {
       window.localStorage.setItem(JUDGE_MODE_STORAGE_KEY, "true");
+      window.localStorage.removeItem(WALLET_OVERRIDE_STORAGE_KEY);
+      window.localStorage.removeItem(WALLET_PROVIDER_STORAGE_KEY);
       document.cookie = `${JUDGE_MODE_COOKIE_KEY}=true; path=/; max-age=31536000; SameSite=Lax`;
+      document.cookie = `${WALLET_COOKIE_KEY}=; path=/; max-age=0; SameSite=Lax`;
     }
   }, []);
 

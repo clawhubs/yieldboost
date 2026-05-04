@@ -10,10 +10,13 @@ import {
   JUDGE_NETWORK_STORAGE_KEY,
   JUDGE_MODE_COOKIE_KEY,
   JUDGE_MODE_STORAGE_KEY,
+  WALLET_COOKIE_KEY,
   resolveWalletNetworkKey,
   WALLET_CHANGE_EVENT,
   WALLET_NETWORK_COOKIE_KEY,
   WALLET_NETWORK_STORAGE_KEY,
+  WALLET_OVERRIDE_STORAGE_KEY,
+  WALLET_PROVIDER_STORAGE_KEY,
 } from "@/lib/wallet";
 
 function setCookie(name: string, value: string) {
@@ -47,6 +50,9 @@ export default function JudgeModeBootstrap() {
 
     window.localStorage.setItem(JUDGE_MODE_STORAGE_KEY, "true");
     setCookie(JUDGE_MODE_COOKIE_KEY, "true");
+    window.localStorage.removeItem(WALLET_OVERRIDE_STORAGE_KEY);
+    window.localStorage.removeItem(WALLET_PROVIDER_STORAGE_KEY);
+    document.cookie = `${WALLET_COOKIE_KEY}=; path=/; max-age=0; SameSite=Lax`;
     window.localStorage.setItem(JUDGE_NETWORK_STORAGE_KEY, preferredNetwork);
     setCookie(JUDGE_NETWORK_COOKIE_KEY, preferredNetwork);
     window.localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, preferredNetwork);
