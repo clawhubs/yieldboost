@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { DEFAULT_WALLET_ADDRESS } from "@/lib/wallet";
+import { DEFAULT_WALLET_ADDRESS, isWalletAddress } from "@/lib/wallet";
 import { type StoredProofRecord } from "@/lib/backend-data";
 import { resolveProofHistoryForWalletAcrossNetworks } from "@/lib/server/proof-resolution";
 import { getStoredProofs } from "@/lib/server/runtime-store";
@@ -79,16 +79,22 @@ export async function GET() {
     return Number.isFinite(t) && t >= dayAgo;
   }).length;
   const protocols = new Set(proofs.map((p) => p.decision.recommended)).size;
+  const uniqueWallets = new Set(
+    proofs
+      .map((proof) => proof.walletAddress)
+      .filter((wallet): wallet is string => isWalletAddress(wallet))
+      .map((wallet) => wallet.toLowerCase()),
+  ).size;
 
   return NextResponse.json({
     hasData: proofs.length > 0,
-    users: 1, // single-wallet demo; grows when multi-wallet lands
+    users: uniqueWallets,
     computeJobs: proofs.length,
     tvl: totalTvl,
     recentJobs24h: last24h,
     protocols,
     formatted: {
-      users: "1",
+      users: formatCompactNumber(uniqueWallets),
       computeJobs: formatCompactNumber(proofs.length),
       tvl: formatCompactUsd(totalTvl),
       recentJobs24h: formatCompactNumber(last24h),
