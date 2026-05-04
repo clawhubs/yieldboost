@@ -104,7 +104,7 @@ export default function ZeroGStats() {
 
   const chainStats = useMemo(
     () => [
-      { label: "Wallets Optimized", value: globalStats?.formatted.users ?? "0" },
+      { label: "Proof Wallets", value: globalStats?.formatted.users ?? "0" },
       { label: "Compute Jobs", value: globalStats?.formatted.computeJobs ?? "0" },
       { label: "Tracked TVL", value: globalStats?.formatted.tvl ?? "$0" },
       { label: "Jobs (24h)", value: globalStats?.formatted.recentJobs24h ?? "0" },

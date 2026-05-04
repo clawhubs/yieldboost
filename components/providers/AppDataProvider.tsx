@@ -801,18 +801,21 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
             : optimizationData.proofStatusDetail ?? "Proof sync is running in the background.",
       };
 
-      startTransition(() => {
-        setLatestResult(nextResult);
-        setOptimizations((previous) => [nextResult, ...previous].slice(0, 10));
-      });
-      persistLatestResult(optimisticScopeKey, nextResult);
+      if (blacklistStatus === "hit") {
+        startTransition(() => {
+          setLatestResult(nextResult);
+          setOptimizations((previous) => [nextResult, ...previous].slice(0, 10));
+        });
+        persistLatestResult(optimisticScopeKey, nextResult);
+        setProgress("done");
+        window.setTimeout(() => setProgress("analyzing"), 1200);
+        setIsOptimizing(false);
+        return nextResult;
+      }
 
-      setProgress("done");
-      window.setTimeout(() => setProgress("analyzing"), 1200);
-      setIsOptimizing(false);
+      setProgress("anchoring");
 
-      if (blacklistStatus !== "hit") {
-        void syncProofRecord({
+      const proofBackedResult = await syncProofRecord({
           activeWalletAddress,
           fallbackResult,
           fullText,
@@ -822,10 +825,13 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           portfolio,
           scopeKey: optimisticScopeKey,
           teeAttestation,
-        });
-      }
+      });
 
-      return nextResult;
+      setProgress("done");
+      window.setTimeout(() => setProgress("analyzing"), 1200);
+      setIsOptimizing(false);
+
+      return proofBackedResult;
     } catch (error) {
       setProgress("analyzing");
       throw error;

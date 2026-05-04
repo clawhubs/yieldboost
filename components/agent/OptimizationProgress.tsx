@@ -1,7 +1,7 @@
 import { CheckCheck } from "lucide-react";
 import type { OptimizationState } from "@/lib/optimizations";
 
-const steps: OptimizationState[] = ["analyzing", "optimizing", "executing", "done"];
+const steps: OptimizationState[] = ["analyzing", "optimizing", "executing", "anchoring", "done"];
 
 function getStepIndex(state: OptimizationState) {
   return steps.indexOf(state);
@@ -37,7 +37,7 @@ export default function OptimizationProgress({
         </div>
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-4">
+      <div className="mt-6 grid gap-4 sm:grid-cols-5">
         {steps.map((step, index) => {
           const completed = index < activeIndex || progress === "done";
           const active = index === activeIndex && progress !== "done";

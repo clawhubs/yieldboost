@@ -305,7 +305,7 @@ export default function DashboardView() {
   const syncPct = latestResult?.storageProof ? 100 : latestResult ? 62 : portfolio?.tokens?.length ? 98.4 : 0;
   const chainStats = useMemo(
     () => [
-      { label: "Wallets Optimized", value: globalStats?.formatted.users ?? "0" },
+      { label: "Proof Wallets", value: globalStats?.formatted.users ?? "0" },
       { label: "Compute Jobs", value: globalStats?.formatted.computeJobs ?? "0" },
       { label: "Tracked TVL", value: globalStats?.formatted.tvl ?? "$0" },
       { label: "Jobs (24h)", value: globalStats?.formatted.recentJobs24h ?? "0" },
@@ -326,6 +326,7 @@ export default function DashboardView() {
     { label: "Analyzing", key: "analyzing" },
     { label: "Optimizing", key: "optimizing" },
     { label: "Executing", key: "executing" },
+    { label: "Anchoring", key: "anchoring" },
     { label: "Done", key: "done" },
   ] as const;
   const activeProgressIndex = progressSteps.findIndex((step) => step.key === progress);
@@ -567,7 +568,7 @@ export default function DashboardView() {
                 const hasData = globalStats?.hasData ?? false;
                 const dash = "—";
                 const cards = [
-                  { icon: Users, value: globalStats?.formatted.users ?? dash, label: "Wallets Optimized", sublabel: hasData ? "Runtime proof store" : "Awaiting first optimization" },
+                  { icon: Users, value: globalStats?.formatted.users ?? dash, label: "Proof Wallets", sublabel: hasData ? "Unique wallets with stored 0G proof" : "Awaiting first optimization" },
                   { icon: DollarSign, value: globalStats?.formatted.tvl ?? dash, label: "Historical Proof TVL", sublabel: hasData ? "From stored 0G proof records, not live wallet balance" : "Awaiting first optimization" },
                   { icon: Cpu, value: globalStats?.formatted.computeJobs ?? dash, label: "Compute Jobs", sublabel: hasData ? "0G + ProofRegistry" : "Awaiting first optimization" },
                   { icon: UserRound, value: globalStats?.formatted.recentJobs24h ?? dash, label: "Jobs (24h)", sublabel: hasData ? "Last 24 hours" : "Awaiting first optimization" },
@@ -898,7 +899,7 @@ export default function DashboardView() {
 
 	                    return (
 	                    <div key={step.label} className="relative flex flex-1 flex-col items-center">
-	                      {index < 3 ? (
+	                      {index < progressSteps.length - 1 ? (
 	                        <div className="absolute left-1/2 top-[18px] h-[2px] w-full bg-[#27423f]" />
 	                      ) : null}
 	                      <div

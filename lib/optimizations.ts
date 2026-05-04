@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { IntegrityAudit } from "@/lib/integrity-audit";
 import type { ZkComplianceProofStatus } from "@/lib/backend-data";
 
-export type OptimizationState = "analyzing" | "optimizing" | "executing" | "done";
+export type OptimizationState = "analyzing" | "optimizing" | "executing" | "anchoring" | "done";
 export type FeedState = "analyzing" | "optimizing" | "complete";
 export type RiskBand = "low" | "medium" | "high";
 

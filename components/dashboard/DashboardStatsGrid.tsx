@@ -17,7 +17,7 @@ export default function DashboardStatsGrid({ globalStats }: Props) {
   const hasData = globalStats?.hasData ?? false;
   const dash = "—";
   const cards = [
-    { icon: Users,      value: globalStats?.formatted.users ?? dash,         label: "Wallets Optimized",  sublabel: hasData ? "Runtime proof store"          : "Awaiting first optimization" },
+    { icon: Users,      value: globalStats?.formatted.users ?? dash,         label: "Proof Wallets",      sublabel: hasData ? "Unique wallets with stored 0G proof" : "Awaiting first optimization" },
     { icon: DollarSign, value: globalStats?.formatted.tvl ?? dash,           label: "Historical Proof TVL", sublabel: hasData ? "From stored 0G proof records, not live wallet balance" : "Awaiting first optimization" },
     { icon: Cpu,        value: globalStats?.formatted.computeJobs ?? dash,   label: "Compute Jobs",       sublabel: hasData ? "0G + ProofRegistry"            : "Awaiting first optimization" },
     { icon: UserRound,  value: globalStats?.formatted.recentJobs24h ?? dash, label: "Jobs (24h)",         sublabel: hasData ? "Last 24 hours"                 : "Awaiting first optimization" },

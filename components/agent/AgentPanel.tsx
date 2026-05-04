@@ -17,6 +17,7 @@ const stepOrder: OptimizationState[] = [
   "analyzing",
   "optimizing",
   "executing",
+  "anchoring",
   "done",
 ];
 

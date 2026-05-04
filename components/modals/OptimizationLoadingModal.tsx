@@ -16,7 +16,8 @@ interface OptimizationLoadingModalProps {
 const progressSteps = [
   { key: "analyzing", label: "Analyzing wallet", percent: 28 },
   { key: "optimizing", label: "Computing best route", percent: 62 },
-  { key: "executing", label: "Writing proof to 0G", percent: 88 },
+  { key: "executing", label: "Preparing proof write", percent: 78 },
+  { key: "anchoring", label: "Anchoring on 0G", percent: 94 },
   { key: "done", label: "Optimization complete", percent: 100 },
 ] as const;
 
@@ -32,13 +33,18 @@ const progressCopy: Record<OptimizationState, { title: string; message: string; 
     helper: "You can wait here while the agent streams its recommendation.",
   },
   executing: {
-    title: "Anchoring the result on 0G",
-    message: "The optimization output is being stored to 0G Storage and linked to the proof flow.",
-    helper: "Please keep this tab open until the proof write finishes.",
+    title: "Preparing the 0G proof package",
+    message: "The recommendation is ready. YieldBoost is now packaging the wallet snapshot, route, and audit result before writing the proof.",
+    helper: "No token swap or wallet spend is executed by this step.",
+  },
+  anchoring: {
+    title: "Anchoring the proof on 0G",
+    message: "The proof is being stored to 0G Storage and linked to ProofRegistry so the receipt can show a real CID and tx hash.",
+    helper: "This can take around 1-3 minutes because multiple integrity layers are written.",
   },
   done: {
     title: "Optimization finished",
-    message: "The fresh optimization result is ready and the UI is syncing the latest proof-backed snapshot.",
+    message: "The fresh optimization result and proof receipt are ready.",
     helper: "The popup will close automatically.",
   },
 };
@@ -50,7 +56,9 @@ function getStreamingFallback(progress: OptimizationState) {
     case "optimizing":
       return "Comparing candidate strategies and selecting the strongest low-risk route...";
     case "executing":
-      return "Submitting the finalized strategy result to the live 0G proof pipeline...";
+      return "Preparing the finalized strategy result for the live 0G proof pipeline...";
+    case "anchoring":
+      return "Writing the optimization proof to 0G Storage and waiting for the receipt handles...";
     case "done":
       return "Fresh proof recorded. Updating the dashboard with the latest optimization result...";
   }
@@ -162,7 +170,7 @@ export default function OptimizationLoadingModal({
                     transition={{ duration: 0.35, ease: "easeOut" }}
                   />
                 </div>
-                <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
                   {progressSteps.map((step, index) => {
                     const done = progress === "done" || index < activeIndex;
                     const active = progress !== "done" && index === activeIndex;
