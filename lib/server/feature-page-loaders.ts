@@ -22,12 +22,16 @@ import {
   mapStrategiesApiToFeatureConfig,
   mapWatchlistApiToFeatureConfig,
 } from "@/lib/server/feature-page-mappers";
-import { getSettingsState, getStoredProofs } from "@/lib/server/runtime-store";
+import { getSettingsState } from "@/lib/server/runtime-store";
 import {
+  resolveProofHistoryForWallet,
+  resolveProofHistoryForWalletAcrossNetworks,
+} from "@/lib/server/proof-resolution";
+import {
+  DEFAULT_WALLET_ADDRESS,
   JUDGE_MODE_COOKIE_KEY,
   resolveWalletAddress,
   resolveWalletNetworkKey,
-  sameWalletAddress,
   WALLET_COOKIE_KEY,
   WALLET_NETWORK_COOKIE_KEY,
 } from "@/lib/wallet";
@@ -136,21 +140,27 @@ export async function getWatchlistPageConfig() {
     const cookieStore = await cookies();
     const judgeMode = cookieStore.get(JUDGE_MODE_COOKIE_KEY)?.value === "true";
     const walletAddress = resolveWalletAddress(cookieStore.get(WALLET_COOKIE_KEY)?.value);
+    const effectiveWalletAddress = walletAddress ?? DEFAULT_WALLET_ADDRESS;
     const networkKey = resolveWalletNetworkKey(
       cookieStore.get(WALLET_NETWORK_COOKIE_KEY)?.value,
     );
-    const [portfolio, settings, proofs] = await Promise.all([
-      getLivePortfolioSnapshot(walletAddress, networkKey, {
-        preferProofSnapshot: judgeMode,
-      }),
+    const [settings, proofs] = await Promise.all([
       getSettingsState(),
-      getStoredProofs(),
+      walletAddress
+        ? resolveProofHistoryForWallet(walletAddress, networkKey)
+        : resolveProofHistoryForWalletAcrossNetworks(DEFAULT_WALLET_ADDRESS),
     ]);
-    const scopedProofs = walletAddress
-      ? proofs.filter((proof) => sameWalletAddress(proof.walletAddress, walletAddress))
-      : [];
+    const latestProof = proofs[0] ?? null;
+    const portfolio = await getLivePortfolioSnapshot(
+      effectiveWalletAddress,
+      walletAddress ? networkKey : latestProof?.networkKey ?? networkKey,
+      {
+        latestProof,
+        preferProofSnapshot: judgeMode || !walletAddress,
+      },
+    );
     const data: WatchlistResponse = buildWatchlistFromState(
-      scopedProofs,
+      proofs,
       settings,
       portfolio,
     );
