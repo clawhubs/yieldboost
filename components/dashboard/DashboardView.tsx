@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useMemo, useEffect, useRef, lazy, Suspense } from "react";
+import { useState, useMemo, useEffect, useRef, lazy, Suspense, useCallback } from "react";
 import {
   Activity,
   Bell,
@@ -86,6 +86,7 @@ const footerItems = [
 
 const walletNetworks = getAvailableWalletNetworks();
 const ENTRY_MODE_STORAGE_KEY = "yb_entry_mode_selected";
+const OPTIMIZATION_DISMISS_STORAGE_PREFIX = "yb_optimization_modal_dismissed";
 
 function formatPortfolioMetricValue(value: number, unit?: string) {
   const isNativeBalance = unit === "0G";
@@ -362,6 +363,17 @@ export default function DashboardView() {
     { label: "Done", key: "done" },
   ] as const;
   const activeProgressIndex = progressSteps.findIndex((step) => step.key === progress);
+  const optimizationDismissalKey = useMemo(() => {
+    if (!latestResult) return null;
+    const wallet = latestResult.walletAddress ?? portfolio?.walletAddress ?? "no-wallet";
+    const proofKey =
+      latestResult.proofRegistryTxHash ??
+      latestResult.storageProof ??
+      latestResult.timestamp;
+
+    if (!proofKey) return null;
+    return `${OPTIMIZATION_DISMISS_STORAGE_PREFIX}:${networkKey}:${wallet.toLowerCase()}:${proofKey}`;
+  }, [latestResult, networkKey, portfolio?.walletAddress]);
   const integrityStackVerified = Boolean(
     latestResult?.storageProof &&
       latestResult?.proofRegistryTxHash &&
@@ -378,11 +390,26 @@ export default function DashboardView() {
     hasOptimizationProgress && !optimizationModalDismissed && optimizationModalMinimized;
   const strategyPlan = useMemo(() => buildStrategyPlan(latestResult), [latestResult]);
 
-  useEffect(() => {
-    if (!integrityStackVerified) return;
+  const dismissOptimizationProgress = useCallback(() => {
     setOptimizationModalDismissed(true);
     setOptimizationModalMinimized(false);
-  }, [integrityStackVerified]);
+    if (typeof window !== "undefined" && optimizationDismissalKey) {
+      window.sessionStorage.setItem(optimizationDismissalKey, "true");
+    }
+  }, [optimizationDismissalKey]);
+
+  useEffect(() => {
+    if (isOptimizing || !optimizationDismissalKey || typeof window === "undefined") return;
+    if (window.sessionStorage.getItem(optimizationDismissalKey) === "true") {
+      setOptimizationModalDismissed(true);
+      setOptimizationModalMinimized(false);
+    }
+  }, [isOptimizing, optimizationDismissalKey]);
+
+  useEffect(() => {
+    if (!integrityStackVerified) return;
+    dismissOptimizationProgress();
+  }, [dismissOptimizationProgress, integrityStackVerified]);
 
   return (
     <>
@@ -1281,7 +1308,7 @@ export default function DashboardView() {
           onMinimize={() => setOptimizationModalMinimized(true)}
           onClose={() => {
             if (progress === "done") {
-              setOptimizationModalDismissed(true);
+              dismissOptimizationProgress();
             }
           }}
         />
