@@ -226,6 +226,7 @@ export default function ProofModal({
   const canMintAgent =
     showMintAction &&
     activeIntegrityAudit?.status !== "REJECTED" &&
+    hasLiveVerificationHandle &&
     Boolean(decision) &&
     Boolean(targetWalletAddress) &&
     Boolean(mintPortfolio && Object.keys(mintPortfolio).length > 0);

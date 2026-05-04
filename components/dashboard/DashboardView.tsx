@@ -245,6 +245,12 @@ export default function DashboardView() {
     : latestResult?.proofUrl
       ? "Open latest proof tx"
       : "Open 0G Explorer";
+  const hasProofReceipt = Boolean(
+    latestResult?.storageProof ||
+      latestResult?.txHash ||
+      latestResult?.proofRegistryTxHash ||
+      latestResult?.proofRegistryExplorerUrl,
+  );
   const zkComplianceLink =
     latestResult?.zkCompliance?.proofRegistryExplorerUrl ??
     latestResult?.zkCompliance?.explorerUrl;
@@ -1187,9 +1193,14 @@ export default function DashboardView() {
                 type="button"
                 data-testid="agent-card-proof"
                 onClick={() => setProofOpen(true)}
-                className="mt-5 flex w-full items-center justify-center gap-2 rounded-[12px] border border-[#1a5b56] px-4 py-3 text-[14px] font-medium text-[#22ddd0]"
+                disabled={!hasProofReceipt}
+                className={
+                  hasProofReceipt
+                    ? "mt-5 flex w-full items-center justify-center gap-2 rounded-[12px] border border-[#1a5b56] px-4 py-3 text-[14px] font-medium text-[#22ddd0]"
+                    : "mt-5 flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-[12px] border border-white/10 bg-white/[0.04] px-4 py-3 text-[14px] font-medium text-[#7c8a96]"
+                }
               >
-                Open proof details
+                {hasProofReceipt ? "Open proof details" : "Proof sync pending"}
               </button>
               <div className="mt-4 flex items-center justify-end gap-2 text-[11px] text-[#a4b0bc]">
                 <span>{statusTimeLabel}</span>
