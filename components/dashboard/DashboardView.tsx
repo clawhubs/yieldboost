@@ -183,10 +183,11 @@ export default function DashboardView() {
   const hasDetectedAssets = Object.keys(livePortfolio).length > 0;
   const canOptimize = !judgeMode && walletConnected && hasDetectedAssets && !loading && !isOptimizing;
   const walletDisconnected = !walletConnected && !judgeMode;
-  const optimizationCtaClassName = walletDisconnected
+  const optimizationUnavailable = !canOptimize && !isOptimizing;
+  const optimizationCtaClassName = optimizationUnavailable
     ? "yb-muted-button cursor-not-allowed text-[#d7dfe6]"
     : "yb-teal-button text-[#051015]";
-  const optimizationCtaSubtitleClassName = walletDisconnected ? "text-[#b8c2cb]" : "text-[#0b4340]";
+  const optimizationCtaSubtitleClassName = optimizationUnavailable ? "text-[#b8c2cb]" : "text-[#0b4340]";
   const walletStatusLabel = latestResult
     ? `Live · ${new Date(latestResult.timestamp).toLocaleTimeString()}`
     : portfolio?.source === "wallet_proof_fallback"
