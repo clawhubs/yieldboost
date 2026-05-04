@@ -182,6 +182,11 @@ export default function DashboardView() {
   const walletConnected = Boolean(portfolio?.walletAddress);
   const hasDetectedAssets = Object.keys(livePortfolio).length > 0;
   const canOptimize = !judgeMode && walletConnected && hasDetectedAssets && !loading && !isOptimizing;
+  const walletDisconnected = !walletConnected && !judgeMode;
+  const optimizationCtaClassName = walletDisconnected
+    ? "yb-muted-button cursor-not-allowed text-[#d7dfe6]"
+    : "yb-teal-button text-[#051015]";
+  const optimizationCtaSubtitleClassName = walletDisconnected ? "text-[#b8c2cb]" : "text-[#0b4340]";
   const walletStatusLabel = latestResult
     ? `Live · ${new Date(latestResult.timestamp).toLocaleTimeString()}`
     : portfolio?.source === "wallet_proof_fallback"
@@ -462,15 +467,27 @@ export default function DashboardView() {
                   onClick={() => void runDashboardOptimization()}
                   disabled={!canOptimize}
                   aria-busy={isOptimizing}
-                  className="yb-teal-button flex h-[46px] w-full items-center justify-center gap-3 rounded-[12px] px-5 text-left text-[#051015] sm:w-auto sm:min-w-[248px]"
+                  className={`${optimizationCtaClassName} flex h-[46px] w-full items-center justify-center gap-3 rounded-[12px] px-5 text-left transition sm:w-auto sm:min-w-[248px]`}
                 >
                   {isOptimizing ? <CircleDashed className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
                   <div>
                     <div className="text-[14px] font-semibold">
-                      {isOptimizing ? "Optimization Running..." : judgeMode ? "Judge Snapshot Active" : "Boost My Yield Now"}
+                      {isOptimizing
+                        ? "Optimization Running..."
+                        : judgeMode
+                          ? "Judge Snapshot Active"
+                          : walletDisconnected
+                            ? "Connect Wallet to Optimize"
+                            : "Boost My Yield Now"}
                     </div>
-                    <div className="text-[11px] text-[#0b4340]">
-                      {isOptimizing ? "Popup optimizer sedang berjalan" : judgeMode ? "Read-only review on the latest proof-backed result" : "1-Click AI Optimization"}
+                    <div className={`text-[11px] ${optimizationCtaSubtitleClassName}`}>
+                      {isOptimizing
+                        ? "Popup optimizer sedang berjalan"
+                        : judgeMode
+                          ? "Read-only review on the latest proof-backed result"
+                          : walletDisconnected
+                            ? "Connect a wallet first to unlock live optimization"
+                            : "1-Click AI Optimization"}
                     </div>
                   </div>
                 </button>
@@ -1080,10 +1097,16 @@ export default function DashboardView() {
                   onClick={() => void runDashboardOptimization()}
                   disabled={!canOptimize}
                   aria-busy={isOptimizing}
-                  className="yb-teal-button mt-5 flex w-full items-center justify-center gap-3 rounded-[12px] px-4 py-4 text-[16px] font-semibold text-[#071217]"
+                  className={`${optimizationCtaClassName} mt-5 flex w-full items-center justify-center gap-3 rounded-[12px] px-4 py-4 text-[16px] font-semibold transition`}
                 >
                   {isOptimizing ? <CircleDashed className="h-5 w-5 animate-spin" /> : <Zap className="h-5 w-5" />}
-                  {isOptimizing ? "Optimization In Progress..." : judgeMode ? "Judge snapshot is read-only" : "Execute Optimization"}
+                  {isOptimizing
+                    ? "Optimization In Progress..."
+                    : judgeMode
+                      ? "Judge snapshot is read-only"
+                      : walletDisconnected
+                        ? "Connect Wallet to Continue"
+                        : "Execute Optimization"}
                 </button>
                 {judgeMode ? (
                   <div className="mt-3 text-[12px] leading-5 text-[#8eced3]">
