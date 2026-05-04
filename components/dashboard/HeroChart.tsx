@@ -4,9 +4,10 @@ import { useId } from "react";
 
 interface HeroChartProps {
   hasData?: boolean;
+  mode?: "live" | "snapshot";
 }
 
-export default function HeroChart({ hasData = true }: HeroChartProps) {
+export default function HeroChart({ hasData = true, mode = "live" }: HeroChartProps) {
   const chartId = useId().replace(/:/g, "");
   const fillId = `${chartId}-fill`;
   const glowId = `${chartId}-glow`;
@@ -127,8 +128,12 @@ export default function HeroChart({ hasData = true }: HeroChartProps) {
       <div className="absolute right-2 top-0 text-[14px] font-semibold text-white">APY</div>
       {hasData ? (
         <>
-          <div className="absolute left-0 top-[128px] text-[11px] text-white/90">Live wallet</div>
-          <div className="absolute right-0 bottom-0 text-[11px] text-[#cfd8e0]">After Optimization</div>
+          <div className="absolute left-0 top-[128px] text-[11px] text-white/90">
+            {mode === "snapshot" ? "Proof snapshot" : "Live wallet"}
+          </div>
+          <div className="absolute right-0 bottom-0 text-[11px] text-[#cfd8e0]">
+            {mode === "snapshot" ? "Optimized proof route" : "After Optimization"}
+          </div>
         </>
       ) : (
         <div className="absolute inset-0 flex items-center justify-center px-6 text-center">

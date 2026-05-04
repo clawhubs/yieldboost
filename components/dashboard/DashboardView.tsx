@@ -548,7 +548,10 @@ export default function DashboardView() {
                 </div>
 
                 <Suspense fallback={<div className="h-[176px] animate-pulse bg-[#0a1218] rounded-lg" />}>
-                  <HeroChart hasData={Boolean(latestResult || hasDetectedAssets)} />
+                  <HeroChart
+                    hasData={Boolean(latestResult || hasDetectedAssets)}
+                    mode={judgeMode || portfolio?.source === "wallet_proof_fallback" ? "snapshot" : "live"}
+                  />
                 </Suspense>
               </div>
             </div>
