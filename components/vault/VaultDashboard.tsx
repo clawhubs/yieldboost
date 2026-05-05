@@ -703,9 +703,12 @@ function VaultDashboardInner() {
 
   const deleteItem = useCallback(async (item: VaultItem) => {
     if (!address) return;
+    if (!window.confirm(`Delete ${item.file_name ?? item.storage_id} from the active vault?`)) {
+      return;
+    }
     setErrorText(null);
     setProcessing("delete");
-    startPipeline("Signing EIP-712 delete proof");
+    startPipeline("Signing delete challenge");
     try {
       await ensureTestnet();
       const challenge = await fetchJson<ChallengeResponse>("/v1/auth/challenge", {
@@ -720,14 +723,9 @@ function VaultDashboardInner() {
           storage_id: item.storage_id,
         }),
       });
-      const typedData = buildVaultActionTypedData({
-        challenge,
-        wallet: address,
-        storageId: item.storage_id,
-        operation: "delete",
-        primaryType: "VaultDelete",
+      const signature = await signMessageAsync({
+        message: challenge.message,
       });
-      const signature = await signTypedDataAsync(typedData);
 
       setStatusText("Removing sealed blob from active vault index");
       const data = await fetchJson<DeleteResponse>("/v1/integrity/delete", {
@@ -739,10 +737,9 @@ function VaultDashboardInner() {
           network: item.network,
           challenge_id: challenge.challenge_id,
           wallet_address: address,
-          signature_kind: "eip712",
+          signature_kind: "eip191",
           signature,
           message: challenge.message,
-          typed_data: typedData,
           storage_id: item.storage_id,
         }),
       });
@@ -767,7 +764,7 @@ function VaultDashboardInner() {
     lastSeal,
     refreshCounters,
     refreshVaults,
-    signTypedDataAsync,
+    signMessageAsync,
     startPipeline,
     stopPipeline,
   ]);
