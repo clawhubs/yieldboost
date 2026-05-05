@@ -247,55 +247,11 @@ interface ChallengeFeedback {
   message: string;
 }
 
-const PUBLIC_INTEGRITY_API_BASE = "https://api.yieldboostai.xyz";
 const DEFAULT_CHALLENGE_ANNOUNCEMENT =
   "Founder upload is pending. The public target will appear here after the live recording, and every wallet will be able to attempt an unseal against the same vault.";
 
-function isPublicProductionHost(hostname: string) {
-  return hostname === "yieldboostai.xyz" || hostname.endsWith(".yieldboostai.xyz");
-}
-
-function isUnsafePublicApiBase(value: string) {
-  try {
-    const url = new URL(value);
-    return (
-      url.protocol !== "https:" ||
-      /^\d{1,3}(\.\d{1,3}){3}$/.test(url.hostname) ||
-      url.hostname === "localhost" ||
-      url.hostname === "127.0.0.1"
-    );
-  } catch {
-    return true;
-  }
-}
-
 function getApiBase() {
-  const configured = process.env.NEXT_PUBLIC_INTEGRITY_API_BASE_URL?.trim();
-  if (typeof window !== "undefined") {
-    const hostname = window.location.hostname.toLowerCase();
-    if (isPublicProductionHost(hostname)) {
-      if (configured && !isUnsafePublicApiBase(configured)) {
-        return configured.replace(/\/$/, "");
-      }
-      return PUBLIC_INTEGRITY_API_BASE;
-    }
-  }
-  if (configured) {
-    return configured.replace(/\/$/, "");
-  }
-  return "http://127.0.0.1:8010";
-}
-
-function getApiHeaders(extra?: HeadersInit) {
-  const apiKey = process.env.NEXT_PUBLIC_INTEGRITY_API_KEY?.trim();
-  const base: Record<string, string> = {};
-  if (apiKey) {
-    base["X-API-Key"] = apiKey;
-  }
-  return {
-    ...base,
-    ...(extra as Record<string, string> | undefined),
-  };
+  return "/api/vault";
 }
 
 async function readInjectedChainId() {
@@ -380,7 +336,7 @@ async function fetchJson<T>(
   const response = await fetch(`${getApiBase()}${path}`, {
     ...init,
     headers: {
-      ...getApiHeaders(init?.headers),
+      ...(init?.headers as Record<string, string> | undefined),
     },
   });
   const data = await response.json().catch(() => null);
