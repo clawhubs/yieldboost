@@ -15,8 +15,9 @@ DEV_PORTAL_URL="${DEV_PORTAL_URL:-https://dev.yieldboostai.xyz}"
 DEV_PORTAL_API_BASE_URL="${DEV_PORTAL_API_BASE_URL:-https://api.yieldboostai.xyz}"
 ENV_SOURCE="${ENV_SOURCE:-.env.local}"
 API_SERVICE_NAME="${API_SERVICE_NAME:-yieldboost-integrity-api}"
+FRONTEND_SERVICE_NAME="${FRONTEND_SERVICE_NAME:-yieldboost-frontend}"
 API_PORT="${API_PORT:-8010}"
-VPS_APP_USER="${VPS_APP_USER:-root}"
+VPS_APP_USER="${VPS_APP_USER:-yieldboost}"
 TRAEFIK_DYNAMIC_DIR="${TRAEFIK_DYNAMIC_DIR:-/data/coolify/proxy/dynamic}"
 VPS_APP_HOME="${VPS_APP_HOME:-}"
 if [[ -z "$VPS_APP_HOME" ]]; then
@@ -45,10 +46,11 @@ fi
 TMP_ENV="$(mktemp)"
 TMP_API_ENV="$(mktemp)"
 TMP_SERVICE="$(mktemp)"
+TMP_FRONTEND_SERVICE="$(mktemp)"
 TMP_NGINX="$(mktemp)"
 TMP_TRAEFIK="$(mktemp)"
 TMP_DEV_TRAEFIK="$(mktemp)"
-trap 'rm -f "$TMP_ENV" "$TMP_API_ENV" "$TMP_SERVICE" "$TMP_NGINX" "$TMP_TRAEFIK" "$TMP_DEV_TRAEFIK"' EXIT
+trap 'rm -f "$TMP_ENV" "$TMP_API_ENV" "$TMP_SERVICE" "$TMP_FRONTEND_SERVICE" "$TMP_NGINX" "$TMP_TRAEFIK" "$TMP_DEV_TRAEFIK"' EXIT
 cp "$ENV_SOURCE" "$TMP_ENV"
 
 set_env_in_file() {
@@ -131,12 +133,39 @@ After=network.target
 [Service]
 Type=simple
 User=${VPS_APP_USER}
+Group=${VPS_APP_USER}
 WorkingDirectory=${APP_DIR}
 EnvironmentFile=${SHARED_DIR}/api.env
-ExecStart=/usr/bin/env bash -lc 'cd "${APP_DIR}" && ${VPS_APP_HOME}/.local/bin/uv run --project api python -m uvicorn api.app.main:app --host 0.0.0.0 --port ${API_PORT}'
+ExecStart=/usr/bin/env bash -lc 'cd "${APP_DIR}" && /usr/local/bin/uv run --project api python -m uvicorn api.app.main:app --host 0.0.0.0 --port ${API_PORT}'
 Restart=always
 RestartSec=5
 TimeoutStopSec=20
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+cat >"$TMP_FRONTEND_SERVICE" <<EOF
+[Unit]
+Description=YieldBoost Frontend
+After=network.target
+
+[Service]
+Type=simple
+User=${VPS_APP_USER}
+Group=${VPS_APP_USER}
+WorkingDirectory=${APP_DIR}
+EnvironmentFile=${SHARED_DIR}/.env.production.local
+Environment=NODE_ENV=production
+Environment=PORT=${APP_PORT}
+ExecStart=/usr/bin/node ${APP_DIR}/node_modules/next/dist/bin/next start -H 0.0.0.0 -p ${APP_PORT}
+Restart=always
+RestartSec=5
+TimeoutStopSec=20
+NoNewPrivileges=true
+PrivateTmp=true
 
 [Install]
 WantedBy=multi-user.target
@@ -166,11 +195,17 @@ cp "api/deploy/traefik/api.yieldboostai.xyz.yaml" "$TMP_TRAEFIK"
 cp "api/deploy/traefik/dev.yieldboostai.xyz.yaml" "$TMP_DEV_TRAEFIK"
 
 echo "Syncing env to ${VPS_HOST_ALIAS}:${SHARED_DIR}"
-ssh "$VPS_HOST_ALIAS" "mkdir -p '$APP_DIR' '$SHARED_DIR' '$SHARED_ARTIFACTS_DIR'"
+ssh "$VPS_HOST_ALIAS" "set -e
+  if ! id '${VPS_APP_USER}' >/dev/null 2>&1; then
+    sudo useradd --system --create-home --home-dir '${VPS_APP_HOME}' --shell /usr/sbin/nologin '${VPS_APP_USER}'
+  fi
+  sudo install -m 0755 -o root -g root /root/.local/bin/uv /usr/local/bin/uv
+  sudo mkdir -p '$APP_DIR' '$SHARED_DIR' '$SHARED_ARTIFACTS_DIR'
+  sudo chown -R '${VPS_APP_USER}:${VPS_APP_USER}' '$APP_DIR' '$SHARED_ARTIFACTS_DIR'
+"
 scp -q "$TMP_ENV" "${VPS_HOST_ALIAS}:${SHARED_DIR}/.env.production.local"
 scp -q "$TMP_API_ENV" "${VPS_HOST_ALIAS}:${SHARED_DIR}/api.env"
-ssh "$VPS_HOST_ALIAS" "chmod 600 '${SHARED_DIR}/.env.production.local'"
-ssh "$VPS_HOST_ALIAS" "chmod 600 '${SHARED_DIR}/api.env'"
+ssh "$VPS_HOST_ALIAS" "sudo chgrp '${VPS_APP_USER}' '${SHARED_DIR}/.env.production.local' '${SHARED_DIR}/api.env' && sudo chmod 640 '${SHARED_DIR}/.env.production.local' '${SHARED_DIR}/api.env'"
 scp -q "$TMP_TRAEFIK" "${VPS_HOST_ALIAS}:/tmp/api.yieldboostai.xyz.yaml"
 scp -q "$TMP_DEV_TRAEFIK" "${VPS_HOST_ALIAS}:/tmp/dev.yieldboostai.xyz.yaml"
 
@@ -199,25 +234,24 @@ ssh "$VPS_HOST_ALIAS" "set -e
   mkdir -p '${SHARED_ARTIFACTS_DIR}/0g-fallback'
   ln -sfn '${SHARED_ARTIFACTS_DIR}' .artifacts
   ln -sfn '${SHARED_DIR}/.env.production.local' .env.production.local
-  npm ci
-  npm run build
-  pm2 delete '${APP_NAME}' >/dev/null 2>&1 || true
-  pm2 start ecosystem.config.cjs --only '${APP_NAME}'
-  pm2 save
-  pm2 status '${APP_NAME}'
+  sudo chown -R '${VPS_APP_USER}:${VPS_APP_USER}' '${APP_DIR}' '${SHARED_ARTIFACTS_DIR}'
+  sudo -u '${VPS_APP_USER}' HOME='${VPS_APP_HOME}' bash -lc 'cd \"${APP_DIR}\" && npm ci && npm run build'
   sudo ufw allow in from 172.18.0.0/16 to any port '${APP_PORT}' proto tcp comment 'YieldBoost internal frontend from proxy' >/dev/null 2>&1 || true
 "
 
 echo "Installing and reloading ${API_SERVICE_NAME}"
 scp -q "$TMP_SERVICE" "${VPS_HOST_ALIAS}:/tmp/${API_SERVICE_NAME}.service"
+scp -q "$TMP_FRONTEND_SERVICE" "${VPS_HOST_ALIAS}:/tmp/${FRONTEND_SERVICE_NAME}.service"
 scp -q "$TMP_NGINX" "${VPS_HOST_ALIAS}:/tmp/api.yieldboostai.xyz.conf"
 ssh "$VPS_HOST_ALIAS" "set -e
-  if [[ ! -x '${VPS_APP_HOME}/.local/bin/uv' ]]; then
-    curl -LsSf https://astral.sh/uv/install.sh | sh
-  fi
   sudo mv '/tmp/${API_SERVICE_NAME}.service' '/etc/systemd/system/${API_SERVICE_NAME}.service'
+  sudo mv '/tmp/${FRONTEND_SERVICE_NAME}.service' '/etc/systemd/system/${FRONTEND_SERVICE_NAME}.service'
   sudo systemctl daemon-reload
   sudo systemctl enable '${API_SERVICE_NAME}'
+  sudo systemctl enable '${FRONTEND_SERVICE_NAME}'
+  pm2 delete '${APP_NAME}' >/dev/null 2>&1 || true
+  pm2 save >/dev/null 2>&1 || true
+  sudo systemctl restart '${FRONTEND_SERVICE_NAME}'
   sudo systemctl restart '${API_SERVICE_NAME}'
   sudo ufw allow in from 172.18.0.0/16 to any port '${API_PORT}' proto tcp comment 'YieldBoost internal API from proxy' >/dev/null 2>&1 || true
   sudo mkdir -p '${TRAEFIK_DYNAMIC_DIR}'
@@ -230,6 +264,7 @@ ssh "$VPS_HOST_ALIAS" "set -e
     sudo systemctl reload nginx
   fi
   sudo systemctl --no-pager --full status '${API_SERVICE_NAME}' | sed -n '1,20p'
+  sudo systemctl --no-pager --full status '${FRONTEND_SERVICE_NAME}' | sed -n '1,20p'
 "
 
 echo

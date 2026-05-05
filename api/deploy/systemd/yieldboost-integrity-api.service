@@ -4,13 +4,16 @@ After=network.target
 
 [Service]
 Type=simple
-User=root
+User=yieldboost
+Group=yieldboost
 WorkingDirectory=/opt/yieldboost/current
 EnvironmentFile=/opt/yieldboost/shared/api.env
-ExecStart=/usr/bin/env bash -lc 'cd "/opt/yieldboost/current" && /root/.local/bin/uv run --project api python -m uvicorn api.app.main:app --host 0.0.0.0 --port 8010'
+ExecStart=/usr/bin/env bash -lc 'cd "/opt/yieldboost/current" && /usr/local/bin/uv run --project api python -m uvicorn api.app.main:app --host 0.0.0.0 --port 8010'
 Restart=always
 RestartSec=5
 TimeoutStopSec=20
+NoNewPrivileges=true
+PrivateTmp=true
 
 [Install]
 WantedBy=multi-user.target

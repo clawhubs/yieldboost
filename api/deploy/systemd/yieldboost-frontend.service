@@ -1,0 +1,21 @@
+[Unit]
+Description=YieldBoost Frontend
+After=network.target
+
+[Service]
+Type=simple
+User=yieldboost
+Group=yieldboost
+WorkingDirectory=/opt/yieldboost/current
+EnvironmentFile=/opt/yieldboost/shared/.env.production.local
+Environment=NODE_ENV=production
+Environment=PORT=3000
+ExecStart=/usr/bin/node /opt/yieldboost/current/node_modules/next/dist/bin/next start -H 0.0.0.0 -p 3000
+Restart=always
+RestartSec=5
+TimeoutStopSec=20
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
