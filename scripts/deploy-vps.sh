@@ -7,7 +7,7 @@ SHARED_DIR="${SHARED_DIR:-/opt/yieldboost/shared}"
 SHARED_ARTIFACTS_DIR="${SHARED_ARTIFACTS_DIR:-$SHARED_DIR/artifacts}"
 APP_NAME="${APP_NAME:-yieldboost}"
 APP_URL="${APP_URL:-http://68.183.227.162:3000}"
-API_URL="${API_URL:-https://api.yieldboostai.xyz}"
+API_URL="${API_URL:-http://68.183.227.162:8010}"
 PUBLIC_SITE_URL="${PUBLIC_SITE_URL:-https://yieldboostai.xyz}"
 ENV_SOURCE="${ENV_SOURCE:-.env.local}"
 API_SERVICE_NAME="${API_SERVICE_NAME:-yieldboost-integrity-api}"
@@ -120,7 +120,7 @@ Type=simple
 User=${VPS_APP_USER}
 WorkingDirectory=${APP_DIR}
 EnvironmentFile=${SHARED_DIR}/api.env
-ExecStart=/usr/bin/env bash -lc 'cd "${APP_DIR}" && ${VPS_APP_HOME}/.local/bin/uv run --project api python -m uvicorn api.app.main:app --host 127.0.0.1 --port ${API_PORT}'
+ExecStart=/usr/bin/env bash -lc 'cd "${APP_DIR}" && ${VPS_APP_HOME}/.local/bin/uv run --project api python -m uvicorn api.app.main:app --host 0.0.0.0 --port ${API_PORT}'
 Restart=always
 RestartSec=5
 TimeoutStopSec=20
@@ -197,6 +197,7 @@ ssh "$VPS_HOST_ALIAS" "set -e
   sudo systemctl daemon-reload
   sudo systemctl enable '${API_SERVICE_NAME}'
   sudo systemctl restart '${API_SERVICE_NAME}'
+  sudo ufw allow '${API_PORT}/tcp' comment 'YieldBoost Integrity API' >/dev/null 2>&1 || true
   if command -v nginx >/dev/null 2>&1; then
     sudo mv '/tmp/api.yieldboostai.xyz.conf' '/etc/nginx/sites-available/api.yieldboostai.xyz.conf'
     sudo ln -sfn '/etc/nginx/sites-available/api.yieldboostai.xyz.conf' '/etc/nginx/sites-enabled/api.yieldboostai.xyz.conf'
