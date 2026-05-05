@@ -12,7 +12,15 @@ PUBLIC_SITE_URL="${PUBLIC_SITE_URL:-https://yieldboostai.xyz}"
 ENV_SOURCE="${ENV_SOURCE:-.env.local}"
 API_SERVICE_NAME="${API_SERVICE_NAME:-yieldboost-integrity-api}"
 API_PORT="${API_PORT:-8010}"
-VPS_APP_USER="${VPS_APP_USER:-cucu}"
+VPS_APP_USER="${VPS_APP_USER:-root}"
+VPS_APP_HOME="${VPS_APP_HOME:-}"
+if [[ -z "$VPS_APP_HOME" ]]; then
+  if [[ "$VPS_APP_USER" == "root" ]]; then
+    VPS_APP_HOME="/root"
+  else
+    VPS_APP_HOME="/home/${VPS_APP_USER}"
+  fi
+fi
 
 if ! command -v ssh >/dev/null 2>&1; then
   echo "ssh is required" >&2
@@ -112,7 +120,7 @@ Type=simple
 User=${VPS_APP_USER}
 WorkingDirectory=${APP_DIR}
 EnvironmentFile=${SHARED_DIR}/api.env
-ExecStart=/usr/bin/env bash -lc 'cd "${APP_DIR}" && /home/${VPS_APP_USER}/.local/bin/uv run --project api python -m uvicorn api.app.main:app --host 127.0.0.1 --port ${API_PORT}'
+ExecStart=/usr/bin/env bash -lc 'cd "${APP_DIR}" && ${VPS_APP_HOME}/.local/bin/uv run --project api python -m uvicorn api.app.main:app --host 127.0.0.1 --port ${API_PORT}'
 Restart=always
 RestartSec=5
 TimeoutStopSec=20
@@ -182,7 +190,7 @@ echo "Installing and reloading ${API_SERVICE_NAME}"
 scp -q "$TMP_SERVICE" "${VPS_HOST_ALIAS}:/tmp/${API_SERVICE_NAME}.service"
 scp -q "$TMP_NGINX" "${VPS_HOST_ALIAS}:/tmp/api.yieldboostai.xyz.conf"
 ssh "$VPS_HOST_ALIAS" "set -e
-  if [[ ! -x '/home/${VPS_APP_USER}/.local/bin/uv' ]]; then
+  if [[ ! -x '${VPS_APP_HOME}/.local/bin/uv' ]]; then
     curl -LsSf https://astral.sh/uv/install.sh | sh
   fi
   sudo mv '/tmp/${API_SERVICE_NAME}.service' '/etc/systemd/system/${API_SERVICE_NAME}.service'
