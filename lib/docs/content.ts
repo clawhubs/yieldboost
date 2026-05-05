@@ -245,7 +245,7 @@ function getComputeMode() {
 function getRuntimeStoreMode() {
   return hasValue(process.env.KV_REST_API_URL) && hasValue(process.env.KV_REST_API_TOKEN)
     ? "Vercel KV primary store with local file fallback"
-    : "Local `.artifacts/runtime-store.json` fallback store";
+    : "Local `.artifacts/runtime-store.local.json` fallback store";
 }
 
 export function getDocsRuntimeStatus(): DocsRuntimeStatus {

@@ -38,7 +38,8 @@ const MAX_ZK_REASONING_PROOFS = 40;
 const MAX_GOVERNANCE_DECISIONS = 60;
 const MAX_CROSS_AGENT_HANDSHAKES = 60;
 const MAX_ZK_COMPLIANCE_PROOFS = 60;
-const LOCAL_STORE_PATH = path.join(process.cwd(), ".artifacts", "runtime-store.json");
+const LOCAL_STORE_PATH = path.join(process.cwd(), ".artifacts", "runtime-store.local.json");
+const LEGACY_LOCAL_STORE_PATH = path.join(process.cwd(), ".artifacts", "runtime-store.json");
 
 export function isRuntimeStoreKvConfigured() {
   return Boolean(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
@@ -157,38 +158,48 @@ function sameStoredProofRun(
 }
 
 async function readLocalStoreFile(): Promise<RuntimeStore | null> {
-  try {
-    const raw = await fs.readFile(LOCAL_STORE_PATH, "utf8");
-    const parsed = JSON.parse(raw) as Partial<RuntimeStore>;
+  const candidatePaths = [LOCAL_STORE_PATH, LEGACY_LOCAL_STORE_PATH];
 
-    return {
-      proofs: Array.isArray(parsed.proofs) ? parsed.proofs : [],
-      agentMemories: Array.isArray(parsed.agentMemories)
-        ? parsed.agentMemories
-        : [],
-      blacklist: Array.isArray(parsed.blacklist) ? parsed.blacklist : [],
-      stressReports: Array.isArray(parsed.stressReports)
-        ? parsed.stressReports
-        : [],
-      zkReasoningProofs: Array.isArray(parsed.zkReasoningProofs)
-        ? parsed.zkReasoningProofs
-        : [],
-      governanceDecisions: Array.isArray(parsed.governanceDecisions)
-        ? parsed.governanceDecisions
-        : [],
-      crossAgentHandshakes: Array.isArray(parsed.crossAgentHandshakes)
-        ? parsed.crossAgentHandshakes
-        : [],
-      zkComplianceProofs: Array.isArray(parsed.zkComplianceProofs)
-        ? parsed.zkComplianceProofs
-        : [],
-      settings: parsed.settings
-        ? { ...getDefaultSettingsState(), ...parsed.settings }
-        : getDefaultSettingsState(),
-    };
+  try {
+    for (const candidatePath of candidatePaths) {
+      try {
+        const raw = await fs.readFile(candidatePath, "utf8");
+        const parsed = JSON.parse(raw) as Partial<RuntimeStore>;
+
+        return {
+          proofs: Array.isArray(parsed.proofs) ? parsed.proofs : [],
+          agentMemories: Array.isArray(parsed.agentMemories)
+            ? parsed.agentMemories
+            : [],
+          blacklist: Array.isArray(parsed.blacklist) ? parsed.blacklist : [],
+          stressReports: Array.isArray(parsed.stressReports)
+            ? parsed.stressReports
+            : [],
+          zkReasoningProofs: Array.isArray(parsed.zkReasoningProofs)
+            ? parsed.zkReasoningProofs
+            : [],
+          governanceDecisions: Array.isArray(parsed.governanceDecisions)
+            ? parsed.governanceDecisions
+            : [],
+          crossAgentHandshakes: Array.isArray(parsed.crossAgentHandshakes)
+            ? parsed.crossAgentHandshakes
+            : [],
+          zkComplianceProofs: Array.isArray(parsed.zkComplianceProofs)
+            ? parsed.zkComplianceProofs
+            : [],
+          settings: parsed.settings
+            ? { ...getDefaultSettingsState(), ...parsed.settings }
+            : getDefaultSettingsState(),
+        };
+      } catch {
+        continue;
+      }
+    }
   } catch {
     return null;
   }
+
+  return null;
 }
 
 async function writeLocalStoreFile(store: RuntimeStore) {

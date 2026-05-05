@@ -72,7 +72,7 @@ export default async function JudgePage() {
   const reviewWalletCard = data.statusCards.find((card) => card.label === "Review Wallet");
   const proofStoreCard = data.statusCards.find((card) => card.label === "Proof Store");
   const latestProofHistoryCard = data.latestProofCards.find((card) => card.label === "Proof History");
-  const proofStoreValue = proofStoreCard?.value?.includes(".artifacts/runtime-store.json")
+  const proofStoreValue = proofStoreCard?.value?.includes(".artifacts/runtime-store")
     ? "Recorded review snapshot"
     : proofStoreCard?.value ?? "Recorded review snapshot";
   const latestExplorerUrl =

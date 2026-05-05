@@ -2,6 +2,10 @@
 
 # dependencies
 /node_modules
+/.venv
+/.venv-*
+**/.venv
+**/.venv-*
 /.pnp
 .pnp.*
 .yarn/*
@@ -22,6 +26,8 @@
 
 # misc
 .DS_Store
+__pycache__/
+*.pyc
 *.pem
 
 # debug
@@ -38,11 +44,8 @@ Acces Key and token
 
 # local artifacts
 .artifacts/*
-!.artifacts/runtime-store.json
-test-results/*
-!test-results/
-!test-results/*.png
-test-results/.last-run.json
+test-results/
+playwright-report/
 Plan/
 memory/daily/
 

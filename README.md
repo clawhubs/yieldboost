@@ -293,7 +293,7 @@ flowchart TD
     PROOF --> MEMORY[/api/agent/memory/]
     MEMORY --> MEMSTORE[0G Storage memory snapshot]
 
-    PROOF --> RUNTIME[Vercel KV or .artifacts/runtime-store.json]
+    PROOF --> RUNTIME[Vercel KV or .artifacts/runtime-store.local.json]
     REG --> RUNTIME
     ZKENV --> RUNTIME
     GOVART --> RUNTIME
@@ -354,7 +354,7 @@ flowchart TD
 13. [`/api/agents/handshake`](app/api/agents/handshake/route.ts) records the optimizer-to-auditor **Cross-Agent Neural Handshake** transcript digest so the reasoning handoff is inspectable.
 14. [`/api/zk/compliance`](app/api/zk/compliance/route.ts) ties governance and the latest stored proof into a deterministic compliance artifact.
 15. [`/api/stress-test/run`](app/api/stress-test/run/route.ts) can replay historical OHLCV/oracle slices, produce an Integrity Report Card, and store that report on 0G Storage.
-16. The full proof, memory, blacklist, stress-test, ZKR, governance, compliance, and handshake records are persisted into the runtime ledger managed by [`lib/server/runtime-store.ts`](lib/server/runtime-store.ts), backed by **Vercel KV** when available or `.artifacts/runtime-store.json` as a local fallback.
+16. The full proof, memory, blacklist, stress-test, ZKR, governance, compliance, and handshake records are persisted into the runtime ledger managed by [`lib/server/runtime-store.ts`](lib/server/runtime-store.ts), backed by **Vercel KV** when available or `.artifacts/runtime-store.local.json` as a local fallback.
 17. The proof can then be rehydrated across the product through:
    - [`/api/agent/latest`](app/api/agent/latest/route.ts)
    - [`/api/0g/proof`](app/api/0g/proof/route.ts)
@@ -524,7 +524,7 @@ One of the strongest implementation details here is that the app does not fake l
 - If **0G Storage** fails, the UI still shows the optimization result but marks proof sync failure honestly.
 - If the **Integrity Auditor** rejects a prediction, the app shows the rejection and does not treat the run as a stored proof or mint-ready strategy.
 - If **ProofRegistry** is not configured, storage still succeeds and the record is marked accordingly.
-- If **Vercel KV** is missing, runtime history falls back to `.artifacts/runtime-store.json`.
+- If **Vercel KV** is missing, runtime history falls back to `.artifacts/runtime-store.local.json`.
 - If **INFT contract envs** are missing, `/agents` switches to proof-backed history mode.
 
 That behavior is much better for judge trust than pretending every subsystem is always live.

@@ -527,7 +527,7 @@ function buildEnvChecklist() {
       name: "KV_REST_API_URL",
       requiredFor: "Persistent runtime proof store",
       status: hasValue(readEnv("KV_REST_API_URL")) ? "set" : "optional",
-      detail: "Without KV, the app falls back to the local `.artifacts/runtime-store.json` file.",
+      detail: "Without KV, the app falls back to the local `.artifacts/runtime-store.local.json` file.",
     },
     {
       name: "KV_REST_API_TOKEN",
