@@ -224,7 +224,16 @@ interface AdminStatsResponse {
   }[];
 }
 
+interface PublicChallengeConfig {
+  title: string;
+  fileName: string;
+  storageId: string | null;
+  announcement: string;
+}
+
 const PUBLIC_INTEGRITY_API_BASE = "https://api.yieldboostai.xyz";
+const DEFAULT_CHALLENGE_ANNOUNCEMENT =
+  "Founder upload is pending. The public target will appear here after the live recording, and every wallet will be able to attempt an unseal against the same vault.";
 
 function isPublicProductionHost(hostname: string) {
   return hostname === "yieldboostai.xyz" || hostname.endsWith(".yieldboostai.xyz");
@@ -395,8 +404,40 @@ function VaultDashboardInner() {
   const pipelineTimer = useRef<number | null>(null);
 
   const founderWallet = process.env.NEXT_PUBLIC_FOUNDER_WALLET_ADDRESS;
+  const publicChallenge = useMemo<PublicChallengeConfig>(() => {
+    const storageId = process.env.NEXT_PUBLIC_VAULT_CHALLENGE_STORAGE_ID?.trim() || null;
+    return {
+      title:
+        process.env.NEXT_PUBLIC_VAULT_CHALLENGE_TITLE?.trim() || "Live Challenge Vault",
+      fileName:
+        process.env.NEXT_PUBLIC_VAULT_CHALLENGE_FILE_NAME?.trim() || "challenge-vault.enc",
+      storageId,
+      announcement:
+        process.env.NEXT_PUBLIC_VAULT_CHALLENGE_ANNOUNCEMENT?.trim() ||
+        DEFAULT_CHALLENGE_ANNOUNCEMENT,
+    };
+  }, []);
   const isFounder = sameAddress(address, founderWallet);
   const canSeal = Boolean(isConnected && address && (plaintext.trim() || selectedFile));
+  const challengeItem = useMemo<VaultItem | null>(() => {
+    if (!publicChallenge.storageId) {
+      return null;
+    }
+    return {
+      storage_id: publicChallenge.storageId,
+      network: "testnet",
+      wallet_address: founderWallet ?? "0x0000000000000000000000000000000000000000",
+      integrity_hash: "challenge-pending",
+      payload_sha256: "challenge-pending",
+      mime_type: "application/octet-stream",
+      file_name: publicChallenge.fileName,
+      created_at: "1970-01-01T00:00:00.000Z",
+      metadata: {
+        challenge_mode: true,
+        source: "public-vault-challenge",
+      },
+    };
+  }, [founderWallet, publicChallenge]);
 
   const stopPipeline = useCallback(() => {
     if (pipelineTimer.current) {
@@ -903,6 +944,77 @@ function VaultDashboardInner() {
                   </motion.div>
                 );
               })}
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-emerald-300/20 bg-black/40 p-5 backdrop-blur-xl md:p-6">
+            <div className="mb-4 flex items-start justify-between gap-4">
+              <div>
+                <div className="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-300">
+                  <Shield className="h-4 w-4" />
+                  Public Challenge
+                </div>
+                <h2 className="mt-2 text-2xl font-black text-white">
+                  {publicChallenge.title}
+                </h2>
+              </div>
+              <div
+                className={`rounded-lg px-3 py-2 font-mono text-[10px] uppercase tracking-[0.18em] ${
+                  publicChallenge.storageId
+                    ? "border border-emerald-300/20 bg-emerald-400/10 text-emerald-100"
+                    : "border border-amber-300/20 bg-amber-300/10 text-amber-100"
+                }`}
+              >
+                {publicChallenge.storageId ? "Target Live" : "Founder Upload Pending"}
+              </div>
+            </div>
+            <p className="max-w-3xl text-sm leading-6 text-emerald-50/70">
+              {publicChallenge.announcement}
+            </p>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              <div className="rounded-lg border border-white/10 bg-black/35 p-4">
+                <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-50/45">
+                  Challenge Target
+                </div>
+                <div className="mt-2 text-sm font-black text-white">
+                  {publicChallenge.fileName}
+                </div>
+                <div className="mt-1 break-all font-mono text-[11px] text-emerald-50/50">
+                  {publicChallenge.storageId ?? "Storage ID will be revealed after founder upload."}
+                </div>
+              </div>
+              <div className="rounded-lg border border-white/10 bg-black/35 p-4">
+                <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-50/45">
+                  Public Rules
+                </div>
+                <div className="mt-2 space-y-1 text-sm text-emerald-50/70">
+                  <div>Every wallet sees the same target once the founder publishes it.</div>
+                  <div>All failed unseal attempts are logged to the live counter.</div>
+                  <div>The announcement stays visible even before the target file exists.</div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="text-xs text-emerald-50/55">
+                {publicChallenge.storageId
+                  ? "Connect a wallet and sign an unseal proof to attempt the public challenge."
+                  : "No founder blob has been published yet, so the challenge cannot be attempted."}
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (challengeItem) {
+                    void unsealItem(challengeItem);
+                  }
+                }}
+                disabled={!challengeItem || !isConnected || Boolean(processing)}
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-300/25 bg-emerald-400/10 px-4 py-3 text-sm font-black text-emerald-100 transition hover:bg-emerald-400/15 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/35"
+              >
+                <Download className="h-4 w-4" />
+                {publicChallenge.storageId
+                  ? "Attempt Unseal Challenge Vault"
+                  : "Founder Upload Pending"}
+              </button>
             </div>
           </div>
         </section>
