@@ -1,12 +1,14 @@
 from uuid import uuid4
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from .core.config import get_settings
 from .core.exceptions import register_exception_handlers
 from .core.logging import configure_logging
 from .core.request_context import request_id_var
+from .routes.v1.admin import router as admin_router
 from .routes.v1.auth import router as auth_router
 from .routes.v1.health import router as health_router
 from .routes.v1.vault import router as vault_router
@@ -29,6 +31,13 @@ def create_app() -> FastAPI:
     )
     app.state.integrity_pipeline = IntegrityPipeline(settings)
     register_exception_handlers(app)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     @app.middleware("http")
     async def attach_request_context(request: Request, call_next):
@@ -54,6 +63,7 @@ def create_app() -> FastAPI:
 
     app.include_router(vault_router)
     app.include_router(auth_router)
+    app.include_router(admin_router)
     app.include_router(health_router)
     return app
 

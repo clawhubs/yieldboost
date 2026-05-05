@@ -40,6 +40,13 @@ class Settings(BaseSettings):
     default_network: Literal["testnet", "mainnet"] = Field(default="testnet", alias="INTEGRITY_API_NETWORK")
     require_auth_challenge: bool = Field(default=True, alias="INTEGRITY_API_REQUIRE_AUTH_CHALLENGE")
     auth_challenge_ttl_seconds: int = Field(default=300, alias="INTEGRITY_API_AUTH_CHALLENGE_TTL_SECONDS")
+    cors_origins_raw: str = Field(
+        default="http://localhost:3000,http://localhost:3020,http://127.0.0.1:3000,http://127.0.0.1:3020,https://yieldboostai.xyz,https://www.yieldboostai.xyz",
+        alias="INTEGRITY_API_CORS_ORIGINS",
+    )
+    founder_wallet_address: str | None = Field(default=None, alias="FOUNDER_WALLET_ADDRESS")
+    security_logs_database_url: str | None = Field(default=None, alias="SECURITY_LOGS_DATABASE_URL")
+    database_url: str | None = Field(default=None, alias="DATABASE_URL")
 
     api_keys_raw: str = Field(default="", alias="INTEGRITY_API_KEYS")
     master_key: str = Field(default="dev-master-key-change-me", alias="INTEGRITY_MASTER_KEY")
@@ -74,6 +81,28 @@ class Settings(BaseSettings):
     @property
     def api_keys(self) -> set[str]:
         return {item.strip() for item in self.api_keys_raw.split(",") if item.strip()}
+
+    @property
+    def cors_origins(self) -> list[str]:
+        return [item.strip() for item in self.cors_origins_raw.split(",") if item.strip()]
+
+    @property
+    def security_log_db_url(self) -> str | None:
+        return self.security_logs_database_url or self.database_url
+
+    @property
+    def resolved_founder_wallet_address(self) -> str | None:
+        if self.founder_wallet_address:
+            return self.founder_wallet_address
+        private_key = self.zg_mainnet_private_key or self.zg_testnet_private_key
+        if not private_key:
+            return None
+        try:
+            from eth_account import Account
+
+            return Account.from_key(private_key).address
+        except Exception:
+            return None
 
     @property
     def store_path(self) -> Path:

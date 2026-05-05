@@ -5,17 +5,29 @@ from typing import Any
 
 
 class MetadataStore:
-    def __init__(self, path: Path) -> None:
+    def __init__(self, path: Path, security_logs_database_url: str | None = None) -> None:
         self.path = path
+        self.security_logs_database_url = security_logs_database_url
         self._lock = asyncio.Lock()
 
     async def _read(self) -> dict[str, Any]:
         def read_sync() -> dict[str, Any]:
             if not self.path.exists():
-                return {"vault_records": {}, "events": [], "handshakes": [], "auth_challenges": {}}
-            return json.loads(self.path.read_text(encoding="utf-8"))
+                return self._empty_payload()
+            payload = json.loads(self.path.read_text(encoding="utf-8"))
+            return {**self._empty_payload(), **payload}
 
         return await asyncio.to_thread(read_sync)
+
+    @staticmethod
+    def _empty_payload() -> dict[str, Any]:
+        return {
+            "vault_records": {},
+            "events": [],
+            "handshakes": [],
+            "auth_challenges": {},
+            "security_logs": [],
+        }
 
     async def _write(self, payload: dict[str, Any]) -> None:
         def write_sync() -> None:
@@ -34,6 +46,23 @@ class MetadataStore:
         async with self._lock:
             payload = await self._read()
             return payload.get("vault_records", {}).get(storage_id)
+
+    async def list_vault_records(
+        self,
+        *,
+        wallet_address: str,
+        network: str | None = None,
+    ) -> list[dict[str, Any]]:
+        async with self._lock:
+            payload = await self._read()
+            records = []
+            for record in payload.get("vault_records", {}).values():
+                if record.get("wallet_address", "").lower() != wallet_address.lower():
+                    continue
+                if network and record.get("network") != network:
+                    continue
+                records.append(record)
+            return sorted(records, key=lambda item: item.get("created_at", ""), reverse=True)
 
     async def patch_vault_record(self, storage_id: str, updates: dict[str, Any]) -> dict[str, Any] | None:
         async with self._lock:
@@ -59,6 +88,111 @@ class MetadataStore:
             events.append(event)
             payload["events"] = events[-200:]
             await self._write(payload)
+
+    async def append_security_log(self, log: dict[str, Any]) -> None:
+        async with self._lock:
+            payload = await self._read()
+            security_logs = payload.setdefault("security_logs", [])
+            security_logs.append(log)
+            payload["security_logs"] = security_logs[-1000:]
+            await self._write(payload)
+
+        await self._append_security_log_postgres(log)
+
+    async def list_security_logs(self, limit: int = 100) -> list[dict[str, Any]]:
+        async with self._lock:
+            payload = await self._read()
+            logs = payload.get("security_logs", [])
+            return list(reversed(logs[-limit:]))
+
+    async def count_security_logs(
+        self,
+        *,
+        action_type: str | None = None,
+        status: str | None = None,
+    ) -> int:
+        async with self._lock:
+            payload = await self._read()
+            count = 0
+            for log in payload.get("security_logs", []):
+                if action_type and log.get("action_type") != action_type:
+                    continue
+                if status and log.get("status") != status:
+                    continue
+                count += 1
+            return count
+
+    async def aggregate_failed_unseal_attempts(self) -> list[dict[str, Any]]:
+        async with self._lock:
+            payload = await self._read()
+            buckets: dict[str, dict[str, Any]] = {}
+            for log in payload.get("security_logs", []):
+                if log.get("action_type") != "Unseal" or log.get("status") != "Blocked":
+                    continue
+                wallet = log.get("wallet_address") or "unknown"
+                bucket = buckets.setdefault(
+                    wallet.lower(),
+                    {
+                        "wallet_address": wallet,
+                        "blocked_unseal_attempts": 0,
+                        "last_seen_at": None,
+                    },
+                )
+                bucket["blocked_unseal_attempts"] += 1
+                timestamp = log.get("timestamp")
+                if timestamp and (not bucket["last_seen_at"] or timestamp > bucket["last_seen_at"]):
+                    bucket["last_seen_at"] = timestamp
+            return sorted(
+                buckets.values(),
+                key=lambda item: (item["blocked_unseal_attempts"], item.get("last_seen_at") or ""),
+                reverse=True,
+            )
+
+    async def _append_security_log_postgres(self, log: dict[str, Any]) -> None:
+        if not self.security_logs_database_url:
+            return
+
+        try:
+            import asyncpg
+
+            connection = await asyncpg.connect(self.security_logs_database_url)
+            try:
+                await connection.execute(
+                    """
+                    create table if not exists security_logs (
+                      id bigserial primary key,
+                      wallet_address text not null,
+                      action_type text not null check (action_type in ('Seal', 'Unseal')),
+                      status text not null check (status in ('Success', 'Blocked')),
+                      layer_failed text,
+                      payload_metadata jsonb not null default '{}'::jsonb,
+                      timestamp timestamptz not null default now()
+                    );
+                    """
+                )
+                await connection.execute(
+                    """
+                    insert into security_logs (
+                      wallet_address,
+                      action_type,
+                      status,
+                      layer_failed,
+                      payload_metadata,
+                      timestamp
+                    )
+                    values ($1, $2, $3, $4, $5::jsonb, $6::timestamptz)
+                    """,
+                    log.get("wallet_address") or "unknown",
+                    log.get("action_type"),
+                    log.get("status"),
+                    log.get("layer_failed"),
+                    json.dumps(log.get("payload_metadata") or {}),
+                    log.get("timestamp"),
+                )
+            finally:
+                await connection.close()
+        except Exception:
+            return
 
     async def append_handshake(self, handshake: dict[str, Any]) -> None:
         async with self._lock:

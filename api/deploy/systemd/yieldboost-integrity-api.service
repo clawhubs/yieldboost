@@ -5,9 +5,9 @@ After=network.target
 [Service]
 Type=simple
 User=cucu
-WorkingDirectory=/home/cucu/Coder/YiledBoost Ai
-EnvironmentFile=/home/cucu/Coder/YiledBoost Ai/api/deploy/env/api.env
-ExecStart=/usr/bin/env bash -lc 'cd "/home/cucu/Coder/YiledBoost Ai" && /home/cucu/.local/bin/uv run --project api python -m uvicorn api.app.main:app --host 127.0.0.1 --port 8010'
+WorkingDirectory=/opt/yieldboost/current
+EnvironmentFile=/opt/yieldboost/shared/api.env
+ExecStart=/usr/bin/env bash -lc 'cd "/opt/yieldboost/current" && /home/cucu/.local/bin/uv run --project api python -m uvicorn api.app.main:app --host 127.0.0.1 --port 8010'
 Restart=always
 RestartSec=5
 TimeoutStopSec=20

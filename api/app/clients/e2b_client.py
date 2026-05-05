@@ -2,6 +2,7 @@ import asyncio
 import base64
 import hashlib
 import hmac
+import inspect
 from typing import Any
 
 from cryptography.fernet import Fernet
@@ -46,12 +47,18 @@ class EphemeralSandbox:
         if not self._sandbox:
             return
 
-        kill = getattr(self._sandbox, "kill", None)
         close = getattr(self._sandbox, "close", None)
+        if callable(close):
+            result = close()
+            if inspect.isawaitable(result):
+                await result
+            return
+
+        kill = getattr(self._sandbox, "kill", None)
         if callable(kill):
-            await kill()
-        elif callable(close):
-            await close()
+            result = kill()
+            if inspect.isawaitable(result):
+                await result
 
     async def encrypt(
         self,

@@ -28,6 +28,7 @@ import {
   Boxes,
   Zap,
   Bot,
+  Lock,
 } from "lucide-react";
 import BrandLogo from "@/components/ui/BrandLogo";
 import WalletConnectModal from "@/components/modals/WalletConnectModal";
@@ -74,6 +75,7 @@ const navigation: NavigationItem[] = [
   { href: "/judge", label: "Judge", icon: ShieldCheck, badge: "START" },
   { href: "/", label: "Dashboard", icon: House },
   { href: "/agent", label: "Boost", icon: Zap, badge: "HOT" },
+  { href: "/vault", label: "Vault", icon: Lock, badge: "LIVE" },
   { href: "/portfolio", label: "Portfolio", icon: BriefcaseBusiness },
   { href: "/strategies", label: "Strategies", icon: Boxes },
   { href: "/opportunities", label: "Opportunities", icon: Package2 },

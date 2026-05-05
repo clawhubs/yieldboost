@@ -14,6 +14,7 @@ class SealRequest(BaseModel):
     file_name: str | None = Field(default=None, description="Optional source filename.")
     file_content_base64: str | None = Field(default=None, description="Base64 file payload when sealing binary data.")
     mime_type: str = "text/plain"
+    transaction_hash: str | None = Field(default=None, description="0G gas payment transaction hash supplied by the client.")
     metadata: dict[str, Any] = Field(default_factory=dict, description="Tenant/app metadata persisted alongside the sealed record.")
 
     @model_validator(mode="after")
@@ -95,3 +96,54 @@ class VaultMetadataResponse(BaseModel):
     created_at: str
     metadata: dict[str, Any]
     last_unsealed_at: str | None = None
+
+
+class VaultListItem(BaseModel):
+    storage_id: str
+    network: Literal["testnet", "mainnet"]
+    wallet_address: str
+    integrity_hash: str
+    payload_sha256: str
+    mime_type: str
+    file_name: str | None = None
+    storage_root_hash: str | None = None
+    storage_tx_hash: str | None = None
+    storage_explorer_url: str | None = None
+    anchor_tx_hash: str | None = None
+    anchor_explorer_url: str | None = None
+    created_at: str
+    last_unsealed_at: str | None = None
+    layer_statuses: dict[str, str] = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class VaultListResponse(BaseModel):
+    success: bool = True
+    request_id: str
+    network: Literal["testnet", "mainnet"] | None = None
+    wallet_address: str
+    items: list[VaultListItem]
+    total: int
+
+
+class SecurityLogItem(BaseModel):
+    wallet_address: str
+    action_type: Literal["Seal", "Unseal"]
+    status: Literal["Success", "Blocked"]
+    layer_failed: str | None = None
+    payload_metadata: dict[str, Any] = Field(default_factory=dict)
+    timestamp: str
+
+
+class AdminStatsWallet(BaseModel):
+    wallet_address: str
+    blocked_unseal_attempts: int
+    last_seen_at: str | None = None
+
+
+class AdminStatsResponse(BaseModel):
+    success: bool = True
+    request_id: str
+    total_deflected_attacks: int
+    failed_unseal_attempts: list[AdminStatsWallet]
+    recent_logs: list[SecurityLogItem]

@@ -30,10 +30,15 @@ from ..repositories.metadata_store import MetadataStore
 from ..schemas.auth import ChallengeRequest, ChallengeResponse
 from ..schemas.health import ComponentHealth, HealthResponse
 from ..schemas.vault import (
+    AdminStatsResponse,
+    AdminStatsWallet,
     SealRequest,
     SealResponse,
+    SecurityLogItem,
     UnsealRequest,
     UnsealResponse,
+    VaultListItem,
+    VaultListResponse,
     VaultMetadataResponse,
 )
 
@@ -59,7 +64,7 @@ class PipelineContext:
 class IntegrityPipeline:
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
-        self.store = MetadataStore(settings.store_path)
+        self.store = MetadataStore(settings.store_path, settings.security_log_db_url)
         self.e2b = E2BClient(settings)
         self.zero_g_storage = ZeroGStorageClient(settings)
         self.zero_g_chain = ZeroGChainClient(settings)
@@ -121,6 +126,7 @@ class IntegrityPipeline:
                     wallet_address=payload.wallet_address,
                     storage_id=None,
                     message=payload.message,
+                    typed_data=payload.typed_data,
                     signature_kind=payload.signature_kind,
                 )
                 await self._verify_signature(
@@ -134,6 +140,9 @@ class IntegrityPipeline:
 
                 storage_id = f"vault_{uuid4().hex}"
                 payload_bytes = self._extract_payload(payload)
+                metadata = dict(payload.metadata)
+                if payload.transaction_hash:
+                    metadata["transaction_hash"] = payload.transaction_hash
                 ctx = PipelineContext(
                     operation="seal",
                     network=payload.network or self.settings.default_network,
@@ -142,7 +151,7 @@ class IntegrityPipeline:
                     mime_type=payload.mime_type,
                     file_name=payload.file_name,
                     payload_bytes=payload_bytes,
-                    metadata=payload.metadata,
+                    metadata=metadata,
                 )
 
                 await l1_blacklist.run(self._payload_text_for_blacklist(payload_bytes))
@@ -241,6 +250,7 @@ class IntegrityPipeline:
                         "anchor_tx_hash": ctx.anchor_receipt.tx_hash if ctx.anchor_receipt else None,
                         "anchor_explorer_url": ctx.anchor_receipt.explorer_url if ctx.anchor_receipt else None,
                         "anchor_mode": ctx.anchor_receipt.mode if ctx.anchor_receipt else None,
+                        "transaction_hash": payload.transaction_hash,
                         "metadata": ctx.metadata,
                         "layer_statuses": ctx.layer_statuses,
                         "created_at": datetime.now(timezone.utc).isoformat(),
@@ -262,6 +272,18 @@ class IntegrityPipeline:
                         "created_at": datetime.now(timezone.utc).isoformat(),
                     }
                 )
+                await self._append_security_log(
+                    wallet_address=ctx.wallet_address,
+                    action_type="Seal",
+                    status="Success",
+                    payload_metadata={
+                        "storage_id": ctx.storage_id,
+                        "network": ctx.network,
+                        "file_name": ctx.file_name,
+                        "mime_type": ctx.mime_type,
+                        "transaction_hash": payload.transaction_hash,
+                    },
+                )
 
                 return SealResponse(
                     request_id=request_id,
@@ -277,14 +299,38 @@ class IntegrityPipeline:
                     layer_statuses=ctx.layer_statuses,
                 )
         except TimeoutError as exc:
+            await self._append_security_log(
+                wallet_address=payload.wallet_address,
+                action_type="Seal",
+                status="Blocked",
+                layer_failed="L9",
+                payload_metadata={
+                    "network": payload.network or self.settings.default_network,
+                    "file_name": payload.file_name,
+                    "mime_type": payload.mime_type,
+                    "reason": "timeout",
+                },
+            )
             raise IntegrityError(
                 "Seal operation exceeded the request timeout window.",
                 status_code=504,
                 layer="pipeline",
             ) from exc
-        except Exception:
+        except Exception as exc:
             if "ctx" in locals():
                 await self.store.delete_vault_record(ctx.storage_id)
+            await self._append_security_log(
+                wallet_address=payload.wallet_address,
+                action_type="Seal",
+                status="Blocked",
+                layer_failed=self._layer_from_exception(exc),
+                payload_metadata={
+                    "network": payload.network or self.settings.default_network,
+                    "file_name": payload.file_name,
+                    "mime_type": payload.mime_type,
+                    "reason": str(exc),
+                },
+            )
             raise
 
     async def unseal(self, payload: UnsealRequest, request_id: str) -> UnsealResponse:
@@ -298,6 +344,7 @@ class IntegrityPipeline:
                     wallet_address=payload.wallet_address,
                     storage_id=payload.storage_id,
                     message=payload.message,
+                    typed_data=payload.typed_data,
                     signature_kind=payload.signature_kind,
                 )
                 await self._verify_signature(
@@ -384,6 +431,17 @@ class IntegrityPipeline:
                 ctx.layer_statuses["L7"] = record.get("anchor_mode", "mock-anchor")
                 ctx.layer_statuses["L8"] = "active"
                 ctx.layer_statuses["L9"] = "completed"
+                await self._append_security_log(
+                    wallet_address=ctx.wallet_address,
+                    action_type="Unseal",
+                    status="Success",
+                    payload_metadata={
+                        "storage_id": ctx.storage_id,
+                        "network": ctx.network,
+                        "file_name": ctx.file_name,
+                        "mime_type": ctx.mime_type,
+                    },
+                )
 
                 plaintext_value = None
                 file_content_base64 = None
@@ -404,11 +462,35 @@ class IntegrityPipeline:
                     layer_statuses=ctx.layer_statuses,
                 )
         except TimeoutError as exc:
+            await self._append_security_log(
+                wallet_address=payload.wallet_address,
+                action_type="Unseal",
+                status="Blocked",
+                layer_failed="L9",
+                payload_metadata={
+                    "storage_id": payload.storage_id,
+                    "network": payload.network or self.settings.default_network,
+                    "reason": "timeout",
+                },
+            )
             raise IntegrityError(
                 "Unseal operation exceeded the request timeout window.",
                 status_code=504,
                 layer="pipeline",
             ) from exc
+        except Exception as exc:
+            await self._append_security_log(
+                wallet_address=payload.wallet_address,
+                action_type="Unseal",
+                status="Blocked",
+                layer_failed=self._layer_from_exception(exc),
+                payload_metadata={
+                    "storage_id": payload.storage_id,
+                    "network": payload.network or self.settings.default_network,
+                    "reason": str(exc),
+                },
+            )
+            raise
 
     async def get_metadata(self, storage_id: str, request_id: str) -> VaultMetadataResponse:
         record = await self.store.get_vault_record(storage_id)
@@ -434,6 +516,74 @@ class IntegrityPipeline:
             created_at=record["created_at"],
             metadata=record.get("metadata", {}),
             last_unsealed_at=record.get("last_unsealed_at"),
+        )
+
+    async def list_vaults(
+        self,
+        *,
+        wallet_address: str,
+        request_id: str,
+        network: str | None = None,
+    ) -> VaultListResponse:
+        records = await self.store.list_vault_records(
+            wallet_address=wallet_address,
+            network=network,
+        )
+        items = [
+            VaultListItem(
+                storage_id=record["storage_id"],
+                network=record.get("network", self.settings.default_network),
+                wallet_address=record["wallet_address"],
+                integrity_hash=record["integrity_hash"],
+                payload_sha256=record["payload_sha256"],
+                mime_type=record["mime_type"],
+                file_name=record.get("file_name"),
+                storage_root_hash=record.get("storage_root_hash"),
+                storage_tx_hash=record.get("storage_tx_hash"),
+                storage_explorer_url=record.get("storage_explorer_url"),
+                anchor_tx_hash=record.get("anchor_tx_hash"),
+                anchor_explorer_url=record.get("anchor_explorer_url"),
+                created_at=record["created_at"],
+                last_unsealed_at=record.get("last_unsealed_at"),
+                layer_statuses=record.get("layer_statuses", {}),
+                metadata=record.get("metadata", {}),
+            )
+            for record in records
+        ]
+        return VaultListResponse(
+            request_id=request_id,
+            network=network,
+            wallet_address=wallet_address,
+            items=items,
+            total=len(items),
+        )
+
+    async def admin_stats(self, request_id: str) -> AdminStatsResponse:
+        failed_wallets = await self.store.aggregate_failed_unseal_attempts()
+        recent_logs = await self.store.list_security_logs(limit=50)
+        total_deflected_attacks = await self.store.count_security_logs(status="Blocked")
+        return AdminStatsResponse(
+            request_id=request_id,
+            total_deflected_attacks=total_deflected_attacks,
+            failed_unseal_attempts=[
+                AdminStatsWallet(
+                    wallet_address=item["wallet_address"],
+                    blocked_unseal_attempts=item["blocked_unseal_attempts"],
+                    last_seen_at=item.get("last_seen_at"),
+                )
+                for item in failed_wallets
+            ],
+            recent_logs=[
+                SecurityLogItem(
+                    wallet_address=log.get("wallet_address") or "unknown",
+                    action_type=log.get("action_type", "Unseal"),
+                    status=log.get("status", "Blocked"),
+                    layer_failed=log.get("layer_failed"),
+                    payload_metadata=log.get("payload_metadata") or {},
+                    timestamp=log.get("timestamp"),
+                )
+                for log in recent_logs
+            ],
         )
 
     async def health(self, request_id: str) -> HealthResponse:
@@ -481,6 +631,37 @@ class IntegrityPipeline:
         assert payload.file_content_base64 is not None
         return base64.b64decode(payload.file_content_base64.encode("ascii"))
 
+    async def _append_security_log(
+        self,
+        *,
+        wallet_address: str,
+        action_type: str,
+        status: str,
+        payload_metadata: dict[str, Any],
+        layer_failed: str | None = None,
+    ) -> None:
+        await self.store.append_security_log(
+            {
+                "wallet_address": wallet_address,
+                "action_type": action_type,
+                "status": status,
+                "layer_failed": layer_failed,
+                "payload_metadata": payload_metadata,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }
+        )
+
+    @staticmethod
+    def _layer_from_exception(exc: Exception) -> str:
+        layer = exc.layer if isinstance(exc, IntegrityError) else None
+        if layer and layer.startswith("L"):
+            return layer
+        if layer in {"auth", "ownership", "network"}:
+            return "L2"
+        if layer == "pipeline":
+            return "L9"
+        return "L9"
+
     @staticmethod
     def _payload_text_for_blacklist(payload: bytes) -> str:
         try:
@@ -520,16 +701,11 @@ class IntegrityPipeline:
         wallet_address: str,
         storage_id: str | None,
         message: str | None,
+        typed_data: dict[str, Any] | None,
         signature_kind: str,
     ) -> str:
         if not self.settings.require_auth_challenge:
             return ""
-        if signature_kind != "eip191":
-            raise IntegrityError(
-                "Challenge mode currently requires EIP-191 signatures.",
-                status_code=400,
-                layer="auth",
-            )
         if not challenge_id:
             raise IntegrityError("challenge_id is required.", status_code=400, layer="auth")
         challenge = await self.store.get_auth_challenge(challenge_id)
@@ -556,8 +732,18 @@ class IntegrityPipeline:
         if (challenge.get("storage_id") or storage_id) and challenge.get("storage_id") != storage_id:
             raise IntegrityError("Auth challenge storage mismatch.", status_code=409, layer="auth")
         expected_message = challenge.get("message")
-        if not message or message != expected_message:
+        if signature_kind == "eip191" and (not message or message != expected_message):
             raise IntegrityError("Signed message does not match the auth challenge.", status_code=409, layer="auth")
+        if signature_kind == "eip712" and not self._typed_data_matches_challenge(
+            typed_data,
+            expected_message=expected_message,
+            challenge_id=challenge_id,
+            operation=operation,
+            network=network,
+            wallet_address=wallet_address,
+            storage_id=storage_id,
+        ):
+            raise IntegrityError("Signed typed data does not match the auth challenge.", status_code=409, layer="auth")
         return challenge_id
 
     async def _consume_auth_challenge(self, challenge_id: str) -> None:
@@ -578,3 +764,28 @@ class IntegrityPipeline:
         except TypeError:
             signable = encode_typed_data(typed_data)
         return Account.recover_message(signable, signature=signature)
+
+    @staticmethod
+    def _typed_data_matches_challenge(
+        typed_data: dict[str, Any] | None,
+        *,
+        expected_message: str,
+        challenge_id: str,
+        operation: str,
+        network: str,
+        wallet_address: str,
+        storage_id: str | None,
+    ) -> bool:
+        if not typed_data:
+            return False
+        message = typed_data.get("message")
+        if not isinstance(message, dict):
+            return False
+        return (
+            message.get("challenge") == expected_message
+            and message.get("challengeId") == challenge_id
+            and message.get("operation") == operation
+            and message.get("network") == network
+            and str(message.get("wallet", "")).lower() == wallet_address.lower()
+            and (message.get("storageId") or None) == storage_id
+        )

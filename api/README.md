@@ -9,7 +9,10 @@ Mode operasional yang disarankan saat ini: `testnet-first, mainnet-ready`.
 - `POST /v1/auth/challenge`
 - `POST /v1/vault/seal`
 - `POST /v1/vault/unseal`
+- `GET /v1/vault?wallet_address=0x...&network=testnet`
 - `GET /v1/vault/{storage_id}/metadata`
+- `GET /v1/admin/public-stats`
+- `GET /v1/admin/stats`
 - `GET /v1/health`
 
 ## Jalankan lokal
@@ -25,8 +28,9 @@ Template env simetris untuk `testnet` dan `mainnet` tersedia di [`api/.env.examp
 - Sandbox E2B dibuat per request dan selalu di-kill di blok `finally`.
 - Jika E2B atau 0G belum dikonfigurasi penuh, service tetap hidup dengan status health `degraded` dan fallback lokal yang jujur.
 - Local fallback store ditulis ke `.artifacts/integrity-api-store.local.json`.
+- Semua percobaan seal/unseal ditulis ke `security_logs`; jika `SECURITY_LOGS_DATABASE_URL` atau `DATABASE_URL` terisi, API juga membuat/mengisi tabel PostgreSQL/Supabase dari `api/migrations/001_security_logs.sql`.
 - Default network dikontrol oleh `INTEGRITY_API_NETWORK`. Gunakan `testnet` dulu untuk integrasi, lalu aktifkan `mainnet` saat flow sudah stabil.
-- Auth production-beta memakai challenge satu kali pakai. Klien harus meminta challenge dulu, lalu menandatangani message itu sebelum memanggil `seal` atau `unseal`.
+- Auth production-beta memakai challenge satu kali pakai. Klien harus meminta challenge dulu, lalu menandatangani message untuk `seal`; `unseal` mendukung EIP-712 typed data yang mengikat `challenge_id`, wallet, network, dan `storage_id`.
 
 ## Kontrak API ringkas
 
@@ -53,6 +57,7 @@ Respons mengandung `challenge_id`, `message`, `issued_at`, dan `expires_at`. Mes
   "signature": "0x...",
   "plaintext": "secret payload",
   "mime_type": "text/plain",
+  "transaction_hash": "0x...",
   "metadata": {
     "tenant": "demo-app",
     "purpose": "backup"
@@ -91,12 +96,42 @@ Respons:
 {
   "challenge_id": "chl_...",
   "wallet_address": "0xabc...",
-  "signature_kind": "eip191",
+  "signature_kind": "eip712",
   "message": "Unseal vault request for app example",
+  "typed_data": {
+    "domain": {
+      "name": "YieldBoost Integrity API",
+      "version": "1",
+      "chainId": 16602
+    },
+    "types": {
+      "VaultUnseal": [
+        {"name": "challengeId", "type": "string"},
+        {"name": "challenge", "type": "string"},
+        {"name": "operation", "type": "string"},
+        {"name": "network", "type": "string"},
+        {"name": "wallet", "type": "address"},
+        {"name": "storageId", "type": "string"}
+      ]
+    },
+    "primaryType": "VaultUnseal",
+    "message": {
+      "challengeId": "chl_...",
+      "challenge": "YieldBoost Integrity API Challenge...",
+      "operation": "unseal",
+      "network": "testnet",
+      "wallet": "0xabc...",
+      "storageId": "vault_..."
+    }
+  },
   "signature": "0x...",
   "storage_id": "vault_..."
 }
 ```
+
+### `GET /v1/admin/stats`
+
+Founder-only endpoint. Kirim header `x-wallet-address: 0xFounder...`; jika `INTEGRITY_API_KEYS` aktif, sertakan `x-api-key` juga. Respons berisi `total_deflected_attacks`, agregasi failed unseal per wallet, dan `recent_logs`.
 
 ### `GET /v1/vault/{storage_id}/metadata`
 
@@ -111,4 +146,10 @@ Mengembalikan status infrastruktur dan masing-masing layer `L1-L9`, plus `reques
 ```bash
 cd api
 uv run pytest tests -q
+```
+
+Nine-wallet unseal challenge smoke:
+
+```bash
+uv run --project api python api/scripts/test_nine_wallet_unseal.py
 ```
