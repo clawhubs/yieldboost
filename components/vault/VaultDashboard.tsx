@@ -7,6 +7,8 @@ import {
   AlertTriangle,
   Award,
   Check,
+  ChevronDown,
+  ChevronRight,
   Cpu,
   Database,
   Download,
@@ -401,6 +403,7 @@ function VaultDashboardInner() {
   const [errorText, setErrorText] = useState<string | null>(null);
   const [lastSeal, setLastSeal] = useState<SealResponse | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [auditTrailOpen, setAuditTrailOpen] = useState(false);
   const pipelineTimer = useRef<number | null>(null);
 
   const founderWallet = process.env.NEXT_PUBLIC_FOUNDER_WALLET_ADDRESS;
@@ -1023,98 +1026,140 @@ function VaultDashboardInner() {
           <div className="rounded-lg border border-white/10 bg-white/[0.045] p-5 backdrop-blur-2xl md:p-6">
             <div className="mb-5 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                {isFounder ? (
-                  <Terminal className="h-5 w-5 text-emerald-400" />
-                ) : (
-                  <Lock className="h-5 w-5 text-emerald-400" />
-                )}
-                <h2 className="text-xl font-black text-white">
-                  {isFounder ? "Global Security Audit Trail" : "The Vault"}
-                </h2>
+                <Lock className="h-5 w-5 text-emerald-400" />
+                <h2 className="text-xl font-black text-white">The Vault</h2>
               </div>
-              <span className="rounded-lg border border-emerald-300/20 bg-emerald-400/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-200">
-                {isFounder ? "Founder" : `${vaultItems.length} blobs`}
-              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                {isFounder ? (
+                  <span className="rounded-lg border border-emerald-300/20 bg-emerald-400/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-200">
+                    Founder
+                  </span>
+                ) : null}
+                <span className="rounded-lg border border-emerald-300/20 bg-emerald-400/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-200">
+                  {vaultItems.length} blobs
+                </span>
+              </div>
             </div>
 
-            {isFounder ? (
-              <div className="space-y-3">
-                {(adminStats?.recent_logs ?? []).slice(0, 8).map((log, index) => (
-                  <div
-                    key={`${log.timestamp}-${index}`}
-                    className="rounded-lg border border-white/10 bg-black/45 p-4"
+            <div className="space-y-3">
+              {vaultItems.map((item) => (
+                <div
+                  key={item.storage_id}
+                  className="rounded-lg border border-white/10 bg-black/45 p-4 transition hover:border-emerald-300/30"
+                >
+                  <div className="mb-3 flex items-start gap-3">
+                    <div className="grid h-10 w-10 place-items-center rounded-lg bg-emerald-400/10 text-emerald-300">
+                      <Database className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-black text-white">
+                        {item.file_name ?? "Sealed Vault Blob"}
+                      </div>
+                      <div className="truncate font-mono text-[11px] text-emerald-50/45">
+                        {item.storage_id}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mb-3 flex items-center gap-2 text-[11px] text-emerald-50/45">
+                    <Check className="h-3.5 w-3.5 text-emerald-300" />
+                    {item.storage_tx_hash ? "0G anchored" : "Local fallback"}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void unsealItem(item)}
+                    disabled={Boolean(processing)}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-emerald-300/25 bg-emerald-400/10 px-4 py-3 text-sm font-black text-emerald-100 transition hover:bg-emerald-400/15 disabled:opacity-50"
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="truncate font-mono text-xs text-emerald-300">
-                          {shortAddress(log.wallet_address)}
-                        </div>
-                        <div className="mt-1 text-[11px] text-emerald-50/45">
-                          {log.action_type} / {log.status}
-                          {log.layer_failed ? ` / ${log.layer_failed}` : ""}
-                        </div>
-                      </div>
-                      <div
-                        className={`rounded-lg px-2 py-1 text-[10px] font-black uppercase ${
-                          log.status === "Blocked"
-                            ? "bg-red-400/10 text-red-200"
-                            : "bg-emerald-400/10 text-emerald-200"
-                        }`}
-                      >
-                        {log.status}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                {!adminStats?.recent_logs?.length ? (
-                  <div className="rounded-lg border border-white/10 bg-black/35 p-6 text-sm text-emerald-50/55">
-                    Audit trail is empty.
-                  </div>
-                ) : null}
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {vaultItems.map((item) => (
-                  <div
-                    key={item.storage_id}
-                    className="rounded-lg border border-white/10 bg-black/45 p-4 transition hover:border-emerald-300/30"
-                  >
-                    <div className="mb-3 flex items-start gap-3">
-                      <div className="grid h-10 w-10 place-items-center rounded-lg bg-emerald-400/10 text-emerald-300">
-                        <Database className="h-5 w-5" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-black text-white">
-                          {item.file_name ?? "Sealed Vault Blob"}
-                        </div>
-                        <div className="truncate font-mono text-[11px] text-emerald-50/45">
-                          {item.storage_id}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mb-3 flex items-center gap-2 text-[11px] text-emerald-50/45">
-                      <Check className="h-3.5 w-3.5 text-emerald-300" />
-                      {item.storage_tx_hash ? "0G anchored" : "Local fallback"}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => void unsealItem(item)}
-                      disabled={Boolean(processing)}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-emerald-300/25 bg-emerald-400/10 px-4 py-3 text-sm font-black text-emerald-100 transition hover:bg-emerald-400/15 disabled:opacity-50"
-                    >
-                      <Download className="h-4 w-4" />
-                      Unseal
-                    </button>
-                  </div>
-                ))}
-                {!vaultItems.length ? (
-                  <div className="rounded-lg border border-white/10 bg-black/35 p-6 text-sm text-emerald-50/55">
-                    No sealed blobs for {shortAddress(address)}.
-                  </div>
-                ) : null}
-              </div>
-            )}
+                    <Download className="h-4 w-4" />
+                    Unseal
+                  </button>
+                </div>
+              ))}
+              {!vaultItems.length ? (
+                <div className="rounded-lg border border-white/10 bg-black/35 p-6 text-sm text-emerald-50/55">
+                  No sealed blobs for {shortAddress(address)}.
+                </div>
+              ) : null}
+            </div>
           </div>
+
+          {isFounder ? (
+            <div className="rounded-lg border border-white/10 bg-white/[0.045] p-5 backdrop-blur-2xl md:p-6">
+              <button
+                type="button"
+                onClick={() => setAuditTrailOpen((value) => !value)}
+                className="flex w-full items-center justify-between gap-4 text-left"
+              >
+                <div className="flex items-center gap-3">
+                  <Terminal className="h-5 w-5 text-emerald-400" />
+                  <div>
+                    <h2 className="text-xl font-black text-white">Global Security Audit Trail</h2>
+                    <div className="mt-1 text-xs text-emerald-50/45">
+                      Founder-only logs for blocked and successful vault actions.
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="rounded-lg border border-emerald-300/20 bg-emerald-400/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-200">
+                    {adminStats?.recent_logs?.length ?? 0} logs
+                  </span>
+                  <div className="grid h-9 w-9 place-items-center rounded-lg border border-white/10 bg-black/35 text-emerald-200">
+                    {auditTrailOpen ? (
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4" />
+                    )}
+                  </div>
+                </div>
+              </button>
+
+              <AnimatePresence initial={false}>
+                {auditTrailOpen ? (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                    animate={{ opacity: 1, height: "auto", marginTop: 20 }}
+                    exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="space-y-3">
+                      {(adminStats?.recent_logs ?? []).slice(0, 8).map((log, index) => (
+                        <div
+                          key={`${log.timestamp}-${index}`}
+                          className="rounded-lg border border-white/10 bg-black/45 p-4"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="truncate font-mono text-xs text-emerald-300">
+                                {shortAddress(log.wallet_address)}
+                              </div>
+                              <div className="mt-1 text-[11px] text-emerald-50/45">
+                                {log.action_type} / {log.status}
+                                {log.layer_failed ? ` / ${log.layer_failed}` : ""}
+                              </div>
+                            </div>
+                            <div
+                              className={`rounded-lg px-2 py-1 text-[10px] font-black uppercase ${
+                                log.status === "Blocked"
+                                  ? "bg-red-400/10 text-red-200"
+                                  : "bg-emerald-400/10 text-emerald-200"
+                              }`}
+                            >
+                              {log.status}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      {!adminStats?.recent_logs?.length ? (
+                        <div className="rounded-lg border border-white/10 bg-black/35 p-6 text-sm text-emerald-50/55">
+                          Audit trail is empty.
+                        </div>
+                      ) : null}
+                    </div>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+            </div>
+          ) : null}
 
           <div className="rounded-lg border border-emerald-300/15 bg-emerald-400/5 p-5 backdrop-blur-xl">
             <div className="flex items-center gap-4">
