@@ -27,8 +27,21 @@ from ..layers import (
     l9_handshake,
 )
 from ..repositories.metadata_store import MetadataStore
+from ..schemas.admin import ApiKeyUsageItem, DeveloperDashboardResponse, UsageSummaryItem
 from ..schemas.auth import ChallengeRequest, ChallengeResponse
 from ..schemas.health import ComponentHealth, HealthResponse
+from ..schemas.platform import (
+    AuditEvaluateRequest,
+    AuditEvaluateResponse,
+    BlacklistCheckResponse,
+    GovernanceEvaluateRequest,
+    GovernanceEvaluateResponse,
+    HandshakeLogRequest,
+    HandshakeLogResponse,
+    LayerStatusResponse,
+    ProofRunRequest,
+    ProofRunResponse,
+)
 from ..schemas.vault import (
     AdminStatsResponse,
     AdminStatsWallet,
@@ -68,6 +81,10 @@ class IntegrityPipeline:
         self.e2b = E2BClient(settings)
         self.zero_g_storage = ZeroGStorageClient(settings)
         self.zero_g_chain = ZeroGChainClient(settings)
+
+    @staticmethod
+    def now_iso() -> str:
+        return datetime.now(timezone.utc).isoformat()
 
     async def create_auth_challenge(
         self,
@@ -261,7 +278,7 @@ class IntegrityPipeline:
                         "type": "seal",
                         "wallet_address": ctx.wallet_address,
                         "storage_id": ctx.storage_id,
-                        "created_at": datetime.now(timezone.utc).isoformat(),
+                        "created_at": self.now_iso(),
                     }
                 )
                 await self.store.append_handshake(
@@ -269,7 +286,7 @@ class IntegrityPipeline:
                         "wallet_address": ctx.wallet_address,
                         "storage_id": ctx.storage_id,
                         "operation": ctx.operation,
-                        "created_at": datetime.now(timezone.utc).isoformat(),
+                        "created_at": self.now_iso(),
                     }
                 )
                 await self._append_security_log(
@@ -416,13 +433,13 @@ class IntegrityPipeline:
                         "type": "unseal",
                         "wallet_address": ctx.wallet_address,
                         "storage_id": ctx.storage_id,
-                        "created_at": datetime.now(timezone.utc).isoformat(),
+                        "created_at": self.now_iso(),
                     }
                 )
                 await self.store.patch_vault_record(
                     ctx.storage_id,
                     {
-                        "last_unsealed_at": datetime.now(timezone.utc).isoformat(),
+                        "last_unsealed_at": self.now_iso(),
                     },
                 )
                 ctx.layer_statuses["L4"] = "memory-read"
@@ -586,6 +603,68 @@ class IntegrityPipeline:
             ],
         )
 
+    async def developer_dashboard(self, request_id: str) -> DeveloperDashboardResponse:
+        api_keys = await self.store.list_api_keys(include_revoked=True)
+        usage_summary = await self.store.summarize_api_usage()
+        recent_usage = await self.store.list_api_usage(limit=50)
+        recent_logs = await self.store.list_security_logs(limit=50)
+        total_deflected_attacks = await self.store.count_security_logs(status="Blocked")
+
+        total_requests = sum(int(item.get("total_requests") or 0) for item in api_keys)
+        success_requests = sum(int(item.get("success_requests") or 0) for item in api_keys)
+        blocked_requests = sum(int(item.get("blocked_requests") or 0) for item in api_keys)
+        active_api_keys = sum(1 for item in api_keys if item.get("status") != "revoked")
+        revoked_api_keys = len(api_keys) - active_api_keys
+
+        return DeveloperDashboardResponse(
+            request_id=request_id,
+            total_api_keys=len(api_keys),
+            active_api_keys=active_api_keys,
+            revoked_api_keys=revoked_api_keys,
+            total_requests=total_requests,
+            success_requests=success_requests,
+            blocked_requests=blocked_requests,
+            total_deflected_attacks=total_deflected_attacks,
+            top_apps=[
+                UsageSummaryItem(
+                    key_id=item.get("key_id"),
+                    app_name=item.get("app_name", "Unknown App"),
+                    total_requests=int(item.get("total_requests") or 0),
+                    success_requests=int(item.get("success_requests") or 0),
+                    blocked_requests=int(item.get("blocked_requests") or 0),
+                    last_used_at=item.get("last_used_at"),
+                )
+                for item in usage_summary[:8]
+            ],
+            recent_usage=[
+                ApiKeyUsageItem(
+                    request_id=item.get("request_id", ""),
+                    path=item.get("path", "/"),
+                    method=item.get("method", "GET"),
+                    status_code=int(item.get("status_code") or 200),
+                    category=item.get("category", "other"),
+                    app_name=item.get("app_name", "Unknown App"),
+                    key_id=item.get("key_id"),
+                    network=item.get("network"),
+                    wallet_address=item.get("wallet_address"),
+                    latency_ms=int(item.get("latency_ms") or 0),
+                    timestamp=item.get("timestamp", self.now_iso()),
+                )
+                for item in recent_usage
+            ],
+            recent_logs=[
+                SecurityLogItem(
+                    wallet_address=log.get("wallet_address") or "unknown",
+                    action_type=log.get("action_type", "Unseal"),
+                    status=log.get("status", "Blocked"),
+                    layer_failed=log.get("layer_failed"),
+                    payload_metadata=log.get("payload_metadata") or {},
+                    timestamp=log.get("timestamp"),
+                )
+                for log in recent_logs
+            ],
+        )
+
     async def health(self, request_id: str) -> HealthResponse:
         active_network = self.settings.default_network
         storage_status, storage_detail = await self.zero_g_storage.health(active_network)
@@ -625,7 +704,104 @@ class IntegrityPipeline:
             layers=layers,
         )
 
+    async def blacklist_check(self, text: str, request_id: str) -> BlacklistCheckResponse:
+        await l1_blacklist.run(text)
+        return BlacklistCheckResponse(
+            request_id=request_id,
+            allowed=True,
+            layer_statuses={"L1": "passed"},
+        )
+
+    async def audit_evaluate(
+        self,
+        payload: AuditEvaluateRequest,
+        request_id: str,
+    ) -> AuditEvaluateResponse:
+        payload_bytes = self._extract_audit_payload(payload)
+        await l1_blacklist.run(self._payload_text_for_blacklist(payload_bytes))
+        payload_sha256 = await l2_auditor.run(
+            payload_bytes,
+            max_payload_bytes=self.settings.max_payload_bytes,
+        )
+        return AuditEvaluateResponse(
+            request_id=request_id,
+            payload_sha256=payload_sha256,
+            payload_size_bytes=len(payload_bytes),
+            mime_type=payload.mime_type,
+            layer_statuses={
+                "L1": "passed",
+                "L2": "passed",
+            },
+        )
+
+    async def proof_run(self, payload: ProofRunRequest, request_id: str) -> ProofRunResponse:
+        integrity_hash, envelope = await l6_zk_reasoning.run(payload.commitment)
+        verified = payload.integrity_hash in {None, "", integrity_hash}
+        return ProofRunResponse(
+            request_id=request_id,
+            integrity_hash=integrity_hash,
+            verified=verified,
+            proof_type=str(envelope.get("proof_type", "zk-ready-integrity-envelope")),
+            envelope=envelope,
+            layer_statuses={"L6": str(envelope.get("proof_type", "zk-ready-integrity-envelope"))},
+        )
+
+    async def governance_evaluate(
+        self,
+        payload: GovernanceEvaluateRequest,
+        request_id: str,
+    ) -> GovernanceEvaluateResponse:
+        await l8_governance.enforce_preflight(payload.recent_request_count)
+        result = await l8_governance.run()
+        return GovernanceEvaluateResponse(
+            request_id=request_id,
+            allowed=True,
+            risk_score=int(result.get("risk_score", 0)),
+            status=str(result.get("status", "active")),
+            layer_statuses={"L8": str(result.get("status", "active"))},
+        )
+
+    async def handshake_log(
+        self,
+        payload: HandshakeLogRequest,
+        request_id: str,
+    ) -> HandshakeLogResponse:
+        wallet_address = payload.wallet_address or "0x0000000000000000000000000000000000000000"
+        result = await l9_handshake.run(payload.subject_id, wallet_address, payload.operation)
+        await self.store.append_handshake(
+            {
+                "subject_id": payload.subject_id,
+                "wallet_address": payload.wallet_address,
+                "operation": payload.operation,
+                "metadata": payload.metadata,
+                "created_at": result["timestamp"],
+            }
+        )
+        return HandshakeLogResponse(
+            request_id=request_id,
+            subject_id=payload.subject_id,
+            operation=payload.operation,
+            status=result["status"],
+            timestamp=result["timestamp"],
+            layer_statuses={"L9": result["status"]},
+        )
+
+    async def layer_status(self, request_id: str) -> LayerStatusResponse:
+        health = await self.health(request_id)
+        return LayerStatusResponse(
+            request_id=request_id,
+            active_network=health.active_network,
+            layers=health.layers,
+            infrastructure=health.infrastructure,
+        )
+
     def _extract_payload(self, payload: SealRequest) -> bytes:
+        if payload.plaintext is not None:
+            return payload.plaintext.encode("utf-8")
+        assert payload.file_content_base64 is not None
+        return base64.b64decode(payload.file_content_base64.encode("ascii"))
+
+    def _extract_audit_payload(self, payload: AuditEvaluateRequest) -> bytes:
         if payload.plaintext is not None:
             return payload.plaintext.encode("utf-8")
         assert payload.file_content_base64 is not None
@@ -647,7 +823,7 @@ class IntegrityPipeline:
                 "status": status,
                 "layer_failed": layer_failed,
                 "payload_metadata": payload_metadata,
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": self.now_iso(),
             }
         )
 

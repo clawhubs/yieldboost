@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const ipHits = new Map<string, number[]>();
+const DEV_PORTAL_HOST = "dev.yieldboostai.xyz";
 type EdgeRatelimit = {
   limit: (identifier: string) => Promise<{ success: boolean }>;
 };
@@ -45,8 +46,39 @@ async function getRatelimit() {
   return upstashRatelimit;
 }
 
+function isStaticPath(pathname: string) {
+  return (
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/favicon") ||
+    pathname.startsWith("/icon") ||
+    pathname.startsWith("/images") ||
+    pathname.startsWith("/readme") ||
+    /\.[a-zA-Z0-9]+$/.test(pathname)
+  );
+}
+
 export async function middleware(req: NextRequest) {
-  if (!req.nextUrl.pathname.startsWith("/api/")) {
+  const host = (req.headers.get("x-forwarded-host") || req.headers.get("host") || "").split(":")[0].toLowerCase();
+  const pathname = req.nextUrl.pathname;
+
+  if (host === DEV_PORTAL_HOST && !isStaticPath(pathname)) {
+    if (pathname.startsWith("/dev/api/")) {
+      return NextResponse.next();
+    }
+
+    if (pathname === "/dev" || pathname.startsWith("/dev/")) {
+      const redirected = req.nextUrl.clone();
+      redirected.pathname = pathname === "/dev" ? "/" : pathname.replace(/^\/dev/, "");
+      return NextResponse.redirect(redirected, 308);
+    }
+
+    const rewritten = req.nextUrl.clone();
+    rewritten.pathname = pathname === "/" ? "/dev" : `/dev${pathname}`;
+    return NextResponse.rewrite(rewritten);
+  }
+
+  if (!pathname.startsWith("/api/")) {
     return NextResponse.next();
   }
 
@@ -81,5 +113,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: "/api/:path*",
+  matcher: "/:path*",
 };

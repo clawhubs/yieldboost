@@ -224,13 +224,53 @@ interface AdminStatsResponse {
   }[];
 }
 
+const PUBLIC_INTEGRITY_API_BASE = "https://api.yieldboostai.xyz";
+
+function isPublicProductionHost(hostname: string) {
+  return hostname === "yieldboostai.xyz" || hostname.endsWith(".yieldboostai.xyz");
+}
+
+function isUnsafePublicApiBase(value: string) {
+  try {
+    const url = new URL(value);
+    return (
+      url.protocol !== "https:" ||
+      /^\d{1,3}(\.\d{1,3}){3}$/.test(url.hostname) ||
+      url.hostname === "localhost" ||
+      url.hostname === "127.0.0.1"
+    );
+  } catch {
+    return true;
+  }
+}
+
 function getApiBase() {
   const configured = process.env.NEXT_PUBLIC_INTEGRITY_API_BASE_URL?.trim();
-  if (configured) return configured.replace(/\/$/, "");
-  if (typeof window !== "undefined" && window.location.hostname.includes("yieldboostai")) {
-    return "https://api.yieldboostai.xyz";
+  if (typeof window !== "undefined") {
+    const hostname = window.location.hostname.toLowerCase();
+    if (isPublicProductionHost(hostname)) {
+      if (configured && !isUnsafePublicApiBase(configured)) {
+        return configured.replace(/\/$/, "");
+      }
+      return PUBLIC_INTEGRITY_API_BASE;
+    }
+  }
+  if (configured) {
+    return configured.replace(/\/$/, "");
   }
   return "http://127.0.0.1:8010";
+}
+
+function getApiHeaders(extra?: HeadersInit) {
+  const apiKey = process.env.NEXT_PUBLIC_INTEGRITY_API_KEY?.trim();
+  const base: Record<string, string> = {};
+  if (apiKey) {
+    base["X-API-Key"] = apiKey;
+  }
+  return {
+    ...base,
+    ...(extra as Record<string, string> | undefined),
+  };
 }
 
 function shortAddress(value?: string | null) {
@@ -257,7 +297,7 @@ async function fetchJson<T>(
   const response = await fetch(`${getApiBase()}${path}`, {
     ...init,
     headers: {
-      ...(init?.headers ?? {}),
+      ...getApiHeaders(init?.headers),
     },
   });
   const data = await response.json().catch(() => null);
@@ -408,7 +448,7 @@ function VaultDashboardInner() {
       return;
     }
     const data = await fetchJson<VaultListResponse>(
-      `/v1/vault?wallet_address=${address}&network=testnet`,
+      `/v1/integrity/records?wallet_address=${address}&network=testnet`,
     );
     setVaultItems(data.items);
   }, [address]);
@@ -504,7 +544,7 @@ function VaultDashboardInner() {
         form.append("file_name", "sealed-note.txt");
       }
 
-      const result = await fetchJson<SealResponse>("/v1/vault/seal", {
+      const result = await fetchJson<SealResponse>("/v1/integrity/seal", {
         method: "POST",
         body: form,
       });
@@ -563,7 +603,7 @@ function VaultDashboardInner() {
       const signature = await signTypedDataAsync(typedData);
 
       setStatusText("TEE decrypting sealed blob");
-      const data = await fetchJson<UnsealResponse>("/v1/vault/unseal", {
+      const data = await fetchJson<UnsealResponse>("/v1/integrity/unseal", {
         method: "POST",
         headers: {
           "content-type": "application/json",

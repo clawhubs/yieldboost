@@ -1,0 +1,26 @@
+http:
+  routers:
+    api-yieldboostai-xyz-http:
+      entryPoints:
+        - http
+      rule: Host(`api.yieldboostai.xyz`)
+      middlewares:
+        - api-yieldboostai-xyz-redirect
+      service: api-yieldboostai-xyz
+    api-yieldboostai-xyz-https:
+      entryPoints:
+        - https
+      rule: Host(`api.yieldboostai.xyz`)
+      tls:
+        certResolver: letsencrypt
+      service: api-yieldboostai-xyz
+  middlewares:
+    api-yieldboostai-xyz-redirect:
+      redirectScheme:
+        scheme: https
+        permanent: true
+  services:
+    api-yieldboostai-xyz:
+      loadBalancer:
+        servers:
+          - url: http://host.docker.internal:8010

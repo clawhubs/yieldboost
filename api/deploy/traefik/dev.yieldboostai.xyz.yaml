@@ -1,0 +1,26 @@
+http:
+  routers:
+    dev-yieldboostai-xyz-http:
+      entryPoints:
+        - http
+      rule: Host(`dev.yieldboostai.xyz`)
+      middlewares:
+        - dev-yieldboostai-xyz-redirect
+      service: dev-yieldboostai-xyz
+    dev-yieldboostai-xyz-https:
+      entryPoints:
+        - https
+      rule: Host(`dev.yieldboostai.xyz`)
+      tls:
+        certResolver: letsencrypt
+      service: dev-yieldboostai-xyz
+  middlewares:
+    dev-yieldboostai-xyz-redirect:
+      redirectScheme:
+        scheme: https
+        permanent: true
+  services:
+    dev-yieldboostai-xyz:
+      loadBalancer:
+        servers:
+          - url: http://host.docker.internal:3000

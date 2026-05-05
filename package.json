@@ -10,6 +10,7 @@
     "start:vps": "next start --hostname 0.0.0.0 --port 3000",
     "api:dev": "uv run --project api python -m uvicorn api.app.main:app --host 0.0.0.0 --port 8010 --reload",
     "api:test": "cd api && uv run pytest tests -q",
+    "sdk:check": "tsc -p sdk/yieldboost-ai-sdk/tsconfig.json --noEmit",
     "deploy:vps": "bash scripts/deploy-vps.sh",
     "lint": "eslint . --max-warnings=0",
     "test:ui": "playwright test",

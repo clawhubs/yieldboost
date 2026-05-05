@@ -1,10 +1,24 @@
-# YieldBoost Integrity API
+# YieldBoost AI 9-Layer Integrity API
 
 FastAPI service untuk `api.yieldboostai.xyz` yang menjalankan 9-layer integrity pipeline secara async dan terpisah dari app Next.js utama.
 
 Mode operasional yang disarankan saat ini: `testnet-first, mainnet-ready`.
 
-## Endpoint
+## Public Endpoint Surface
+
+- `POST /v1/integrity/seal`
+- `POST /v1/integrity/unseal`
+- `GET /v1/integrity/records?wallet_address=0x...&network=testnet`
+- `GET /v1/integrity/{storage_id}/metadata`
+- `POST /v1/blacklist/check`
+- `POST /v1/audit/evaluate`
+- `POST /v1/proof/run`
+- `POST /v1/governance/evaluate`
+- `POST /v1/handshake/log`
+- `GET /v1/status/layers`
+- `GET /v1/health`
+
+## Internal / Compatibility Surface
 
 - `POST /v1/auth/challenge`
 - `POST /v1/vault/seal`
@@ -13,7 +27,10 @@ Mode operasional yang disarankan saat ini: `testnet-first, mainnet-ready`.
 - `GET /v1/vault/{storage_id}/metadata`
 - `GET /v1/admin/public-stats`
 - `GET /v1/admin/stats`
-- `GET /v1/health`
+- `GET /v1/admin/dashboard`
+- `GET /v1/admin/api-keys`
+- `POST /v1/admin/api-keys`
+- `POST /v1/admin/api-keys/{key_id}/revoke`
 
 ## Jalankan lokal
 
@@ -30,30 +47,83 @@ Template env simetris untuk `testnet` dan `mainnet` tersedia di [`api/.env.examp
 - Local fallback store ditulis ke `.artifacts/integrity-api-store.local.json`.
 - Semua percobaan seal/unseal ditulis ke `security_logs`; jika `SECURITY_LOGS_DATABASE_URL` atau `DATABASE_URL` terisi, API juga membuat/mengisi tabel PostgreSQL/Supabase dari `api/migrations/001_security_logs.sql`.
 - Default network dikontrol oleh `INTEGRITY_API_NETWORK`. Gunakan `testnet` dulu untuk integrasi, lalu aktifkan `mainnet` saat flow sudah stabil.
-- Auth production-beta memakai challenge satu kali pakai. Klien harus meminta challenge dulu, lalu menandatangani message untuk `seal`; `unseal` mendukung EIP-712 typed data yang mengikat `challenge_id`, wallet, network, dan `storage_id`.
+- Auth production-beta masih memakai challenge satu kali pakai di belakang layar. Surface publik sekarang diarahkan ke `/v1/integrity/*`, sementara helper challenge dipertahankan sebagai mekanisme internal / low-level compatibility.
+- Managed API keys sekarang bisa dibuat dan direvoke lewat admin surface. Praktik yang disarankan: satu API key per developer app, sementara end-user tetap memakai wallet signature sebagai sumber ownership.
+- Managed API keys sekarang membawa scope platform. Default key baru bisa mengakses integrity, audit, blacklist, proof, governance, handshake, dan status surface.
+- Developer portal UI disiapkan terpisah di Next.js route `/dev` agar nantinya mudah dipetakan ke `dev.yieldboostai.xyz` tanpa mencampur UI developer dengan app utama atau API machine surface.
+- Raw managed API key hanya dikembalikan satu kali saat dibuat. Server menyimpan representasi hash saja, jadi jika partner kehilangan raw key maka recovery yang benar adalah revoke lalu mint key baru.
+- SDK TypeScript resmi sekarang tersedia di `sdk/yieldboost-ai-sdk` sebagai source-ready package yang bisa dipublish atau langsung di-vendor ke app partner.
+
+## Integrasi yang disarankan
+
+Urutan untuk developer partner:
+
+1. Login ke `dev.yieldboostai.xyz` dengan wallet.
+2. Buat satu managed API key per app dari dashboard.
+3. Simpan raw key di secret manager partner.
+4. Saat user akhir memakai integrity flow, app atau SDK menyiapkan wallet authorization.
+5. User sign authorization dengan wallet mereka.
+6. App partner kirim request platform seperti `integrity/seal`, `audit/evaluate`, atau `proof/run` dengan `X-API-Key` yang sesuai scope.
+
+Pembagian identity:
+
+- API key = identitas app partner
+- wallet login portal = identitas developer/operator
+- wallet signature `seal/unseal` = identitas pemilik integrity record
+
+## SDK dan contoh kode
+
+Source SDK TypeScript ada di `sdk/yieldboost-ai-sdk`.
+
+Contoh server Node:
+
+```ts
+import { YieldBoostClient, sealWithSigner } from "yieldboost-ai-sdk";
+import { Wallet } from "ethers";
+
+const client = new YieldBoostClient({
+  apiKey: process.env.YIELDBOOST_API_KEY!,
+  baseUrl: "https://api.yieldboostai.xyz",
+});
+
+const signer = new Wallet(process.env.TEST_WALLET_PRIVATE_KEY!);
+
+const sealed = await sealWithSigner(client, signer, {
+  network: "testnet",
+  plaintext: "confidential payload",
+  metadata: {
+    tenant: "acme-app",
+    purpose: "proof-archive",
+  },
+});
+```
+
+Contoh browser wallet:
+
+```ts
+import { YieldBoostClient, sealWithBrowserWallet } from "yieldboost-ai-sdk";
+
+const client = new YieldBoostClient({
+  apiKey: import.meta.env.VITE_YIELDBOOST_API_KEY,
+});
+
+const sealed = await sealWithBrowserWallet(client, {
+  provider: window.ethereum,
+  network: "testnet",
+  plaintext: "wallet-owned secret",
+});
+```
 
 ## Kontrak API ringkas
 
-### `POST /v1/auth/challenge`
+### `POST /v1/integrity/seal`
 
 ```json
 {
-  "operation": "seal",
   "network": "testnet",
-  "wallet_address": "0xabc..."
-}
-```
-
-Respons mengandung `challenge_id`, `message`, `issued_at`, dan `expires_at`. Message itu yang wajib ditandatangani wallet.
-
-### `POST /v1/vault/seal`
-
-```json
-{
-  "challenge_id": "chl_...",
   "wallet_address": "0xabc...",
   "signature_kind": "eip191",
-  "message": "Seal vault request for app example",
+  "message": "Seal integrity request for app example",
   "signature": "0x...",
   "plaintext": "secret payload",
   "mime_type": "text/plain",
@@ -90,14 +160,13 @@ Respons:
 }
 ```
 
-### `POST /v1/vault/unseal`
+### `POST /v1/integrity/unseal`
 
 ```json
 {
-  "challenge_id": "chl_...",
   "wallet_address": "0xabc...",
   "signature_kind": "eip712",
-  "message": "Unseal vault request for app example",
+  "message": "Unseal integrity request for app example",
   "typed_data": {
     "domain": {
       "name": "YieldBoost Integrity API",
@@ -129,13 +198,28 @@ Respons:
 }
 ```
 
-### `GET /v1/admin/stats`
+### `GET /v1/integrity/{storage_id}/metadata`
 
-Founder-only endpoint. Kirim header `x-wallet-address: 0xFounder...`; jika `INTEGRITY_API_KEYS` aktif, sertakan `x-api-key` juga. Respons berisi `total_deflected_attacks`, agregasi failed unseal per wallet, dan `recent_logs`.
+```json
+{
+  "storage_id": "vault_...",
+  "integrity_hash": "7d8c...",
+  "storage_tx_hash": "0x...",
+  "anchor_tx_hash": "0x..."
+}
+```
 
-### `GET /v1/vault/{storage_id}/metadata`
+### `GET /v1/integrity/records`
 
-Mengembalikan metadata aman seperti `wallet_address`, `payload_sha256`, `storage_root_hash`, `storage_tx_hash`, `integrity_hash`, `storage_mode`, `anchor_tx_hash`, dan `last_unsealed_at` tanpa membocorkan plaintext atau ciphertext.
+List sanitized integrity records for a wallet:
+
+`GET /v1/integrity/records?wallet_address=0x...&network=testnet`
+
+### Internal helpers
+
+- `POST /v1/auth/challenge` tetap ada untuk low-level auth flow
+- `POST /v1/vault/*` tetap ada untuk compatibility transport
+- `GET /v1/admin/*` tetap ada untuk founder/developer portal
 
 ### `GET /v1/health`
 

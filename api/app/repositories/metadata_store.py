@@ -27,6 +27,8 @@ class MetadataStore:
             "handshakes": [],
             "auth_challenges": {},
             "security_logs": [],
+            "developer_api_keys": [],
+            "api_usage_events": [],
         }
 
     async def _write(self, payload: dict[str, Any]) -> None:
@@ -201,6 +203,100 @@ class MetadataStore:
             handshakes.append(handshake)
             payload["handshakes"] = handshakes[-200:]
             await self._write(payload)
+
+    async def list_api_keys(self, include_revoked: bool = True) -> list[dict[str, Any]]:
+        async with self._lock:
+            payload = await self._read()
+            items = payload.get("developer_api_keys", [])
+            if include_revoked:
+                return list(items)
+            return [item for item in items if item.get("status") != "revoked"]
+
+    async def save_api_key(self, record: dict[str, Any]) -> None:
+        async with self._lock:
+            payload = await self._read()
+            items = payload.setdefault("developer_api_keys", [])
+            items.append(record)
+            payload["developer_api_keys"] = items
+            await self._write(payload)
+
+    async def get_api_key_by_hash(self, api_key_hash: str) -> dict[str, Any] | None:
+        async with self._lock:
+            payload = await self._read()
+            for item in payload.get("developer_api_keys", []):
+                if item.get("api_key_hash") == api_key_hash:
+                    return item
+            return None
+
+    async def revoke_api_key(self, key_id: str, revoked_at: str) -> dict[str, Any] | None:
+        async with self._lock:
+            payload = await self._read()
+            items = payload.get("developer_api_keys", [])
+            for index, item in enumerate(items):
+                if item.get("key_id") != key_id:
+                    continue
+                item["status"] = "revoked"
+                item["revoked_at"] = revoked_at
+                items[index] = item
+                payload["developer_api_keys"] = items
+                await self._write(payload)
+                return item
+            return None
+
+    async def append_api_usage(self, event: dict[str, Any]) -> None:
+        async with self._lock:
+            payload = await self._read()
+            usage = payload.setdefault("api_usage_events", [])
+            usage.append(event)
+            payload["api_usage_events"] = usage[-2000:]
+
+            key_id = event.get("key_id")
+            if key_id:
+                items = payload.get("developer_api_keys", [])
+                for index, item in enumerate(items):
+                    if item.get("key_id") != key_id:
+                        continue
+                    item["last_used_at"] = event.get("timestamp")
+                    item["total_requests"] = int(item.get("total_requests") or 0) + 1
+                    if int(event.get("status_code") or 0) >= 400:
+                        item["blocked_requests"] = int(item.get("blocked_requests") or 0) + 1
+                    else:
+                        item["success_requests"] = int(item.get("success_requests") or 0) + 1
+                    items[index] = item
+                    payload["developer_api_keys"] = items
+                    break
+
+            await self._write(payload)
+
+    async def list_api_usage(self, limit: int = 100) -> list[dict[str, Any]]:
+        async with self._lock:
+            payload = await self._read()
+            usage = payload.get("api_usage_events", [])
+            return list(reversed(usage[-limit:]))
+
+    async def summarize_api_usage(self) -> list[dict[str, Any]]:
+        async with self._lock:
+            payload = await self._read()
+            items = payload.get("developer_api_keys", [])
+            ordered = sorted(
+                items,
+                key=lambda item: (
+                    int(item.get("total_requests") or 0),
+                    item.get("last_used_at") or "",
+                ),
+                reverse=True,
+            )
+            return [
+                {
+                    "key_id": item.get("key_id"),
+                    "app_name": item.get("app_name", "Unknown App"),
+                    "total_requests": int(item.get("total_requests") or 0),
+                    "success_requests": int(item.get("success_requests") or 0),
+                    "blocked_requests": int(item.get("blocked_requests") or 0),
+                    "last_used_at": item.get("last_used_at"),
+                }
+                for item in ordered
+            ]
 
     async def save_auth_challenge(self, challenge_id: str, challenge: dict[str, Any]) -> None:
         async with self._lock:

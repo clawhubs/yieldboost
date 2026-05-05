@@ -8,11 +8,15 @@ SHARED_ARTIFACTS_DIR="${SHARED_ARTIFACTS_DIR:-$SHARED_DIR/artifacts}"
 APP_NAME="${APP_NAME:-yieldboost}"
 APP_URL="${APP_URL:-http://68.183.227.162:3000}"
 API_URL="${API_URL:-http://68.183.227.162:8010}"
+PUBLIC_API_URL="${PUBLIC_API_URL:-https://api.yieldboostai.xyz}"
 PUBLIC_SITE_URL="${PUBLIC_SITE_URL:-https://yieldboostai.xyz}"
+DEV_PORTAL_URL="${DEV_PORTAL_URL:-https://dev.yieldboostai.xyz}"
+DEV_PORTAL_API_BASE_URL="${DEV_PORTAL_API_BASE_URL:-https://api.yieldboostai.xyz}"
 ENV_SOURCE="${ENV_SOURCE:-.env.local}"
 API_SERVICE_NAME="${API_SERVICE_NAME:-yieldboost-integrity-api}"
 API_PORT="${API_PORT:-8010}"
 VPS_APP_USER="${VPS_APP_USER:-root}"
+TRAEFIK_DYNAMIC_DIR="${TRAEFIK_DYNAMIC_DIR:-/data/coolify/proxy/dynamic}"
 VPS_APP_HOME="${VPS_APP_HOME:-}"
 if [[ -z "$VPS_APP_HOME" ]]; then
   if [[ "$VPS_APP_USER" == "root" ]]; then
@@ -41,7 +45,9 @@ TMP_ENV="$(mktemp)"
 TMP_API_ENV="$(mktemp)"
 TMP_SERVICE="$(mktemp)"
 TMP_NGINX="$(mktemp)"
-trap 'rm -f "$TMP_ENV" "$TMP_API_ENV" "$TMP_SERVICE" "$TMP_NGINX"' EXIT
+TMP_TRAEFIK="$(mktemp)"
+TMP_DEV_TRAEFIK="$(mktemp)"
+trap 'rm -f "$TMP_ENV" "$TMP_API_ENV" "$TMP_SERVICE" "$TMP_NGINX" "$TMP_TRAEFIK" "$TMP_DEV_TRAEFIK"' EXIT
 cp "$ENV_SOURCE" "$TMP_ENV"
 
 set_env_in_file() {
@@ -67,8 +73,9 @@ remove_env() {
 }
 
 append_or_replace_env "NEXT_PUBLIC_APP_URL" "$APP_URL"
-append_or_replace_env "NEXT_PUBLIC_INTEGRITY_API_BASE_URL" "$API_URL"
+append_or_replace_env "NEXT_PUBLIC_INTEGRITY_API_BASE_URL" "$PUBLIC_API_URL"
 append_or_replace_env "NEXT_PUBLIC_DEFAULT_NETWORK_KEY" "mainnet"
+append_or_replace_env "INTEGRITY_DEV_PORTAL_API_BASE_URL" "$DEV_PORTAL_API_BASE_URL"
 remove_env "KV_REST_API_URL"
 remove_env "KV_REST_API_TOKEN"
 remove_env "UPSTASH_REDIS_REST_URL"
@@ -101,6 +108,11 @@ NODE
 fi
 if [[ -n "$FOUNDER_FROM_ENV" ]]; then
   set_env_in_file "$TMP_ENV" "NEXT_PUBLIC_FOUNDER_WALLET_ADDRESS" "$FOUNDER_FROM_ENV"
+fi
+
+MASTER_KEY_FROM_ENV="$(grep -E '^INTEGRITY_MASTER_KEY=' "$TMP_ENV" | tail -1 | cut -d= -f2- || true)"
+if [[ -n "$MASTER_KEY_FROM_ENV" ]]; then
+  set_env_in_file "$TMP_ENV" "INTEGRITY_DEV_PORTAL_MASTER_KEY" "$MASTER_KEY_FROM_ENV"
 fi
 
 cp "$TMP_ENV" "$TMP_API_ENV"
@@ -149,12 +161,17 @@ server {
 }
 EOF
 
+cp "api/deploy/traefik/api.yieldboostai.xyz.yaml" "$TMP_TRAEFIK"
+cp "api/deploy/traefik/dev.yieldboostai.xyz.yaml" "$TMP_DEV_TRAEFIK"
+
 echo "Syncing env to ${VPS_HOST_ALIAS}:${SHARED_DIR}"
 ssh "$VPS_HOST_ALIAS" "mkdir -p '$APP_DIR' '$SHARED_DIR' '$SHARED_ARTIFACTS_DIR'"
 scp -q "$TMP_ENV" "${VPS_HOST_ALIAS}:${SHARED_DIR}/.env.production.local"
 scp -q "$TMP_API_ENV" "${VPS_HOST_ALIAS}:${SHARED_DIR}/api.env"
 ssh "$VPS_HOST_ALIAS" "chmod 600 '${SHARED_DIR}/.env.production.local'"
 ssh "$VPS_HOST_ALIAS" "chmod 600 '${SHARED_DIR}/api.env'"
+scp -q "$TMP_TRAEFIK" "${VPS_HOST_ALIAS}:/tmp/api.yieldboostai.xyz.yaml"
+scp -q "$TMP_DEV_TRAEFIK" "${VPS_HOST_ALIAS}:/tmp/dev.yieldboostai.xyz.yaml"
 
 echo "Uploading source bundle"
 tar \
@@ -166,10 +183,13 @@ tar \
   --exclude=.env.production.local \
   --exclude=.env.development.local \
   --exclude=.env.test.local \
+  --exclude='Acces Key and token' \
   --exclude=test-results \
   --exclude=playwright-report \
   --exclude=coverage \
   --exclude=.vercel \
+  --exclude=api/.venv \
+  --exclude=api/.pytest_cache \
   -czf - . | ssh "$VPS_HOST_ALIAS" "find '${APP_DIR}' -mindepth 1 -maxdepth 1 -exec rm -rf {} + && tar -xzf - -C '${APP_DIR}'"
 
 echo "Building and reloading ${APP_NAME}"
@@ -198,6 +218,9 @@ ssh "$VPS_HOST_ALIAS" "set -e
   sudo systemctl enable '${API_SERVICE_NAME}'
   sudo systemctl restart '${API_SERVICE_NAME}'
   sudo ufw allow '${API_PORT}/tcp' comment 'YieldBoost Integrity API' >/dev/null 2>&1 || true
+  sudo mkdir -p '${TRAEFIK_DYNAMIC_DIR}'
+  sudo mv '/tmp/api.yieldboostai.xyz.yaml' '${TRAEFIK_DYNAMIC_DIR}/api.yieldboostai.xyz.yaml'
+  sudo mv '/tmp/dev.yieldboostai.xyz.yaml' '${TRAEFIK_DYNAMIC_DIR}/dev.yieldboostai.xyz.yaml'
   if command -v nginx >/dev/null 2>&1; then
     sudo mv '/tmp/api.yieldboostai.xyz.conf' '/etc/nginx/sites-available/api.yieldboostai.xyz.conf'
     sudo ln -sfn '/etc/nginx/sites-available/api.yieldboostai.xyz.conf' '/etc/nginx/sites-enabled/api.yieldboostai.xyz.conf'
@@ -211,3 +234,4 @@ echo
 echo "Deploy complete."
 echo "App URL: ${APP_URL}"
 echo "API URL: ${API_URL}"
+echo "Dev URL: ${DEV_PORTAL_URL}"
