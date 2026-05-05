@@ -658,10 +658,10 @@ function VaultDashboardInner() {
   return (
     <div className="min-h-screen bg-[#050a05] text-[#fffff0]">
       <div
-        className="pointer-events-none fixed inset-0 bg-cover bg-center opacity-85"
+        className="pointer-events-none fixed inset-0 bg-cover bg-center opacity-28"
         style={{
           backgroundImage:
-            "linear-gradient(90deg, rgba(5,10,5,0.92) 0%, rgba(5,10,5,0.58) 48%, rgba(5,10,5,0.86) 100%), linear-gradient(180deg, rgba(5,10,5,0.38) 0%, rgba(5,10,5,0.98) 100%), url('/vault/vault-hacker-bg.png')",
+            "linear-gradient(90deg, rgba(5,10,5,0.9) 0%, rgba(5,10,5,0.72) 48%, rgba(5,10,5,0.88) 100%), linear-gradient(180deg, rgba(5,10,5,0.24) 0%, rgba(5,10,5,0.98) 100%), url('/vault/vault-hacker-bg.png')",
         }}
       />
       <div
@@ -722,9 +722,31 @@ function VaultDashboardInner() {
 
       <main className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 py-6 md:px-8 lg:grid-cols-12">
         <section className="space-y-6 lg:col-span-7">
-          <div className="rounded-lg border border-emerald-400/25 bg-black/45 p-5 shadow-[0_0_60px_rgba(16,185,129,0.08)] backdrop-blur-2xl md:p-6">
-            <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-              <div>
+          <div
+            className="relative overflow-hidden rounded-lg border border-emerald-400/25 bg-black/35 p-5 shadow-[0_0_60px_rgba(16,185,129,0.08)] backdrop-blur-2xl md:p-6"
+            style={{
+              backgroundImage:
+                "linear-gradient(90deg, rgba(5,10,5,0.92) 0%, rgba(5,10,5,0.8) 42%, rgba(5,10,5,0.58) 100%), linear-gradient(180deg, rgba(5,10,5,0.16) 0%, rgba(5,10,5,0.6) 100%), url('/vault/vault-hacker-bg.png')",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          >
+            <div className="absolute inset-y-0 right-0 hidden w-[44%] bg-[linear-gradient(90deg,rgba(5,10,5,0.02)_0%,rgba(5,10,5,0.12)_18%,rgba(5,10,5,0.4)_100%)] md:block" />
+            <div
+              className="absolute inset-y-5 right-5 hidden w-[35%] overflow-hidden rounded-md border border-emerald-300/15 shadow-[0_0_35px_rgba(16,185,129,0.12)] md:block"
+              style={{
+                backgroundImage:
+                  "linear-gradient(180deg, rgba(5,10,5,0.08) 0%, rgba(5,10,5,0.38) 100%), url('/vault/vault-hacker-bg.png')",
+                backgroundSize: "contain",
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "center",
+                backgroundColor: "rgba(5, 10, 5, 0.78)",
+              }}
+            >
+              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,10,5,0.06)_0%,rgba(5,10,5,0)_34%,rgba(5,10,5,0.14)_100%)]" />
+            </div>
+            <div className="relative flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+              <div className="md:max-w-[58%]">
                 <div className="mb-2 inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-300">
                   <Award className="h-4 w-4" />
                   Main Stage Challenge
@@ -744,7 +766,7 @@ function VaultDashboardInner() {
                   </div>
                 </div>
               </div>
-              <div className="rounded-lg border border-emerald-300/20 bg-emerald-400/5 p-4 text-left md:min-w-52">
+              <div className="rounded-lg border border-emerald-300/20 bg-[#07140d]/82 p-4 text-left backdrop-blur md:min-w-52">
                 <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-200/65">
                   Total Deflected Attacks
                 </div>
@@ -756,6 +778,17 @@ function VaultDashboardInner() {
                   security_logs live
                 </div>
               </div>
+            </div>
+            <div
+              className="relative mt-5 h-28 overflow-hidden rounded-md border border-emerald-300/15 bg-[#07140d]/70 shadow-[0_0_30px_rgba(16,185,129,0.1)] md:h-36"
+              style={{
+                backgroundImage:
+                  "linear-gradient(90deg, rgba(5,10,5,0.1) 0%, rgba(5,10,5,0.04) 100%), url('/vault/vault-hacker-bg.png')",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            >
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,10,5,0.04)_0%,rgba(5,10,5,0.28)_100%)]" />
             </div>
           </div>
 
