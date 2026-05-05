@@ -293,6 +293,64 @@ function getApiHeaders(extra?: HeadersInit) {
   };
 }
 
+async function readInjectedChainId() {
+  if (typeof window === "undefined" || !window.ethereum?.request) {
+    return null;
+  }
+
+  try {
+    const raw = await window.ethereum.request({
+      method: "eth_chainId",
+    });
+    if (typeof raw !== "string") return null;
+    const parsed = Number.parseInt(raw, 16);
+    return Number.isFinite(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+async function forceInjectedTestnet() {
+  if (typeof window === "undefined" || !window.ethereum?.request) {
+    return;
+  }
+
+  const chainIdHex = `0x${zeroGTestnet.id.toString(16)}`;
+
+  try {
+    await window.ethereum.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: chainIdHex }],
+    });
+    return;
+  } catch (error) {
+    const code =
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      typeof (error as { code?: unknown }).code === "number"
+        ? (error as { code: number }).code
+        : undefined;
+
+    if (code !== 4902) {
+      throw error;
+    }
+  }
+
+  await window.ethereum.request({
+    method: "wallet_addEthereumChain",
+    params: [
+      {
+        chainId: chainIdHex,
+        chainName: zeroGTestnet.name,
+        nativeCurrency: zeroGTestnet.nativeCurrency,
+        rpcUrls: [zeroGTestnetRpc],
+        blockExplorerUrls: [zeroGTestnetExplorer],
+      },
+    ],
+  });
+}
+
 function shortAddress(value?: string | null) {
   if (!value) return "Not connected";
   return `${value.slice(0, 6)}...${value.slice(-4)}`;
@@ -496,6 +554,14 @@ function VaultDashboardInner() {
   const ensureTestnet = useCallback(async () => {
     if (chainId !== zeroGTestnet.id) {
       await switchChainAsync({ chainId: zeroGTestnet.id });
+    }
+    const providerChainId = await readInjectedChainId();
+    if (providerChainId !== zeroGTestnet.id) {
+      await forceInjectedTestnet();
+    }
+    const verifiedChainId = await readInjectedChainId();
+    if (verifiedChainId !== null && verifiedChainId !== zeroGTestnet.id) {
+      throw new Error("Vault actions are locked to 0G Testnet. Please switch your wallet to 0G Testnet and try again.");
     }
   }, [chainId, switchChainAsync]);
 
@@ -708,7 +774,7 @@ function VaultDashboardInner() {
     }
     setErrorText(null);
     setProcessing("delete");
-    startPipeline("Signing delete challenge");
+    startPipeline("Signing EIP-712 delete proof");
     try {
       await ensureTestnet();
       const challenge = await fetchJson<ChallengeResponse>("/v1/auth/challenge", {
@@ -723,9 +789,14 @@ function VaultDashboardInner() {
           storage_id: item.storage_id,
         }),
       });
-      const signature = await signMessageAsync({
-        message: challenge.message,
+      const typedData = buildVaultActionTypedData({
+        challenge,
+        wallet: address,
+        storageId: item.storage_id,
+        operation: "delete",
+        primaryType: "VaultDelete",
       });
+      const signature = await signTypedDataAsync(typedData);
 
       setStatusText("Removing sealed blob from active vault index");
       const data = await fetchJson<DeleteResponse>("/v1/integrity/delete", {
@@ -737,9 +808,10 @@ function VaultDashboardInner() {
           network: item.network,
           challenge_id: challenge.challenge_id,
           wallet_address: address,
-          signature_kind: "eip191",
+          signature_kind: "eip712",
           signature,
           message: challenge.message,
+          typed_data: typedData,
           storage_id: item.storage_id,
         }),
       });
@@ -764,7 +836,7 @@ function VaultDashboardInner() {
     lastSeal,
     refreshCounters,
     refreshVaults,
-    signMessageAsync,
+    signTypedDataAsync,
     startPipeline,
     stopPipeline,
   ]);
