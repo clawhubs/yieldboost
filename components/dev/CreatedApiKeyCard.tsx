@@ -48,21 +48,40 @@ export default function CreatedApiKeyCard({ apiKey, label }: CreatedApiKeyCardPr
     document.body.removeChild(textarea);
   }
 
+  function downloadEnvSnippet() {
+    const blob = new Blob([`${envSnippet}\n`], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `${(label || "yieldboost-api-key").replace(/[^a-z0-9-_]+/gi, "-").toLowerCase()}.env.txt`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <section className="glass-accent rounded-[24px] p-5">
       <p className="text-[12px] uppercase tracking-[0.2em] text-[#8ff7ea]">Fresh API Key</p>
       <h2 className="mt-2 text-[22px] font-semibold text-white">
         {label ? `${label} is ready.` : "A new API key is ready."}
       </h2>
-      <p className="mt-3 text-[14px] leading-7 text-[#d4f6f1]">
-        The raw key is visible once by design. YieldBoost stores only a hashed version after creation, so if this value is lost the safe recovery path is to rotate and mint a new key.
-      </p>
+      <div className="mt-3 rounded-[18px] border border-[rgba(255,112,112,0.28)] bg-[rgba(255,112,112,0.1)] px-4 py-4">
+        <p className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[#ffb3b3]">
+          Copy this now
+        </p>
+        <p className="mt-2 text-[14px] leading-7 text-[#ffd3d3]">
+          Ini satu-satunya saat raw API key ditampilkan. Daftar managed keys hanya menyimpan
+          preview. Setelah refresh, tutup halaman, atau revoke, raw key ini tidak bisa dilihat
+          lagi.
+        </p>
+      </div>
 
       <div className="mt-4 rounded-[18px] border border-[rgba(255,255,255,0.08)] bg-[rgba(5,12,18,0.55)] px-4 py-4 font-mono text-[13px] text-[#e6fffb]">
         {apiKey}
       </div>
 
-      <div className="mt-4 grid gap-3 md:grid-cols-2">
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
         <button
           type="button"
           onClick={() => copyValue("key", apiKey)}
@@ -76,6 +95,13 @@ export default function CreatedApiKeyCard({ apiKey, label }: CreatedApiKeyCardPr
           className="rounded-[16px] border border-white/10 bg-[rgba(255,255,255,0.06)] px-4 py-3 text-[13px] font-semibold text-white"
         >
           {copied === "env" ? "Copied env snippet" : "Copy env snippet"}
+        </button>
+        <button
+          type="button"
+          onClick={downloadEnvSnippet}
+          className="rounded-[16px] border border-white/10 bg-[rgba(255,255,255,0.06)] px-4 py-3 text-[13px] font-semibold text-white"
+        >
+          Download env file
         </button>
       </div>
 

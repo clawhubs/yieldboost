@@ -1,4 +1,3 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import DeveloperConsoleView from "@/components/dev/DeveloperConsoleView";
@@ -20,10 +19,9 @@ export default async function DeveloperPortalConsolePage() {
     redirect("/dev/apps");
   }
   const setup = getDevPortalSetupState();
-  const [dashboard, apiKeys, cookieStore] = await Promise.all([
+  const [dashboard, apiKeys] = await Promise.all([
     getDeveloperDashboardData(),
     getManagedApiKeys(),
-    cookies(),
   ]);
 
   return (
@@ -32,8 +30,6 @@ export default async function DeveloperPortalConsolePage() {
       setup={setup}
       dashboard={dashboard}
       apiKeys={apiKeys?.items ?? []}
-      createdApiKey={cookieStore.get("dev_portal_created_api_key")?.value ?? null}
-      createdApiKeyLabel={cookieStore.get("dev_portal_created_api_key_label")?.value ?? null}
     />
   );
 }

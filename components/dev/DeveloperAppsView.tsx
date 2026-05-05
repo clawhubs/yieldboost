@@ -1,6 +1,6 @@
-import { createApiKeyAction, revokeApiKeyAction } from "@/app/dev/actions";
-import CreatedApiKeyCard from "@/components/dev/CreatedApiKeyCard";
+import { revokeApiKeyAction } from "@/app/dev/actions";
 import DeveloperPortalShell from "@/components/dev/DeveloperPortalShell";
+import ManagedApiKeyCreateForm from "@/components/dev/ManagedApiKeyCreateForm";
 import type { ManagedApiKey } from "@/lib/dev-portal";
 import { formatDateTime, shortenHash } from "@/lib/dev-portal";
 
@@ -10,15 +10,11 @@ interface DeveloperAppsViewProps {
     role: "owner" | "developer";
   } | null;
   apiKeys: ManagedApiKey[];
-  createdApiKey: string | null;
-  createdApiKeyLabel: string | null;
 }
 
 export default function DeveloperAppsView({
   session,
   apiKeys,
-  createdApiKey,
-  createdApiKeyLabel,
 }: DeveloperAppsViewProps) {
   if (!session) {
     return (
@@ -51,69 +47,16 @@ export default function DeveloperAppsView({
       title="Your wallet is your developer identity."
       description="This dashboard is scoped to the connected wallet. Create project keys, rotate them, and monitor your own API surface without seeing the founder's private operations."
     >
-      {createdApiKey ? (
-        <CreatedApiKeyCard apiKey={createdApiKey} label={createdApiKeyLabel} />
-      ) : null}
-
       <section className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
         <div className="yb-card rounded-[24px] p-6">
           <h2 className="text-[24px] font-semibold text-white">Create API key for your app</h2>
           <p className="mt-3 text-[14px] leading-7 text-[#9db0c0]">
             One wallet can own multiple developer apps. Each app should get its own API key so usage and revocation stay isolated.
           </p>
-
-          <form action={createApiKeyAction} className="mt-5 grid gap-3">
-            <input type="hidden" name="owner_wallet_address" value={session.walletAddress} />
-            <input type="hidden" name="return_path" value="/dev/apps" />
-            <label className="grid gap-2">
-              <span className="text-[12px] uppercase tracking-[0.16em] text-[#8aa2b1]">App name</span>
-              <input
-                name="app_name"
-                required
-                placeholder="Acme Vault SDK"
-                className="glass-inset rounded-[16px] border border-white/8 px-4 py-3 text-[14px] text-white outline-none transition focus:border-[rgba(0,201,177,0.28)]"
-              />
-            </label>
-
-            <label className="grid gap-2">
-              <span className="text-[12px] uppercase tracking-[0.16em] text-[#8aa2b1]">Team or owner label</span>
-              <input
-                name="owner_label"
-                placeholder="Acme Research Team"
-                className="glass-inset rounded-[16px] border border-white/8 px-4 py-3 text-[14px] text-white outline-none transition focus:border-[rgba(0,201,177,0.28)]"
-              />
-            </label>
-
-            <label className="grid gap-2">
-              <span className="text-[12px] uppercase tracking-[0.16em] text-[#8aa2b1]">Environment</span>
-              <select
-                name="environment"
-                defaultValue="testnet"
-                className="glass-inset rounded-[16px] border border-white/8 px-4 py-3 text-[14px] text-white outline-none transition focus:border-[rgba(0,201,177,0.28)]"
-              >
-                <option value="testnet">testnet</option>
-                <option value="mainnet">mainnet</option>
-                <option value="multi">multi</option>
-              </select>
-            </label>
-
-            <label className="grid gap-2">
-              <span className="text-[12px] uppercase tracking-[0.16em] text-[#8aa2b1]">Notes</span>
-              <textarea
-                name="notes"
-                rows={4}
-                placeholder="What this app does, or who maintains it."
-                className="glass-inset rounded-[16px] border border-white/8 px-4 py-3 text-[14px] text-white outline-none transition focus:border-[rgba(0,201,177,0.28)]"
-              />
-            </label>
-
-            <button
-              type="submit"
-              className="yb-teal-button mt-2 rounded-[16px] px-4 py-3 text-[14px] font-semibold text-slate-950"
-            >
-              Generate API key
-            </button>
-          </form>
+          <ManagedApiKeyCreateForm
+            ownerWalletAddress={session.walletAddress}
+            submitLabel="Generate API key"
+          />
         </div>
 
         <div className="grid gap-3 md:grid-cols-2">
@@ -144,6 +87,9 @@ export default function DeveloperAppsView({
                       </span>
                     </div>
                     <p className="mt-2 font-mono text-[13px] text-[#d4f4f0]">{item.key_preview}</p>
+                    <p className="mt-2 text-[12px] uppercase tracking-[0.14em] text-[#f5c67d]">
+                      Preview only. Raw key is never shown here again.
+                    </p>
                     <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-[13px] text-[#8ea4b4]">
                       <span>Owner: {item.owner_label || "Unassigned"}</span>
                       <span>Created: {formatDateTime(item.created_at)}</span>
@@ -166,6 +112,9 @@ export default function DeveloperAppsView({
                     {item.status === "active" ? (
                       <form action={revokeApiKeyAction}>
                         <input type="hidden" name="key_id" value={item.key_id} />
+                        <p className="mb-2 text-[12px] leading-5 text-[#8ea4b4]">
+                          Revoking disables the key. It does not reveal the raw key again.
+                        </p>
                         <button
                           type="submit"
                           className="w-full rounded-[14px] border border-[rgba(255,112,112,0.2)] bg-[rgba(255,112,112,0.08)] px-4 py-3 text-[13px] font-semibold text-[#ff9090]"
