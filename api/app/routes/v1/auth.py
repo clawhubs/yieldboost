@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Header, Request
 
 from ...core.api_keys import ensure_api_access
+from ...core.rate_limiter import enforce_wallet_rate_limit
 from ...schemas.auth import ChallengeRequest, ChallengeResponse
 from ...schemas.common import ErrorResponse
 
@@ -26,5 +27,6 @@ async def create_challenge(
         "delete": "integrity:delete",
     }[payload.operation]
     await ensure_api_access(request, x_api_key, required_scopes=[required_scope])
+    await enforce_wallet_rate_limit(request, operation="challenge", wallet_address=payload.wallet_address)
     pipeline = request.app.state.integrity_pipeline
     return await pipeline.create_auth_challenge(payload, request.state.request_id)

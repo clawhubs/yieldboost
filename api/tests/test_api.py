@@ -291,6 +291,101 @@ def test_vault_seal_allows_secret_payload_but_wrong_wallet_stays_blocked(monkeyp
     assert blocked.json()["layer"] == "ownership"
 
 
+def test_challenge_endpoint_is_rate_limited(monkeypatch, tmp_path):
+    monkeypatch.setenv("INTEGRITY_API_RATE_LIMIT_AUTH_CHALLENGE_WALLET", "1")
+    monkeypatch.setenv("INTEGRITY_API_RATE_LIMIT_AUTH_CHALLENGE_IP", "100")
+    client, _ = _make_client(monkeypatch, tmp_path)
+    account = Account.create()
+    payload = {
+        "operation": "seal",
+        "network": "testnet",
+        "wallet_address": account.address,
+    }
+
+    first = client.post("/v1/auth/challenge", json=payload)
+    second = client.post("/v1/auth/challenge", json=payload)
+
+    assert first.status_code == 200
+    assert second.status_code == 429
+    assert second.json()["layer"] == "L8"
+
+
+def test_seal_and_unseal_endpoints_are_rate_limited(monkeypatch, tmp_path):
+    monkeypatch.setenv("INTEGRITY_API_RATE_LIMIT_AUTH_CHALLENGE_IP", "100")
+    monkeypatch.setenv("INTEGRITY_API_RATE_LIMIT_AUTH_CHALLENGE_WALLET", "100")
+    monkeypatch.setenv("INTEGRITY_API_RATE_LIMIT_SEAL_IP", "100")
+    monkeypatch.setenv("INTEGRITY_API_RATE_LIMIT_SEAL_WALLET", "1")
+    monkeypatch.setenv("INTEGRITY_API_RATE_LIMIT_UNSEAL_IP", "100")
+    monkeypatch.setenv("INTEGRITY_API_RATE_LIMIT_UNSEAL_WALLET", "1")
+    client, _ = _make_client(monkeypatch, tmp_path)
+    account = Account.create()
+
+    first_challenge = _issue_challenge(client, account.address, "seal")
+    first_seal = client.post(
+        "/v1/integrity/seal",
+        json={
+            "network": "testnet",
+            "challenge_id": first_challenge["challenge_id"],
+            "wallet_address": account.address,
+            "signature_kind": "eip191",
+            "message": first_challenge["message"],
+            "signature": _sign_message(account.key, first_challenge["message"]),
+            "plaintext": "first payload",
+            "mime_type": "text/plain",
+        },
+    )
+    assert first_seal.status_code == 200
+    storage_id = first_seal.json()["storage_id"]
+
+    second_challenge = _issue_challenge(client, account.address, "seal")
+    second_seal = client.post(
+        "/v1/integrity/seal",
+        json={
+            "network": "testnet",
+            "challenge_id": second_challenge["challenge_id"],
+            "wallet_address": account.address,
+            "signature_kind": "eip191",
+            "message": second_challenge["message"],
+            "signature": _sign_message(account.key, second_challenge["message"]),
+            "plaintext": "second payload",
+            "mime_type": "text/plain",
+        },
+    )
+    assert second_seal.status_code == 429
+    assert second_seal.json()["layer"] == "L8"
+
+    first_unseal_challenge = _issue_challenge(client, account.address, "unseal", storage_id)
+    first_unseal = client.post(
+        "/v1/integrity/unseal",
+        json={
+            "network": "testnet",
+            "challenge_id": first_unseal_challenge["challenge_id"],
+            "wallet_address": account.address,
+            "signature_kind": "eip191",
+            "message": first_unseal_challenge["message"],
+            "signature": _sign_message(account.key, first_unseal_challenge["message"]),
+            "storage_id": storage_id,
+        },
+    )
+    assert first_unseal.status_code == 200
+
+    second_unseal_challenge = _issue_challenge(client, account.address, "unseal", storage_id)
+    second_unseal = client.post(
+        "/v1/integrity/unseal",
+        json={
+            "network": "testnet",
+            "challenge_id": second_unseal_challenge["challenge_id"],
+            "wallet_address": account.address,
+            "signature_kind": "eip191",
+            "message": second_unseal_challenge["message"],
+            "signature": _sign_message(account.key, second_unseal_challenge["message"]),
+            "storage_id": storage_id,
+        },
+    )
+    assert second_unseal.status_code == 429
+    assert second_unseal.json()["layer"] == "L8"
+
+
 def test_challenge_replay_is_rejected(monkeypatch, tmp_path):
     client, _ = _make_client(monkeypatch, tmp_path)
     account = Account.create()

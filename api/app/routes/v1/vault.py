@@ -7,6 +7,7 @@ from starlette.datastructures import UploadFile as StarletteUploadFile
 
 from ...core.api_keys import ensure_api_access
 from ...core.exceptions import IntegrityError
+from ...core.rate_limiter import enforce_wallet_rate_limit
 from ...schemas.common import ErrorResponse
 from ...schemas.vault import (
     DeleteRequest,
@@ -105,6 +106,7 @@ async def seal_vault(
 ) -> SealResponse:
     await ensure_api_access(request, x_api_key, required_scopes=["integrity:seal"])
     payload = await _parse_seal_request(request)
+    await enforce_wallet_rate_limit(request, operation="seal", wallet_address=payload.wallet_address)
     pipeline = request.app.state.integrity_pipeline
     return await pipeline.seal(payload, request.state.request_id)
 
@@ -158,6 +160,7 @@ async def unseal_vault(
     x_api_key: str | None = Header(default=None),
 ) -> UnsealResponse:
     await ensure_api_access(request, x_api_key, required_scopes=["integrity:unseal"])
+    await enforce_wallet_rate_limit(request, operation="unseal", wallet_address=payload.wallet_address)
     pipeline = request.app.state.integrity_pipeline
     return await pipeline.unseal(payload, request.state.request_id)
 

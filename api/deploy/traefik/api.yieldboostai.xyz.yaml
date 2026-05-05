@@ -23,4 +23,4 @@ http:
     api-yieldboostai-xyz:
       loadBalancer:
         servers:
-          - url: http://host.docker.internal:8010
+          - url: http://172.18.0.1:8010

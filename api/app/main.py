@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 from .core.config import get_settings
 from .core.exceptions import register_exception_handlers
 from .core.logging import configure_logging
+from .core.rate_limiter import RateLimiter, enforce_ip_rate_limit
 from .core.request_context import request_id_var
 from .routes.v1.admin import router as admin_router
 from .routes.v1.auth import router as auth_router
@@ -73,7 +74,9 @@ def create_app() -> FastAPI:
             },
         ],
     )
+    app.state.settings = settings
     app.state.integrity_pipeline = IntegrityPipeline(settings)
+    app.state.rate_limiter = RateLimiter()
     register_exception_handlers(app)
     app.add_middleware(
         CORSMiddleware,
@@ -89,6 +92,21 @@ def create_app() -> FastAPI:
         request_id_var.set(request_id)
         request.state.request_id = request_id
         request.state.request_started_at = datetime.now(timezone.utc)
+        retry_after = await enforce_ip_rate_limit(request)
+        if retry_after is not None:
+            response = JSONResponse(
+                status_code=429,
+                content={
+                    "success": False,
+                    "error": "Too many requests. Please wait before trying again.",
+                    "layer": "L8",
+                    "request_id": request_id,
+                    "detail": {"retry_after_seconds": retry_after, "scope": "ip"},
+                },
+                headers={"Retry-After": str(retry_after)},
+            )
+            response.headers["X-Request-ID"] = request_id
+            return response
         response = await call_next(request)
         response.headers["X-Request-ID"] = request_id
         if request.url.path.startswith("/v1/"):

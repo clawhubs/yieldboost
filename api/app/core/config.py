@@ -40,6 +40,14 @@ class Settings(BaseSettings):
     default_network: Literal["testnet", "mainnet"] = Field(default="testnet", alias="INTEGRITY_API_NETWORK")
     require_auth_challenge: bool = Field(default=True, alias="INTEGRITY_API_REQUIRE_AUTH_CHALLENGE")
     auth_challenge_ttl_seconds: int = Field(default=300, alias="INTEGRITY_API_AUTH_CHALLENGE_TTL_SECONDS")
+    rate_limit_enabled: bool = Field(default=True, alias="INTEGRITY_API_RATE_LIMIT_ENABLED")
+    rate_limit_window_seconds: int = Field(default=60, alias="INTEGRITY_API_RATE_LIMIT_WINDOW_SECONDS")
+    rate_limit_auth_challenge_ip: int = Field(default=60, alias="INTEGRITY_API_RATE_LIMIT_AUTH_CHALLENGE_IP")
+    rate_limit_auth_challenge_wallet: int = Field(default=30, alias="INTEGRITY_API_RATE_LIMIT_AUTH_CHALLENGE_WALLET")
+    rate_limit_seal_ip: int = Field(default=12, alias="INTEGRITY_API_RATE_LIMIT_SEAL_IP")
+    rate_limit_seal_wallet: int = Field(default=6, alias="INTEGRITY_API_RATE_LIMIT_SEAL_WALLET")
+    rate_limit_unseal_ip: int = Field(default=40, alias="INTEGRITY_API_RATE_LIMIT_UNSEAL_IP")
+    rate_limit_unseal_wallet: int = Field(default=20, alias="INTEGRITY_API_RATE_LIMIT_UNSEAL_WALLET")
     cors_origins_raw: str = Field(
         default="http://localhost:3000,http://localhost:3020,http://127.0.0.1:3000,http://127.0.0.1:3020,https://yieldboostai.xyz,https://www.yieldboostai.xyz",
         alias="INTEGRITY_API_CORS_ORIGINS",

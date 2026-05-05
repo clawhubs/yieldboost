@@ -6,6 +6,7 @@ APP_DIR="${APP_DIR:-/opt/yieldboost/current}"
 SHARED_DIR="${SHARED_DIR:-/opt/yieldboost/shared}"
 SHARED_ARTIFACTS_DIR="${SHARED_ARTIFACTS_DIR:-$SHARED_DIR/artifacts}"
 APP_NAME="${APP_NAME:-yieldboost}"
+APP_PORT="${APP_PORT:-3000}"
 APP_URL="${APP_URL:-http://68.183.227.162:3000}"
 API_URL="${API_URL:-http://68.183.227.162:8010}"
 PUBLIC_API_URL="${PUBLIC_API_URL:-https://api.yieldboostai.xyz}"
@@ -204,6 +205,7 @@ ssh "$VPS_HOST_ALIAS" "set -e
   pm2 start ecosystem.config.cjs --only '${APP_NAME}'
   pm2 save
   pm2 status '${APP_NAME}'
+  sudo ufw allow in from 172.18.0.0/16 to any port '${APP_PORT}' proto tcp comment 'YieldBoost internal frontend from proxy' >/dev/null 2>&1 || true
 "
 
 echo "Installing and reloading ${API_SERVICE_NAME}"
@@ -217,7 +219,7 @@ ssh "$VPS_HOST_ALIAS" "set -e
   sudo systemctl daemon-reload
   sudo systemctl enable '${API_SERVICE_NAME}'
   sudo systemctl restart '${API_SERVICE_NAME}'
-  sudo ufw allow '${API_PORT}/tcp' comment 'YieldBoost Integrity API' >/dev/null 2>&1 || true
+  sudo ufw allow in from 172.18.0.0/16 to any port '${API_PORT}' proto tcp comment 'YieldBoost internal API from proxy' >/dev/null 2>&1 || true
   sudo mkdir -p '${TRAEFIK_DYNAMIC_DIR}'
   sudo mv '/tmp/api.yieldboostai.xyz.yaml' '${TRAEFIK_DYNAMIC_DIR}/api.yieldboostai.xyz.yaml'
   sudo mv '/tmp/dev.yieldboostai.xyz.yaml' '${TRAEFIK_DYNAMIC_DIR}/dev.yieldboostai.xyz.yaml'

@@ -23,4 +23,4 @@ http:
     dev-yieldboostai-xyz:
       loadBalancer:
         servers:
-          - url: http://host.docker.internal:3000
+          - url: http://172.18.0.1:3000
