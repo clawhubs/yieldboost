@@ -242,6 +242,11 @@ interface PublicChallengeConfig {
   announcement: string;
 }
 
+interface ChallengeFeedback {
+  tone: "success" | "blocked";
+  message: string;
+}
+
 const PUBLIC_INTEGRITY_API_BASE = "https://api.yieldboostai.xyz";
 const DEFAULT_CHALLENGE_ANNOUNCEMENT =
   "Founder upload is pending. The public target will appear here after the live recording, and every wallet will be able to attempt an unseal against the same vault.";
@@ -472,6 +477,7 @@ function VaultDashboardInner() {
   const [processing, setProcessing] = useState<"seal" | "unseal" | "delete" | null>(null);
   const [statusText, setStatusText] = useState("Vault ready");
   const [errorText, setErrorText] = useState<string | null>(null);
+  const [challengeFeedback, setChallengeFeedback] = useState<ChallengeFeedback | null>(null);
   const [lastSeal, setLastSeal] = useState<SealResponse | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [auditTrailOpen, setAuditTrailOpen] = useState(false);
@@ -611,6 +617,7 @@ function VaultDashboardInner() {
   const sealPayload = useCallback(async () => {
     if (!address || !canSeal) return;
     setErrorText(null);
+    setChallengeFeedback(null);
     setProcessing("seal");
     startPipeline("Triggering 0G testnet gas payment");
     try {
@@ -701,7 +708,13 @@ function VaultDashboardInner() {
 
   const unsealItem = useCallback(async (item: VaultItem) => {
     if (!address) return;
+    const isChallengeAttempt =
+      item.metadata?.challenge_mode === true ||
+      item.storage_id === publicChallenge.storageId;
     setErrorText(null);
+    if (isChallengeAttempt) {
+      setChallengeFeedback(null);
+    }
     setProcessing("unseal");
     startPipeline("Signing EIP-712 unseal proof");
     try {
@@ -746,12 +759,31 @@ function VaultDashboardInner() {
       });
       downloadUnsealedFile(data);
       finishPipeline(data.layer_statuses, "Unsealed and downloaded");
+      if (isChallengeAttempt) {
+        setChallengeFeedback({
+          tone: "success",
+          message:
+            "Challenge unseal completed for this wallet. The target file has been downloaded.",
+        });
+      }
       await refreshVaults();
       await refreshCounters();
     } catch (error) {
       stopPipeline();
-      setStatusText("Unseal blocked");
-      setErrorText(error instanceof Error ? error.message : "Unseal failed.");
+      const message = error instanceof Error ? error.message : "Unseal failed.";
+      if (isChallengeAttempt) {
+        setStatusText("Challenge blocked");
+        setChallengeFeedback({
+          tone: "blocked",
+          message:
+            message === "Only the sealing wallet can unseal this vault."
+              ? "Access denied. Only the sealing wallet can open the live challenge target. Your attempt has been logged."
+              : message,
+        });
+      } else {
+        setStatusText("Unseal blocked");
+        setErrorText(message);
+      }
       await refreshCounters().catch(() => undefined);
     } finally {
       setProcessing(null);
@@ -760,6 +792,7 @@ function VaultDashboardInner() {
     address,
     ensureTestnet,
     finishPipeline,
+    publicChallenge.storageId,
     refreshCounters,
     refreshVaults,
     signTypedDataAsync,
@@ -773,6 +806,7 @@ function VaultDashboardInner() {
       return;
     }
     setErrorText(null);
+    setChallengeFeedback(null);
     setProcessing("delete");
     startPipeline("Signing EIP-712 delete proof");
     try {
@@ -1175,6 +1209,27 @@ function VaultDashboardInner() {
                   : "Founder Upload Pending"}
               </button>
             </div>
+            <AnimatePresence>
+              {challengeFeedback ? (
+                <motion.div
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  className={`mt-4 flex items-start gap-2 rounded-lg border p-3 text-sm ${
+                    challengeFeedback.tone === "success"
+                      ? "border-emerald-300/20 bg-emerald-400/10 text-emerald-50"
+                      : "border-amber-300/20 bg-amber-300/10 text-amber-50"
+                  }`}
+                >
+                  {challengeFeedback.tone === "success" ? (
+                    <Check className="mt-0.5 h-4 w-4 shrink-0" />
+                  ) : (
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                  )}
+                  <span>{challengeFeedback.message}</span>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
           </div>
         </section>
 
