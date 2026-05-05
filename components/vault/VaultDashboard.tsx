@@ -110,7 +110,7 @@ const layers = [
     key: "L3",
     name: "TEE Secure Room",
     icon: Shield,
-    desc: "Ephemeral E2B encryption or decryption.",
+    desc: "TEE sandbox encryption inside a Firecracker VM.",
   },
   {
     id: 4,
@@ -602,7 +602,7 @@ function VaultDashboardInner() {
       });
       const signature = await signTypedDataAsync(typedData);
 
-      setStatusText("TEE decrypting sealed blob");
+      setStatusText("TEE sandbox decrypting sealed blob");
       const data = await fetchJson<UnsealResponse>("/v1/integrity/unseal", {
         method: "POST",
         headers: {
@@ -658,14 +658,22 @@ function VaultDashboardInner() {
   return (
     <div className="min-h-screen bg-[#050a05] text-[#fffff0]">
       <div
-        className="pointer-events-none fixed inset-0 opacity-40"
+        className="pointer-events-none fixed inset-0 bg-cover bg-center opacity-85"
+        style={{
+          backgroundImage:
+            "linear-gradient(90deg, rgba(5,10,5,0.92) 0%, rgba(5,10,5,0.58) 48%, rgba(5,10,5,0.86) 100%), linear-gradient(180deg, rgba(5,10,5,0.38) 0%, rgba(5,10,5,0.98) 100%), url('/vault/vault-hacker-bg.png')",
+        }}
+      />
+      <div
+        className="pointer-events-none fixed inset-0 opacity-25 mix-blend-screen"
         style={{
           backgroundImage:
             "linear-gradient(rgba(16,185,129,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.06) 1px, transparent 1px)",
           backgroundSize: "32px 32px",
         }}
       />
-      <header className="relative z-10 border-b border-emerald-400/15 bg-black/45 px-4 py-4 backdrop-blur-xl md:px-8">
+      <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(180deg,rgba(5,10,5,0)_0%,rgba(5,10,5,0.86)_74%,#050a05_100%)]" />
+      <header className="relative z-10 border-b border-emerald-400/15 bg-black/55 px-4 py-4 backdrop-blur-xl md:px-8">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
             <div className="grid h-10 w-10 place-items-center rounded-lg bg-emerald-400 text-black shadow-[0_0_28px_rgba(16,185,129,0.32)]">
@@ -721,12 +729,20 @@ function VaultDashboardInner() {
                   <Award className="h-4 w-4" />
                   Main Stage Challenge
                 </div>
-                <h1 className="max-w-2xl text-3xl font-black tracking-normal text-[#fffff0] md:text-4xl">
+                <h1 className="max-w-2xl text-3xl font-black tracking-normal text-[#fffff0] md:text-[2.55rem] md:leading-[1.06]">
                   CRACK THE SHIELD: 6-Month Dedicated VPS Prize
                 </h1>
                 <p className="mt-3 max-w-xl text-sm leading-6 text-emerald-50/65">
                   Winner takes the dedicated 8 vCPU / 16 GB RAM node by proving a real bypass against the live vault.
                 </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <div className="rounded-lg border border-emerald-300/20 bg-emerald-400/10 px-3 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-emerald-100">
+                    Prize Value: $168 x 6 months
+                  </div>
+                  <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-emerald-50/70">
+                    Hacker Challenge Live
+                  </div>
+                </div>
               </div>
               <div className="rounded-lg border border-emerald-300/20 bg-emerald-400/5 p-4 text-left md:min-w-52">
                 <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-200/65">
@@ -808,6 +824,16 @@ function VaultDashboardInner() {
                 <Lock className="h-4 w-4" />
                 Seal
               </button>
+            </div>
+            <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <div className="inline-flex items-center gap-2 rounded-lg border border-emerald-300/20 bg-emerald-400/10 px-3 py-2 text-xs font-bold text-emerald-100">
+                <Check className="h-4 w-4 text-emerald-300" />
+                Verified by YieldBoost
+              </div>
+              <div className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-black/35 px-3 py-2 text-xs font-bold text-emerald-50/75">
+                <Shield className="h-4 w-4 text-emerald-300" />
+                Military-Grade 9-Layer Protection
+              </div>
             </div>
             <AnimatePresence>
               {errorText ? (
@@ -989,10 +1015,10 @@ function VaultDashboardInner() {
                   Execution Infrastructure
                 </div>
                 <div className="text-sm font-black text-emerald-200">
-                  E2B one-request-one-sandbox
+                  TEE Sandbox / Firecracker VM
                 </div>
                 <div className="text-xs text-emerald-50/45">
-                  8 vCPU / 16 GB RAM challenge tier
+                  One request, one isolated VM / VPS prize: $168 x 6 months
                 </div>
               </div>
             </div>

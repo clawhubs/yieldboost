@@ -136,7 +136,7 @@ class IntegrityPipeline:
             async with asyncio.timeout(self.settings.request_timeout_seconds):
                 recent = await self.store.count_recent_events(payload.wallet_address, 60)
                 await l8_governance.enforce_preflight(recent)
-                challenge_id = await self._verify_auth_challenge(
+                challenge = await self._verify_auth_challenge(
                     challenge_id=payload.challenge_id,
                     operation="seal",
                     network=payload.network or self.settings.default_network,
@@ -150,10 +150,10 @@ class IntegrityPipeline:
                     wallet_address=payload.wallet_address,
                     signature=payload.signature,
                     signature_kind=payload.signature_kind,
-                    message=payload.message,
+                    message=(challenge or {}).get("message") or payload.message,
                     typed_data=payload.typed_data,
                 )
-                await self._consume_auth_challenge(challenge_id)
+                await self._consume_auth_challenge((challenge or {}).get("challenge_id", ""))
 
                 storage_id = f"vault_{uuid4().hex}"
                 payload_bytes = self._extract_payload(payload)
@@ -171,7 +171,8 @@ class IntegrityPipeline:
                     metadata=metadata,
                 )
 
-                await l1_blacklist.run(self._payload_text_for_blacklist(payload_bytes))
+                # Vault payloads are allowed to be secrets; L1 screens request intent, not stored bytes.
+                await l1_blacklist.run(f"vault seal request {ctx.network}")
                 ctx.layer_statuses["L1"] = "passed"
 
                 ctx.payload_sha256 = await l2_auditor.run(
@@ -354,7 +355,7 @@ class IntegrityPipeline:
         try:
             async with asyncio.timeout(self.settings.request_timeout_seconds):
                 requested_network = payload.network or self.settings.default_network
-                challenge_id = await self._verify_auth_challenge(
+                challenge = await self._verify_auth_challenge(
                     challenge_id=payload.challenge_id,
                     operation="unseal",
                     network=requested_network,
@@ -368,10 +369,10 @@ class IntegrityPipeline:
                     wallet_address=payload.wallet_address,
                     signature=payload.signature,
                     signature_kind=payload.signature_kind,
-                    message=payload.message,
+                    message=(challenge or {}).get("message") or payload.message,
                     typed_data=payload.typed_data,
                 )
-                await self._consume_auth_challenge(challenge_id)
+                await self._consume_auth_challenge((challenge or {}).get("challenge_id", ""))
 
                 record = await self.store.get_vault_record(payload.storage_id)
                 if not record:
@@ -845,6 +846,12 @@ class IntegrityPipeline:
         except UnicodeDecodeError:
             return ""
 
+    @staticmethod
+    def _normalize_auth_message(value: str | None) -> str | None:
+        if value is None:
+            return None
+        return value.replace("\r\n", "\n").replace("\r", "\n")
+
     async def _verify_signature(
         self,
         *,
@@ -879,9 +886,9 @@ class IntegrityPipeline:
         message: str | None,
         typed_data: dict[str, Any] | None,
         signature_kind: str,
-    ) -> str:
+    ) -> dict[str, Any] | None:
         if not self.settings.require_auth_challenge:
-            return ""
+            return None
         if not challenge_id:
             raise IntegrityError("challenge_id is required.", status_code=400, layer="auth")
         challenge = await self.store.get_auth_challenge(challenge_id)
@@ -907,12 +914,13 @@ class IntegrityPipeline:
             raise IntegrityError("Auth challenge wallet mismatch.", status_code=409, layer="auth")
         if (challenge.get("storage_id") or storage_id) and challenge.get("storage_id") != storage_id:
             raise IntegrityError("Auth challenge storage mismatch.", status_code=409, layer="auth")
-        expected_message = challenge.get("message")
-        if signature_kind == "eip191" and (not message or message != expected_message):
+        expected_message = self._normalize_auth_message(challenge.get("message"))
+        provided_message = self._normalize_auth_message(message)
+        if signature_kind == "eip191" and (not provided_message or provided_message != expected_message):
             raise IntegrityError("Signed message does not match the auth challenge.", status_code=409, layer="auth")
         if signature_kind == "eip712" and not self._typed_data_matches_challenge(
             typed_data,
-            expected_message=expected_message,
+            expected_message=challenge.get("message"),
             challenge_id=challenge_id,
             operation=operation,
             network=network,
@@ -920,7 +928,7 @@ class IntegrityPipeline:
             storage_id=storage_id,
         ):
             raise IntegrityError("Signed typed data does not match the auth challenge.", status_code=409, layer="auth")
-        return challenge_id
+        return challenge
 
     async def _consume_auth_challenge(self, challenge_id: str) -> None:
         if not challenge_id:
