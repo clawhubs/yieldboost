@@ -9,6 +9,8 @@ from ...core.api_keys import ensure_api_access
 from ...core.exceptions import IntegrityError
 from ...schemas.common import ErrorResponse
 from ...schemas.vault import (
+    DeleteRequest,
+    DeleteResponse,
     SealRequest,
     SealResponse,
     UnsealRequest,
@@ -158,6 +160,29 @@ async def unseal_vault(
     await ensure_api_access(request, x_api_key, required_scopes=["integrity:unseal"])
     pipeline = request.app.state.integrity_pipeline
     return await pipeline.unseal(payload, request.state.request_id)
+
+
+@legacy_router.post(
+    "/delete",
+    response_model=DeleteResponse,
+    responses={400: {"model": ErrorResponse}, 401: {"model": ErrorResponse}, 403: {"model": ErrorResponse}, 404: {"model": ErrorResponse}, 500: {"model": ErrorResponse}},
+    include_in_schema=False,
+)
+@router.post(
+    "/delete",
+    response_model=DeleteResponse,
+    responses={400: {"model": ErrorResponse}, 401: {"model": ErrorResponse}, 403: {"model": ErrorResponse}, 404: {"model": ErrorResponse}, 500: {"model": ErrorResponse}},
+    summary="Delete an integrity record with wallet authorization",
+    description="Requires a one-time auth challenge plus owner wallet signature before removing the vault record from the active index and dashboard surfaces.",
+)
+async def delete_vault(
+    payload: DeleteRequest,
+    request: Request,
+    x_api_key: str | None = Header(default=None),
+) -> DeleteResponse:
+    await ensure_api_access(request, x_api_key, required_scopes=["integrity:delete"])
+    pipeline = request.app.state.integrity_pipeline
+    return await pipeline.delete(payload, request.state.request_id)
 
 
 @legacy_router.get(

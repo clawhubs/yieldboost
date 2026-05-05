@@ -11,6 +11,7 @@ from .exceptions import IntegrityError
 DEFAULT_PLATFORM_SCOPES = [
     "integrity:seal",
     "integrity:unseal",
+    "integrity:delete",
     "integrity:read",
     "audit:run",
     "blacklist:check",

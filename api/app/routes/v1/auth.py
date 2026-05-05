@@ -20,7 +20,11 @@ async def create_challenge(
     request: Request,
     x_api_key: str | None = Header(default=None),
 ) -> ChallengeResponse:
-    required_scope = "integrity:seal" if payload.operation == "seal" else "integrity:unseal"
+    required_scope = {
+        "seal": "integrity:seal",
+        "unseal": "integrity:unseal",
+        "delete": "integrity:delete",
+    }[payload.operation]
     await ensure_api_access(request, x_api_key, required_scopes=[required_scope])
     pipeline = request.app.state.integrity_pipeline
     return await pipeline.create_auth_challenge(payload, request.state.request_id)

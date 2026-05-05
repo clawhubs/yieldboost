@@ -45,6 +45,8 @@ from ..schemas.platform import (
 from ..schemas.vault import (
     AdminStatsResponse,
     AdminStatsWallet,
+    DeleteRequest,
+    DeleteResponse,
     SealRequest,
     SealResponse,
     SecurityLogItem,
@@ -500,6 +502,130 @@ class IntegrityPipeline:
             await self._append_security_log(
                 wallet_address=payload.wallet_address,
                 action_type="Unseal",
+                status="Blocked",
+                layer_failed=self._layer_from_exception(exc),
+                payload_metadata={
+                    "storage_id": payload.storage_id,
+                    "network": payload.network or self.settings.default_network,
+                    "reason": str(exc),
+                },
+            )
+            raise
+
+    async def delete(self, payload: DeleteRequest, request_id: str) -> DeleteResponse:
+        try:
+            async with asyncio.timeout(self.settings.request_timeout_seconds):
+                requested_network = payload.network or self.settings.default_network
+                challenge = await self._verify_auth_challenge(
+                    challenge_id=payload.challenge_id,
+                    operation="delete",
+                    network=requested_network,
+                    wallet_address=payload.wallet_address,
+                    storage_id=payload.storage_id,
+                    message=payload.message,
+                    typed_data=payload.typed_data,
+                    signature_kind=payload.signature_kind,
+                )
+                await self._verify_signature(
+                    wallet_address=payload.wallet_address,
+                    signature=payload.signature,
+                    signature_kind=payload.signature_kind,
+                    message=(challenge or {}).get("message") or payload.message,
+                    typed_data=payload.typed_data,
+                )
+                await self._consume_auth_challenge((challenge or {}).get("challenge_id", ""))
+
+                record = await self.store.get_vault_record(payload.storage_id)
+                if not record:
+                    raise IntegrityError("Storage record was not found.", status_code=404)
+                if record["wallet_address"].lower() != payload.wallet_address.lower():
+                    raise IntegrityError(
+                        "Only the sealing wallet can delete this vault.",
+                        status_code=403,
+                        layer="ownership",
+                    )
+                if payload.network and record.get("network") and payload.network != record["network"]:
+                    raise IntegrityError(
+                        "Requested network does not match the vault record network.",
+                        status_code=409,
+                        layer="network",
+                    )
+
+                ctx = PipelineContext(
+                    operation="delete",
+                    network=record.get("network", requested_network),
+                    wallet_address=payload.wallet_address,
+                    storage_id=payload.storage_id,
+                    mime_type=record.get("mime_type", "application/octet-stream"),
+                    file_name=record.get("file_name"),
+                    payload_sha256=record.get("payload_sha256"),
+                    integrity_hash=record.get("integrity_hash"),
+                )
+
+                await l1_blacklist.run(payload.message or payload.storage_id)
+                ctx.layer_statuses["L1"] = "passed"
+                ctx.layer_statuses["L2"] = "ownership-verified"
+                ctx.layer_statuses["L3"] = "delete-signed"
+                ctx.layer_statuses["L4"] = "memory-delete"
+                ctx.layer_statuses["L5"] = "record-index-removed"
+                ctx.layer_statuses["L6"] = "integrity-tombstone"
+                ctx.layer_statuses["L7"] = record.get("anchor_mode", "immutable-storage-retained")
+                ctx.layer_statuses["L8"] = "active"
+                ctx.layer_statuses["L9"] = "completed"
+
+                await self.store.delete_vault_record(ctx.storage_id)
+                await self.store.append_event(
+                    {
+                        "type": "delete",
+                        "wallet_address": ctx.wallet_address,
+                        "storage_id": ctx.storage_id,
+                        "created_at": self.now_iso(),
+                    }
+                )
+                await self._append_security_log(
+                    wallet_address=ctx.wallet_address,
+                    action_type="Delete",
+                    status="Success",
+                    payload_metadata={
+                        "storage_id": ctx.storage_id,
+                        "network": ctx.network,
+                        "file_name": ctx.file_name,
+                        "mime_type": ctx.mime_type,
+                        "storage_mode": record.get("storage_mode"),
+                        "anchor_mode": record.get("anchor_mode"),
+                    },
+                )
+
+                return DeleteResponse(
+                    request_id=request_id,
+                    network=ctx.network,
+                    storage_id=ctx.storage_id,
+                    deleted=True,
+                    storage_mode=record.get("storage_mode"),
+                    anchor_mode=record.get("anchor_mode"),
+                    layer_statuses=ctx.layer_statuses,
+                )
+        except TimeoutError as exc:
+            await self._append_security_log(
+                wallet_address=payload.wallet_address,
+                action_type="Delete",
+                status="Blocked",
+                layer_failed="L9",
+                payload_metadata={
+                    "storage_id": payload.storage_id,
+                    "network": payload.network or self.settings.default_network,
+                    "reason": "timeout",
+                },
+            )
+            raise IntegrityError(
+                "Delete operation exceeded the request timeout window.",
+                status_code=504,
+                layer="pipeline",
+            ) from exc
+        except Exception as exc:
+            await self._append_security_log(
+                wallet_address=payload.wallet_address,
+                action_type="Delete",
                 status="Blocked",
                 layer_failed=self._layer_from_exception(exc),
                 payload_metadata={

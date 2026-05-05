@@ -47,6 +47,25 @@ class UnsealRequest(BaseModel):
         return self
 
 
+class DeleteRequest(BaseModel):
+    network: Literal["testnet", "mainnet"] | None = Field(default=None, description="Expected network for the vault record. Defaults to the API's configured default network.")
+    challenge_id: str | None = Field(default=None, description="Server-issued auth challenge identifier.")
+    wallet_address: str = Field(pattern=r"^0x[a-fA-F0-9]{40}$", description="Wallet requesting delete.")
+    signature: str = Field(description="Wallet signature proving requester ownership.")
+    signature_kind: Literal["eip191", "eip712"] = "eip191"
+    message: str | None = None
+    typed_data: dict[str, Any] | None = None
+    storage_id: str = Field(description="Vault storage identifier returned by /seal.")
+
+    @model_validator(mode="after")
+    def validate_signature(self) -> "DeleteRequest":
+        if self.signature_kind == "eip191" and not self.message:
+            raise ValueError("message is required for eip191 signatures")
+        if self.signature_kind == "eip712" and not self.typed_data:
+            raise ValueError("typed_data is required for eip712 signatures")
+        return self
+
+
 class SealResponse(BaseModel):
     success: bool = True
     request_id: str
@@ -72,6 +91,17 @@ class UnsealResponse(BaseModel):
     file_name: str | None = None
     file_content_base64: str | None = None
     mime_type: str
+    layer_statuses: dict[str, str]
+
+
+class DeleteResponse(BaseModel):
+    success: bool = True
+    request_id: str
+    network: Literal["testnet", "mainnet"]
+    storage_id: str
+    deleted: bool = True
+    storage_mode: str | None = None
+    anchor_mode: str | None = None
     layer_statuses: dict[str, str]
 
 
@@ -128,7 +158,7 @@ class VaultListResponse(BaseModel):
 
 class SecurityLogItem(BaseModel):
     wallet_address: str
-    action_type: Literal["Seal", "Unseal"]
+    action_type: Literal["Seal", "Unseal", "Delete"]
     status: Literal["Success", "Blocked"]
     layer_failed: str | None = None
     payload_metadata: dict[str, Any] = Field(default_factory=dict)

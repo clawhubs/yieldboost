@@ -164,7 +164,7 @@ class MetadataStore:
                     create table if not exists security_logs (
                       id bigserial primary key,
                       wallet_address text not null,
-                      action_type text not null check (action_type in ('Seal', 'Unseal')),
+                      action_type text not null check (action_type in ('Seal', 'Unseal', 'Delete')),
                       status text not null check (status in ('Success', 'Blocked')),
                       layer_failed text,
                       payload_metadata jsonb not null default '{}'::jsonb,

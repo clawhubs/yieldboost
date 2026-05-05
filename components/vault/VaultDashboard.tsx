@@ -20,6 +20,7 @@ import {
   Server,
   Shield,
   Terminal,
+  Trash2,
   Upload,
   Wallet,
   X,
@@ -209,6 +210,14 @@ interface UnsealResponse {
   layer_statuses: Record<string, string>;
 }
 
+interface DeleteResponse {
+  storage_id: string;
+  deleted: boolean;
+  storage_mode?: string | null;
+  anchor_mode?: string | null;
+  layer_statuses: Record<string, string>;
+}
+
 interface AdminStatsResponse {
   total_deflected_attacks: number;
   failed_unseal_attempts: {
@@ -218,7 +227,7 @@ interface AdminStatsResponse {
   }[];
   recent_logs: {
     wallet_address: string;
-    action_type: "Seal" | "Unseal";
+    action_type: "Seal" | "Unseal" | "Delete";
     status: "Success" | "Blocked";
     layer_failed?: string | null;
     payload_metadata: Record<string, unknown>;
@@ -318,29 +327,33 @@ async function fetchJson<T>(
   return data as T;
 }
 
-function buildUnsealTypedData(input: {
+function buildVaultActionTypedData(input: {
   challenge: ChallengeResponse;
   wallet: Address;
   storageId: string;
+  operation: "unseal" | "delete";
+  primaryType: "VaultUnseal" | "VaultDelete";
 }) {
   const message = {
     challengeId: input.challenge.challenge_id,
     challenge: input.challenge.message,
-    operation: "unseal",
+    operation: input.operation,
     network: "testnet",
     wallet: input.wallet,
     storageId: input.storageId,
   };
-  const types = {
-    VaultUnseal: [
+  const sharedFields = [
       { name: "challengeId", type: "string" },
       { name: "challenge", type: "string" },
       { name: "operation", type: "string" },
       { name: "network", type: "string" },
       { name: "wallet", type: "address" },
       { name: "storageId", type: "string" },
-    ],
-  } as const;
+  ] as const;
+  const types =
+    input.primaryType === "VaultDelete"
+      ? ({ VaultDelete: sharedFields } as const)
+      : ({ VaultUnseal: sharedFields } as const);
 
   return {
     domain: {
@@ -349,7 +362,7 @@ function buildUnsealTypedData(input: {
       chainId: zeroGTestnet.id,
     },
     types,
-    primaryType: "VaultUnseal",
+    primaryType: input.primaryType,
     message,
   } as const;
 }
@@ -398,7 +411,7 @@ function VaultDashboardInner() {
   const [deflectedAttacks, setDeflectedAttacks] = useState(0);
   const [currentLayer, setCurrentLayer] = useState(0);
   const [layerStatuses, setLayerStatuses] = useState<Record<string, string>>({});
-  const [processing, setProcessing] = useState<"seal" | "unseal" | null>(null);
+  const [processing, setProcessing] = useState<"seal" | "unseal" | "delete" | null>(null);
   const [statusText, setStatusText] = useState("Vault ready");
   const [errorText, setErrorText] = useState<string | null>(null);
   const [lastSeal, setLastSeal] = useState<SealResponse | null>(null);
@@ -639,10 +652,12 @@ function VaultDashboardInner() {
           storage_id: item.storage_id,
         }),
       });
-      const typedData = buildUnsealTypedData({
+      const typedData = buildVaultActionTypedData({
         challenge,
         wallet: address,
         storageId: item.storage_id,
+        operation: "unseal",
+        primaryType: "VaultUnseal",
       });
       const signature = await signTypedDataAsync(typedData);
 
@@ -686,6 +701,77 @@ function VaultDashboardInner() {
     stopPipeline,
   ]);
 
+  const deleteItem = useCallback(async (item: VaultItem) => {
+    if (!address) return;
+    setErrorText(null);
+    setProcessing("delete");
+    startPipeline("Signing EIP-712 delete proof");
+    try {
+      await ensureTestnet();
+      const challenge = await fetchJson<ChallengeResponse>("/v1/auth/challenge", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          operation: "delete",
+          network: item.network,
+          wallet_address: address,
+          storage_id: item.storage_id,
+        }),
+      });
+      const typedData = buildVaultActionTypedData({
+        challenge,
+        wallet: address,
+        storageId: item.storage_id,
+        operation: "delete",
+        primaryType: "VaultDelete",
+      });
+      const signature = await signTypedDataAsync(typedData);
+
+      setStatusText("Removing sealed blob from active vault index");
+      const data = await fetchJson<DeleteResponse>("/v1/integrity/delete", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          network: item.network,
+          challenge_id: challenge.challenge_id,
+          wallet_address: address,
+          signature_kind: "eip712",
+          signature,
+          message: challenge.message,
+          typed_data: typedData,
+          storage_id: item.storage_id,
+        }),
+      });
+      finishPipeline(data.layer_statuses, "Deleted from active vault");
+      if (lastSeal?.storage_id === item.storage_id) {
+        setLastSeal(null);
+      }
+      await refreshVaults();
+      await refreshCounters();
+    } catch (error) {
+      stopPipeline();
+      setStatusText("Delete blocked");
+      setErrorText(error instanceof Error ? error.message : "Delete failed.");
+      await refreshCounters().catch(() => undefined);
+    } finally {
+      setProcessing(null);
+    }
+  }, [
+    address,
+    ensureTestnet,
+    finishPipeline,
+    lastSeal,
+    refreshCounters,
+    refreshVaults,
+    signTypedDataAsync,
+    startPipeline,
+    stopPipeline,
+  ]);
+
   const handleDrop = useCallback((event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     setDragActive(false);
@@ -696,6 +782,7 @@ function VaultDashboardInner() {
   const activeStatus = useMemo(() => {
     if (processing === "seal") return "Sealing";
     if (processing === "unseal") return "Unsealing";
+    if (processing === "delete") return "Deleting";
     return statusText;
   }, [processing, statusText]);
 
@@ -1064,15 +1151,26 @@ function VaultDashboardInner() {
                     <Check className="h-3.5 w-3.5 text-emerald-300" />
                     {item.storage_tx_hash ? "0G anchored" : "Local fallback"}
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => void unsealItem(item)}
-                    disabled={Boolean(processing)}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-emerald-300/25 bg-emerald-400/10 px-4 py-3 text-sm font-black text-emerald-100 transition hover:bg-emerald-400/15 disabled:opacity-50"
-                  >
-                    <Download className="h-4 w-4" />
-                    Unseal
-                  </button>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => void unsealItem(item)}
+                      disabled={Boolean(processing)}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-emerald-300/25 bg-emerald-400/10 px-4 py-3 text-sm font-black text-emerald-100 transition hover:bg-emerald-400/15 disabled:opacity-50"
+                    >
+                      <Download className="h-4 w-4" />
+                      Unseal
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void deleteItem(item)}
+                      disabled={Boolean(processing)}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-red-300/20 bg-red-400/10 px-4 py-3 text-sm font-black text-red-100 transition hover:bg-red-400/15 disabled:opacity-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Delete
+                    </button>
+                  </div>
                 </div>
               ))}
               {!vaultItems.length ? (
