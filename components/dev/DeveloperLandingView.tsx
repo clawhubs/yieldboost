@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import DevPortalAccessCard from "@/components/dev/DevPortalAccessCard";
+import DevPlanActionButton from "@/components/dev/DevPlanActionButton";
 import DeveloperPortalShell from "@/components/dev/DeveloperPortalShell";
 import { getDevPortalSetupState } from "@/lib/dev-portal";
 import { YA_API_PLANS } from "@/lib/ya-api-plans";
@@ -59,8 +60,8 @@ export default function DeveloperLandingView({
               Every vault request passes through nine sequential control planes — from hallucination blacklist to neural handshake — before it earns the right to persist, unseal, or anchor.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Link href={session ? "/dev/apps" : "/dev"} className="yb-teal-button inline-flex items-center gap-2.5 rounded-xl px-7 py-3.5 text-[15px] font-bold text-slate-950">
-                {session ? "Create API key" : "Connect wallet to start"}
+              <Link href="#api-packages" className="yb-teal-button inline-flex items-center gap-2.5 rounded-xl px-7 py-3.5 text-[15px] font-bold text-slate-950">
+                Choose API package
                 <ArrowRight className="h-4.5 w-4.5" />
               </Link>
               <Link href="/dev/docs" className="inline-flex items-center gap-2 rounded-xl border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.05)] px-6 py-3.5 text-[15px] font-bold text-white transition hover:border-[rgba(0,201,177,0.25)] hover:bg-[rgba(0,201,177,0.06)]">
@@ -158,16 +159,15 @@ export default function DeveloperLandingView({
       </section>
 
       {/* ── PRICING CARDS ─────────────────────────────────── */}
-      <section className="fade-in-up fade-in-up-4">
+      <section id="api-packages" className="fade-in-up fade-in-up-4 scroll-mt-8">
         <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-[13px] font-bold uppercase tracking-[0.18em] text-[#72f3c7]">API Packages</p>
             <h2 className="mt-2 text-[30px] font-extrabold tracking-tight text-white md:text-[38px]">Simple YA pricing.</h2>
+            <p className="mt-2 max-w-2xl text-[14px] leading-6 text-[#c8dae6]">
+              Pick a package first. If your wallet is not connected yet, the package button will connect it and open the checkout with that plan selected.
+            </p>
           </div>
-          <Link href={session ? "/dev/apps" : "/dev"} className="yb-teal-button inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-[14px] font-semibold text-slate-950">
-            {session ? "Create API key" : "Connect wallet"}
-            <ArrowRight className="h-4 w-4" />
-          </Link>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -203,17 +203,11 @@ export default function DeveloperLandingView({
                   </div>
                 ))}
               </div>
-              <Link
-                href={session ? "/dev/apps" : "/dev"}
-                className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-[13px] font-semibold transition ${
-                  plan.id === "pro"
-                    ? "yb-teal-button text-slate-950"
-                    : "border border-[rgba(0,201,177,0.18)] bg-[rgba(0,201,177,0.06)] text-[#9cf3e8] hover:border-[rgba(0,201,177,0.35)] hover:bg-[rgba(0,201,177,0.10)]"
-                }`}
-              >
-                {plan.priceYa ? `Buy ${plan.name} with YA` : "Start free"}
-                <ArrowRight className="h-4 w-4" />
-              </Link>
+              <DevPlanActionButton
+                plan={plan}
+                hasSession={Boolean(session)}
+                prominent={plan.id === "pro"}
+              />
             </article>
           ))}
         </div>

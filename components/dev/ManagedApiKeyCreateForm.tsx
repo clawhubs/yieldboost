@@ -31,6 +31,7 @@ interface ManagedApiKeyCreateFormProps {
   ownerWalletAddress?: string | null;
   paymentMode?: "required" | "admin";
   submitLabel?: string;
+  initialPlanId?: YaApiPlan["id"];
 }
 
 interface ProviderError extends Error {
@@ -59,11 +60,12 @@ export default function ManagedApiKeyCreateForm({
   ownerWalletAddress,
   paymentMode = "required",
   submitLabel = "Generate API key",
+  initialPlanId = "builder",
 }: ManagedApiKeyCreateFormProps) {
   const router = useRouter();
   const createdCardRef = useRef<HTMLDivElement | null>(null);
   const [acknowledged, setAcknowledged] = useState(false);
-  const [selectedPlanId, setSelectedPlanId] = useState<YaApiPlan["id"]>("builder");
+  const [selectedPlanId, setSelectedPlanId] = useState<YaApiPlan["id"]>(initialPlanId);
   const [paymentTxHash, setPaymentTxHash] = useState("");
   const [paymentStatus, setPaymentStatus] = useState("");
   const [paymentError, setPaymentError] = useState("");
@@ -92,6 +94,10 @@ export default function ManagedApiKeyCreateForm({
     setActiveLayerIndex(-1);
     setCheckoutGuardComplete(false);
   }, [selectedPlanId]);
+
+  useEffect(() => {
+    setSelectedPlanId(initialPlanId);
+  }, [initialPlanId]);
 
   async function runCheckoutLayerPreview() {
     setCheckoutGuardComplete(false);

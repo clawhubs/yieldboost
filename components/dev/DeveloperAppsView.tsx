@@ -5,6 +5,7 @@ import DeveloperPortalShell from "@/components/dev/DeveloperPortalShell";
 import ManagedApiKeyCreateForm from "@/components/dev/ManagedApiKeyCreateForm";
 import type { ManagedApiKey } from "@/lib/dev-portal";
 import { formatDateTime, shortenHash } from "@/lib/dev-portal";
+import { getYaApiPlan } from "@/lib/ya-api-plans";
 
 interface DeveloperAppsViewProps {
   session: {
@@ -12,11 +13,13 @@ interface DeveloperAppsViewProps {
     role: "owner" | "developer";
   } | null;
   apiKeys: ManagedApiKey[];
+  initialPlanId?: string;
 }
 
 export default function DeveloperAppsView({
   session,
   apiKeys,
+  initialPlanId,
 }: DeveloperAppsViewProps) {
   if (!session) {
     return (
@@ -45,6 +48,7 @@ export default function DeveloperAppsView({
 
   const totalRequests = apiKeys.reduce((sum, item) => sum + item.total_requests, 0);
   const blockedRequests = apiKeys.reduce((sum, item) => sum + item.blocked_requests, 0);
+  const initialPlan = getYaApiPlan(initialPlanId || "builder");
 
   return (
     <DeveloperPortalShell
@@ -72,6 +76,7 @@ export default function DeveloperAppsView({
           <ManagedApiKeyCreateForm
             ownerWalletAddress={session.walletAddress}
             submitLabel="Generate API key"
+            initialPlanId={initialPlan.id}
           />
         </div>
 
