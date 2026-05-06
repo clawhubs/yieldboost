@@ -62,7 +62,7 @@ export default function CreatedApiKeyCard({ apiKey, label }: CreatedApiKeyCardPr
 
   return (
     <section className="glass-accent rounded-[24px] p-5">
-      <p className="text-[12px] uppercase tracking-[0.2em] text-[#8ff7ea]">Fresh API Key</p>
+      <p className="text-[12px] uppercase tracking-[0.2em] text-[#a0b8ca]">Fresh API Key</p>
       <h2 className="mt-2 text-[22px] font-semibold text-white">
         {label ? `${label} is ready.` : "A new API key is ready."}
       </h2>
@@ -71,9 +71,9 @@ export default function CreatedApiKeyCard({ apiKey, label }: CreatedApiKeyCardPr
           Copy this now
         </p>
         <p className="mt-2 text-[14px] leading-7 text-[#ffd3d3]">
-          Ini satu-satunya saat raw API key ditampilkan. Daftar managed keys hanya menyimpan
-          preview. Setelah refresh, tutup halaman, atau revoke, raw key ini tidak bisa dilihat
-          lagi.
+          This is the only time the raw API key is displayed. The managed key list only stores
+          a preview. After refreshing, closing the page, or revoking the key, the raw key
+          cannot be retrieved again.
         </p>
       </div>
 
@@ -106,7 +106,7 @@ export default function CreatedApiKeyCard({ apiKey, label }: CreatedApiKeyCardPr
       </div>
 
       <div className="mt-4 rounded-[18px] border border-white/8 bg-[rgba(255,255,255,0.04)] px-4 py-4">
-        <p className="text-[11px] uppercase tracking-[0.16em] text-[#8aa2b1]">Suggested .env line</p>
+        <p className="text-[11px] uppercase tracking-[0.16em] text-[#c8dae6]">Suggested .env line</p>
         <pre className="mt-3 overflow-x-auto whitespace-pre-wrap font-mono text-[12px] leading-6 text-[#d7f8f2]">
           {envSnippet}
         </pre>

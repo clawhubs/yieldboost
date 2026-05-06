@@ -40,14 +40,14 @@ interface ProviderError extends Error {
 const ERC20_TRANSFER_ABI = ["function transfer(address to,uint256 value) returns (bool)"];
 
 const CHECKOUT_LAYERS = [
-  "L1 Blacklist screen",
-  "L2 Payment auditor",
-  "L3 Secure receipt path",
+  "L1 Blacklist cleared",
+  "L2 Deterministic audit",
+  "L3 Secure room verified",
   "L4 Wallet-bound state",
-  "L5 Chain receipt capture",
-  "L6 ZK-ready proof envelope",
-  "L7 0G transfer anchor",
-  "L8 Safety throttle",
+  "L5 0G receipt anchored",
+  "L6 ZK envelope sealed",
+  "L7 Proof registry sync",
+  "L8 Throttle check passed",
   "L9 Neural handshake log",
 ];
 
@@ -200,21 +200,21 @@ export default function ManagedApiKeyCreateForm({
 
         <div className="grid gap-3">
           <div>
-            <span className="text-[12px] uppercase tracking-[0.16em] text-[#8aa2b1]">
+            <span className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#d0e0ec]">
               API package
             </span>
-            <p className="mt-2 text-[13px] leading-6 text-[#9db0c0]">
+            <p className="mt-1.5 text-[14px] leading-6 text-[#e0eaf2]">
               Paid developer keys are unlocked by a verified YA transfer on 0G Galileo testnet.
             </p>
           </div>
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid gap-2 md:grid-cols-2">
             {YA_API_PLANS.map((plan) => (
               <label
                 key={plan.id}
-                className={`cursor-pointer rounded-[18px] border p-4 transition ${
+                className={`cursor-pointer rounded-xl border p-3.5 transition ${
                   selectedPlan.id === plan.id
-                    ? "border-[rgba(0,201,177,0.42)] bg-[rgba(0,201,177,0.1)]"
-                    : "border-white/8 bg-[rgba(255,255,255,0.03)] hover:border-white/14"
+                    ? "border-[rgba(0,201,177,0.42)] bg-[rgba(0,201,177,0.08)]"
+                    : "border-white/8 bg-[rgba(255,255,255,0.03)] hover:border-white/16"
                 }`}
               >
                 <input
@@ -225,18 +225,21 @@ export default function ManagedApiKeyCreateForm({
                   onChange={() => setSelectedPlanId(plan.id)}
                   className="sr-only"
                 />
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-[15px] font-semibold text-white">{plan.name}</p>
-                    <p className="mt-1 text-[12px] text-[#8aa2b1]">
-                      {plan.apiKeys} key{plan.apiKeys > 1 ? "s" : ""} · {plan.quotaLabel}
-                    </p>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className={`h-2 w-2 rounded-full ${
+                      selectedPlan.id === plan.id ? "bg-[#72f3c7] shadow-[0_0_6px_rgba(114,243,199,0.5)]" : "bg-[#4a5e6d]"
+                    }`} />
+                    <p className="text-[14px] font-semibold text-white">{plan.name}</p>
                   </div>
-                  <span className="rounded-full border border-[rgba(114,243,199,0.25)] px-2 py-1 text-[11px] font-semibold text-[#72f3c7]">
+                  <span className="rounded-full border border-[rgba(114,243,199,0.2)] px-2 py-0.5 text-[11px] font-semibold text-[#72f3c7]">
                     {plan.priceLabel}
                   </span>
                 </div>
-                <p className="mt-3 text-[12px] leading-5 text-[#9cb0c1]">
+                <p className="mt-1.5 pl-4 text-[12px] font-medium text-[#d0e0ec]">
+                  {plan.apiKeys} key{plan.apiKeys > 1 ? "s" : ""} · {plan.quotaLabel}
+                </p>
+                <p className="mt-1 pl-4 text-[12px] leading-5 text-[#c0d4e2]">
                   {plan.features.slice(0, 2).join(" · ")}
                 </p>
               </label>
@@ -245,16 +248,16 @@ export default function ManagedApiKeyCreateForm({
         </div>
 
         {paymentRequired ? (
-          <div className="rounded-[18px] border border-[rgba(0,201,177,0.2)] bg-[rgba(0,201,177,0.07)] px-4 py-4">
+          <div className="rounded-xl border border-[rgba(0,201,177,0.28)] bg-[rgba(0,201,177,0.07)] px-4 py-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[#8ff7ea]">
-                  YA checkout
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#72f3c7]">
+                  YA Checkout
                 </p>
-                <p className="mt-2 text-[14px] leading-6 text-[#bdeee7]">
+                <p className="mt-1.5 text-[14px] font-medium leading-6 text-[#d4f6f1]">
                   Pay {selectedPlan.priceLabel} to unlock the {selectedPlan.name} API package.
                 </p>
-                <p className="mt-2 text-[12px] leading-5 text-[#8fded4]">
+                <p className="mt-1.5 text-[12px] leading-5 text-[#b8ece5]">
                   The paying wallet must match the wallet signed into this developer portal, so a
                   payment receipt cannot be reused by another account.
                 </p>
@@ -263,31 +266,34 @@ export default function ManagedApiKeyCreateForm({
                 type="button"
                 onClick={payWithYa}
                 disabled={pending || Boolean(paymentStatus && !paymentTxHash)}
-                className="yb-teal-button rounded-[14px] px-4 py-3 text-[13px] font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-70"
+                className="yb-teal-button shrink-0 rounded-xl px-5 py-2.5 text-[13px] font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {paymentTxHash ? "Paid" : "Pay with YA"}
               </button>
             </div>
             {paymentStatus ? (
-              <p className="mt-3 break-all text-[13px] leading-6 text-[#9cf3e8]">{paymentStatus}</p>
+              <p className="mt-3 break-all font-mono text-[12px] leading-6 text-[#9cf3e8]">{paymentStatus}</p>
             ) : null}
             {paymentRequired ? (
-              <div className="mt-4 grid gap-2 sm:grid-cols-3">
+              <div className="mt-3 grid gap-1.5 sm:grid-cols-3">
                 {CHECKOUT_LAYERS.map((layer, index) => {
                   const passed = checkoutGuardComplete || index < activeLayerIndex;
                   const active = index === activeLayerIndex && !checkoutGuardComplete;
                   return (
                     <div
                       key={layer}
-                      className={`rounded-[12px] border px-3 py-2 text-[11px] font-semibold ${
+                      className={`rounded-lg border px-3 py-2.5 text-[12px] font-semibold transition-all duration-200 ${
                         passed
-                          ? "border-[rgba(114,243,199,0.24)] bg-[rgba(114,243,199,0.08)] text-[#9cf3e8]"
+                          ? "checkout-layer-passed"
                           : active
-                            ? "border-[rgba(255,211,138,0.28)] bg-[rgba(255,211,138,0.08)] text-[#ffd38a]"
-                            : "border-white/8 bg-[rgba(255,255,255,0.03)] text-[#6f8799]"
+                            ? "checkout-layer-active"
+                            : "checkout-layer-idle"
                       }`}
                     >
-                      {layer}
+                      <span className="flex items-center gap-1.5">
+                        {passed ? <span className="text-[#72f3c7]">&#10003;</span> : active ? <span className="inline-block h-1.5 w-1.5 animate-glow-pulse rounded-full bg-[#8ff7ea]"/> : null}
+                        {layer}
+                      </span>
                     </div>
                   );
                 })}
@@ -298,63 +304,67 @@ export default function ManagedApiKeyCreateForm({
             ) : null}
           </div>
         ) : paymentMode === "admin" ? (
-          <div className="rounded-[18px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] px-4 py-4 text-[13px] leading-6 text-[#9db0c0]">
+          <div className="rounded-[18px] border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.04)] px-4 py-4 text-[14px] leading-6 text-[#e0eaf2]">
             Owner console mode: internal keys can be issued without a YA checkout receipt.
           </div>
         ) : null}
 
-        <label className="grid gap-2">
-          <span className="text-[12px] uppercase tracking-[0.16em] text-[#8aa2b1]">App name</span>
-          <input
-            name="app_name"
-            required
-            placeholder="Acme Vault SDK"
-            className="glass-inset rounded-[16px] border border-white/8 px-4 py-3 text-[14px] text-white outline-none transition focus:border-[rgba(0,201,177,0.28)]"
-          />
-        </label>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="grid gap-1.5">
+            <span className="text-[12px] font-medium uppercase tracking-[0.16em] text-[#d0e0ec]">App name</span>
+            <input
+              name="app_name"
+              required
+              placeholder="Acme Vault SDK"
+              className="glass-inset rounded-xl border border-white/10 px-3.5 py-2.5 text-[14px] text-white placeholder:text-[#7a95a8] outline-none transition focus:border-[rgba(0,201,177,0.35)]"
+            />
+          </label>
 
-        <label className="grid gap-2">
-          <span className="text-[12px] uppercase tracking-[0.16em] text-[#8aa2b1]">Owner label</span>
-          <input
-            name="owner_label"
-            placeholder="Acme Research Team"
-            className="glass-inset rounded-[16px] border border-white/8 px-4 py-3 text-[14px] text-white outline-none transition focus:border-[rgba(0,201,177,0.28)]"
-          />
-        </label>
+          <label className="grid gap-1.5">
+            <span className="text-[12px] font-medium uppercase tracking-[0.16em] text-[#d0e0ec]">Owner label</span>
+            <input
+              name="owner_label"
+              placeholder="Acme Research Team"
+              className="glass-inset rounded-xl border border-white/10 px-3.5 py-2.5 text-[14px] text-white placeholder:text-[#7a95a8] outline-none transition focus:border-[rgba(0,201,177,0.35)]"
+            />
+          </label>
+        </div>
 
-        <label className="grid gap-2">
-          <span className="text-[12px] uppercase tracking-[0.16em] text-[#8aa2b1]">Environment</span>
-          <select
-            name="environment"
-            defaultValue="testnet"
-            className="glass-inset rounded-[16px] border border-white/8 px-4 py-3 text-[14px] text-white outline-none transition focus:border-[rgba(0,201,177,0.28)]"
-          >
-            <option value="testnet">testnet</option>
-            <option value="mainnet">mainnet</option>
-            <option value="multi">multi</option>
-          </select>
-        </label>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="grid gap-1.5">
+            <span className="text-[12px] font-medium uppercase tracking-[0.16em] text-[#d0e0ec]">Environment</span>
+            <select
+              name="environment"
+              defaultValue="testnet"
+              className="glass-inset rounded-xl border border-white/10 px-3.5 py-2.5 text-[14px] text-white placeholder:text-[#7a95a8] outline-none transition focus:border-[rgba(0,201,177,0.35)]"
+            >
+              <option value="testnet">testnet</option>
+              <option value="mainnet">mainnet</option>
+              <option value="multi">multi</option>
+            </select>
+          </label>
 
-        <label className="grid gap-2">
-          <span className="text-[12px] uppercase tracking-[0.16em] text-[#8aa2b1]">Notes</span>
-          <textarea
-            name="notes"
-            rows={4}
-            placeholder="Scope, contract phase, or internal owner notes."
-            className="glass-inset rounded-[16px] border border-white/8 px-4 py-3 text-[14px] text-white outline-none transition focus:border-[rgba(0,201,177,0.28)]"
-          />
-        </label>
+          <label className="grid gap-1.5">
+            <span className="text-[12px] font-medium uppercase tracking-[0.16em] text-[#d0e0ec]">Notes</span>
+            <textarea
+              name="notes"
+              rows={2}
+              placeholder="Scope, contract phase, or internal notes."
+              className="glass-inset rounded-xl border border-white/10 px-3.5 py-2.5 text-[14px] text-white placeholder:text-[#7a95a8] outline-none transition focus:border-[rgba(0,201,177,0.35)]"
+            />
+          </label>
+        </div>
 
-        <div className="rounded-[18px] border border-[rgba(255,184,77,0.22)] bg-[rgba(255,184,77,0.08)] px-4 py-4">
-          <p className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[#ffd38a]">
+        <div className="rounded-xl border border-[rgba(255,184,77,0.30)] bg-[rgba(255,184,77,0.08)] px-4 py-4">
+          <p className="text-[12px] font-bold uppercase tracking-[0.18em] text-[#ffe0a0]">
             Important
           </p>
-          <p className="mt-2 text-[14px] leading-7 text-[#ffe4bb]">
-            Raw API key hanya muncul satu kali setelah key dibuat. Daftar key di bawah hanya
-            menampilkan preview, bukan raw key. Setelah halaman ditutup, di-refresh, atau key
-            di-revoke, raw key tidak bisa dipulihkan lagi.
+          <p className="mt-2 text-[15px] leading-7 text-[#fff0d0]">
+            The raw API key is shown only once after creation. The key list below only displays a
+            preview, not the full key. Once you close or refresh this page, or revoke the key,
+            the raw key cannot be recovered.
           </p>
-          <label className="mt-4 flex items-start gap-3 text-[13px] leading-6 text-[#fff1d6]">
+          <label className="mt-4 flex items-start gap-3 text-[14px] leading-6 text-[#fff4e0]">
             <input
               type="checkbox"
               checked={acknowledged}
@@ -362,8 +372,8 @@ export default function ManagedApiKeyCreateForm({
               className="mt-1 h-4 w-4 rounded border-white/20 bg-transparent"
             />
             <span>
-              Saya paham raw API key harus dicopy saat itu juga, dan tidak bisa dilihat lagi
-              dari daftar key atau setelah revoke.
+              I understand the raw API key must be copied immediately and cannot be viewed
+              again from the key list or after revocation.
             </span>
           </label>
         </div>
@@ -377,7 +387,7 @@ export default function ManagedApiKeyCreateForm({
         <button
           type="submit"
           disabled={!canSubmit}
-          className="yb-teal-button mt-2 rounded-[16px] px-4 py-3 text-[14px] font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-70"
+          className="yb-teal-button mt-1 w-full rounded-xl px-5 py-3.5 text-[15px] font-bold text-slate-950 disabled:cursor-not-allowed disabled:opacity-70"
         >
           {pending ? "Generating..." : submitLabel}
         </button>

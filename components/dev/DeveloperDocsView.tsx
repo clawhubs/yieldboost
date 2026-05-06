@@ -161,7 +161,7 @@ export default function DeveloperDocsView() {
       title="Everything a developer needs to integrate the 9-layer Integrity API without guessing."
       description="This docs surface stays focused on the 9-layer security product itself: integrity seal, integrity unseal, metadata, health, SDK path, and what each request gains from the pipeline."
     >
-      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_360px]">
+      <section className="fade-in-up fade-in-up-1 grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_360px]">
         <div className="yb-card rounded-[24px] p-6 md:p-7">
           <h2 className="text-[26px] font-semibold text-white">Quickstart for partner apps</h2>
           <div className="mt-5 grid gap-3 md:grid-cols-4">
@@ -198,7 +198,7 @@ export default function DeveloperDocsView() {
         <aside className="space-y-4">
           <div className="yb-card rounded-[24px] p-6">
             <h2 className="text-[20px] font-semibold text-white">Portal Wiring</h2>
-            <div className="mt-4 space-y-3 text-[14px] leading-6 text-[#a4b8c7]">
+            <div className="mt-4 space-y-3 text-[14px] leading-6 text-[#c8dae6]">
               <p><span className="text-white">API base:</span> {setup.apiBaseUrl}</p>
               <p><span className="text-white">Admin enabled:</span> {setup.adminEnabled ? "yes" : "no"}</p>
               {!setup.adminEnabled ? (
@@ -209,7 +209,7 @@ export default function DeveloperDocsView() {
 
           <div className="yb-card rounded-[24px] p-6">
             <h2 className="text-[20px] font-semibold text-white">Recommended Login Stance</h2>
-            <div className="mt-4 space-y-3 text-[14px] leading-6 text-[#a4b8c7]">
+            <div className="mt-4 space-y-3 text-[14px] leading-6 text-[#c8dae6]">
               <p><span className="text-white">Developer portal:</span> wallet-first login is the right model because this product is ownership-native.</p>
               <p><span className="text-white">Beta phase:</span> start with a 0G testnet wallet. It keeps the real auth path while lowering operational risk.</p>
               <p><span className="text-white">Mainnet later:</span> same route shape, same payload fields, same app key model. Mainnet should be validation, not a rewrite.</p>
@@ -218,7 +218,7 @@ export default function DeveloperDocsView() {
 
           <div className="yb-card rounded-[24px] p-6">
             <h2 className="text-[20px] font-semibold text-white">Identity Split</h2>
-            <div className="mt-4 space-y-3 text-[14px] leading-6 text-[#a4b8c7]">
+            <div className="mt-4 space-y-3 text-[14px] leading-6 text-[#c8dae6]">
               <p><span className="text-white">Developer app:</span> identified by the managed API key.</p>
               <p><span className="text-white">Portal account:</span> identified by the wallet that logs into `dev.yieldboostai.xyz`.</p>
               <p><span className="text-white">End-user record owner:</span> identified by the wallet that signs `seal` and `unseal` requests.</p>
@@ -227,10 +227,10 @@ export default function DeveloperDocsView() {
         </aside>
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+      <section className="fade-in-up fade-in-up-2 grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
         <div className="yb-card rounded-[24px] p-6 md:p-7">
           <h2 className="text-[24px] font-semibold text-white">Official TypeScript SDK</h2>
-          <p className="mt-3 text-[14px] leading-7 text-[#9db0c0]">
+          <p className="mt-3 text-[14px] leading-7 text-[#c8dae6]">
             The official SDK source now ships inside this repository at `sdk/yieldboost-ai-sdk`. It is ready to vendor or publish, and it wraps the API key header plus the public integrity, audit, proof, governance, handshake, and status surface.
           </p>
           <div className="mt-5 rounded-[20px] bg-[rgba(5,12,18,0.55)] p-4">
@@ -245,7 +245,7 @@ export default function DeveloperDocsView() {
 
         <div className="yb-card rounded-[24px] p-6 md:p-7">
           <h2 className="text-[24px] font-semibold text-white">Raw REST integration</h2>
-          <p className="mt-3 text-[14px] leading-7 text-[#9db0c0]">
+          <p className="mt-3 text-[14px] leading-7 text-[#c8dae6]">
             If you do not want the SDK, keep your integration centered on the platform routes. The lower-level auth handshake exists behind the scenes, but the public story here stays on the 9-layer security surface.
           </p>
           <div className="mt-5 rounded-[20px] bg-[rgba(5,12,18,0.55)] p-4">
@@ -259,9 +259,9 @@ export default function DeveloperDocsView() {
         </div>
       </section>
 
-      <section className="yb-card rounded-[24px] p-6 md:p-7">
+      <section className="fade-in-up fade-in-up-3 yb-card rounded-[24px] p-6 md:p-7">
         <h2 className="text-[24px] font-semibold text-white">Endpoint contract</h2>
-        <p className="mt-3 max-w-4xl text-[14px] leading-7 text-[#9db0c0]">
+        <p className="mt-3 max-w-4xl text-[14px] leading-7 text-[#c8dae6]">
           This page only shows the public surface that expresses the 9-layer security product. Legacy vault-prefixed transport routes are intentionally left out here so the developer story stays clean and separate from the hacker challenge product. Partner teams can use the full record flow or call individual layers as standalone security services.
         </p>
         <div className="mt-5 space-y-3">
@@ -271,17 +271,17 @@ export default function DeveloperDocsView() {
                 <p className="font-mono text-[13px] text-[#d4f4f0]">
                   <span className="text-[#8ff7ea]">{item.method}</span> {item.path}
                 </p>
-                <p className="text-[12px] uppercase tracking-[0.16em] text-[#8aa2b1]">integration surface</p>
+                <p className="text-[12px] uppercase tracking-[0.16em] text-[#96b0c2]">integration surface</p>
               </div>
-              <p className="mt-3 text-[14px] leading-7 text-[#9db0c0]">{item.description}</p>
+              <p className="mt-3 text-[14px] leading-7 text-[#c8dae6]">{item.description}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="yb-card rounded-[24px] p-6 md:p-7">
+      <section className="fade-in-up fade-in-up-4 yb-card rounded-[24px] p-6 md:p-7">
         <h2 className="text-[24px] font-semibold text-white">What every request buys you: the 9-layer stack</h2>
-        <p className="mt-3 max-w-4xl text-[14px] leading-7 text-[#9db0c0]">
+        <p className="mt-3 max-w-4xl text-[14px] leading-7 text-[#c8dae6]">
           This is the part worth being loud about. Partner apps are not just calling a storage endpoint. Every request enters a layered integrity pipeline designed to filter abuse, isolate sensitive computation, persist proof-backed records, and keep an audit trail that survives beyond a single process.
         </p>
         <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -289,7 +289,7 @@ export default function DeveloperDocsView() {
             <article key={id} className="yb-soft-card rounded-[18px] p-4">
               <p className="text-[11px] uppercase tracking-[0.18em] text-[#8ff7ea]">{id}</p>
               <h3 className="mt-2 text-[16px] font-semibold text-white">{title}</h3>
-              <p className="mt-2 text-[13px] leading-6 text-[#9db0c0]">{description}</p>
+              <p className="mt-2 text-[13px] leading-6 text-[#c8dae6]">{description}</p>
             </article>
           ))}
         </div>
@@ -309,9 +309,9 @@ function Quickstep({
 }) {
   return (
     <div className="yb-soft-card rounded-[18px] p-4">
-      <p className="text-[11px] uppercase tracking-[0.18em] text-[#8aa2b1]">{step}</p>
+      <p className="text-[11px] uppercase tracking-[0.18em] text-[#96b0c2]">{step}</p>
       <p className="mt-2 text-[16px] font-semibold text-white">{title}</p>
-      <p className="mt-2 text-[13px] leading-6 text-[#99afbf]">{description}</p>
+      <p className="mt-2 text-[13px] leading-6 text-[#c8dae6]">{description}</p>
     </div>
   );
 }

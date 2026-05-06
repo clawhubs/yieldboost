@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans, Space_Grotesk, Barlow_Condensed } from "next/font/google";
+import { Inter, Plus_Jakarta_Sans, Space_Grotesk, Barlow_Condensed } from "next/font/google";
 import { AppDataProvider } from "@/components/providers/AppDataProvider";
 import "./globals.css";
 
@@ -34,6 +34,11 @@ const condensed = Barlow_Condensed({
   variable: "--font-condensed",
   subsets: ["latin"],
   weight: ["700", "800", "900"],
+});
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
@@ -81,7 +86,7 @@ export default function RootLayout({
     <html lang="en" className="dark" suppressHydrationWarning>
       <body
         suppressHydrationWarning
-        className={`${display.variable} ${body.variable} ${condensed.variable} min-h-screen bg-[#030609] font-sans text-[var(--text-primary)] antialiased`}
+        className={`${display.variable} ${body.variable} ${condensed.variable} ${inter.variable} min-h-screen bg-[#030609] font-sans text-[var(--text-primary)] antialiased`}
       >
         <AppDataProvider>
           <div className="ambient-bg" aria-hidden="true" />

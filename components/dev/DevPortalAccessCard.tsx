@@ -105,17 +105,17 @@ export default function DevPortalAccessCard({ session }: DevPortalAccessCardProp
     return (
       <div className="yb-card rounded-[24px] p-6">
         <div className="flex items-center gap-3">
-          <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[16px] text-[#76f0df]">
+          <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[16px] text-[#a0b8ca]">
             <Shield className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-[12px] uppercase tracking-[0.18em] text-[#8aa2b1]">Portal Session</p>
+            <p className="text-[12px] uppercase tracking-[0.18em] text-[#c8dae6]">Portal Session</p>
             <h2 className="text-[20px] font-semibold text-white">
               {session.role === "owner" ? "Owner access active" : "Developer access active"}
             </h2>
           </div>
         </div>
-        <p className="mt-4 text-[14px] leading-7 text-[#a5b8c7]">
+        <p className="mt-4 text-[14px] leading-7 text-[#c8dae6]">
           Wallet {session.walletAddress.slice(0, 8)}...{session.walletAddress.slice(-4)} is signed in.
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
@@ -142,15 +142,15 @@ export default function DevPortalAccessCard({ session }: DevPortalAccessCardProp
   return (
     <div className="yb-card rounded-[24px] p-6">
       <div className="flex items-center gap-3">
-        <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[16px] text-[#76f0df]">
+        <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[16px] text-[#a0b8ca]">
           <Wallet className="h-5 w-5" />
         </div>
         <div>
-          <p className="text-[12px] uppercase tracking-[0.18em] text-[#8aa2b1]">Wallet Login</p>
+          <p className="text-[12px] uppercase tracking-[0.18em] text-[#c8dae6]">Wallet Login</p>
           <h2 className="text-[20px] font-semibold text-white">Register or sign in with wallet</h2>
         </div>
       </div>
-      <p className="mt-4 text-[14px] leading-7 text-[#a5b8c7]">
+      <p className="mt-4 text-[14px] leading-7 text-[#c8dae6]">
         No email is required. Connect a browser wallet, sign one login message, and the portal will auto-register you as a developer. If the connected wallet is the founder wallet, you go straight to the owner dashboard.
       </p>
       <p className="mt-3 text-[13px] leading-6 text-[#93aabd]">

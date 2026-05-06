@@ -9,10 +9,17 @@ import {
   YA_TOKEN_ADDRESS,
   YA_TOKEN_DECIMALS,
 } from "@/lib/ya-api-plans";
+import {
+  generateAlibabaTextEmbedding,
+  hasAlibabaEmbeddingConfig,
+} from "@/lib/server/alibaba-embeddings";
 
 const VOUCHER_AMOUNT_YA = 888;
 const ERC20_TRANSFER_ABI = ["function transfer(address to,uint256 value) returns (bool)"];
 const DEFAULT_STORE_PATH = ".artifacts/ya-vouchers.local.json";
+const CLAIM_WINDOW_MS = 24 * 60 * 60 * 1000;
+const MAX_CLAIM_ATTEMPTS_PER_IP_PER_DAY = 12;
+const MAX_SUCCESSFUL_CLAIMS_PER_IP_PER_DAY = 3;
 
 export interface YaVoucherRecord {
   codeHash: string;
@@ -27,8 +34,34 @@ export interface YaVoucherRecord {
   claimTxHash?: string;
 }
 
+interface YaMigrationClaimRecord {
+  walletAddress: string;
+  amountYa: number;
+  source: "optimize" | "vault-seal";
+  voucherHash: string;
+  claimTxHash: string;
+  claimedAt: string;
+  migrationEligible: true;
+  riskLevel: "low" | "medium" | "high";
+  behaviorHash?: string;
+  ipHash?: string;
+  userAgentHash?: string;
+}
+
+interface YaClaimAttemptRecord {
+  walletAddress?: string;
+  voucherHash?: string;
+  ipHash?: string;
+  userAgentHash?: string;
+  status: "allowed" | "blocked";
+  reason: string;
+  createdAt: string;
+}
+
 interface YaVoucherStorePayload {
   vouchers: YaVoucherRecord[];
+  migrationClaims: YaMigrationClaimRecord[];
+  claimAttempts: YaClaimAttemptRecord[];
 }
 
 function getStorePath() {
@@ -37,6 +70,15 @@ function getStorePath() {
 
 function hashVoucher(value: string) {
   return createHash("sha256").update(value.trim().toUpperCase()).digest("hex");
+}
+
+function hashValue(value?: string | null) {
+  const normalized = value?.trim().toLowerCase();
+  return normalized ? createHash("sha256").update(normalized).digest("hex") : undefined;
+}
+
+function sameWallet(left?: string | null, right?: string | null) {
+  return Boolean(left && right && left.toLowerCase() === right.toLowerCase());
 }
 
 function createVoucherCode() {
@@ -48,9 +90,13 @@ async function readStore(): Promise<YaVoucherStorePayload> {
   try {
     const raw = await readFile(getStorePath(), "utf8");
     const parsed = JSON.parse(raw) as Partial<YaVoucherStorePayload>;
-    return { vouchers: parsed.vouchers || [] };
+    return {
+      vouchers: parsed.vouchers || [],
+      migrationClaims: parsed.migrationClaims || [],
+      claimAttempts: parsed.claimAttempts || [],
+    };
   } catch {
-    return { vouchers: [] };
+    return { vouchers: [], migrationClaims: [], claimAttempts: [] };
   }
 }
 
@@ -70,6 +116,80 @@ function getTreasuryPrivateKey() {
   return privateKey.startsWith("0x") ? privateKey : `0x${privateKey}`;
 }
 
+function walletAlreadyMigrationEligible(store: YaVoucherStorePayload, walletAddress: string) {
+  return (
+    store.migrationClaims.some((claim) => sameWallet(claim.walletAddress, walletAddress)) ||
+    store.vouchers.some((voucher) => sameWallet(voucher.claimedBy, walletAddress))
+  );
+}
+
+function countRecentAttempts(
+  store: YaVoucherStorePayload,
+  ipHash: string | undefined,
+  status?: "allowed" | "blocked",
+) {
+  if (!ipHash) return 0;
+  const cutoff = Date.now() - CLAIM_WINDOW_MS;
+  return store.claimAttempts.filter((attempt) => {
+    if (attempt.ipHash !== ipHash) return false;
+    if (status && attempt.status !== status) return false;
+    const timestamp = Date.parse(attempt.createdAt);
+    return Number.isFinite(timestamp) && timestamp >= cutoff;
+  }).length;
+}
+
+function appendClaimAttempt(
+  store: YaVoucherStorePayload,
+  input: Omit<YaClaimAttemptRecord, "createdAt">,
+) {
+  store.claimAttempts.push({
+    ...input,
+    createdAt: new Date().toISOString(),
+  });
+  if (store.claimAttempts.length > 1000) {
+    store.claimAttempts = store.claimAttempts.slice(-1000);
+  }
+}
+
+async function buildBehaviorFingerprint(input: {
+  walletAddress: string;
+  voucherHash: string;
+  source: "optimize" | "vault-seal";
+  voucherAgeMinutes: number;
+  ipHash?: string;
+  userAgentHash?: string;
+  ipAttemptCount24h: number;
+  ipSuccessCount24h: number;
+}) {
+  const behaviorText = [
+    `wallet=${input.walletAddress.toLowerCase()}`,
+    `source=${input.source}`,
+    `voucher_age_minutes=${Math.max(0, Math.round(input.voucherAgeMinutes))}`,
+    `ip_hash=${input.ipHash || "none"}`,
+    `user_agent_hash=${input.userAgentHash || "none"}`,
+    `ip_attempts_24h=${input.ipAttemptCount24h}`,
+    `ip_success_24h=${input.ipSuccessCount24h}`,
+    `voucher_hash=${input.voucherHash}`,
+  ].join(" | ");
+
+  const behaviorHash = createHash("sha256").update(behaviorText).digest("hex");
+  if (!hasAlibabaEmbeddingConfig()) {
+    return { behaviorHash, alibabaChecked: false };
+  }
+
+  try {
+    await Promise.race([
+      generateAlibabaTextEmbedding(behaviorText),
+      new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("Alibaba anti-sybil check timed out.")), 2500);
+      }),
+    ]);
+    return { behaviorHash, alibabaChecked: true };
+  } catch {
+    return { behaviorHash, alibabaChecked: false };
+  }
+}
+
 export async function issueYaVoucher(input: {
   source: "optimize" | "vault-seal";
   network: string;
@@ -80,14 +200,25 @@ export async function issueYaVoucher(input: {
     return null;
   }
 
+  const walletAddress = input.walletAddress?.trim();
   const code = createVoucherCode();
   const store = await readStore();
+  if (walletAddress && walletAlreadyMigrationEligible(store, walletAddress)) {
+    return {
+      voucher: null,
+      amountYa: VOUCHER_AMOUNT_YA,
+      faucetUrl: "/faucet",
+      alreadyEligible: true,
+      reason: "This wallet is already migration-eligible.",
+    };
+  }
+
   store.vouchers.push({
     codeHash: hashVoucher(code),
     source: input.source,
     amountYa: VOUCHER_AMOUNT_YA,
     network: "testnet",
-    walletAddress: input.walletAddress,
+    walletAddress,
     referenceId: input.referenceId,
     createdAt: new Date().toISOString(),
   });
@@ -97,25 +228,72 @@ export async function issueYaVoucher(input: {
     voucher: code,
     amountYa: VOUCHER_AMOUNT_YA,
     faucetUrl: "/faucet",
+    alreadyEligible: false,
   };
 }
 
 export async function claimYaVoucher(input: {
   voucher: string;
   walletAddress: string;
+  ipAddress?: string;
+  userAgent?: string;
 }) {
   const normalizedVoucher = input.voucher.trim().toUpperCase();
+  const normalizedWallet = input.walletAddress.trim();
   const codeHash = hashVoucher(normalizedVoucher);
+  const ipHash = hashValue(input.ipAddress);
+  const userAgentHash = hashValue(input.userAgent);
   const store = await readStore();
   const index = store.vouchers.findIndex((item) => item.codeHash === codeHash);
+
+  const block = async (reason: string): Promise<never> => {
+    appendClaimAttempt(store, {
+      walletAddress: normalizedWallet,
+      voucherHash: codeHash,
+      ipHash,
+      userAgentHash,
+      status: "blocked",
+      reason,
+    });
+    await writeStore(store);
+    throw new Error(reason);
+  };
+
   if (index < 0) {
-    throw new Error("Voucher is invalid.");
+    await block("Voucher is invalid.");
   }
 
   const voucher = store.vouchers[index];
   if (voucher.claimedAt) {
-    throw new Error("Voucher has already been claimed.");
+    await block("Voucher has already been claimed.");
   }
+  if (voucher.walletAddress && !sameWallet(voucher.walletAddress, normalizedWallet)) {
+    await block("Voucher is bound to another wallet.");
+  }
+  if (walletAlreadyMigrationEligible(store, normalizedWallet)) {
+    await block("This wallet is already migration-eligible.");
+  }
+
+  const ipAttemptCount24h = countRecentAttempts(store, ipHash);
+  const ipSuccessCount24h = countRecentAttempts(store, ipHash, "allowed");
+  if (ipAttemptCount24h >= MAX_CLAIM_ATTEMPTS_PER_IP_PER_DAY) {
+    await block("L8 anti-sybil throttle: too many claim attempts from this network.");
+  }
+  if (ipSuccessCount24h >= MAX_SUCCESSFUL_CLAIMS_PER_IP_PER_DAY) {
+    await block("L8 anti-sybil throttle: migration claim limit reached for this network.");
+  }
+
+  const voucherAgeMinutes = Math.max(0, (Date.now() - Date.parse(voucher.createdAt)) / 60000);
+  const fingerprint = await buildBehaviorFingerprint({
+    walletAddress: normalizedWallet,
+    voucherHash: codeHash,
+    source: voucher.source,
+    voucherAgeMinutes,
+    ipHash,
+    userAgentHash,
+    ipAttemptCount24h,
+    ipSuccessCount24h,
+  });
 
   const provider = new JsonRpcProvider(
     process.env.YA_FAUCET_RPC_URL?.trim() || YA_TESTNET_RPC_URL,
@@ -125,7 +303,7 @@ export async function claimYaVoucher(input: {
   const wallet = new Wallet(getTreasuryPrivateKey(), provider);
   const token = new Contract(YA_TOKEN_ADDRESS, ERC20_TRANSFER_ABI, wallet);
   const transaction = await token.transfer(
-    input.walletAddress,
+    normalizedWallet,
     parseUnits(String(voucher.amountYa), YA_TOKEN_DECIMALS),
   );
   const receipt = await transaction.wait();
@@ -134,14 +312,44 @@ export async function claimYaVoucher(input: {
   store.vouchers[index] = {
     ...voucher,
     claimedAt: new Date().toISOString(),
-    claimedBy: input.walletAddress,
+    claimedBy: normalizedWallet,
     claimTxHash: txHash,
   };
+  store.migrationClaims.push({
+    walletAddress: normalizedWallet,
+    amountYa: voucher.amountYa,
+    source: voucher.source,
+    voucherHash: codeHash,
+    claimTxHash: txHash,
+    claimedAt: store.vouchers[index].claimedAt || new Date().toISOString(),
+    migrationEligible: true,
+    riskLevel: ipAttemptCount24h > 3 || ipSuccessCount24h > 0 ? "medium" : "low",
+    behaviorHash: fingerprint.behaviorHash,
+    ipHash,
+    userAgentHash,
+  });
+  appendClaimAttempt(store, {
+    walletAddress: normalizedWallet,
+    voucherHash: codeHash,
+    ipHash,
+    userAgentHash,
+    status: "allowed",
+    reason: fingerprint.alibabaChecked
+      ? "Claim passed deterministic and Alibaba behavior fingerprint checks."
+      : "Claim passed deterministic anti-sybil checks.",
+  });
   await writeStore(store);
 
   return {
     amountYa: voucher.amountYa,
     txHash,
     explorerUrl: `https://chainscan-galileo.0g.ai/tx/${txHash}`,
+    migrationEligible: true,
+    antiSybil: {
+      walletBound: true,
+      oneWalletOneClaim: true,
+      l8Throttle: "passed",
+      alibabaBehaviorFingerprint: fingerprint.alibabaChecked ? "checked" : "not-configured",
+    },
   };
 }

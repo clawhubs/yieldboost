@@ -5,6 +5,16 @@ import { claimYaVoucher } from "@/lib/server/ya-faucet";
 
 export const runtime = "nodejs";
 
+function getRequestIp(request: NextRequest) {
+  const forwardedFor = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  return (
+    request.headers.get("cf-connecting-ip")?.trim() ||
+    forwardedFor ||
+    request.headers.get("x-real-ip")?.trim() ||
+    undefined
+  );
+}
+
 export async function POST(request: NextRequest) {
   const body = (await request.json().catch(() => ({}))) as {
     walletAddress?: string;
@@ -21,7 +31,12 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const claimed = await claimYaVoucher({ walletAddress, voucher });
+    const claimed = await claimYaVoucher({
+      walletAddress,
+      voucher,
+      ipAddress: getRequestIp(request),
+      userAgent: request.headers.get("user-agent") || undefined,
+    });
     return NextResponse.json({
       success: true,
       ...claimed,
