@@ -142,22 +142,29 @@ export default function DeveloperLandingView({
         </div>
 
         <div className="yb-card rounded-[24px] p-6">
-          <p className="text-[12px] uppercase tracking-[0.18em] text-[#8aa2b1]">Testnet Token</p>
-          <h2 className="mt-2 text-[24px] font-semibold text-white">YieldBoost AI Token</h2>
-          <div className="mt-5 space-y-3 text-[13px] leading-6 text-[#a5b8c7]">
-            <div className="flex items-center justify-between gap-4 rounded-[14px] border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] px-4 py-3">
-              <span>Symbol</span>
-              <span className="font-semibold text-white">YA</span>
-            </div>
-            <div className="flex items-center justify-between gap-4 rounded-[14px] border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] px-4 py-3">
-              <span>Supply</span>
-              <span className="font-semibold text-white">1,000,000,000</span>
-            </div>
-            <div className="rounded-[14px] border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] px-4 py-3">
-              <span className="text-[#8aa2b1]">Contract</span>
-              <p className="mt-1 break-all font-mono text-[12px] text-white">0xa8018A4920ecA7AF0Df88caCFD5E21b939A678b5</p>
-            </div>
+          <p className="text-[12px] uppercase tracking-[0.18em] text-[#8aa2b1]">Checkout Flow</p>
+          <h2 className="mt-2 text-[24px] font-semibold text-white">From wallet payment to live API key.</h2>
+          <div className="mt-5 space-y-3">
+            {[
+              "Connect a 0G wallet",
+              "Choose an API package",
+              "Pay with YA",
+              "Receive a scoped API key",
+            ].map((step, index) => (
+              <div
+                key={step}
+                className="flex items-center gap-3 rounded-[14px] border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] px-4 py-3"
+              >
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[rgba(114,243,199,0.25)] text-[12px] font-semibold text-[#72f3c7]">
+                  {index + 1}
+                </div>
+                <span className="text-[14px] font-medium text-white">{step}</span>
+              </div>
+            ))}
           </div>
+          <p className="mt-4 text-[13px] leading-6 text-[#9cb0c1]">
+            The public page sells access. Contract details stay in docs and receipts, where builders expect them.
+          </p>
         </div>
       </section>
 
