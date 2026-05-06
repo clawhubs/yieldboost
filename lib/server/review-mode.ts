@@ -890,7 +890,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
           : "white",
     },
     {
-      label: "ZK-Compliance",
+      label: "ZK-Ready Compliance",
       value: latestZkComplianceProof
         ? `${latestZkComplianceProof.policyCompliantPct}%`
         : "Pending",
@@ -900,7 +900,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
       tone: toneForRecordedFeature(latestZkComplianceProof?.status),
     },
     {
-      label: "ZK-Proof",
+      label: "ZKR Envelope",
       value: latestZkReasoningProof
         ? formatFeatureStatus(latestZkReasoningProof.status)
         : "Pending",
@@ -1111,7 +1111,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
         : "Report card runner ready",
     },
     {
-      title: "Deterministic ZK Compliance",
+      title: "Deterministic Compliance",
       status: latestZkComplianceProof
         ? latestZkComplianceProof.status === "verified"
           ? "live"
@@ -1128,7 +1128,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
         : "Compliance verifier ready",
     },
     {
-      title: "Zero-Knowledge Reasoning",
+      title: "ZK-Ready Reasoning",
       status: latestZkReasoningProof
         ? latestZkReasoningProof.status === "failed"
           ? "partial"

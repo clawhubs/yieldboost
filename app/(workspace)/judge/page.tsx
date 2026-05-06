@@ -116,15 +116,15 @@ export default async function JudgePage() {
         : "Open compliance tx on Chainscan",
     },
     {
-      label: "ZK Proof CID",
+      label: "ZKR Envelope CID",
       value: data.latestZkReasoningProof?.proofCid,
-      empty: "No ZK proof CID yet",
+      empty: "No ZKR envelope CID yet",
       href:
         data.latestZkReasoningProof?.proofRegistryExplorerUrl ??
         data.latestZkReasoningProof?.explorerUrl,
       linkLabel: data.latestZkReasoningProof?.proofRegistryExplorerUrl
-        ? "Open ZK proof anchor on Chainscan"
-        : "Open ZK proof tx on Chainscan",
+        ? "Open ZKR envelope anchor on Chainscan"
+        : "Open ZKR envelope tx on Chainscan",
     },
     {
       label: "Governance CID",
