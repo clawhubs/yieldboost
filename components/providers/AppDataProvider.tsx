@@ -38,6 +38,7 @@ import {
   isWalletAddress,
   resolveWalletNetworkKey,
 } from "@/lib/wallet";
+import VoucherRewardModal, { type VoucherReward } from "@/components/ui/VoucherRewardModal";
 
 interface YieldOptimizerContextValue {
   isOptimizing: boolean;
@@ -349,6 +350,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const [streamingText, setStreamingText] = useState("");
   const [progress, setProgress] = useState<OptimizationState>("analyzing");
   const [latestResult, setLatestResult] = useState<OptimizationResult | null>(null);
+  const [voucherReward, setVoucherReward] = useState<VoucherReward | null>(null);
   const activeScopeRef = useRef(buildWalletScopeKey(undefined, getDefaultWalletNetworkKey()));
   const portfolioRequestIdRef = useRef(0);
   const latestRequestIdRef = useRef(0);
@@ -973,6 +975,30 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           teeAttestation,
       });
 
+      if (networkKey === "testnet") {
+        void fetch("/api/ya/voucher/issue", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            source: "optimize",
+            network: "testnet",
+            walletAddress: activeWalletAddress,
+            referenceId: proofBackedResult.proofRegistryProofId || proofBackedResult.timestamp,
+          }),
+        })
+          .then((response) => response.json())
+          .then((payload: { eligible?: boolean; voucher?: string; amountYa?: number }) => {
+            if (payload.eligible && payload.voucher && payload.amountYa) {
+              setVoucherReward({
+                voucher: payload.voucher,
+                amountYa: payload.amountYa,
+                source: "optimize",
+              });
+            }
+          })
+          .catch(() => undefined);
+      }
+
       setProgress("done");
       setIsOptimizing(false);
 
@@ -1008,6 +1034,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         }}
       >
         {children}
+        <VoucherRewardModal reward={voucherReward} onClose={() => setVoucherReward(null)} />
       </YieldOptimizerContext.Provider>
     </PortfolioContext.Provider>
   );

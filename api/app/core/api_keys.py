@@ -51,6 +51,14 @@ def build_api_key_record(
     environment: str,
     notes: str | None,
     scopes: list[str] | None,
+    plan_id: str | None = None,
+    plan_name: str | None = None,
+    plan_price_ya: int | None = None,
+    plan_max_keys: int | None = None,
+    plan_quota_monthly: int | None = None,
+    plan_expires_at: str | None = None,
+    checkout_tx_hash: str | None = None,
+    checkout_integrity_hash: str | None = None,
 ) -> tuple[str, dict[str, Any]]:
     raw_key = generate_api_key(environment)
     created_at = datetime.now(timezone.utc).isoformat()
@@ -69,6 +77,15 @@ def build_api_key_record(
         "revoked_at": None,
         "status": "active",
         "scopes": normalize_scopes(scopes),
+        "plan_id": plan_id,
+        "plan_name": plan_name,
+        "plan_price_ya": plan_price_ya,
+        "plan_max_keys": plan_max_keys,
+        "plan_quota_monthly": plan_quota_monthly,
+        "plan_expires_at": plan_expires_at,
+        "checkout_tx_hash": checkout_tx_hash,
+        "checkout_integrity_hash": checkout_integrity_hash,
+        "monthly_usage": {},
         "total_requests": 0,
         "success_requests": 0,
         "blocked_requests": 0,
@@ -133,9 +150,31 @@ async def ensure_api_access(
         "key_id": matched.get("key_id"),
         "environment": matched.get("environment", "multi"),
         "owner_label": matched.get("owner_label"),
+        "owner_wallet_address": matched.get("owner_wallet_address"),
+        "plan_id": matched.get("plan_id"),
+        "plan_name": matched.get("plan_name"),
+        "plan_quota_monthly": matched.get("plan_quota_monthly"),
         "scopes": owned_scopes,
     }
     request.state.api_client = client
+
+    expires_at = matched.get("plan_expires_at")
+    if expires_at:
+        try:
+            parsed_expires_at = datetime.fromisoformat(str(expires_at).replace("Z", "+00:00"))
+        except ValueError:
+            parsed_expires_at = None
+        if parsed_expires_at and datetime.now(timezone.utc) > parsed_expires_at:
+            raise IntegrityError("API key plan has expired. Renew with YA to continue.", status_code=403, layer="L8")
+
+    quota_monthly = int(matched.get("plan_quota_monthly") or 0)
+    if quota_monthly > 0:
+        current_month = datetime.now(timezone.utc).strftime("%Y-%m")
+        monthly_usage = matched.get("monthly_usage") or {}
+        month_count = int(monthly_usage.get(current_month) or 0)
+        if month_count >= quota_monthly:
+            raise IntegrityError("API key monthly quota exceeded.", status_code=429, layer="L8")
+
     return client
 
 

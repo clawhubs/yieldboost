@@ -2,6 +2,7 @@ import asyncio
 import json
 from pathlib import Path
 from typing import Any
+from datetime import datetime, timezone
 
 
 class MetadataStore:
@@ -252,12 +253,16 @@ class MetadataStore:
 
             key_id = event.get("key_id")
             if key_id:
+                month_key = datetime.now(timezone.utc).strftime("%Y-%m")
                 items = payload.get("developer_api_keys", [])
                 for index, item in enumerate(items):
                     if item.get("key_id") != key_id:
                         continue
                     item["last_used_at"] = event.get("timestamp")
                     item["total_requests"] = int(item.get("total_requests") or 0) + 1
+                    monthly_usage = item.setdefault("monthly_usage", {})
+                    monthly_usage[month_key] = int(monthly_usage.get(month_key) or 0) + 1
+                    item["monthly_usage"] = monthly_usage
                     if int(event.get("status_code") or 0) >= 400:
                         item["blocked_requests"] = int(item.get("blocked_requests") or 0) + 1
                     else:

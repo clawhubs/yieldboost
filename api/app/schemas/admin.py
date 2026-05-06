@@ -12,6 +12,14 @@ class ApiKeyCreateRequest(BaseModel):
     environment: Literal["testnet", "mainnet", "multi"] = "testnet"
     notes: str | None = Field(default=None, max_length=240)
     scopes: list[str] = Field(default_factory=list)
+    plan_id: str | None = Field(default=None, max_length=32)
+    plan_name: str | None = Field(default=None, max_length=80)
+    plan_price_ya: int | None = Field(default=None, ge=0)
+    plan_max_keys: int | None = Field(default=None, ge=1)
+    plan_quota_monthly: int | None = Field(default=None, ge=1)
+    plan_expires_at: str | None = None
+    checkout_tx_hash: str | None = Field(default=None, pattern=r"^0x[a-fA-F0-9]{64}$")
+    checkout_integrity_hash: str | None = Field(default=None, max_length=80)
 
 
 class ApiKeyListItem(BaseModel):
@@ -22,6 +30,15 @@ class ApiKeyListItem(BaseModel):
     environment: Literal["testnet", "mainnet", "multi"]
     notes: str | None = None
     scopes: list[str] = Field(default_factory=list)
+    plan_id: str | None = None
+    plan_name: str | None = None
+    plan_price_ya: int | None = None
+    plan_max_keys: int | None = None
+    plan_quota_monthly: int | None = None
+    plan_expires_at: str | None = None
+    checkout_tx_hash: str | None = None
+    checkout_integrity_hash: str | None = None
+    monthly_usage: dict[str, int] = Field(default_factory=dict)
     key_preview: str
     status: Literal["active", "revoked"]
     created_at: str

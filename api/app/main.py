@@ -12,6 +12,7 @@ from .core.rate_limiter import RateLimiter, enforce_ip_rate_limit
 from .core.request_context import request_id_var
 from .routes.v1.admin import router as admin_router
 from .routes.v1.auth import router as auth_router
+from .routes.v1.checkout import router as checkout_router
 from .routes.v1.health import router as health_router
 from .routes.v1.platform import (
     audit_router,
@@ -72,6 +73,10 @@ def create_app() -> FastAPI:
                 "name": "platform-status",
                 "description": "Platform-centric status views for the 9-layer stack.",
             },
+            {
+                "name": "platform-checkout",
+                "description": "YA token checkout verification guarded by the 9-layer integrity stack.",
+            },
         ],
     )
     app.state.settings = settings
@@ -131,6 +136,8 @@ def create_app() -> FastAPI:
                     category = "handshake"
                 elif request.url.path.startswith("/v1/status"):
                     category = "status"
+                elif request.url.path.startswith("/v1/ya/checkout"):
+                    category = "governance"
                 elif request.url.path.startswith("/v1/admin"):
                     category = "admin"
                 elif request.url.path.startswith("/v1/health"):
@@ -177,6 +184,7 @@ def create_app() -> FastAPI:
     app.include_router(governance_router)
     app.include_router(handshake_router)
     app.include_router(status_router)
+    app.include_router(checkout_router)
     app.include_router(admin_router)
     app.include_router(health_router)
     return app

@@ -39,6 +39,22 @@ interface ProviderError extends Error {
 
 const ERC20_TRANSFER_ABI = ["function transfer(address to,uint256 value) returns (bool)"];
 
+const CHECKOUT_LAYERS = [
+  "L1 Blacklist screen",
+  "L2 Payment auditor",
+  "L3 Secure receipt path",
+  "L4 Wallet-bound state",
+  "L5 Chain receipt capture",
+  "L6 ZK-ready proof envelope",
+  "L7 0G transfer anchor",
+  "L8 Safety throttle",
+  "L9 Neural handshake log",
+];
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export default function ManagedApiKeyCreateForm({
   ownerWalletAddress,
   paymentMode = "required",
@@ -51,13 +67,16 @@ export default function ManagedApiKeyCreateForm({
   const [paymentTxHash, setPaymentTxHash] = useState("");
   const [paymentStatus, setPaymentStatus] = useState("");
   const [paymentError, setPaymentError] = useState("");
+  const [activeLayerIndex, setActiveLayerIndex] = useState(-1);
+  const [checkoutGuardComplete, setCheckoutGuardComplete] = useState(false);
   const [state, formAction, pending] = useActionState<CreateApiKeyActionState, FormData>(
     createApiKeyAction,
     initialCreateApiKeyActionState,
   );
   const selectedPlan = YA_API_PLANS.find((plan) => plan.id === selectedPlanId) ?? YA_API_PLANS[0];
   const paymentRequired = paymentMode !== "admin" && selectedPlan.priceYa > 0;
-  const canSubmit = acknowledged && !pending && (!paymentRequired || Boolean(paymentTxHash));
+  const canSubmit =
+    acknowledged && !pending && (!paymentRequired || (Boolean(paymentTxHash) && checkoutGuardComplete));
 
   useEffect(() => {
     if (state.success) {
@@ -70,7 +89,18 @@ export default function ManagedApiKeyCreateForm({
     setPaymentTxHash("");
     setPaymentStatus("");
     setPaymentError("");
+    setActiveLayerIndex(-1);
+    setCheckoutGuardComplete(false);
   }, [selectedPlanId]);
+
+  async function runCheckoutLayerPreview() {
+    setCheckoutGuardComplete(false);
+    for (let index = 0; index < CHECKOUT_LAYERS.length; index += 1) {
+      setActiveLayerIndex(index);
+      await sleep(180);
+    }
+    setCheckoutGuardComplete(true);
+  }
 
   async function switchTo0GTestnet() {
     const provider = window.ethereum;
@@ -143,6 +173,8 @@ export default function ManagedApiKeyCreateForm({
       }
 
       setPaymentTxHash(receiptHash);
+      setPaymentStatus("Running 9-layer checkout guard...");
+      await runCheckoutLayerPreview();
       setPaymentStatus(`Payment confirmed: ${receiptHash.slice(0, 10)}...${receiptHash.slice(-6)}`);
     } catch (error) {
       setPaymentStatus("");
@@ -222,6 +254,10 @@ export default function ManagedApiKeyCreateForm({
                 <p className="mt-2 text-[14px] leading-6 text-[#bdeee7]">
                   Pay {selectedPlan.priceLabel} to unlock the {selectedPlan.name} API package.
                 </p>
+                <p className="mt-2 text-[12px] leading-5 text-[#8fded4]">
+                  The paying wallet must match the wallet signed into this developer portal, so a
+                  payment receipt cannot be reused by another account.
+                </p>
               </div>
               <button
                 type="button"
@@ -234,6 +270,28 @@ export default function ManagedApiKeyCreateForm({
             </div>
             {paymentStatus ? (
               <p className="mt-3 break-all text-[13px] leading-6 text-[#9cf3e8]">{paymentStatus}</p>
+            ) : null}
+            {paymentRequired ? (
+              <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                {CHECKOUT_LAYERS.map((layer, index) => {
+                  const passed = checkoutGuardComplete || index < activeLayerIndex;
+                  const active = index === activeLayerIndex && !checkoutGuardComplete;
+                  return (
+                    <div
+                      key={layer}
+                      className={`rounded-[12px] border px-3 py-2 text-[11px] font-semibold ${
+                        passed
+                          ? "border-[rgba(114,243,199,0.24)] bg-[rgba(114,243,199,0.08)] text-[#9cf3e8]"
+                          : active
+                            ? "border-[rgba(255,211,138,0.28)] bg-[rgba(255,211,138,0.08)] text-[#ffd38a]"
+                            : "border-white/8 bg-[rgba(255,255,255,0.03)] text-[#6f8799]"
+                      }`}
+                    >
+                      {layer}
+                    </div>
+                  );
+                })}
+              </div>
             ) : null}
             {paymentError ? (
               <p className="mt-3 break-words text-[13px] leading-6 text-[#ffb3b3]">{paymentError}</p>

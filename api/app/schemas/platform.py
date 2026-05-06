@@ -90,3 +90,27 @@ class LayerStatusResponse(BaseModel):
     active_network: Literal["testnet", "mainnet"]
     layers: dict[str, ComponentHealth]
     infrastructure: dict[str, ComponentHealth]
+
+
+class YaCheckoutVerifyRequest(BaseModel):
+    wallet_address: str = Field(pattern=r"^0x[a-fA-F0-9]{40}$")
+    plan_id: str = Field(min_length=1, max_length=32)
+    amount_ya: int = Field(ge=0)
+    tx_hash: str | None = Field(default=None, pattern=r"^0x[a-fA-F0-9]{64}$")
+    recent_request_count: int = Field(default=0, ge=0)
+
+
+class YaCheckoutVerifyResponse(BaseModel):
+    success: bool = True
+    request_id: str
+    verified: bool
+    plan_id: str
+    wallet_address: str
+    amount_ya: int
+    tx_hash: str | None
+    token_address: str
+    treasury_address: str
+    proof_type: str
+    integrity_hash: str
+    explorer_url: str | None = None
+    layer_statuses: dict[str, str]

@@ -49,6 +49,7 @@ import {
 } from "wagmi";
 import { injected } from "wagmi/connectors";
 import { defineChain, parseEther, type Address } from "viem";
+import VoucherRewardModal, { type VoucherReward } from "@/components/ui/VoucherRewardModal";
 
 const zeroGTestnetChainId = Number(
   process.env.NEXT_PUBLIC_0G_TESTNET_CHAIN_ID ?? "16602",
@@ -435,6 +436,7 @@ function VaultDashboardInner() {
   const [errorText, setErrorText] = useState<string | null>(null);
   const [challengeFeedback, setChallengeFeedback] = useState<ChallengeFeedback | null>(null);
   const [lastSeal, setLastSeal] = useState<SealResponse | null>(null);
+  const [voucherReward, setVoucherReward] = useState<VoucherReward | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [auditTrailOpen, setAuditTrailOpen] = useState(false);
   const pipelineTimer = useRef<number | null>(null);
@@ -636,6 +638,27 @@ function VaultDashboardInner() {
       });
       setLastSeal(result);
       finishPipeline(result.layer_statuses, "Sealed and anchored");
+      void fetch("/api/ya/voucher/issue", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          source: "vault-seal",
+          network: "testnet",
+          walletAddress: address,
+          referenceId: result.storage_id,
+        }),
+      })
+        .then((response) => response.json())
+        .then((payload: { eligible?: boolean; voucher?: string; amountYa?: number }) => {
+          if (payload.eligible && payload.voucher && payload.amountYa) {
+            setVoucherReward({
+              voucher: payload.voucher,
+              amountYa: payload.amountYa,
+              source: "vault-seal",
+            });
+          }
+        })
+        .catch(() => undefined);
       setPlaintext("");
       setSelectedFile(null);
       await refreshVaults();
@@ -1382,6 +1405,7 @@ function VaultDashboardInner() {
           ) : null}
         </aside>
       </main>
+      <VoucherRewardModal reward={voucherReward} onClose={() => setVoucherReward(null)} />
     </div>
   );
 }

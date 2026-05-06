@@ -13,6 +13,8 @@ export interface YaApiPlan {
   priceLabel: string;
   renewalLabel: string;
   apiKeys: number;
+  monthlyQuota: number;
+  expiresInDays: number;
   quotaLabel: string;
   environment: "testnet" | "mainnet" | "multi";
   scopes: string[];
@@ -27,9 +29,11 @@ export const YA_API_PLANS: YaApiPlan[] = [
     priceLabel: "0 YA",
     renewalLabel: "No payment",
     apiKeys: 1,
+    monthlyQuota: 3000,
+    expiresInDays: 30,
     quotaLabel: "100 requests/day",
     environment: "testnet",
-    scopes: ["optimizer:basic", "proof:read"],
+    scopes: ["status:read", "blacklist:check", "audit:run", "proof:run"],
     features: [
       "1 test API key",
       "100 requests per day",
@@ -44,9 +48,11 @@ export const YA_API_PLANS: YaApiPlan[] = [
     priceLabel: "88 YA",
     renewalLabel: "30 days",
     apiKeys: 1,
+    monthlyQuota: 10000,
+    expiresInDays: 30,
     quotaLabel: "10,000 requests/month",
     environment: "testnet",
-    scopes: ["optimizer:basic", "proof:read", "sdk:basic"],
+    scopes: ["status:read", "blacklist:check", "audit:run", "proof:run"],
     features: [
       "1 production API key",
       "10,000 requests per month",
@@ -61,9 +67,21 @@ export const YA_API_PLANS: YaApiPlan[] = [
     priceLabel: "888 YA",
     renewalLabel: "30 days",
     apiKeys: 3,
+    monthlyQuota: 150000,
+    expiresInDays: 30,
     quotaLabel: "150,000 requests/month",
     environment: "multi",
-    scopes: ["optimizer:proof", "vault:integrity", "governance:read", "webhook:beta"],
+    scopes: [
+      "status:read",
+      "blacklist:check",
+      "audit:run",
+      "proof:run",
+      "integrity:seal",
+      "integrity:unseal",
+      "integrity:read",
+      "governance:evaluate",
+      "handshake:write",
+    ],
     features: [
       "3 production API keys",
       "150,000 requests per month",
@@ -79,14 +97,21 @@ export const YA_API_PLANS: YaApiPlan[] = [
     priceLabel: "8,888 YA",
     renewalLabel: "30 days",
     apiKeys: 10,
+    monthlyQuota: 2000000,
+    expiresInDays: 30,
     quotaLabel: "2M requests/month",
     environment: "multi",
     scopes: [
-      "optimizer:proof",
-      "vault:integrity",
-      "governance:write",
-      "handshake:read",
-      "partner:sdk",
+      "status:read",
+      "blacklist:check",
+      "audit:run",
+      "proof:run",
+      "integrity:seal",
+      "integrity:unseal",
+      "integrity:delete",
+      "integrity:read",
+      "governance:evaluate",
+      "handshake:write",
     ],
     features: [
       "10 production API keys",

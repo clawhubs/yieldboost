@@ -10,6 +10,35 @@ from ...schemas.vault import AdminStatsResponse
 router = APIRouter(prefix="/v1/admin", tags=["admin"])
 
 
+def _api_key_item_from_record(record: dict) -> ApiKeyListItem:
+    return ApiKeyListItem(
+        key_id=record["key_id"],
+        app_name=record["app_name"],
+        owner_label=record.get("owner_label"),
+        owner_wallet_address=record.get("owner_wallet_address"),
+        environment=record.get("environment", "testnet"),
+        notes=record.get("notes"),
+        scopes=record.get("scopes") or [],
+        plan_id=record.get("plan_id"),
+        plan_name=record.get("plan_name"),
+        plan_price_ya=record.get("plan_price_ya"),
+        plan_max_keys=record.get("plan_max_keys"),
+        plan_quota_monthly=record.get("plan_quota_monthly"),
+        plan_expires_at=record.get("plan_expires_at"),
+        checkout_tx_hash=record.get("checkout_tx_hash"),
+        checkout_integrity_hash=record.get("checkout_integrity_hash"),
+        monthly_usage=record.get("monthly_usage") or {},
+        key_preview=record["key_preview"],
+        status=record.get("status", "active"),
+        created_at=record["created_at"],
+        last_used_at=record.get("last_used_at"),
+        revoked_at=record.get("revoked_at"),
+        total_requests=int(record.get("total_requests") or 0),
+        success_requests=int(record.get("success_requests") or 0),
+        blocked_requests=int(record.get("blocked_requests") or 0),
+    )
+
+
 def _authorize(
     request: Request,
     *,
@@ -106,26 +135,7 @@ async def list_api_keys(
         master_key=x_master_key,
     )
     items = await request.app.state.integrity_pipeline.store.list_api_keys(include_revoked=True)
-    normalized = [
-        ApiKeyListItem(
-            key_id=item["key_id"],
-            app_name=item["app_name"],
-            owner_label=item.get("owner_label"),
-            owner_wallet_address=item.get("owner_wallet_address"),
-            environment=item.get("environment", "testnet"),
-            notes=item.get("notes"),
-            scopes=item.get("scopes") or [],
-            key_preview=item["key_preview"],
-            status=item.get("status", "active"),
-            created_at=item["created_at"],
-            last_used_at=item.get("last_used_at"),
-            revoked_at=item.get("revoked_at"),
-            total_requests=int(item.get("total_requests") or 0),
-            success_requests=int(item.get("success_requests") or 0),
-            blocked_requests=int(item.get("blocked_requests") or 0),
-        )
-        for item in sorted(items, key=lambda row: row.get("created_at", ""), reverse=True)
-    ]
+    normalized = [_api_key_item_from_record(item) for item in sorted(items, key=lambda row: row.get("created_at", ""), reverse=True)]
     return ApiKeyListResponse(
         request_id=request.state.request_id,
         items=normalized,
@@ -153,6 +163,33 @@ async def create_api_key(
         api_key=x_api_key,
         master_key=x_master_key,
     )
+    existing_items = await request.app.state.integrity_pipeline.store.list_api_keys(include_revoked=True)
+    if payload.owner_wallet_address and payload.plan_id and payload.plan_max_keys:
+        active_same_plan = [
+            item
+            for item in existing_items
+            if item.get("status") == "active"
+            and str(item.get("owner_wallet_address") or "").lower() == payload.owner_wallet_address.lower()
+            and item.get("plan_id") == payload.plan_id
+        ]
+        if len(active_same_plan) >= payload.plan_max_keys:
+            raise IntegrityError(
+                f"{payload.plan_name or payload.plan_id} plan allows {payload.plan_max_keys} active API key(s).",
+                status_code=429,
+                layer="L8",
+            )
+
+    if payload.checkout_tx_hash:
+        conflicting_tx = [
+            item
+            for item in existing_items
+            if item.get("checkout_tx_hash")
+            and str(item.get("checkout_tx_hash")).lower() == payload.checkout_tx_hash.lower()
+            and item.get("plan_id") != payload.plan_id
+        ]
+        if conflicting_tx:
+            raise IntegrityError("YA checkout receipt is already bound to another plan.", status_code=409, layer="L4")
+
     raw_key, record = build_api_key_record(
         master_key=request.app.state.integrity_pipeline.settings.master_key,
         app_name=payload.app_name,
@@ -161,25 +198,17 @@ async def create_api_key(
         environment=payload.environment,
         notes=payload.notes,
         scopes=payload.scopes,
+        plan_id=payload.plan_id,
+        plan_name=payload.plan_name,
+        plan_price_ya=payload.plan_price_ya,
+        plan_max_keys=payload.plan_max_keys,
+        plan_quota_monthly=payload.plan_quota_monthly,
+        plan_expires_at=payload.plan_expires_at,
+        checkout_tx_hash=payload.checkout_tx_hash,
+        checkout_integrity_hash=payload.checkout_integrity_hash,
     )
     await request.app.state.integrity_pipeline.store.save_api_key(record)
-    item = ApiKeyListItem(
-        key_id=record["key_id"],
-        app_name=record["app_name"],
-        owner_label=record.get("owner_label"),
-        owner_wallet_address=record.get("owner_wallet_address"),
-        environment=record.get("environment", "testnet"),
-        notes=record.get("notes"),
-        scopes=record.get("scopes") or [],
-        key_preview=record["key_preview"],
-        status=record["status"],
-        created_at=record["created_at"],
-        last_used_at=record.get("last_used_at"),
-        revoked_at=record.get("revoked_at"),
-        total_requests=int(record.get("total_requests") or 0),
-        success_requests=int(record.get("success_requests") or 0),
-        blocked_requests=int(record.get("blocked_requests") or 0),
-    )
+    item = _api_key_item_from_record(record)
     return ApiKeyCreateResponse(
         request_id=request.state.request_id,
         api_key=raw_key,

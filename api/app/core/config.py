@@ -85,6 +85,15 @@ class Settings(BaseSettings):
         default="https://chainscan-galileo.0g.ai",
         alias="NEXT_PUBLIC_0G_TESTNET_EXPLORER_BASE_URL",
     )
+    ya_token_address: str = Field(
+        default="0xa8018A4920ecA7AF0Df88caCFD5E21b939A678b5",
+        alias="YA_TOKEN_ADDRESS",
+    )
+    ya_treasury_address: str = Field(
+        default="0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+        alias="YA_TREASURY_ADDRESS",
+    )
+    ya_token_decimals: int = Field(default=18, alias="YA_TOKEN_DECIMALS")
 
     @property
     def api_keys(self) -> set[str]:

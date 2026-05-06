@@ -49,6 +49,15 @@ export interface ManagedApiKey {
   environment: "testnet" | "mainnet" | "multi";
   notes: string | null;
   scopes: string[];
+  plan_id?: string | null;
+  plan_name?: string | null;
+  plan_price_ya?: number | null;
+  plan_max_keys?: number | null;
+  plan_quota_monthly?: number | null;
+  plan_expires_at?: string | null;
+  checkout_tx_hash?: string | null;
+  checkout_integrity_hash?: string | null;
+  monthly_usage?: Record<string, number>;
   key_preview: string;
   status: "active" | "revoked";
   created_at: string;
@@ -64,6 +73,22 @@ export interface ManagedApiKeysResponse {
   request_id: string;
   items: ManagedApiKey[];
   total: number;
+}
+
+export interface YaCheckoutVerifyResponse {
+  success: boolean;
+  request_id: string;
+  verified: boolean;
+  plan_id: string;
+  wallet_address: string;
+  amount_ya: number;
+  tx_hash: string | null;
+  token_address: string;
+  treasury_address: string;
+  proof_type: string;
+  integrity_hash: string;
+  explorer_url: string | null;
+  layer_statuses: Record<string, string>;
 }
 
 export interface SetupState {
@@ -162,6 +187,14 @@ export async function createManagedApiKey(input: {
   environment: "testnet" | "mainnet" | "multi";
   notes?: string;
   scopes?: string[];
+  planId?: string;
+  planName?: string;
+  planPriceYa?: number;
+  planMaxKeys?: number;
+  planQuotaMonthly?: number;
+  planExpiresAt?: string;
+  checkoutTxHash?: string;
+  checkoutIntegrityHash?: string;
 }): Promise<{ apiKey: string; item: ManagedApiKey }> {
   const payload = await portalFetch<{ api_key: string; item: ManagedApiKey }>("/v1/admin/api-keys", {
     method: "POST",
@@ -172,12 +205,38 @@ export async function createManagedApiKey(input: {
       environment: input.environment,
       notes: input.notes || null,
       scopes: input.scopes || [],
+      plan_id: input.planId || null,
+      plan_name: input.planName || null,
+      plan_price_ya: input.planPriceYa ?? null,
+      plan_max_keys: input.planMaxKeys ?? null,
+      plan_quota_monthly: input.planQuotaMonthly ?? null,
+      plan_expires_at: input.planExpiresAt || null,
+      checkout_tx_hash: input.checkoutTxHash || null,
+      checkout_integrity_hash: input.checkoutIntegrityHash || null,
     }),
   });
   return {
     apiKey: payload.api_key,
     item: payload.item,
   };
+}
+
+export async function verifyYaCheckout(input: {
+  walletAddress: string;
+  planId: string;
+  amountYa: number;
+  txHash?: string;
+}): Promise<YaCheckoutVerifyResponse> {
+  return portalFetch<YaCheckoutVerifyResponse>("/v1/ya/checkout/verify", {
+    method: "POST",
+    body: JSON.stringify({
+      wallet_address: input.walletAddress,
+      plan_id: input.planId,
+      amount_ya: input.amountYa,
+      tx_hash: input.txHash || null,
+      recent_request_count: 0,
+    }),
+  });
 }
 
 export async function revokeManagedApiKey(keyId: string): Promise<void> {

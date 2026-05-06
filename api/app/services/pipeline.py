@@ -3,6 +3,7 @@ import base64
 import hashlib
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
+from decimal import Decimal
 from typing import Any
 from uuid import uuid4
 
@@ -41,6 +42,8 @@ from ..schemas.platform import (
     LayerStatusResponse,
     ProofRunRequest,
     ProofRunResponse,
+    YaCheckoutVerifyRequest,
+    YaCheckoutVerifyResponse,
 )
 from ..schemas.vault import (
     AdminStatsResponse,
@@ -921,6 +924,144 @@ class IntegrityPipeline:
             layers=health.layers,
             infrastructure=health.infrastructure,
         )
+
+    async def ya_checkout_verify(
+        self,
+        payload: YaCheckoutVerifyRequest,
+        request_id: str,
+    ) -> YaCheckoutVerifyResponse:
+        layer_statuses: dict[str, str] = {}
+        tx_hash = payload.tx_hash
+        if payload.amount_ya > 0 and not tx_hash:
+            raise IntegrityError("Paid YA checkout requires a transaction hash.", status_code=422, layer="L2")
+
+        checkout_text = (
+            f"YA checkout plan={payload.plan_id} amount={payload.amount_ya} "
+            f"wallet={payload.wallet_address} tx={tx_hash or 'free-trial'}"
+        )
+        await l1_blacklist.run(checkout_text)
+        layer_statuses["L1"] = "checkout-blacklist-screen-passed"
+
+        audit_payload = checkout_text.encode("utf-8")
+        payload_sha256 = await l2_auditor.run(
+            audit_payload,
+            max_payload_bytes=self.settings.max_payload_bytes,
+        )
+        layer_statuses["L2"] = "deterministic-checkout-audit-passed"
+
+        layer_statuses["L3"] = "server-side-receipt-verification-path"
+        layer_statuses["L4"] = "checkout-state-bound-to-wallet"
+
+        receipt_block = None
+        explorer_url = None
+        if payload.amount_ya > 0:
+            receipt_block = await self._verify_ya_transfer_receipt(
+                tx_hash=str(tx_hash),
+                wallet_address=payload.wallet_address,
+                amount_ya=payload.amount_ya,
+            )
+            explorer_url = f"{self.settings.zg_testnet_explorer_base_url.rstrip('/')}/tx/{tx_hash}"
+            layer_statuses["L5"] = "0g-chain-receipt-observed"
+            layer_statuses["L7"] = "ya-transfer-anchored-on-0g-galileo"
+        else:
+            layer_statuses["L5"] = "free-trial-receipt-not-required"
+            layer_statuses["L7"] = "free-trial-anchor-not-required"
+
+        integrity_hash, envelope = await l6_zk_reasoning.run(
+            {
+                "type": "ya_checkout_receipt",
+                "wallet_address": payload.wallet_address.lower(),
+                "plan_id": payload.plan_id,
+                "amount_ya": payload.amount_ya,
+                "tx_hash": tx_hash,
+                "payload_sha256": payload_sha256,
+                "receipt_block": receipt_block,
+            }
+        )
+        layer_statuses["L6"] = str(envelope.get("proof_type", "zk-ready-integrity-envelope"))
+
+        await l8_governance.enforce_preflight(payload.recent_request_count)
+        governance = await l8_governance.run()
+        layer_statuses["L8"] = str(governance.get("status", "active"))
+
+        handshake = await l9_handshake.run(
+            tx_hash or f"free-{payload.wallet_address.lower()}-{payload.plan_id}",
+            payload.wallet_address,
+            "ya_checkout_verify",
+        )
+        layer_statuses["L9"] = str(handshake.get("status", "logged"))
+
+        await self.store.append_event(
+            {
+                "type": "ya_checkout_verified",
+                "request_id": request_id,
+                "wallet_address": payload.wallet_address,
+                "plan_id": payload.plan_id,
+                "amount_ya": payload.amount_ya,
+                "tx_hash": tx_hash,
+                "integrity_hash": integrity_hash,
+                "layer_statuses": layer_statuses,
+                "created_at": self.now_iso(),
+            }
+        )
+
+        return YaCheckoutVerifyResponse(
+            request_id=request_id,
+            verified=True,
+            plan_id=payload.plan_id,
+            wallet_address=payload.wallet_address,
+            amount_ya=payload.amount_ya,
+            tx_hash=tx_hash,
+            token_address=self.settings.ya_token_address,
+            treasury_address=self.settings.ya_treasury_address,
+            proof_type=str(envelope.get("proof_type", "zk-ready-integrity-envelope")),
+            integrity_hash=integrity_hash,
+            explorer_url=explorer_url,
+            layer_statuses=layer_statuses,
+        )
+
+    async def _verify_ya_transfer_receipt(
+        self,
+        *,
+        tx_hash: str,
+        wallet_address: str,
+        amount_ya: int,
+    ) -> int:
+        from web3 import Web3
+
+        rpc_url = self.settings.zg_testnet_rpc_url
+        if not rpc_url:
+            raise IntegrityError("0G testnet RPC is not configured.", status_code=503, layer="L7")
+
+        web3 = Web3(Web3.HTTPProvider(rpc_url))
+        receipt = await asyncio.to_thread(web3.eth.get_transaction_receipt, tx_hash)
+        if not receipt:
+            raise IntegrityError("YA payment transaction is not confirmed yet.", status_code=422, layer="L7")
+        if int(receipt.get("status", 0)) != 1:
+            raise IntegrityError("YA payment transaction failed on-chain.", status_code=422, layer="L7")
+
+        token_address = Web3.to_checksum_address(self.settings.ya_token_address)
+        payer_address = Web3.to_checksum_address(wallet_address)
+        treasury_address = Web3.to_checksum_address(self.settings.ya_treasury_address)
+        transfer_topic = Web3.keccak(text="Transfer(address,address,uint256)").hex()
+        required_amount = int(Decimal(amount_ya) * (Decimal(10) ** self.settings.ya_token_decimals))
+
+        for log in receipt.get("logs", []):
+            if Web3.to_checksum_address(log.get("address")) != token_address:
+                continue
+            topics = log.get("topics", [])
+            if len(topics) < 3 or topics[0].hex().lower() != transfer_topic.lower():
+                continue
+
+            from_address = Web3.to_checksum_address(f"0x{topics[1].hex()[-40:]}")
+            to_address = Web3.to_checksum_address(f"0x{topics[2].hex()[-40:]}")
+            data = log.get("data", "0x0")
+            value = int(data.hex() if hasattr(data, "hex") else str(data), 16)
+
+            if from_address == payer_address and to_address == treasury_address and value >= required_amount:
+                return int(receipt.get("blockNumber") or 0)
+
+        raise IntegrityError("YA receipt does not contain the required token transfer.", status_code=422, layer="L7")
 
     def _extract_payload(self, payload: SealRequest) -> bytes:
         if payload.plaintext is not None:

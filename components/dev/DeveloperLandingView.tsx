@@ -109,6 +109,10 @@ export default function DeveloperLandingView({
           <p className="mt-4 text-[13px] leading-6 text-[#9cb0c1]">
             The public page sells access. Technical references stay in docs and receipts, where builders expect them.
           </p>
+          <p className="mt-3 text-[12px] leading-5 text-[#8fded4]">
+            Checkout receipts are wallet-bound: the wallet that pays with YA must be the same wallet
+            signed into the developer dashboard.
+          </p>
         </div>
       </section>
 
@@ -157,6 +161,17 @@ export default function DeveloperLandingView({
                   </div>
                 ))}
               </div>
+              <Link
+                href={session ? "/dev/apps" : "/dev"}
+                className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-[14px] px-4 py-3 text-[13px] font-semibold ${
+                  plan.id === "pro"
+                    ? "yb-teal-button text-slate-950"
+                    : "border border-[rgba(114,243,199,0.24)] bg-[rgba(114,243,199,0.08)] text-[#9cf3e8] transition hover:border-[rgba(114,243,199,0.38)] hover:bg-[rgba(114,243,199,0.12)]"
+                }`}
+              >
+                {plan.priceYa ? `Buy ${plan.name} with YA` : "Start free"}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
             </article>
           ))}
         </div>
