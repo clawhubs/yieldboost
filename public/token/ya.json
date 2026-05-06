@@ -1,0 +1,12 @@
+{
+  "chainId": 16602,
+  "chainName": "0G Galileo Testnet",
+  "address": "0xa8018A4920ecA7AF0Df88caCFD5E21b939A678b5",
+  "name": "YieldBoost AI",
+  "symbol": "YA",
+  "decimals": 18,
+  "totalSupply": "1000000000",
+  "logoURI": "https://yieldboostai.xyz/token/ya.png",
+  "website": "https://yieldboostai.xyz/",
+  "explorer": "https://chainscan-galileo.0g.ai/address/0xa8018A4920ecA7AF0Df88caCFD5E21b939A678b5"
+}
