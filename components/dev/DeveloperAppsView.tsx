@@ -49,9 +49,9 @@ export default function DeveloperAppsView({
     >
       <section className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
         <div className="yb-card rounded-[24px] p-6">
-          <h2 className="text-[24px] font-semibold text-white">Create API key for your app</h2>
+          <h2 className="text-[24px] font-semibold text-white">Buy API access with YA</h2>
           <p className="mt-3 text-[14px] leading-7 text-[#9db0c0]">
-            One wallet can own multiple developer apps. Each app should get its own API key so usage and revocation stay isolated.
+            Choose a package, pay with YA on 0G Galileo testnet, then generate a scoped API key for your app.
           </p>
           <ManagedApiKeyCreateForm
             ownerWalletAddress={session.walletAddress}

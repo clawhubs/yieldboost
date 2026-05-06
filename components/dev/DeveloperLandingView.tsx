@@ -14,6 +14,7 @@ import {
 import DevPortalAccessCard from "@/components/dev/DevPortalAccessCard";
 import DeveloperPortalShell from "@/components/dev/DeveloperPortalShell";
 import { getDevPortalSetupState } from "@/lib/dev-portal";
+import { YA_API_PLANS } from "@/lib/ya-api-plans";
 
 const layers = [
   { id: "L1", title: "Hallucination Blacklist", body: "Rejects hostile prompts, bait payloads, and abuse signatures before they touch the vault." },
@@ -25,63 +26,6 @@ const layers = [
   { id: "L7", title: "0G ProofRegistry Anchor", body: "Publishes proof commitments on-chain so developers can audit a verifiable trail." },
   { id: "L8", title: "Safety Throttling", body: "Caps abusive traffic and suspicious usage before the pipeline turns into an attack surface." },
   { id: "L9", title: "Neural Handshake Journal", body: "Closes every request with audit-ready coordination logs for postmortem and governance." },
-];
-
-const pricingPlans = [
-  {
-    name: "Free Trial",
-    price: "0",
-    suffix: "YA",
-    note: "Try the API before committing tokens.",
-    highlight: false,
-    features: [
-      "1 test API key",
-      "100 requests per day",
-      "Basic optimizer endpoint",
-      "Proof lookup preview",
-    ],
-  },
-  {
-    name: "Builder",
-    price: "88",
-    suffix: "YA / 30 days",
-    note: "For solo builders shipping a first integration.",
-    highlight: false,
-    features: [
-      "1 production API key",
-      "10,000 requests per month",
-      "Yield optimizer API",
-      "Basic proof lookup",
-    ],
-  },
-  {
-    name: "Pro",
-    price: "888",
-    suffix: "YA / 30 days",
-    note: "For apps that need the full integrity path.",
-    highlight: true,
-    features: [
-      "3 production API keys",
-      "150,000 requests per month",
-      "Proof-backed optimization",
-      "Vault and governance endpoints",
-      "Webhook-ready integration",
-    ],
-  },
-  {
-    name: "Protocol",
-    price: "8,888",
-    suffix: "YA / 30 days",
-    note: "For protocol teams and partner deployments.",
-    highlight: false,
-    features: [
-      "10 production API keys",
-      "2M requests per month",
-      "Custom rate limit",
-      "Partner SDK support",
-      "White-label integration path",
-    ],
-  },
 ];
 
 export default function DeveloperLandingView({
@@ -181,28 +125,30 @@ export default function DeveloperLandingView({
         </div>
 
         <div className="mt-6 grid gap-4 lg:grid-cols-4">
-          {pricingPlans.map((plan) => (
+          {YA_API_PLANS.map((plan) => (
             <article
-              key={plan.name}
+              key={plan.id}
               className={`rounded-[22px] border p-5 ${
-                plan.highlight
+                plan.id === "pro"
                   ? "border-[rgba(0,201,177,0.42)] bg-[linear-gradient(180deg,rgba(0,201,177,0.14),rgba(255,255,255,0.03))]"
                   : "border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)]"
               }`}
             >
               <div className="flex items-center justify-between gap-3">
                 <h3 className="text-[18px] font-semibold text-white">{plan.name}</h3>
-                {plan.highlight ? (
+                {plan.id === "pro" ? (
                   <span className="rounded-full border border-[rgba(114,243,199,0.28)] px-2 py-1 text-[10px] uppercase tracking-[0.16em] text-[#72f3c7]">
                     Popular
                   </span>
                 ) : null}
               </div>
               <div className="mt-4">
-                <span className="text-[36px] font-semibold leading-none text-white">{plan.price}</span>
-                <span className="ml-2 text-[13px] text-[#8aa2b1]">{plan.suffix}</span>
+                <span className="text-[36px] font-semibold leading-none text-white">{plan.priceYa.toLocaleString("en-US")}</span>
+                <span className="ml-2 text-[13px] text-[#8aa2b1]">YA{plan.priceYa ? ` / ${plan.renewalLabel}` : ""}</span>
               </div>
-              <p className="mt-3 min-h-[44px] text-[13px] leading-6 text-[#9cb0c1]">{plan.note}</p>
+              <p className="mt-3 min-h-[44px] text-[13px] leading-6 text-[#9cb0c1]">
+                {plan.apiKeys} key{plan.apiKeys > 1 ? "s" : ""} · {plan.quotaLabel}
+              </p>
               <div className="mt-5 space-y-3">
                 {plan.features.map((feature) => (
                   <div key={feature} className="flex items-start gap-3 text-[13px] leading-5 text-[#c8d7e2]">

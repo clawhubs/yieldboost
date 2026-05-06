@@ -70,7 +70,7 @@ export default function DeveloperConsoleView({
               <p className="mt-3 text-[14px] leading-7 text-[#9db0c0]">
                 Give each developer app its own key. Ownership stays at the wallet layer, while app identity, rate limits, usage, and revocation stay here.
               </p>
-              <ManagedApiKeyCreateForm submitLabel="Generate API key" />
+              <ManagedApiKeyCreateForm paymentMode="admin" submitLabel="Generate API key" />
             </div>
 
             <div className="grid gap-3 md:grid-cols-2">
