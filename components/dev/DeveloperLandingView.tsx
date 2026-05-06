@@ -163,7 +163,7 @@ export default function DeveloperLandingView({
             ))}
           </div>
           <p className="mt-4 text-[13px] leading-6 text-[#9cb0c1]">
-            The public page sells access. Contract details stay in docs and receipts, where builders expect them.
+            The public page sells access. Technical references stay in docs and receipts, where builders expect them.
           </p>
         </div>
       </section>
