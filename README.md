@@ -110,6 +110,10 @@ The current public deployment is now **mainnet-default**.
 
 | Artifact | Value |
 | --- | --- |
+| Live app | [`yieldboostai.xyz`](https://yieldboostai.xyz/) |
+| Judge entry point | [`/judge`](https://yieldboostai.xyz/judge) |
+| Public challenge vault | [`/vault`](https://yieldboostai.xyz/vault) |
+| Public Integrity API | [`api.yieldboostai.xyz`](https://api.yieldboostai.xyz/) |
 | Mainnet `ProofRegistry` | [`0x8e63e117E71A80Cfc10fDF375F079e2e29cd7D7D`](https://chainscan.0g.ai/address/0x8e63e117E71A80Cfc10fDF375F079e2e29cd7D7D) |
 | Mainnet `YieldStrategyINFT` | [`0xb264D861264B0e4f8fb98A61B7694BA8a3B6BBe3`](https://chainscan.0g.ai/address/0xb264D861264B0e4f8fb98A61B7694BA8a3B6BBe3) |
 | Mainnet attestation oracle | [`0x216E7880D64D94335B583c539802d3e61958d4A2`](https://chainscan.0g.ai/address/0x216E7880D64D94335B583c539802d3e61958d4A2) |
@@ -122,7 +126,6 @@ The current public deployment is now **mainnet-default**.
 | Latest `ProofRegistry` proof ID | `7` |
 | Latest Agent NFT | `Token #4` |
 | Latest Agent NFT mint tx | [`0x2d4e074e9239f17db837fdfcc5ffa77393f292b7699836a79da260aefdddcb18`](https://chainscan.0g.ai/tx/0x2d4e074e9239f17db837fdfcc5ffa77393f292b7699836a79da260aefdddcb18) |
-| Judge entry point | [`/judge`](https://yieldboost-ai.vercel.app/judge) |
 
 ### Latest Integrity Stack Evidence
 
