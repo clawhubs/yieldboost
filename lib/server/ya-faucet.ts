@@ -15,6 +15,7 @@ import {
 } from "@/lib/server/alibaba-embeddings";
 
 const VOUCHER_AMOUNT_YA = 888;
+const MAX_EXCLUSIVE_VOUCHERS = 888;
 const ERC20_TRANSFER_ABI = ["function transfer(address to,uint256 value) returns (bool)"];
 const DEFAULT_STORE_PATH = ".artifacts/ya-vouchers.local.json";
 const CLAIM_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -203,6 +204,16 @@ export async function issueYaVoucher(input: {
   const walletAddress = input.walletAddress?.trim();
   const code = createVoucherCode();
   const store = await readStore();
+  if (store.vouchers.length >= MAX_EXCLUSIVE_VOUCHERS) {
+    return {
+      voucher: null,
+      amountYa: VOUCHER_AMOUNT_YA,
+      faucetUrl: "/faucet",
+      alreadyEligible: false,
+      soldOut: true,
+      reason: "The exclusive 888 YA voucher campaign is fully allocated.",
+    };
+  }
   if (walletAddress && walletAlreadyMigrationEligible(store, walletAddress)) {
     return {
       voucher: null,

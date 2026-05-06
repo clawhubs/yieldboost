@@ -23,7 +23,7 @@ const HOW_IT_WORKS = [
   { step: "1", icon: Zap, title: "Earn a voucher", desc: "Run optimizer or seal a vault on 0G testnet." },
   { step: "2", icon: Wallet, title: "Use the same wallet", desc: "The voucher is bound to the wallet that earned it." },
   { step: "3", icon: TicketCheck, title: "Paste your voucher", desc: "The unique code from your testnet action." },
-  { step: "4", icon: Coins, title: "Receive 888 YA", desc: "One migration-eligible claim per wallet." },
+  { step: "4", icon: Coins, title: "Receive 888 YA", desc: "Only 888 exclusive voucher slots exist." },
 ];
 
 export default function YaFaucetView() {
@@ -96,15 +96,30 @@ export default function YaFaucetView() {
             </div>
             <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-[rgba(0,201,177,0.25)] bg-[rgba(0,201,177,0.08)] px-4 py-1.5">
               <span className="status-active" />
-              <span className="text-[12px] font-bold uppercase tracking-[0.18em] text-[#8ff7ea]">YA Testnet Faucet</span>
+              <span className="text-[12px] font-bold uppercase tracking-[0.18em] text-[#8ff7ea]">Exclusive YA Genesis Faucet</span>
             </div>
             <h1 className="shimmer-text mt-6 max-w-2xl text-[36px] font-extrabold leading-[1.1] tracking-tight md:text-[52px]">
-              Claim 888 YA with a voucher.
+              Claim 888 YA from the exclusive 888-slot campaign.
             </h1>
-              <p className="mt-5 max-w-xl text-[16px] leading-8 text-[#d0e0ec] md:text-[17px]">
-                Vouchers are earned after a successful 0G testnet optimizer run or vault seal.
-                Claims are wallet-bound, one-time, and protected by the 9-layer anti-sybil gate.
-              </p>
+            <p className="mt-5 max-w-xl text-[16px] leading-8 text-[#d0e0ec] md:text-[17px]">
+              Vouchers are earned after a successful 0G testnet optimizer run or vault seal.
+              Each voucher unlocks 888 YA, is bound to the earning wallet, and counts toward
+              the limited 888-voucher genesis allocation.
+            </p>
+            <div className="mt-7 grid w-full max-w-2xl gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl border border-[rgba(114,243,199,0.22)] bg-[rgba(3,10,18,0.56)] px-4 py-4">
+                <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#8ff7ea]">Campaign</p>
+                <p className="mt-1 text-[20px] font-black text-white">Genesis 888</p>
+              </div>
+              <div className="rounded-2xl border border-[rgba(114,243,199,0.22)] bg-[rgba(3,10,18,0.56)] px-4 py-4">
+                <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#8ff7ea]">Per Voucher</p>
+                <p className="mt-1 text-[20px] font-black text-white">888 YA</p>
+              </div>
+              <div className="rounded-2xl border border-[rgba(114,243,199,0.22)] bg-[rgba(3,10,18,0.56)] px-4 py-4">
+                <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#8ff7ea]">Access</p>
+                <p className="mt-1 text-[20px] font-black text-white">Wallet-bound</p>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -136,8 +151,8 @@ export default function YaFaucetView() {
                 <Send className="h-5 w-5 text-[#72f3c7]" />
               </div>
               <div>
-                <h2 className="text-[22px] font-bold text-white">Claim your tokens</h2>
-                <p className="text-[13px] text-[#c0d4e2]">Fill both fields, then hit claim.</p>
+                <h2 className="text-[22px] font-bold text-white">Claim exclusive YA</h2>
+                <p className="text-[13px] text-[#c0d4e2]">Use the same wallet that earned the voucher.</p>
               </div>
             </div>
 
@@ -180,7 +195,7 @@ export default function YaFaucetView() {
                 ) : (
                   <>
                     <Send className="h-4.5 w-4.5" />
-                    Claim 888 YA
+                    Claim exclusive 888 YA
                   </>
                 )}
               </button>
@@ -231,10 +246,30 @@ export default function YaFaucetView() {
                   <Coins className="h-4.5 w-4.5 text-[#72f3c7]" />
                 </div>
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#c0d4e2]">Reward per claim</p>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#c0d4e2]">Exclusive reward</p>
                   <p className="text-[24px] font-bold text-white">888 <span className="text-[16px] font-semibold text-[#72f3c7]">YA</span></p>
                 </div>
               </div>
+              <p className="mt-3 text-[13px] leading-6 text-[#c8dae6]">
+                Genesis campaign: only 888 wallet-bound vouchers can ever be issued.
+              </p>
+            </div>
+
+            <div className="glow-card p-5">
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#72f3c7]">Exclusive Supply Gate</p>
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                  <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[#9fb6c8]">Total Slots</p>
+                  <p className="mt-1 text-[28px] font-black text-white">888</p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                  <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[#9fb6c8]">Claim Rule</p>
+                  <p className="mt-1 text-[20px] font-black text-white">1 wallet</p>
+                </div>
+              </div>
+              <p className="mt-3 text-[13px] leading-6 text-[#c8dae6]">
+                Once all 888 voucher slots are issued, new testnet actions will no longer create faucet vouchers.
+              </p>
             </div>
 
             <div className="glow-card p-5">

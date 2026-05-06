@@ -42,6 +42,17 @@ export async function POST(request: NextRequest) {
     });
   }
 
+  if (voucher.soldOut) {
+    return NextResponse.json({
+      success: true,
+      eligible: false,
+      amountYa: voucher.amountYa,
+      faucetUrl: voucher.faucetUrl,
+      soldOut: true,
+      reason: voucher.reason || "The exclusive YA voucher campaign is fully allocated.",
+    });
+  }
+
   return NextResponse.json({
     success: true,
     eligible: true,
