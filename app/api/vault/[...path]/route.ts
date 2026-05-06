@@ -17,7 +17,11 @@ function getIntegrityApiBase() {
 }
 
 function getIntegrityApiKey() {
-  return process.env.INTEGRITY_API_KEY?.trim() || "";
+  return (
+    process.env.INTEGRITY_API_KEY?.trim() ||
+    process.env.INTEGRITY_MASTER_KEY?.trim() ||
+    ""
+  );
 }
 
 function forwardHeaders(request: NextRequest) {

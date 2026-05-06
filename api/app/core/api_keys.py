@@ -125,6 +125,17 @@ async def ensure_api_access(
     if not api_key:
         raise IntegrityError("Missing or invalid API key.", status_code=401)
 
+    if secrets.compare_digest(api_key, settings.master_key):
+        client = {
+            "auth_type": "internal-master",
+            "app_name": "First-Party YieldBoost Proxy",
+            "key_id": "internal-master",
+            "environment": "multi",
+            "scopes": ["*"],
+        }
+        request.state.api_client = client
+        return client
+
     if api_key in static_keys:
         client = {
             "auth_type": "static",
