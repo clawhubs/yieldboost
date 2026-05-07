@@ -168,7 +168,7 @@ export function buildOptimizationSnapshot(
   const normalizedTotalPortfolio = totalPortfolio || 24570.25;
   const native0GOnly = isNative0GOnlyPortfolio(portfolio);
 
-  const currentApy = native0GOnly ? 3.2 : 12.38;
+  const currentApy = native0GOnly ? 5.2 : 12.38;
   const optimizedApy = native0GOnly ? 14.8 : 23.84;
   const estimatedAnnualGain = round(
     normalizedTotalPortfolio * (native0GOnly ? 0.116 : 0.0959),
