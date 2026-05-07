@@ -9,11 +9,13 @@ import type { OptimizationResult } from "@/lib/optimizations";
 import type { WalletNetworkKey } from "@/lib/wallet";
 
 const OPTIMIZATION_CACHE_KEY = "yieldboost:optimization-cache";
+const OPTIMIZATION_CACHE_VERSION = "native-0g-v2";
 const LOCAL_CACHE_PATH = path.join(process.cwd(), ".artifacts", "optimization-cache.json");
 const MAX_CACHE_ENTRIES = 80;
 
 export interface OptimizationCacheEntry {
   id: string;
+  cacheVersion?: string;
   cacheKey: string;
   walletAddress?: string;
   networkKey: WalletNetworkKey;
@@ -81,7 +83,7 @@ async function readLocalFile(): Promise<OptimizationCacheStore | null> {
   try {
     const raw = await fs.readFile(LOCAL_CACHE_PATH, "utf8");
     const parsed = JSON.parse(raw) as Partial<OptimizationCacheStore>;
-    return {
+  return {
       entries: Array.isArray(parsed.entries) ? parsed.entries : [],
     };
   } catch {
@@ -170,6 +172,7 @@ export function buildOptimizationCacheKey(input: {
       JSON.stringify({
         walletAddress: input.walletAddress?.toLowerCase() ?? "disconnected",
         networkKey: input.networkKey,
+        version: OPTIMIZATION_CACHE_VERSION,
         normalizedPrompt: input.normalizedPrompt.toLowerCase(),
         portfolioDigest: input.portfolioDigest,
       }),
@@ -219,6 +222,7 @@ export async function findSimilarOptimizationCacheEntry(input: {
   let bestMatch: { entry: OptimizationCacheEntry; similarity: number } | null = null;
 
   for (const entry of store.entries) {
+    if (entry.cacheVersion !== OPTIMIZATION_CACHE_VERSION) continue;
     if (!entry.embedding?.length) continue;
     if (entry.networkKey !== input.networkKey) continue;
     if ((entry.walletAddress?.toLowerCase() ?? "") !== (input.walletAddress?.toLowerCase() ?? "")) {
@@ -274,10 +278,11 @@ export function buildOptimizationCacheEntry(input: {
 }) {
   const now = new Date().toISOString();
 
-  return {
+    return {
     id: createHash("sha256")
       .update(`${input.cacheKey}:${now}`)
       .digest("hex"),
+    cacheVersion: OPTIMIZATION_CACHE_VERSION,
     cacheKey: input.cacheKey,
     walletAddress: input.walletAddress,
     networkKey: input.networkKey,

@@ -99,6 +99,14 @@ function round(value: number, digits = 2) {
   return Math.round(value * multiplier) / multiplier;
 }
 
+function isNative0GOnlyPortfolio(portfolio: Record<string, number>) {
+  const positiveSymbols = Object.entries(portfolio)
+    .filter(([, value]) => value > 0)
+    .map(([symbol]) => symbol.toUpperCase());
+
+  return positiveSymbols.length > 0 && positiveSymbols.every((symbol) => symbol === "0G");
+}
+
 export function createYieldSeries(current: number, optimized: number, points = 30) {
   return Array.from({ length: points }, (_, index) => {
     const progress = index / (points - 1);
@@ -119,6 +127,10 @@ export function buildNarrative(result: OptimizationResult, prompt?: string) {
   }
 
   const instruction = prompt ? `Request: ${prompt}. ` : "";
+  if (result.top_protocols.every((protocol) => protocol.name.startsWith("0G"))) {
+    return `${instruction}YieldBoost detected native 0G in MetaMask and routed the optimization through 0G-native yield paths: native staking, storage-backed proof execution, and compute-ready reserve. Estimated APY rises to ${result.optimized_apy}% with the strategy kept inside the 9-layer integrity flow.`;
+  }
+
   return `${instruction}YieldBoost rerouted idle stablecoin and 0G exposure into SaucerSwap LP, high-yield 0G staking, and a safer BONZO rebalance. Estimated APY rises to ${result.optimized_apy}% with moderated slippage, diversified protocol exposure, and proof anchored to 0G Compute plus 0G Storage.`;
 }
 
@@ -154,23 +166,33 @@ export function buildOptimizationSnapshot(
   }
 
   const normalizedTotalPortfolio = totalPortfolio || 24570.25;
+  const native0GOnly = isNative0GOnlyPortfolio(portfolio);
 
-  const currentApy = 12.38;
-  const optimizedApy = 23.84;
-  const estimatedAnnualGain = round(normalizedTotalPortfolio * 0.0959, 2);
+  const currentApy = native0GOnly ? 3.2 : 12.38;
+  const optimizedApy = native0GOnly ? 14.8 : 23.84;
+  const estimatedAnnualGain = round(
+    normalizedTotalPortfolio * (native0GOnly ? 0.116 : 0.0959),
+    2,
+  );
 
   const snapshot: OptimizationResult = {
     current_apy: currentApy,
     optimized_apy: optimizedApy,
     yield_increase: estimatedAnnualGain,
-    yield_increase_pct: 23.61,
-    top_protocols: [
-      { name: "SaucerSwap LP", apy: 24.18, risk: "medium" },
-      { name: "0G High-Yield Pool", apy: 18.65, risk: "low" },
-      { name: "BONZO Earn More", apy: 32.1, risk: "medium" },
-    ],
-    recommended: "SaucerSwap LP",
-    confidence: 96,
+    yield_increase_pct: native0GOnly ? 11.6 : 23.61,
+    top_protocols: native0GOnly
+      ? [
+          { name: "0G Native Staking Route", apy: 14.8, risk: "low" },
+          { name: "0G Storage Proof Route", apy: 10.4, risk: "low" },
+          { name: "0G Compute Reserve", apy: 7.2, risk: "low" },
+        ]
+      : [
+          { name: "SaucerSwap LP", apy: 24.18, risk: "medium" },
+          { name: "0G High-Yield Pool", apy: 18.65, risk: "low" },
+          { name: "BONZO Earn More", apy: 32.1, risk: "medium" },
+        ],
+    recommended: native0GOnly ? "0G Native Staking Route" : "SaucerSwap LP",
+    confidence: native0GOnly ? 94 : 96,
     timestamp: new Date().toISOString(),
     executionSeconds: 8.42,
     estimatedAnnualGain,
