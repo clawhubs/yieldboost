@@ -248,6 +248,11 @@ interface ChallengeFeedback {
   message: string;
 }
 
+type SealNotice = {
+  title: string;
+  message: string;
+};
+
 const DEFAULT_CHALLENGE_ANNOUNCEMENT =
   "Founder upload is pending. The public target will appear here after the live recording, and every wallet will be able to attempt an unseal against the same vault.";
 
@@ -437,6 +442,7 @@ function VaultDashboardInner() {
   const [errorText, setErrorText] = useState<string | null>(null);
   const [challengeFeedback, setChallengeFeedback] = useState<ChallengeFeedback | null>(null);
   const [lastSeal, setLastSeal] = useState<SealResponse | null>(null);
+  const [sealNotice, setSealNotice] = useState<SealNotice | null>(null);
   const [voucherReward, setVoucherReward] = useState<VoucherReward | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [auditTrailOpen, setAuditTrailOpen] = useState(false);
@@ -571,12 +577,13 @@ function VaultDashboardInner() {
   const refreshVaults = useCallback(async () => {
     if (!address) {
       setVaultItems([]);
-      return;
+      return [];
     }
     const data = await fetchJson<VaultListResponse>(
       `/v1/integrity/records?wallet_address=${address}&network=testnet`,
     );
     setVaultItems(data.items);
+    return data.items;
   }, [address]);
 
   const refreshPublicChallenge = useCallback(async () => {
@@ -613,6 +620,12 @@ function VaultDashboardInner() {
   }, [refreshVaults]);
 
   useEffect(() => {
+    if (sealNotice && lastSeal && vaultItems.some((item) => item.storage_id === lastSeal.storage_id)) {
+      setSealNotice(null);
+    }
+  }, [lastSeal, sealNotice, vaultItems]);
+
+  useEffect(() => {
     void refreshPublicChallenge().catch(() => undefined);
   }, [refreshPublicChallenge]);
 
@@ -630,6 +643,10 @@ function VaultDashboardInner() {
     if (!address || !canSeal) return;
     setErrorText(null);
     setChallengeFeedback(null);
+    setSealNotice({
+      title: "Waiting for wallet confirmation",
+      message: "Confirm the 0G testnet transaction. This banner stays alive until your file appears in The Vault.",
+    });
     setProcessing("seal");
     startPipeline("Triggering 0G testnet gas payment");
     try {
@@ -644,6 +661,10 @@ function VaultDashboardInner() {
         value: feeValue,
       });
 
+      setSealNotice({
+        title: "Wallet confirmed",
+        message: "YieldBoost is preparing your signed seal challenge before encrypted upload.",
+      });
       setStatusText("Signing seal challenge");
       const challenge = await fetchJson<ChallengeResponse>("/v1/auth/challenge", {
         method: "POST",
@@ -660,6 +681,10 @@ function VaultDashboardInner() {
         message: challenge.message,
       });
 
+      setSealNotice({
+        title: "9-layer seal pipeline running",
+        message: "Your file is being encrypted, audited, uploaded to 0G, and synced into The Vault.",
+      });
       setStatusText("Running 9-layer seal pipeline");
       const form = new FormData();
       form.append("network", "testnet");
@@ -691,6 +716,10 @@ function VaultDashboardInner() {
         body: form,
       });
       setLastSeal(result);
+      setSealNotice({
+        title: "Upload accepted",
+        message: "0G accepted the sealed payload. Waiting for the new file to appear in The Vault.",
+      });
       finishPipeline(result.layer_statuses, "Seal uploaded. Syncing vault index and 0G proof...");
       void fetch("/api/ya/voucher/issue", {
         method: "POST",
@@ -723,14 +752,23 @@ function VaultDashboardInner() {
       setPlaintext("");
       setSelectedFile(null);
       setStatusText("Seal upload succeeded. Refreshing vault list...");
-      await refreshVaults();
+      const syncedItems = await refreshVaults();
       setStatusText("Vault list synced. Refreshing public challenge...");
       await refreshPublicChallenge();
       setStatusText("Proof synced. Refreshing audit counters...");
       await refreshCounters();
       setStatusText("Sealed and visible in vault");
+      if (syncedItems.some((item) => item.storage_id === result.storage_id)) {
+        setSealNotice(null);
+      } else {
+        setSealNotice({
+          title: "Sync almost complete",
+          message: "The upload finished, but the vault index is still catching up. Refresh The Vault if it does not appear in a few seconds.",
+        });
+      }
     } catch (error) {
       stopPipeline();
+      setSealNotice(null);
       setStatusText("Seal blocked");
       setErrorText(error instanceof Error ? error.message : "Seal failed.");
     } finally {
@@ -936,7 +974,8 @@ function VaultDashboardInner() {
     if (processing === "delete") return statusText || "Deleting";
     return statusText;
   }, [processing, statusText]);
-  const sealProgressPercent = processing === "seal"
+  const sealBannerActive = Boolean(sealNotice);
+  const sealProgressPercent = sealBannerActive
     ? Math.max(8, Math.round((Math.max(currentLayer, 1) / layers.length) * 100))
     : 0;
   const activeSealLayer = layers.find((layer) => layer.id === currentLayer) ?? layers[0];
@@ -1007,7 +1046,7 @@ function VaultDashboardInner() {
       </header>
 
       <AnimatePresence>
-        {processing === "seal" ? (
+        {sealNotice ? (
           <motion.div
             initial={{ opacity: 0, y: -18, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -1018,10 +1057,10 @@ function VaultDashboardInner() {
               <div className="min-w-0">
                 <div className="flex items-center gap-2 text-sm font-black text-white">
                   <Activity className="h-4 w-4 animate-pulse text-emerald-300" />
-                  File sealing in progress
+                  {sealNotice.title}
                 </div>
                 <p className="mt-1 text-xs leading-5 text-emerald-50/70">
-                  Your file is passing the 9-layer integrity pipeline. Keep this tab open until it appears in The Vault.
+                  {sealNotice.message}
                 </p>
               </div>
               <div className="shrink-0 rounded-lg border border-emerald-300/25 bg-emerald-400/10 px-3 py-2 font-mono text-[11px] uppercase tracking-[0.16em] text-emerald-100">
@@ -1152,7 +1191,7 @@ function VaultDashboardInner() {
               </button>
             </div>
             <AnimatePresence>
-              {processing === "seal" ? (
+              {sealNotice ? (
                 <motion.div
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -1171,7 +1210,7 @@ function VaultDashboardInner() {
                         Your file is being sealed by the 9-layer vault pipeline.
                       </div>
                       <p className="mt-1 text-xs leading-5 text-emerald-50/70">
-                        Keep this tab open. After wallet confirmation, YieldBoost uploads the encrypted payload to 0G and syncs it into The Vault.
+                        {sealNotice.message}
                       </p>
                     </div>
                     <div className="rounded-lg border border-emerald-300/20 bg-black/35 px-3 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-emerald-100">

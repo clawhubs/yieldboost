@@ -139,9 +139,11 @@ test("seal flow shows a visible 9-layer progress banner", async ({ page }) => {
   await page.getByPlaceholder("Secret message").fill("Playwright seal progress smoke test");
   await page.getByRole("button", { name: "Seal", exact: true }).click();
 
-  await expect(page.getByText("File sealing in progress")).toBeVisible();
   const progressBanner = page.getByTestId("vault-seal-progress-banner");
   await expect(progressBanner).toBeVisible();
+  await expect(
+    page.getByText(/Waiting for wallet confirmation|9-layer seal pipeline running|Upload accepted|Sync almost complete/),
+  ).toBeVisible();
   await expect(page.getByText("Your file is being sealed by the 9-layer vault pipeline.")).toBeVisible();
   await expect(progressBanner.getByText("L1", { exact: true })).toBeVisible();
   await expect(progressBanner.getByText("L9", { exact: true })).toBeVisible();
