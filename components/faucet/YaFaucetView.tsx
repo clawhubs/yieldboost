@@ -16,8 +16,15 @@ import {
   Globe,
   Fingerprint,
   LockKeyhole,
+  PlusCircle,
 } from "lucide-react";
 import ParticleCanvas from "@/components/dev/ParticleCanvas";
+import {
+  YA_TESTNET_CHAIN_ID_HEX,
+  YA_TESTNET_RPC_URL,
+  YA_TOKEN_ADDRESS,
+  YA_TOKEN_DECIMALS,
+} from "@/lib/ya-api-plans";
 
 const HOW_IT_WORKS = [
   { step: "1", icon: Zap, title: "Earn a voucher", desc: "Run optimizer or seal a vault on 0G testnet." },
@@ -32,9 +39,107 @@ export default function YaFaucetView() {
   const [walletAddress, setWalletAddress] = useState("");
   const [voucher, setVoucher] = useState(initialVoucher);
   const [status, setStatus] = useState<"idle" | "claiming" | "success" | "error">("idle");
+  const [walletStatus, setWalletStatus] = useState<"idle" | "connecting" | "adding" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
+  const [walletMessage, setWalletMessage] = useState("");
   const [txHash, setTxHash] = useState("");
   const [explorerUrl, setExplorerUrl] = useState("");
+
+  async function ensure0GTestnet() {
+    if (typeof window === "undefined" || !window.ethereum?.request) {
+      throw new Error("MetaMask or an injected wallet was not detected.");
+    }
+
+    try {
+      await window.ethereum.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: YA_TESTNET_CHAIN_ID_HEX }],
+      });
+    } catch (error) {
+      const code =
+        typeof error === "object" &&
+        error !== null &&
+        "code" in error &&
+        typeof (error as { code?: unknown }).code === "number"
+          ? (error as { code: number }).code
+          : undefined;
+
+      if (code !== 4902) {
+        throw error;
+      }
+
+      await window.ethereum.request({
+        method: "wallet_addEthereumChain",
+        params: [
+          {
+            chainId: YA_TESTNET_CHAIN_ID_HEX,
+            chainName: "0G Galileo Testnet",
+            nativeCurrency: {
+              name: "0G",
+              symbol: "0G",
+              decimals: 18,
+            },
+            rpcUrls: [YA_TESTNET_RPC_URL],
+            blockExplorerUrls: ["https://chainscan-galileo.0g.ai"],
+          },
+        ],
+      });
+    }
+  }
+
+  async function connectWallet() {
+    setWalletStatus("connecting");
+    setWalletMessage("Connecting MetaMask...");
+    try {
+      if (typeof window === "undefined" || !window.ethereum?.request) {
+        throw new Error("MetaMask or an injected wallet was not detected.");
+      }
+      await ensure0GTestnet();
+      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+      const firstAccount = Array.isArray(accounts) && typeof accounts[0] === "string" ? accounts[0] : "";
+      if (!firstAccount) {
+        throw new Error("No wallet account was returned.");
+      }
+      setWalletAddress(firstAccount);
+      setWalletStatus("success");
+      setWalletMessage("Wallet connected on 0G Galileo Testnet.");
+    } catch (error) {
+      setWalletStatus("error");
+      setWalletMessage(error instanceof Error ? error.message : "Unable to connect wallet.");
+    }
+  }
+
+  async function addYaTokenToWallet() {
+    setWalletStatus("adding");
+    setWalletMessage("Adding YA token to MetaMask...");
+    try {
+      if (typeof window === "undefined" || !window.ethereum?.request) {
+        throw new Error("MetaMask or an injected wallet was not detected.");
+      }
+      await ensure0GTestnet();
+      const origin = window.location.origin;
+      const added = await window.ethereum.request({
+        method: "wallet_watchAsset",
+        params: {
+          type: "ERC20",
+          options: {
+            address: YA_TOKEN_ADDRESS,
+            symbol: "YA",
+            decimals: YA_TOKEN_DECIMALS,
+            image: `${origin}/token/ya.png`,
+          },
+        },
+      });
+      if (!added) {
+        throw new Error("YA token add request was rejected.");
+      }
+      setWalletStatus("success");
+      setWalletMessage("YA token is now available in MetaMask on 0G Galileo Testnet.");
+    } catch (error) {
+      setWalletStatus("error");
+      setWalletMessage(error instanceof Error ? error.message : "Unable to add YA token to wallet.");
+    }
+  }
 
   async function claimVoucher() {
     setStatus("claiming");
@@ -72,6 +177,7 @@ export default function YaFaucetView() {
           ? `Claimed ${payload.amountYa ?? 888} YA. This wallet is now migration-eligible.`
           : `Claimed ${payload.amountYa ?? 888} YA. Token transfer is on 0G Galileo testnet.`,
       );
+      void addYaTokenToWallet();
       setTxHash(payload.txHash || "");
       setExplorerUrl(payload.explorerUrl || "");
     } catch (error) {
@@ -157,6 +263,36 @@ export default function YaFaucetView() {
             </div>
 
             <div className="mt-6 grid gap-5">
+              <div className="grid gap-3 rounded-xl border border-[rgba(114,243,199,0.18)] bg-[rgba(114,243,199,0.05)] p-4 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={connectWallet}
+                  disabled={walletStatus === "connecting" || walletStatus === "adding"}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-[rgba(114,243,199,0.28)] bg-[rgba(114,243,199,0.08)] px-4 py-3 text-[13px] font-bold text-[#d8fff8] transition hover:border-[rgba(114,243,199,0.48)] hover:bg-[rgba(114,243,199,0.14)] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <Wallet className="h-4 w-4 text-[#72f3c7]" />
+                  {walletStatus === "connecting" ? "Connecting..." : "Connect Wallet"}
+                </button>
+                <button
+                  type="button"
+                  onClick={addYaTokenToWallet}
+                  disabled={walletStatus === "connecting" || walletStatus === "adding"}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-[rgba(114,243,199,0.28)] bg-[rgba(114,243,199,0.08)] px-4 py-3 text-[13px] font-bold text-[#d8fff8] transition hover:border-[rgba(114,243,199,0.48)] hover:bg-[rgba(114,243,199,0.14)] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <PlusCircle className="h-4 w-4 text-[#72f3c7]" />
+                  {walletStatus === "adding" ? "Adding YA..." : "Add YA Testnet to Wallet"}
+                </button>
+                {walletMessage ? (
+                  <p
+                    className={`sm:col-span-2 text-[12px] ${
+                      walletStatus === "error" ? "text-[#ffc8c8]" : "text-[#b8ece5]"
+                    }`}
+                  >
+                    {walletMessage}
+                  </p>
+                ) : null}
+              </div>
+
               <label className="grid gap-2">
                 <span className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#d0e0ec]">
                   Recipient wallet address
@@ -230,6 +366,16 @@ export default function YaFaucetView() {
                           View on explorer
                           <ExternalLink className="h-3.5 w-3.5" />
                         </a>
+                      ) : null}
+                      {status === "success" ? (
+                        <button
+                          type="button"
+                          onClick={addYaTokenToWallet}
+                          className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-[rgba(114,243,199,0.28)] bg-[rgba(114,243,199,0.08)] px-3 py-2 text-[13px] font-semibold text-[#72f3c7] transition hover:text-white"
+                        >
+                          <PlusCircle className="h-3.5 w-3.5" />
+                          Add YA Testnet to MetaMask
+                        </button>
                       ) : null}
                     </div>
                   </div>
