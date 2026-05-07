@@ -1001,20 +1001,6 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
                 amountYa: payload.amountYa,
                 source: "optimize",
               });
-            } else if (payload.alreadyEligible && payload.amountYa) {
-              setVoucherReward({
-                amountYa: payload.amountYa,
-                source: "optimize",
-                status: "already-claimed",
-                message: payload.reason,
-              });
-            } else if (payload.soldOut && payload.amountYa) {
-              setVoucherReward({
-                amountYa: payload.amountYa,
-                source: "optimize",
-                status: "sold-out",
-                message: payload.reason,
-              });
             }
           })
           .catch(() => undefined);

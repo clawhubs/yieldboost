@@ -691,7 +691,7 @@ function VaultDashboardInner() {
         body: form,
       });
       setLastSeal(result);
-      finishPipeline(result.layer_statuses, "Sealed and anchored");
+      finishPipeline(result.layer_statuses, "Seal uploaded. Syncing vault index and 0G proof...");
       void fetch("/api/ya/voucher/issue", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -717,28 +717,18 @@ function VaultDashboardInner() {
               amountYa: payload.amountYa,
               source: "vault-seal",
             });
-          } else if (payload.alreadyEligible && payload.amountYa) {
-            setVoucherReward({
-              amountYa: payload.amountYa,
-              source: "vault-seal",
-              status: "already-claimed",
-              message: payload.reason,
-            });
-          } else if (payload.soldOut && payload.amountYa) {
-            setVoucherReward({
-              amountYa: payload.amountYa,
-              source: "vault-seal",
-              status: "sold-out",
-              message: payload.reason,
-            });
           }
         })
         .catch(() => undefined);
       setPlaintext("");
       setSelectedFile(null);
+      setStatusText("Seal upload succeeded. Refreshing vault list...");
       await refreshVaults();
+      setStatusText("Vault list synced. Refreshing public challenge...");
       await refreshPublicChallenge();
+      setStatusText("Proof synced. Refreshing audit counters...");
       await refreshCounters();
+      setStatusText("Sealed and visible in vault");
     } catch (error) {
       stopPipeline();
       setStatusText("Seal blocked");
@@ -941,9 +931,9 @@ function VaultDashboardInner() {
   }, []);
 
   const activeStatus = useMemo(() => {
-    if (processing === "seal") return "Sealing";
-    if (processing === "unseal") return "Unsealing";
-    if (processing === "delete") return "Deleting";
+    if (processing === "seal") return statusText || "Sealing";
+    if (processing === "unseal") return statusText || "Unsealing";
+    if (processing === "delete") return statusText || "Deleting";
     return statusText;
   }, [processing, statusText]);
 
