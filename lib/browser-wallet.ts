@@ -122,6 +122,32 @@ export async function getAuthorizedAccounts(provider: InjectedProvider) {
   return Array.isArray(accounts) ? accounts : [];
 }
 
+export async function requestWalletAccounts(provider: InjectedProvider) {
+  try {
+    await provider.request({
+      method: "wallet_requestPermissions",
+      params: [{ eth_accounts: {} }],
+    });
+  } catch (error) {
+    const code =
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error
+        ? (error as { code?: unknown }).code
+        : undefined;
+
+    if (code === 4001) {
+      throw error;
+    }
+  }
+
+  const accounts = (await provider.request({
+    method: "eth_requestAccounts",
+  })) as string[];
+
+  return Array.isArray(accounts) ? accounts : [];
+}
+
 export function inferNetworkKeyFromChainId(
   chainIdHex: string | null | undefined,
   networks: WalletNetworkConfig[],

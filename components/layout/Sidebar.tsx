@@ -38,6 +38,7 @@ import {
   getInjectedWalletById,
   getInjectedWalletOptions,
   inferNetworkKeyFromChainId,
+  requestWalletAccounts,
   switchOrAddNetwork,
   type InjectedProvider,
   type WalletOption,
@@ -660,9 +661,11 @@ export default function Sidebar() {
       }
 
       await switchOrAddNetwork(option.provider, selectedNetworkConfig);
-      const accounts = (await option.provider.request({
-        method: "eth_requestAccounts",
-      })) as string[];
+      localStorage.removeItem(WALLET_PROVIDER_STORAGE_KEY);
+      localStorage.removeItem(WALLET_OVERRIDE_STORAGE_KEY);
+      clearCookie(WALLET_COOKIE_KEY);
+
+      const accounts = await requestWalletAccounts(option.provider);
       const nextAccount = Array.isArray(accounts)
         ? accounts.find((account) => isWalletAddress(account))
         : null;
