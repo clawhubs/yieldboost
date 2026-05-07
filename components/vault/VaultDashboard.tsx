@@ -936,6 +936,10 @@ function VaultDashboardInner() {
     if (processing === "delete") return statusText || "Deleting";
     return statusText;
   }, [processing, statusText]);
+  const sealProgressPercent = processing === "seal"
+    ? Math.max(8, Math.round((Math.max(currentLayer, 1) / layers.length) * 100))
+    : 0;
+  const activeSealLayer = layers.find((layer) => layer.id === currentLayer) ?? layers[0];
 
   return (
     <div className="min-h-screen bg-[#050a05] text-[#fffff0]">
@@ -1001,6 +1005,42 @@ function VaultDashboardInner() {
           </div>
         </div>
       </header>
+
+      <AnimatePresence>
+        {processing === "seal" ? (
+          <motion.div
+            initial={{ opacity: 0, y: -18, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -18, scale: 0.98 }}
+            className="fixed left-4 right-4 top-24 z-50 mx-auto max-w-3xl rounded-xl border border-emerald-300/40 bg-[#06110d]/95 p-4 shadow-[0_0_70px_rgba(16,185,129,0.26)] backdrop-blur-2xl md:top-6"
+          >
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 text-sm font-black text-white">
+                  <Activity className="h-4 w-4 animate-pulse text-emerald-300" />
+                  File sealing in progress
+                </div>
+                <p className="mt-1 text-xs leading-5 text-emerald-50/70">
+                  Your file is passing the 9-layer integrity pipeline. Keep this tab open until it appears in The Vault.
+                </p>
+              </div>
+              <div className="shrink-0 rounded-lg border border-emerald-300/25 bg-emerald-400/10 px-3 py-2 font-mono text-[11px] uppercase tracking-[0.16em] text-emerald-100">
+                {activeSealLayer.key}: {activeSealLayer.name}
+              </div>
+            </div>
+            <div className="mt-3 grid grid-cols-9 gap-1">
+              {layers.map((layer) => (
+                <div
+                  key={layer.key}
+                  className={`h-1.5 rounded-full ${
+                    currentLayer >= layer.id ? "bg-emerald-300" : "bg-white/15"
+                  }`}
+                />
+              ))}
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
       <main className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 py-6 md:px-8 lg:grid-cols-12">
         <section className="space-y-6 lg:col-span-7">
@@ -1103,10 +1143,79 @@ function VaultDashboardInner() {
                 disabled={!canSeal || Boolean(processing)}
                 className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-400 px-5 py-3 text-sm font-black uppercase tracking-[0.16em] text-black shadow-[0_0_30px_rgba(16,185,129,0.24)] transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400"
               >
-                <Lock className="h-4 w-4" />
-                Seal
+                {processing === "seal" ? (
+                  <Activity className="h-4 w-4 animate-pulse" />
+                ) : (
+                  <Lock className="h-4 w-4" />
+                )}
+                {processing === "seal" ? "Processing" : "Seal"}
               </button>
             </div>
+            <AnimatePresence>
+              {processing === "seal" ? (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  role="status"
+                  data-testid="vault-seal-progress-banner"
+                  className="mt-4 overflow-hidden rounded-lg border border-emerald-300/30 bg-emerald-400/10 p-4 shadow-[0_0_34px_rgba(16,185,129,0.14)]"
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <div className="flex items-center gap-2 text-sm font-black text-white">
+                        <span className="relative flex h-3 w-3">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-70" />
+                          <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-300" />
+                        </span>
+                        Your file is being sealed by the 9-layer vault pipeline.
+                      </div>
+                      <p className="mt-1 text-xs leading-5 text-emerald-50/70">
+                        Keep this tab open. After wallet confirmation, YieldBoost uploads the encrypted payload to 0G and syncs it into The Vault.
+                      </p>
+                    </div>
+                    <div className="rounded-lg border border-emerald-300/20 bg-black/35 px-3 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-emerald-100">
+                      {sealProgressPercent}% Complete
+                    </div>
+                  </div>
+                  <div className="mt-4 h-2 overflow-hidden rounded-full bg-black/50">
+                    <motion.div
+                      className="h-full rounded-full bg-emerald-300"
+                      initial={false}
+                      animate={{ width: `${sealProgressPercent}%` }}
+                      transition={{ duration: 0.35 }}
+                    />
+                  </div>
+                  <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                    {layers.map((layer) => {
+                      const isDone = currentLayer > layer.id || Boolean(layerStatuses[layer.key]);
+                      const isCurrent = currentLayer === layer.id;
+                      return (
+                        <div
+                          key={layer.key}
+                          className={`rounded-md border px-3 py-2 text-[11px] ${
+                            isDone
+                              ? "border-emerald-300/25 bg-emerald-400/12 text-emerald-50"
+                              : isCurrent
+                                ? "border-emerald-300/50 bg-emerald-300/15 text-white shadow-[0_0_20px_rgba(16,185,129,0.14)]"
+                                : "border-white/10 bg-black/20 text-emerald-50/45"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-bold">{layer.key}</span>
+                            {isDone ? <Check className="h-3.5 w-3.5" /> : null}
+                          </div>
+                          <div className="mt-1 truncate font-semibold">{layer.name}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="mt-3 text-xs font-semibold text-emerald-100">
+                    Current step: {activeSealLayer.key} - {activeSealLayer.name}. {statusText}
+                  </div>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
             <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
               <div className="inline-flex items-center gap-2 rounded-lg border border-emerald-300/20 bg-emerald-400/10 px-3 py-2 text-xs font-bold text-emerald-100">
                 <Check className="h-4 w-4 text-emerald-300" />
