@@ -427,6 +427,7 @@ function VaultDashboardInner() {
   const [plaintext, setPlaintext] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [vaultItems, setVaultItems] = useState<VaultItem[]>([]);
+  const [founderVaultItems, setFounderVaultItems] = useState<VaultItem[]>([]);
   const [adminStats, setAdminStats] = useState<AdminStatsResponse | null>(null);
   const [deflectedAttacks, setDeflectedAttacks] = useState(0);
   const [currentLayer, setCurrentLayer] = useState(0);
@@ -442,24 +443,48 @@ function VaultDashboardInner() {
   const pipelineTimer = useRef<number | null>(null);
 
   const founderWallet = process.env.NEXT_PUBLIC_FOUNDER_WALLET_ADDRESS;
+  const latestFounderChallengeItem = useMemo(() => {
+    return [...founderVaultItems].sort((left, right) => {
+      return Date.parse(right.created_at) - Date.parse(left.created_at);
+    })[0] ?? null;
+  }, [founderVaultItems]);
   const publicChallenge = useMemo<PublicChallengeConfig>(() => {
-    const storageId = process.env.NEXT_PUBLIC_VAULT_CHALLENGE_STORAGE_ID?.trim() || null;
+    const configuredStorageId = process.env.NEXT_PUBLIC_VAULT_CHALLENGE_STORAGE_ID?.trim() || null;
+    const storageId = configuredStorageId || latestFounderChallengeItem?.storage_id || null;
+    const configuredAnnouncement = process.env.NEXT_PUBLIC_VAULT_CHALLENGE_ANNOUNCEMENT?.trim();
     return {
       title:
         process.env.NEXT_PUBLIC_VAULT_CHALLENGE_TITLE?.trim() || "Live Challenge Vault",
       fileName:
-        process.env.NEXT_PUBLIC_VAULT_CHALLENGE_FILE_NAME?.trim() || "challenge-vault.enc",
+        process.env.NEXT_PUBLIC_VAULT_CHALLENGE_FILE_NAME?.trim() ||
+        latestFounderChallengeItem?.file_name ||
+        "challenge-vault.enc",
       storageId,
       announcement:
-        process.env.NEXT_PUBLIC_VAULT_CHALLENGE_ANNOUNCEMENT?.trim() ||
-        DEFAULT_CHALLENGE_ANNOUNCEMENT,
+        configuredAnnouncement ||
+        (storageId
+          ? "Founder challenge target is live. Every wallet can attempt an unseal against the same public vault file."
+          : DEFAULT_CHALLENGE_ANNOUNCEMENT),
     };
-  }, []);
+  }, [latestFounderChallengeItem]);
   const isFounder = sameAddress(address, founderWallet);
   const canSeal = Boolean(isConnected && address && (plaintext.trim() || selectedFile));
   const challengeItem = useMemo<VaultItem | null>(() => {
     if (!publicChallenge.storageId) {
       return null;
+    }
+    if (
+      latestFounderChallengeItem &&
+      latestFounderChallengeItem.storage_id === publicChallenge.storageId
+    ) {
+      return {
+        ...latestFounderChallengeItem,
+        metadata: {
+          ...latestFounderChallengeItem.metadata,
+          challenge_mode: true,
+          source: "public-vault-challenge",
+        },
+      };
     }
     return {
       storage_id: publicChallenge.storageId,
@@ -475,7 +500,7 @@ function VaultDashboardInner() {
         source: "public-vault-challenge",
       },
     };
-  }, [founderWallet, publicChallenge]);
+  }, [founderWallet, latestFounderChallengeItem, publicChallenge]);
 
   const stopPipeline = useCallback(() => {
     if (pipelineTimer.current) {
@@ -540,6 +565,17 @@ function VaultDashboardInner() {
     setVaultItems(data.items);
   }, [address]);
 
+  const refreshPublicChallenge = useCallback(async () => {
+    if (!founderWallet) {
+      setFounderVaultItems([]);
+      return;
+    }
+    const data = await fetchJson<VaultListResponse>(
+      `/v1/integrity/records?wallet_address=${founderWallet}&network=testnet`,
+    );
+    setFounderVaultItems(data.items);
+  }, [founderWallet]);
+
   const refreshCounters = useCallback(async () => {
     const publicStats = await fetchJson<{ total_deflected_attacks: number }>(
       "/v1/admin/public-stats",
@@ -561,6 +597,10 @@ function VaultDashboardInner() {
   useEffect(() => {
     void refreshVaults().catch(() => undefined);
   }, [refreshVaults]);
+
+  useEffect(() => {
+    void refreshPublicChallenge().catch(() => undefined);
+  }, [refreshPublicChallenge]);
 
   useEffect(() => {
     void refreshCounters().catch(() => undefined);
@@ -662,6 +702,7 @@ function VaultDashboardInner() {
       setPlaintext("");
       setSelectedFile(null);
       await refreshVaults();
+      await refreshPublicChallenge();
       await refreshCounters();
     } catch (error) {
       stopPipeline();
@@ -677,6 +718,7 @@ function VaultDashboardInner() {
     finishPipeline,
     plaintext,
     refreshCounters,
+    refreshPublicChallenge,
     refreshVaults,
     selectedFile,
     sendTransactionAsync,
@@ -746,6 +788,7 @@ function VaultDashboardInner() {
         });
       }
       await refreshVaults();
+      await refreshPublicChallenge();
       await refreshCounters();
     } catch (error) {
       stopPipeline();
@@ -773,6 +816,7 @@ function VaultDashboardInner() {
     finishPipeline,
     publicChallenge.storageId,
     refreshCounters,
+    refreshPublicChallenge,
     refreshVaults,
     signTypedDataAsync,
     startPipeline,
