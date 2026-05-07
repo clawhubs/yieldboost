@@ -9,7 +9,7 @@ import type { OptimizationResult } from "@/lib/optimizations";
 import type { WalletNetworkKey } from "@/lib/wallet";
 
 const OPTIMIZATION_CACHE_KEY = "yieldboost:optimization-cache";
-const OPTIMIZATION_CACHE_VERSION = "native-0g-v2";
+const OPTIMIZATION_CACHE_VERSION = "native-0g-v3";
 const LOCAL_CACHE_PATH = path.join(process.cwd(), ".artifacts", "optimization-cache.json");
 const MAX_CACHE_ENTRIES = 80;
 
