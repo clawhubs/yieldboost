@@ -64,6 +64,7 @@ test("YA faucet connects wallet and adds YA testnet token to MetaMask", async ({
   });
   expect(watchAssetCall).toBeTruthy();
   expect(JSON.stringify(watchAssetCall)).toContain("0xa8018A4920ecA7AF0Df88caCFD5E21b939A678b5");
+  expect(JSON.stringify(watchAssetCall)).toContain("/token/ya-wallet.png");
 
   await page.getByRole("button", { name: "Claim exclusive 888 YA" }).click();
   await expect(page.getByText("Claimed 888 YA. This wallet is now migration-eligible.")).toBeVisible();

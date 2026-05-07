@@ -126,7 +126,7 @@ export default function YaFaucetView() {
             address: YA_TOKEN_ADDRESS,
             symbol: "YA",
             decimals: YA_TOKEN_DECIMALS,
-            image: `${origin}/token/ya.png`,
+            image: `${origin}/token/ya-wallet.png`,
           },
         },
       });
