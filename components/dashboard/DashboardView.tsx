@@ -202,10 +202,22 @@ export default function DashboardView() {
   }
 
   const livePortfolio = useMemo(
-    () =>
-      Object.fromEntries(
+    () => {
+      const tokenMap = Object.fromEntries(
         (portfolio?.tokens ?? []).map((token) => [token.symbol, token.valueUSD]),
-      ) as Record<string, number>,
+      ) as Record<string, number>;
+
+      if (
+        Object.values(tokenMap).some((value) => value > 0) ||
+        portfolio?.displayUnit !== "0G" ||
+        !portfolio.displayTotal ||
+        portfolio.displayTotal <= 0
+      ) {
+        return tokenMap;
+      }
+
+      return { "0G": portfolio.displayTotal };
+    },
     [portfolio],
   );
 
@@ -213,7 +225,7 @@ export default function DashboardView() {
     ? `${portfolio.walletAddress.slice(0, 6)}...${portfolio.walletAddress.slice(-4)}`
     : "wallet connected";
   const walletConnected = Boolean(portfolio?.walletAddress);
-  const hasDetectedAssets = Object.keys(livePortfolio).length > 0;
+  const hasDetectedAssets = Object.values(livePortfolio).some((value) => value > 0);
   const canOptimize = !judgeMode && walletConnected && hasDetectedAssets && !loading && !isOptimizing;
   const walletDisconnected = !walletConnected && !judgeMode;
   const optimizationUnavailable = !canOptimize && !isOptimizing;
@@ -1217,7 +1229,7 @@ export default function DashboardView() {
                 ) : null}
                 {walletConnected && !hasDetectedAssets ? (
                   <div className="mt-3 text-[12px] leading-5 text-[#d3ac62]">
-                    Wallet is connected, but the current RPC snapshot only surfaces supported on-chain balances. If the native balance is still zero or assets are not indexed yet, the optimizer will wait for a real position to evaluate.
+                    Wallet is connected, but no native 0G balance is available in MetaMask on the selected 0G network yet. Switch between 0G testnet/mainnet or fund the wallet before running a live optimization.
                   </div>
                 ) : null}
                 {!walletConnected && !judgeMode ? (

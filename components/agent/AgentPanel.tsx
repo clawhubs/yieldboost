@@ -40,6 +40,23 @@ function getStepStatus(progress: OptimizationState, step: OptimizationState) {
   return "idle";
 }
 
+function buildOptimizerPortfolio(portfolio: ReturnType<typeof usePortfolio>["portfolio"]) {
+  const tokenMap = Object.fromEntries(
+    (portfolio?.tokens ?? []).map((token) => [token.symbol, token.valueUSD]),
+  );
+
+  if (
+    Object.values(tokenMap).some((value) => value > 0) ||
+    portfolio?.displayUnit !== "0G" ||
+    !portfolio.displayTotal ||
+    portfolio.displayTotal <= 0
+  ) {
+    return tokenMap;
+  }
+
+  return { "0G": portfolio.displayTotal };
+}
+
 export default function AgentPanel() {
   const { portfolio, judgeMode } = usePortfolio();
   const {
@@ -53,18 +70,16 @@ export default function AgentPanel() {
   const [state, formAction, pending] = useActionState(
     async (_previousState: AgentActionState, formData: FormData) => {
       const prompt = String(formData.get("prompt") ?? defaultPrompt).trim() || defaultPrompt;
-      const livePortfolio = Object.fromEntries(
-        (portfolio?.tokens ?? []).map((token) => [token.symbol, token.valueUSD]),
-      );
+      const livePortfolio = buildOptimizerPortfolio(portfolio);
       if (judgeMode) {
         return {
           error: "Judge mode is read-only. Exit judge mode from the sidebar before running a fresh optimization.",
           prompt,
         };
       }
-      if (Object.keys(livePortfolio).length === 0) {
+      if (!Object.values(livePortfolio).some((value) => value > 0)) {
         return {
-          error: "No supported live balance is available yet. Connect a wallet or open judge mode if you only need the latest recorded review snapshot.",
+          error: "No native 0G balance is available in MetaMask on the selected 0G network yet. Connect a funded 0G testnet/mainnet wallet or open judge mode for the latest recorded review snapshot.",
           prompt,
         };
       }
