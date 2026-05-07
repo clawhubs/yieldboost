@@ -987,12 +987,33 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           }),
         })
           .then((response) => response.json())
-          .then((payload: { eligible?: boolean; voucher?: string; amountYa?: number }) => {
+          .then((payload: {
+            eligible?: boolean;
+            voucher?: string;
+            amountYa?: number;
+            alreadyEligible?: boolean;
+            soldOut?: boolean;
+            reason?: string;
+          }) => {
             if (payload.eligible && payload.voucher && payload.amountYa) {
               setVoucherReward({
                 voucher: payload.voucher,
                 amountYa: payload.amountYa,
                 source: "optimize",
+              });
+            } else if (payload.alreadyEligible && payload.amountYa) {
+              setVoucherReward({
+                amountYa: payload.amountYa,
+                source: "optimize",
+                status: "already-claimed",
+                message: payload.reason,
+              });
+            } else if (payload.soldOut && payload.amountYa) {
+              setVoucherReward({
+                amountYa: payload.amountYa,
+                source: "optimize",
+                status: "sold-out",
+                message: payload.reason,
               });
             }
           })
