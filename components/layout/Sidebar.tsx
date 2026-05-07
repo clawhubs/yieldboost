@@ -185,6 +185,43 @@ function isStaleDemoWalletState(input: {
   );
 }
 
+function hasNative0GBalance(portfolio: unknown) {
+  if (!portfolio || typeof portfolio !== "object") {
+    return false;
+  }
+
+  const value = (portfolio as { displayTotal?: unknown }).displayTotal;
+  return typeof value === "number" && value > 0;
+}
+
+async function resolveFundedNetworkForWallet(
+  walletAddress: string,
+  preferredNetwork: WalletNetworkKey,
+) {
+  const networksToTry: WalletNetworkKey[] = [
+    preferredNetwork,
+    preferredNetwork === "testnet" ? "mainnet" : "testnet",
+  ];
+
+  for (const network of networksToTry) {
+    try {
+      const response = await fetch(
+        `/api/portfolio?wallet=${encodeURIComponent(walletAddress)}&network=${network}`,
+        { cache: "no-store" },
+      );
+      if (!response.ok) continue;
+      const portfolio = await response.json();
+      if (hasNative0GBalance(portfolio)) {
+        return network;
+      }
+    } catch {
+      // Keep the selected network when the balance probe fails.
+    }
+  }
+
+  return preferredNetwork;
+}
+
 export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
@@ -382,18 +419,32 @@ export default function Sidebar() {
         return;
       }
 
-      setWalletAddr(nextAccount);
-      setErrorText(null);
-      localStorage.setItem(WALLET_OVERRIDE_STORAGE_KEY, nextAccount);
-      localStorage.setItem(WALLET_PROVIDER_STORAGE_KEY, providerId);
+      void (async () => {
+        const fundedNetwork = await resolveFundedNetworkForWallet(
+          nextAccount,
+          selectedNetworkRef.current,
+        );
 
-      if (judgeModeActive) {
-        walletAddrRef.current = nextAccount;
-        return;
-      }
+        if (fundedNetwork !== selectedNetworkRef.current) {
+          setSelectedNetwork(fundedNetwork);
+          selectedNetworkRef.current = fundedNetwork;
+          localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, fundedNetwork);
+          setCookie(WALLET_NETWORK_COOKIE_KEY, fundedNetwork);
+        }
 
-      setConnected(true);
-      broadcastWalletChange(nextAccount, selectedNetworkRef.current, providerName, true);
+        setWalletAddr(nextAccount);
+        setErrorText(null);
+        localStorage.setItem(WALLET_OVERRIDE_STORAGE_KEY, nextAccount);
+        localStorage.setItem(WALLET_PROVIDER_STORAGE_KEY, providerId);
+
+        if (judgeModeActive) {
+          walletAddrRef.current = nextAccount;
+          return;
+        }
+
+        setConnected(true);
+        broadcastWalletChange(nextAccount, fundedNetwork, providerName, true);
+      })();
     };
 
     const chainChanged = (chainIdValue: unknown) => {
@@ -674,16 +725,28 @@ export default function Sidebar() {
         throw new Error(`No account returned by ${option.name}.`);
       }
 
+      const fundedNetwork = await resolveFundedNetworkForWallet(nextAccount, selectedNetwork);
+      const fundedNetworkConfig =
+        availableNetworks.find((network) => network.key === fundedNetwork) ??
+        selectedNetworkConfig;
+
+      if (fundedNetwork !== selectedNetwork && fundedNetworkConfig?.enabled) {
+        await switchOrAddNetwork(option.provider, fundedNetworkConfig);
+      }
+
+      setSelectedNetwork(fundedNetwork);
+      selectedNetworkRef.current = fundedNetwork;
       setWalletAddr(nextAccount);
       setConnected(true);
       setErrorText(null);
 
       localStorage.setItem(WALLET_OVERRIDE_STORAGE_KEY, nextAccount);
       localStorage.setItem(WALLET_PROVIDER_STORAGE_KEY, option.id);
-      localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, selectedNetwork);
+      localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, fundedNetwork);
+      setCookie(WALLET_NETWORK_COOKIE_KEY, fundedNetwork);
 
       attachProviderListeners(option.provider, option.id, option.name);
-      broadcastWalletChange(nextAccount, selectedNetwork, option.name, true);
+      broadcastWalletChange(nextAccount, fundedNetwork, option.name, true);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : `Failed to connect ${option.name}.`;
