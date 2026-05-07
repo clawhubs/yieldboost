@@ -528,13 +528,27 @@ function VaultDashboardInner() {
 
   const connectWallet = useCallback(async () => {
     setErrorText(null);
-    const connector = connectors[0];
-    if (!connector) {
-      setErrorText("Browser wallet tidak ditemukan.");
-      return;
-    }
     try {
-      await connectAsync({ connector, chainId: zeroGTestnet.id });
+      const connector = connectors[0];
+      if (connector) {
+        try {
+          await connectAsync({ connector, chainId: zeroGTestnet.id });
+        } catch (error) {
+          if (typeof window === "undefined" || !window.ethereum?.request) {
+            throw error;
+          }
+          await window.ethereum.request({ method: "eth_requestAccounts" });
+          await connectAsync({ connector, chainId: zeroGTestnet.id });
+        }
+      } else if (typeof window !== "undefined" && window.ethereum?.request) {
+        await window.ethereum.request({ method: "eth_requestAccounts" });
+      } else {
+        setErrorText("Browser wallet tidak ditemukan.");
+        return;
+      }
+
+      await forceInjectedTestnet();
+      setStatusText("Wallet connected");
     } catch (error) {
       setErrorText(error instanceof Error ? error.message : "Gagal connect wallet.");
     }
