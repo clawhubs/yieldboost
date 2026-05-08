@@ -74,7 +74,7 @@ On top of that proof path, YieldBoost AI also ships a **Strategy Agent NFT layer
 
 ## 9-Layer Independence and Partner SDK Scope
 
-The YieldBoost AI 9-layer military-grade stack is an independent system. It does not depend on VeilSolver, Shlok, or any partner SDK to prove the core YieldBoost flow.
+The YieldBoost AI 9-layer military-grade stack is built as a standalone verification system. Partner integrations such as VeilSolver can be wrapped by this stack, while the core YieldBoost proof flow remains self-contained.
 
 The standalone YieldBoost stack includes:
 
@@ -88,7 +88,7 @@ The standalone YieldBoost stack includes:
 8. Governance and policy seal
 9. Neural Handshake evidence
 
-VeilSolver Secure Proxy is a partner SDK example in the developer marketplace: YieldBoost wraps the partner solver with isolated execution, ZK proof packaging, and 0G anchoring so external developers can call a secured endpoint. It is not the source of the 9-layer stack and it is not required for Judge Mode, the main optimizer, the vault, or Strategy Agent NFT proofs.
+VeilSolver Secure Proxy is a partner SDK example in the developer marketplace: YieldBoost wraps the partner solver with isolated execution, ZK proof packaging, and 0G anchoring so external developers can call a secured endpoint. The 9-layer military-grade stack remains YieldBoost's own verification layer, and partner SDKs can plug into it as secured modules.
 
 ## Founder Grade Snapshot
 
