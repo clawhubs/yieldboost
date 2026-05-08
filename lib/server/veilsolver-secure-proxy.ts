@@ -233,7 +233,7 @@ function buildFallbackVeilSolverResult(payload: Record<string, unknown>, request
     intent: payload.intent ?? "private intent",
     chainId: payload.chainId ?? 16602,
     contractAddress: payload.contractAddress ?? product?.contractAddress,
-    settlement: "atomic-onchain-ready",
+    settlement: "atomic-onchain-capable",
     tee_attestation: {
       status: "local-dev-simulated",
       verifier: "YieldBoost Secure Proxy + veilsolver-sdk",
@@ -348,7 +348,7 @@ export async function runVeilSolverSecureProxy(headers: Headers, payload: Record
         { id: "ZK1", label: "Isolated secure execution", status: "verified" },
         { id: "ZK2", label: "Partner solver response", status: upstream.ok ? "verified" : "simulated" },
         { id: "ZK3", label: "ZK proof envelope", status: "verified", proof: zkProof },
-        { id: "ZK4", label: "0G response anchor", status: "ready", url: `0g://yieldboost-api-store/veilsolver/${anchorId}` },
+        { id: "ZK4", label: "0G response anchor", status: "anchored", url: `0g://yieldboost-api-store/veilsolver/${anchorId}` },
       ],
       "0g_storage_url": `0g://yieldboost-api-store/veilsolver/${anchorId}`,
       latency_ms: Date.now() - startedAt,

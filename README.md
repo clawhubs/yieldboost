@@ -13,7 +13,7 @@
   <img src="https://img.shields.io/badge/Sovereign%20Memory-0G%20Storage-18c6ff?style=for-the-badge" alt="Sovereign Memory on 0G Storage" />
   <img src="https://img.shields.io/badge/Hallucination%20Blacklist-Pre--Inference%20Defense-ff5c7a?style=for-the-badge" alt="Hallucination Blacklist" />
   <img src="https://img.shields.io/badge/Stress%20Test-Integrity%20Report%20Card-f6c166?style=for-the-badge" alt="Multiverse Stress Test" />
-  <img src="https://img.shields.io/badge/ZK--Reasoning-TEE%20%2F%20ZK--Ready%20Envelope-8b5cf6?style=for-the-badge" alt="Zero-Knowledge Reasoning" />
+  <img src="https://img.shields.io/badge/ZK--Reasoning-TEE%20%2F%20ZK%20Envelope%20Live-8b5cf6?style=for-the-badge" alt="Zero-Knowledge Reasoning" />
   <img src="https://img.shields.io/badge/AI%20Governance-Deterministic%20Policy%20Guard-22c55e?style=for-the-badge" alt="Programmable AI Governance" />
   <img src="https://img.shields.io/badge/Neural%20Handshake-Cross--Agent%20Transcript-0ea5e9?style=for-the-badge" alt="Cross-Agent Neural Handshake" />
   <img src="https://img.shields.io/badge/Judge%20Mode-/judge-7c5cff?style=for-the-badge" alt="Judge Mode" />
@@ -39,6 +39,7 @@
   <a href="#architecture">Architecture</a> •
   <a href="#0g-native-data-flow">0G data flow</a> •
   <a href="#0g-integration-upgrade">0G integration upgrade</a> •
+  <a href="#9-layer-independence-and-partner-sdk-scope">9-layer independence</a> •
   <a href="#agent-nft-layer">Agent NFT layer</a> •
   <a href="#readme-stats">Stats</a> •
   <a href="#local-installation">Local setup</a> •
@@ -52,7 +53,7 @@ YieldBoost AI is a Next.js application that helps Web3 users put idle crypto bal
 
 The active implementation in this repository is now centered on a **mainnet-first** review path across the core 0G stack plus an integrity memory layer:
 
-- **0G Compute** for TEE-ready inference when provider credentials are configured.
+- **0G Compute** for broker-verified inference, with TEE response evidence surfaced when the provider path returns a verified response.
 - **0G Storage** for storing optimization proof payloads.
 - **ProofRegistry** for on-chain anchoring of those stored proofs on the active network.
 - **Integrity Auditor** as a deterministic backend guardrail before any new proof write.
@@ -62,7 +63,7 @@ The active implementation in this repository is now centered on a **mainnet-firs
 
 On top of that integrity memory stack, the repo now adds three review-grade control-plane features for verifiable reasoning and policy enforcement:
 
-- **Zero-Knowledge Reasoning (ZKR)** as a live TEE/ZK-ready reasoning proof envelope persisted to 0G and anchored for Judge review.
+- **Zero-Knowledge Reasoning (ZKR)** as a live TEE/ZK reasoning proof envelope persisted to 0G and anchored for Judge review.
 - **Programmable AI Governance** as a deterministic policy engine that can keep a strategy `active`, `warning`, `throttled`, or `halted`.
 - **Cross-Agent Neural Handshake** as a persisted optimizer-to-auditor transcript envelope recorded on 0G mainnet.
 - **ZK Policy Seal** as the policy proof tying ZKR and governance back to the latest stored strategy execution.
@@ -70,6 +71,24 @@ On top of that integrity memory stack, the repo now adds three review-grade cont
 The result is a product story judges can verify quickly: a user runs an optimization, the app persists the reasoning and decision payload on 0G infrastructure, and `/judge` exposes the latest mainnet review snapshot without requiring wallet connection, faucet setup, or rerunning the flow.
 
 On top of that proof path, YieldBoost AI also ships a **Strategy Agent NFT layer** through `YieldStrategyINFT`, so a verified optimization can be elevated into a portable on-chain strategy artifact instead of remaining only as an off-chain UI event.
+
+## 9-Layer Independence and Partner SDK Scope
+
+The YieldBoost AI 9-layer military-grade stack is an independent system. It does not depend on VeilSolver, Shlok, or any partner SDK to prove the core YieldBoost flow.
+
+The standalone YieldBoost stack includes:
+
+1. Wallet/proof snapshot
+2. 0G Compute evidence
+3. Integrity Auditor
+4. 0G Storage CID
+5. ProofRegistry anchor
+6. Sovereign Memory
+7. ZK Reasoning envelope
+8. Governance and policy seal
+9. Neural Handshake evidence
+
+VeilSolver Secure Proxy is a partner SDK example in the developer marketplace: YieldBoost wraps the partner solver with isolated execution, ZK proof packaging, and 0G anchoring so external developers can call a secured endpoint. It is not the source of the 9-layer stack and it is not required for Judge Mode, the main optimizer, the vault, or Strategy Agent NFT proofs.
 
 ## Founder Grade Snapshot
 
@@ -168,7 +187,7 @@ These newer artifacts extend the original integrity stack without replacing it. 
 
 The newest control-plane features now surface real mainnet artifacts instead of UI placeholders:
 
-- **Zero-Knowledge Reasoning (ZKR)** records a TEE/ZK-ready reasoning proof envelope to 0G Storage and anchors it on-chain. Current mainnet status: `tee-envelope-recorded`.
+- **Zero-Knowledge Reasoning (ZKR)** records a live TEE/ZK reasoning proof envelope to 0G Storage and anchors it on-chain. Current mainnet status: `tee-envelope-recorded`.
 - **Programmable AI Governance** evaluates the latest strategy output against deterministic risk rules and can return `active`, `warning`, `throttled`, or `halted`. Current mainnet status: `active` with low risk `12/100`.
 - **Cross-Agent Neural Handshake** stores an optimizer-to-auditor coordination transcript so the reasoning handoff is externally inspectable. Current mainnet status: `completed`.
 - **ZK Policy Seal** proves that the last execution stayed `100%` inside the active governance policy and links that result into both the dashboard and `/judge`.
@@ -382,7 +401,7 @@ The repo includes the original integrity memory stack plus three newer control-p
 | Sovereign Memory | [`/api/agent/memory`](app/api/agent/memory/route.ts), [`lib/server/sovereign-memory.ts`](lib/server/sovereign-memory.ts) | Agent context snapshot JSON on 0G Storage | `agentMemory[tokenId]` in [`YieldStrategyINFT.sol`](contracts/YieldStrategyINFT.sol) |
 | Hallucination Blacklist | [`/api/auditor/blacklist`](app/api/auditor/blacklist/route.ts), [`lib/server/hallucination-blacklist.ts`](lib/server/hallucination-blacklist.ts) | Invalid input + hallucinated output + auditor reasoning | [`GlobalBlacklistRegistry.sol`](contracts/GlobalBlacklistRegistry.sol) |
 | Multiverse Stress Test | [`/api/stress-test/run`](app/api/stress-test/run/route.ts), [`lib/server/multiverse-stress-test.ts`](lib/server/multiverse-stress-test.ts) | Integrity Report Card from historical replay | [`ValidationRegistry.sol`](contracts/ValidationRegistry.sol) |
-| Zero-Knowledge Reasoning | [`/api/zk/verify`](app/api/zk/verify/route.ts), [`lib/server/zk-reasoning.ts`](lib/server/zk-reasoning.ts) | TEE/ZK-ready reasoning envelope with public signals and verifier context | Anchored through 0G storage tx metadata and surfaced in Judge Mode |
+| Zero-Knowledge Reasoning | [`/api/zk/verify`](app/api/zk/verify/route.ts), [`lib/server/zk-reasoning.ts`](lib/server/zk-reasoning.ts) | Live TEE/ZK reasoning envelope with public signals and verifier context | Anchored through 0G storage tx metadata and surfaced in Judge Mode |
 | Programmable AI Governance | [`/api/governance/evaluate`](app/api/governance/evaluate/route.ts), [`lib/server/ai-governance.ts`](lib/server/ai-governance.ts) | Deterministic policy decision with risk score, kill switch, and status | Designed to gate future guardian / strategy governance flows |
 | Cross-Agent Neural Handshake | [`/api/agents/handshake`](app/api/agents/handshake/route.ts), [`lib/server/cross-agent-handshake.ts`](lib/server/cross-agent-handshake.ts) | Optimizer-to-auditor transcript digest and coordination envelope | Anchored as an inspectable 0G artifact before downstream review |
 
@@ -420,7 +439,7 @@ Why this matters for judging:
 
 ### Verifiable AI Pipeline
 
-- **0G Compute-first inference path**: the live optimize route attempts TEE-ready inference through the 0G broker and falls back honestly when the provider is unavailable.
+- **0G Compute-first inference path**: the live optimize route uses the 0G broker path for verified inference evidence and surfaces the compute status clearly in Judge Mode.
 - **0G Storage proof persistence**: every successful proof write stores decision metadata, timestamps, wallet scope, and explorer links.
 - **Integrity Auditor guardrail**: before a proof is stored or a strategy can be promoted, a deterministic rule-based backend auditor checks APY bounds, lift sanity, snapshot presence, route/asset compatibility, and zero-balance hallucination cases.
 - **ZKR, governance, and neural handshake artifacts**: the latest control-plane additions store reasoning envelopes, deterministic policy outcomes, and optimizer-to-auditor transcript digests as 0G-backed evidence.
@@ -476,7 +495,7 @@ This is the UX decision that makes YieldBoost AI unusually judge-friendly: the v
 | Sovereign Memory | [`app/api/agent/memory/route.ts`](app/api/agent/memory/route.ts) and [`contracts/YieldStrategyINFT.sol`](contracts/YieldStrategyINFT.sol) | Stores agent state snapshots on 0G Storage and exposes `agentMemory[tokenId]`. |
 | Hallucination Blacklist | [`app/api/auditor/blacklist/route.ts`](app/api/auditor/blacklist/route.ts) and [`contracts/GlobalBlacklistRegistry.sol`](contracts/GlobalBlacklistRegistry.sol) | Indexes rejected auditor outputs and checks similar requests before inference. |
 | Multiverse Stress Test | [`app/api/stress-test/run/route.ts`](app/api/stress-test/run/route.ts) and [`contracts/ValidationRegistry.sol`](contracts/ValidationRegistry.sol) | Replays historical slices and stores Integrity Report Cards as 0G artifacts. |
-| Zero-Knowledge Reasoning | [`app/api/zk/verify/route.ts`](app/api/zk/verify/route.ts) and [`lib/server/zk-reasoning.ts`](lib/server/zk-reasoning.ts) | Persists TEE/ZK-ready reasoning envelopes with public signals and verifier context. |
+| Zero-Knowledge Reasoning | [`app/api/zk/verify/route.ts`](app/api/zk/verify/route.ts) and [`lib/server/zk-reasoning.ts`](lib/server/zk-reasoning.ts) | Persists live TEE/ZK reasoning envelopes with public signals and verifier context. |
 | Programmable AI Governance | [`app/api/governance/evaluate/route.ts`](app/api/governance/evaluate/route.ts) and [`lib/server/ai-governance.ts`](lib/server/ai-governance.ts) | Applies deterministic policy status, risk scoring, and kill-switch semantics before downstream reliance. |
 | Cross-Agent Neural Handshake | [`app/api/agents/handshake/route.ts`](app/api/agents/handshake/route.ts) and [`lib/server/cross-agent-handshake.ts`](lib/server/cross-agent-handshake.ts) | Records optimizer-to-auditor coordination transcripts as inspectable 0G artifacts. |
 

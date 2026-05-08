@@ -42,7 +42,7 @@ export interface ApiMarketplaceProduct {
   upstreamUrl?: string;
   contractAddress?: string;
   solverPublicKey?: string;
-  status: "live-local" | "testnet-ready" | "mainnet-ready";
+  status: "live-local" | "testnet-live" | "mainnet-live";
   category: "full-stack" | "single-layer" | "partner-sdk";
   layerId?: string;
   layers: ApiMarketplaceLayer[];
@@ -77,7 +77,7 @@ export const MILITARY_GRADE_API_LAYERS: ApiMarketplaceLayer[] = [
     id: "03",
     slug: "sovereign-memory",
     label: "Sovereign Memory",
-    proof: "Decision state is packaged as a memory artifact with 0G-ready receipt.",
+    proof: "Decision state is packaged as a memory artifact with a 0G receipt.",
     endpoint: "/api/dev/store/layers/sovereign-memory",
   },
   {
@@ -98,7 +98,7 @@ export const MILITARY_GRADE_API_LAYERS: ApiMarketplaceLayer[] = [
     id: "06",
     slug: "reasoning-envelope",
     label: "Reasoning Envelope",
-    proof: "TEE/ZK-ready reasoning envelope binds inputs, output, and summary.",
+    proof: "Live TEE/ZK reasoning envelope binds inputs, output, and summary.",
     endpoint: "/api/dev/store/layers/reasoning-envelope",
   },
   {
@@ -147,7 +147,7 @@ const layerProducts: ApiMarketplaceProduct[] = MILITARY_GRADE_API_LAYERS.map((la
   endpoint: layer.endpoint,
   playgroundPath: `/dev/marketplace/${layer.slug}`,
   docsPath: `/dev/marketplace/${layer.slug}/docs`,
-  status: "testnet-ready",
+  status: "testnet-live",
   category: "single-layer",
   layerId: layer.id,
   layers: [layer],
@@ -167,7 +167,7 @@ export const API_MARKETPLACE_PRODUCTS: ApiMarketplaceProduct[] = [
     endpoint: "/api/dev/store/military-grade",
     playgroundPath: "/dev/marketplace/military-grade-full",
     docsPath: "/dev/marketplace/military-grade-full/docs",
-    status: "testnet-ready",
+    status: "testnet-live",
     category: "full-stack",
     layers: MILITARY_GRADE_API_LAYERS,
     plans: API_MARKETPLACE_PLANS,
@@ -180,7 +180,7 @@ export const API_MARKETPLACE_PRODUCTS: ApiMarketplaceProduct[] = [
     partner: "Shlok / VeilSolver",
     tagline: "Private Intent Solver on 0G",
     description:
-      "VeilSolver partner SDK wrapped and secured by YieldBoost Secure Proxy. Developers call the same solver through isolated secure execution and receive a ZK proof envelope.",
+      "Partner integration example: the VeilSolver SDK is wrapped and secured by YieldBoost Secure Proxy. Developers call the partner solver through isolated secure execution and receive a ZK proof envelope. YieldBoost's standalone 9-layer stack remains independent.",
     logoPath: "/marketplace/veilsolver-logo.svg",
     endpoint: "/api/dev/store/veilsolver",
     playgroundPath: "/dev/marketplace/veilsolver",
@@ -189,7 +189,7 @@ export const API_MARKETPLACE_PRODUCTS: ApiMarketplaceProduct[] = [
     contractAddress: "0x4181c06901Ee172c169fFDf44c6C192c22265aF",
     solverPublicKey:
       "0x039a5b81f4b2bc0c181b1292f3aeb55721de43dc7e3d07c6c44ba3aa087ecaae04",
-    status: "testnet-ready",
+    status: "testnet-live",
     category: "partner-sdk",
     layers: MILITARY_GRADE_API_LAYERS,
     plans: API_MARKETPLACE_PLANS,

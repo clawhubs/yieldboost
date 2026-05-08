@@ -6,7 +6,7 @@ export const maxDuration = 60;
 
 export async function GET() {
   return NextResponse.json({
-    status: "ready",
+    status: "partner-wrapped",
     product: "VeilSolver Secure Proxy",
     method: "POST",
     endpoint: "/api/v1/agent/veilsolver",
@@ -18,6 +18,7 @@ export async function GET() {
       package: "veilsolver-sdk",
       version: "0.1.1",
       upstream_path: "/solve",
+      note: "VeilSolver is a partner integration example wrapped by YieldBoost; the standalone YieldBoost 9-layer stack remains independent.",
     },
   });
 }

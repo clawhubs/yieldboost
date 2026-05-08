@@ -6,7 +6,7 @@ export const maxDuration = 60;
 
 export async function GET() {
   return NextResponse.json({
-    status: "ready",
+    status: "partner-wrapped",
     product: "VeilSolver Secure Proxy",
     method: "POST",
     endpoint: "/api/marketplace/veilsolver",
@@ -19,7 +19,7 @@ export async function GET() {
       package: "veilsolver-sdk",
       version: "0.1.1",
       upstream_path: "/solve",
-      note: "Do not call the partner upstream root from the UI. This endpoint wraps the partner SDK with YieldBoost isolated execution and a ZK response envelope.",
+      note: "VeilSolver is a partner integration example. This endpoint wraps the partner SDK with YieldBoost isolated execution and a ZK response envelope; the standalone YieldBoost 9-layer stack is independent.",
     },
     sample_payload: {
       action: "SWAP",
