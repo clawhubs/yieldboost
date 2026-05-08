@@ -13,9 +13,9 @@
   <img src="https://img.shields.io/badge/Sovereign%20Memory-0G%20Storage-18c6ff?style=for-the-badge" alt="Sovereign Memory on 0G Storage" />
   <img src="https://img.shields.io/badge/Hallucination%20Blacklist-Pre--Inference%20Defense-ff5c7a?style=for-the-badge" alt="Hallucination Blacklist" />
   <img src="https://img.shields.io/badge/Stress%20Test-Integrity%20Report%20Card-f6c166?style=for-the-badge" alt="Multiverse Stress Test" />
-  <img src="https://img.shields.io/badge/ZK--Reasoning-TEE%20%2F%20ZK%20Envelope%20Live-8b5cf6?style=for-the-badge" alt="Zero-Knowledge Reasoning" />
+  <img src="https://img.shields.io/badge/Zero--Knowledge%20Proof%20Layer-TEE%20%2F%20ZK%20Envelope%20Live-8b5cf6?style=for-the-badge" alt="Zero-Knowledge Proof Layer" />
   <img src="https://img.shields.io/badge/AI%20Governance-Deterministic%20Policy%20Guard-22c55e?style=for-the-badge" alt="Programmable AI Governance" />
-  <img src="https://img.shields.io/badge/Neural%20Handshake-Cross--Agent%20Transcript-0ea5e9?style=for-the-badge" alt="Cross-Agent Neural Handshake" />
+  <img src="https://img.shields.io/badge/Cross--Agent%20Neural%20Handshake-Transcript%20Proof-0ea5e9?style=for-the-badge" alt="Cross-Agent Neural Handshake" />
   <img src="https://img.shields.io/badge/Judge%20Mode-/judge-7c5cff?style=for-the-badge" alt="Judge Mode" />
   <img src="https://img.shields.io/badge/Proof%20Layer-0G%20Storage%20%2B%20ProofRegistry-0f172a?style=for-the-badge" alt="Proof Layer" />
   <img src="https://img.shields.io/badge/Agent%20NFT-YieldStrategyINFT-00a86b?style=for-the-badge" alt="Agent NFT YieldStrategyINFT" />
@@ -63,7 +63,7 @@ The active implementation in this repository is now centered on a **mainnet-firs
 
 On top of that integrity memory stack, the repo now adds three review-grade control-plane features for verifiable reasoning and policy enforcement:
 
-- **Zero-Knowledge Reasoning (ZKR)** as a live TEE/ZK reasoning proof envelope persisted to 0G and anchored for Judge review.
+- **Zero-Knowledge Proof Layer** as a live TEE/ZK reasoning proof envelope persisted to 0G and anchored for Judge review.
 - **Programmable AI Governance** as a deterministic policy engine that can keep a strategy `active`, `warning`, `throttled`, or `halted`.
 - **Cross-Agent Neural Handshake** as a persisted optimizer-to-auditor transcript envelope recorded on 0G mainnet.
 - **ZK Policy Seal** as the policy proof tying ZKR and governance back to the latest stored strategy execution.
@@ -78,15 +78,15 @@ The YieldBoost AI 9-layer military-grade stack is built as a standalone verifica
 
 The standalone YieldBoost stack includes:
 
-1. Noir Sentinel agent identity proof
-2. 0G Compute TEE response verification
-3. Integrity Auditor deterministic guardrail
-4. 0G Storage proof CID
-5. ProofRegistry on-chain anchor
-6. Sovereign Memory snapshot
-7. ZK Reasoning envelope
-8. Governance gate and ZK Policy Seal
-9. Neural Handshake evidence
+1. Hallucination Blacklist
+2. Integrity Auditor
+3. Secure Compute / TEE
+4. Sovereign Memory
+5. 0G Storage Proof Layer
+6. Zero-Knowledge Proof Layer
+7. ProofRegistry Anchor
+8. Programmable Governance
+9. Cross-Agent Neural Handshake
 
 VeilSolver Secure Proxy is a partner SDK example in the developer marketplace: YieldBoost wraps the partner solver with isolated execution, ZK proof packaging, and 0G anchoring so external developers can call a secured endpoint. The 9-layer military-grade stack remains YieldBoost's own verification layer, and partner SDKs can plug into it as secured modules.
 
@@ -175,22 +175,22 @@ These newer artifacts extend the original integrity stack without replacing it. 
 
 | Artifact | CID / tx |
 | --- | --- |
-| ZKR proof CID | `0x7c918f1e1bcc383e872eb1606d9ab6a494bf1e15e23d9f19d6127d82100bad82` |
-| ZKR storage tx | [`0xd5fa09bdea5adf83f7bd3697d28a97d4d0ed4a9b85d9349951c1586a4a15cf76`](https://chainscan.0g.ai/tx/0xd5fa09bdea5adf83f7bd3697d28a97d4d0ed4a9b85d9349951c1586a4a15cf76) |
-| ZKR `ProofRegistry` anchor tx | [`0xa074e7f74aad61ece0be54766116cffc544e4a5eda96189bbc136ce14af6cd02`](https://chainscan.0g.ai/tx/0xa074e7f74aad61ece0be54766116cffc544e4a5eda96189bbc136ce14af6cd02) |
+| Zero-Knowledge Proof Layer CID | `0x7c918f1e1bcc383e872eb1606d9ab6a494bf1e15e23d9f19d6127d82100bad82` |
+| Zero-Knowledge Proof Layer storage tx | [`0xd5fa09bdea5adf83f7bd3697d28a97d4d0ed4a9b85d9349951c1586a4a15cf76`](https://chainscan.0g.ai/tx/0xd5fa09bdea5adf83f7bd3697d28a97d4d0ed4a9b85d9349951c1586a4a15cf76) |
+| Zero-Knowledge Proof Layer `ProofRegistry` anchor tx | [`0xa074e7f74aad61ece0be54766116cffc544e4a5eda96189bbc136ce14af6cd02`](https://chainscan.0g.ai/tx/0xa074e7f74aad61ece0be54766116cffc544e4a5eda96189bbc136ce14af6cd02) |
 | Governance artifact CID | `0x2e1363b94f490765bd8841f5eff8d0b31b4f328017fae1920a429ffbd2b964ef` |
 | Governance tx | [`0xf7672e2367a880e57961ece7621138c3be870ef8541affdd28c657b5654e620e`](https://chainscan.0g.ai/tx/0xf7672e2367a880e57961ece7621138c3be870ef8541affdd28c657b5654e620e) |
-| Neural Handshake CID | `0x64fca7bce74e760b78ce89ffa9f57f8367182f5c3a330609a0d018305e7a2ee7` |
-| Neural Handshake tx | [`0x91c94588d6729e8550bf782e99166151afbd15bd69bd3aec67dd76a72b155676`](https://chainscan.0g.ai/tx/0x91c94588d6729e8550bf782e99166151afbd15bd69bd3aec67dd76a72b155676) |
+| Cross-Agent Neural Handshake CID | `0x64fca7bce74e760b78ce89ffa9f57f8367182f5c3a330609a0d018305e7a2ee7` |
+| Cross-Agent Neural Handshake tx | [`0x91c94588d6729e8550bf782e99166151afbd15bd69bd3aec67dd76a72b155676`](https://chainscan.0g.ai/tx/0x91c94588d6729e8550bf782e99166151afbd15bd69bd3aec67dd76a72b155676) |
 | ZK Policy Seal CID | `0xc8b7e448ef15d2132f0fb4cae9621a68a0ae7450bc6370c3641dc7df64aa00c8` |
 | ZK Policy Seal tx | [`0x3a11e091491d9f77ae37c384c71c905e3d1187078d0f7902281957986d46034b`](https://chainscan.0g.ai/tx/0x3a11e091491d9f77ae37c384c71c905e3d1187078d0f7902281957986d46034b) |
 | ZK Policy Seal `ProofRegistry` anchor tx | [`0xd5c33366a40960c1e2903b47f1fa699f39ffbb1ab7532fc544b53571bd7e2be7`](https://chainscan.0g.ai/tx/0xd5c33366a40960c1e2903b47f1fa699f39ffbb1ab7532fc544b53571bd7e2be7) |
 
-### Zero-Knowledge Reasoning, Governance, and Handshake
+### Zero-Knowledge Proof Layer, Programmable Governance, and Cross-Agent Neural Handshake
 
 The newest control-plane features now surface real mainnet artifacts instead of UI placeholders:
 
-- **Zero-Knowledge Reasoning (ZKR)** records a live TEE/ZK reasoning proof envelope to 0G Storage and anchors it on-chain. Current mainnet status: `tee-envelope-recorded`.
+- **Zero-Knowledge Proof Layer** records a live TEE/ZK reasoning proof envelope to 0G Storage and anchors it on-chain. Current mainnet status: `tee-envelope-recorded`.
 - **Programmable AI Governance** evaluates the latest strategy output against deterministic risk rules and can return `active`, `warning`, `throttled`, or `halted`. Current mainnet status: `active` with low risk `12/100`.
 - **Cross-Agent Neural Handshake** stores an optimizer-to-auditor coordination transcript so the reasoning handoff is externally inspectable. Current mainnet status: `completed`.
 - **ZK Policy Seal** proves that the last execution stayed `100%` inside the active governance policy and links that result into both the dashboard and `/judge`.
@@ -260,7 +260,7 @@ The submission story, however, is clearest when framed as **verifiable DeFi inte
     </td>
   </tr>
   <tr>
-    <td align="center"><strong>Integrity Stack</strong><br />ZKR, programmable governance, neural handshake, policy seal, memory, blacklist, and stress evidence in one judge-readable package.</td>
+    <td align="center"><strong>Integrity Stack</strong><br />Zero-Knowledge Proof Layer, Programmable Governance, Cross-Agent Neural Handshake, policy seal, memory, blacklist, and stress evidence in one judge-readable package.</td>
     <td align="center"><strong>Sovereign Roadmap</strong><br />What already exists, how 0G stays central, and how the protocol expands into revenue-grade trust infrastructure.</td>
   </tr>
 </table>
@@ -272,7 +272,7 @@ The submission story, however, is clearest when framed as **verifiable DeFi inte
 | 1 | Open `/judge` | Starts directly on the audit-first route instead of a wallet setup screen. |
 | 2 | Review latest proof snapshot | Shows route recommendation, APY lift, wallet snapshot, and reasoning in one place. |
 | 3 | Open explorer links | Lets the judge inspect the latest 0G mainnet storage tx and ProofRegistry anchor directly. |
-| 4 | Inspect Integrity memory stack | Shows the three latest upgrades together: ZKR, programmable AI governance, and cross-agent neural handshake, plus their evidence anchors. |
+| 4 | Inspect Integrity memory stack | Shows Zero-Knowledge Proof Layer, Programmable Governance, and Cross-Agent Neural Handshake evidence together with their anchors. |
 | 5 | Open `Roadmap` beside the pitch/PDF links | Frames what is already live, what becomes monetizable next, and why 0G remains the execution and verification base layer. |
 | 6 | Navigate deeper only if needed | `/history`, `/agents`, and `/marketplace` remain available without breaking the review flow. |
 
@@ -315,18 +315,18 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    PROOF[StoredProofRecord] --> L1[Layer 1: Noir Sentinel identity]
-    L1 --> L2[Layer 2: 0G Compute TEE response]
-    L2 --> L3[Layer 3: Integrity Auditor]
-    L3 --> L4[Layer 4: 0G Storage CID]
-    L4 --> L5[Layer 5: ProofRegistry anchor]
-    L5 --> L6[Layer 6: Sovereign Memory]
-    L6 --> L7[Layer 7: ZK Reasoning envelope]
-    L7 --> L8[Layer 8: Governance + ZK Policy Seal]
-    L8 --> L9[Layer 9: Neural Handshake]
+    PROOF[StoredProofRecord] --> L1[Layer 1: Hallucination Blacklist]
+    L1 --> L2[Layer 2: Integrity Auditor]
+    L2 --> L3[Layer 3: Secure Compute / TEE]
+    L3 --> L4[Layer 4: Sovereign Memory]
+    L4 --> L5[Layer 5: 0G Storage Proof Layer]
+    L5 --> L6[Layer 6: Zero-Knowledge Proof Layer]
+    L6 --> L7[Layer 7: ProofRegistry Anchor]
+    L7 --> L8[Layer 8: Programmable Governance]
+    L8 --> L9[Layer 9: Cross-Agent Neural Handshake]
 
-    L6 --> MEMORY[/api/agent/memory/]
-    L7 --> ZKR[/api/zk/verify/]
+    L4 --> MEMORY[/api/agent/memory/]
+    L6 --> ZKR[/api/zk/verify/]
     L8 --> GOV[/api/governance/evaluate/]
     GOV --> ZKCOMP[/api/zk/compliance/]
     L9 --> HANDSHAKE[/api/agents/handshake/]
@@ -445,7 +445,7 @@ flowchart TD
 8. If the audit is `APPROVED`, the route writes a JSON proof artifact, uploads it through **0G Storage** using `Indexer.upload`, and records the resulting storage hash and tx metadata.
 9. If `ProofRegistry` is configured, the same route calls `recordProof(...)` on the on-chain registry contract defined in [`contracts/ProofRegistry.sol`](contracts/ProofRegistry.sol).
 10. After a successful proof write, [`lib/server/sovereign-memory.ts`](lib/server/sovereign-memory.ts) syncs the agent's latest context snapshot to 0G Storage and records the memory CID.
-11. [`/api/zk/verify`](app/api/zk/verify/route.ts) can persist a **Zero-Knowledge Reasoning** envelope for the decision narrative, public signals, verifier identity, and portfolio snapshot.
+11. [`/api/zk/verify`](app/api/zk/verify/route.ts) can persist a **Zero-Knowledge Proof Layer** envelope for the decision narrative, public signals, verifier identity, and portfolio snapshot.
 12. [`/api/governance/evaluate`](app/api/governance/evaluate/route.ts) evaluates the strategy against programmable risk policy and records whether the strategy remains `active`, `warning`, `throttled`, or `halted`.
 13. [`/api/agents/handshake`](app/api/agents/handshake/route.ts) records the optimizer-to-auditor **Cross-Agent Neural Handshake** transcript digest so the reasoning handoff is inspectable.
 14. [`/api/zk/compliance`](app/api/zk/compliance/route.ts) ties governance and the latest stored proof into a deterministic policy seal artifact.
@@ -468,14 +468,14 @@ flowchart TD
 
 ## 0G Integration Upgrade
 
-The repo includes the original integrity memory stack plus three newer control-plane additions: **Zero-Knowledge Reasoning**, **Programmable AI Governance**, and **Cross-Agent Neural Handshake**.
+The repo includes the original integrity memory stack plus three newer control-plane additions: **Zero-Knowledge Proof Layer**, **Programmable Governance**, and **Cross-Agent Neural Handshake**.
 
 | Layer | Backend path | Storage artifact | Contract path |
 | --- | --- | --- | --- |
 | Sovereign Memory | [`/api/agent/memory`](app/api/agent/memory/route.ts), [`lib/server/sovereign-memory.ts`](lib/server/sovereign-memory.ts) | Agent context snapshot JSON on 0G Storage | `agentMemory[tokenId]` in [`YieldStrategyINFT.sol`](contracts/YieldStrategyINFT.sol) |
 | Hallucination Blacklist | [`/api/auditor/blacklist`](app/api/auditor/blacklist/route.ts), [`lib/server/hallucination-blacklist.ts`](lib/server/hallucination-blacklist.ts) | Invalid input + hallucinated output + auditor reasoning | [`GlobalBlacklistRegistry.sol`](contracts/GlobalBlacklistRegistry.sol) |
 | Multiverse Stress Test | [`/api/stress-test/run`](app/api/stress-test/run/route.ts), [`lib/server/multiverse-stress-test.ts`](lib/server/multiverse-stress-test.ts) | Integrity Report Card from historical replay | [`ValidationRegistry.sol`](contracts/ValidationRegistry.sol) |
-| Zero-Knowledge Reasoning | [`/api/zk/verify`](app/api/zk/verify/route.ts), [`lib/server/zk-reasoning.ts`](lib/server/zk-reasoning.ts) | Live TEE/ZK reasoning envelope with public signals and verifier context | Anchored through 0G storage tx metadata and surfaced in Judge Mode |
+| Zero-Knowledge Proof Layer | [`/api/zk/verify`](app/api/zk/verify/route.ts), [`lib/server/zk-reasoning.ts`](lib/server/zk-reasoning.ts) | Live TEE/ZK reasoning envelope with public signals and verifier context | Anchored through 0G storage tx metadata and surfaced in Judge Mode |
 | Programmable AI Governance | [`/api/governance/evaluate`](app/api/governance/evaluate/route.ts), [`lib/server/ai-governance.ts`](lib/server/ai-governance.ts) | Deterministic policy decision with risk score, kill switch, and status | Designed to gate future guardian / strategy governance flows |
 | Cross-Agent Neural Handshake | [`/api/agents/handshake`](app/api/agents/handshake/route.ts), [`lib/server/cross-agent-handshake.ts`](lib/server/cross-agent-handshake.ts) | Optimizer-to-auditor transcript digest and coordination envelope | Anchored as an inspectable 0G artifact before downstream review |
 
@@ -516,7 +516,7 @@ Why this matters for judging:
 - **0G Compute-first inference path**: the live optimize route uses the 0G broker path for verified inference evidence and surfaces the compute status clearly in Judge Mode.
 - **0G Storage proof persistence**: every successful proof write stores decision metadata, timestamps, wallet scope, and explorer links.
 - **Integrity Auditor guardrail**: before a proof is stored or a strategy can be promoted, a deterministic rule-based backend auditor checks APY bounds, lift sanity, snapshot presence, route/asset compatibility, and zero-balance hallucination cases.
-- **ZKR, governance, and neural handshake artifacts**: the latest control-plane additions store reasoning envelopes, deterministic policy outcomes, and optimizer-to-auditor transcript digests as 0G-backed evidence.
+- **Zero-Knowledge Proof Layer, Programmable Governance, and Cross-Agent Neural Handshake artifacts**: the latest control-plane additions store reasoning envelopes, deterministic policy outcomes, and optimizer-to-auditor transcript digests as 0G-backed evidence.
 - **Optional on-chain ProofRegistry anchoring**: if the registry contract env is present, the proof is also recorded on-chain and surfaced with a registry tx hash and proof id.
 - **Runtime proof ledger**: proofs are queryable later without re-running the optimization.
 
@@ -547,7 +547,7 @@ It does six important things:
 - **Defaults the review path to mainnet**, which matches the current live submission story.
 - **Keeps proof links, CID/root hash, registry status, and snapshot details on one page**, minimizing review friction.
 - **Shows the Integrity Auditor result** so reviewers can see whether the deterministic guardrail approved the prediction before proof persistence.
-- **Groups ZKR, programmable governance, and neural handshake evidence together**, so reviewers can see the reasoning control plane instead of hunting through API responses.
+- **Groups Zero-Knowledge Proof Layer, Programmable Governance, and Cross-Agent Neural Handshake evidence together**, so reviewers can see the reasoning control plane instead of hunting through API responses.
 
 This is the UX decision that makes YieldBoost AI unusually judge-friendly: the verification path is short, visible, and does not depend on extension setup.
 
@@ -569,7 +569,7 @@ This is the UX decision that makes YieldBoost AI unusually judge-friendly: the v
 | Sovereign Memory | [`app/api/agent/memory/route.ts`](app/api/agent/memory/route.ts) and [`contracts/YieldStrategyINFT.sol`](contracts/YieldStrategyINFT.sol) | Stores agent state snapshots on 0G Storage and exposes `agentMemory[tokenId]`. |
 | Hallucination Blacklist | [`app/api/auditor/blacklist/route.ts`](app/api/auditor/blacklist/route.ts) and [`contracts/GlobalBlacklistRegistry.sol`](contracts/GlobalBlacklistRegistry.sol) | Indexes rejected auditor outputs and checks similar requests before inference. |
 | Multiverse Stress Test | [`app/api/stress-test/run/route.ts`](app/api/stress-test/run/route.ts) and [`contracts/ValidationRegistry.sol`](contracts/ValidationRegistry.sol) | Replays historical slices and stores Integrity Report Cards as 0G artifacts. |
-| Zero-Knowledge Reasoning | [`app/api/zk/verify/route.ts`](app/api/zk/verify/route.ts) and [`lib/server/zk-reasoning.ts`](lib/server/zk-reasoning.ts) | Persists live TEE/ZK reasoning envelopes with public signals and verifier context. |
+| Zero-Knowledge Proof Layer | [`app/api/zk/verify/route.ts`](app/api/zk/verify/route.ts) and [`lib/server/zk-reasoning.ts`](lib/server/zk-reasoning.ts) | Persists live TEE/ZK reasoning envelopes with public signals and verifier context. |
 | Programmable AI Governance | [`app/api/governance/evaluate/route.ts`](app/api/governance/evaluate/route.ts) and [`lib/server/ai-governance.ts`](lib/server/ai-governance.ts) | Applies deterministic policy status, risk scoring, and kill-switch semantics before downstream reliance. |
 | Cross-Agent Neural Handshake | [`app/api/agents/handshake/route.ts`](app/api/agents/handshake/route.ts) and [`lib/server/cross-agent-handshake.ts`](lib/server/cross-agent-handshake.ts) | Records optimizer-to-auditor coordination transcripts as inspectable 0G artifacts. |
 
@@ -640,7 +640,7 @@ That behavior is much better for judge trust than pretending every subsystem is 
 | `/api/agent/memory` | Sync and read Sovereign Memory snapshots for an agent or wallet. |
 | `/api/auditor/blacklist` | Index rejected auditor outputs and query blacklist matches. |
 | `/api/stress-test/run` | Run historical replay and store Integrity Report Cards. |
-| `/api/zk/verify` | Store and read Zero-Knowledge Reasoning proof envelopes. |
+| `/api/zk/verify` | Store and read Zero-Knowledge Proof Layer envelopes. |
 | `/api/governance/evaluate` | Evaluate programmable AI policy status, risk, and kill-switch outcome. |
 | `/api/zk/compliance` | Create deterministic policy seals from governance plus latest strategy proof. |
 | `/api/agents/handshake` | Store and read Cross-Agent Neural Handshake transcript envelopes. |
@@ -798,7 +798,7 @@ npm run setup:tee-broker:mainnet
 | [`app/api/agent/memory/route.ts`](app/api/agent/memory/route.ts) | Sovereign Memory sync and read API. |
 | [`app/api/auditor/blacklist/route.ts`](app/api/auditor/blacklist/route.ts) | Hallucination Blacklist write/read API. |
 | [`app/api/stress-test/run/route.ts`](app/api/stress-test/run/route.ts) | Multiverse Stress Test runner and report API. |
-| [`app/api/zk/verify/route.ts`](app/api/zk/verify/route.ts) | Zero-Knowledge Reasoning proof envelope API. |
+| [`app/api/zk/verify/route.ts`](app/api/zk/verify/route.ts) | Zero-Knowledge Proof Layer envelope API. |
 | [`app/api/governance/evaluate/route.ts`](app/api/governance/evaluate/route.ts) | Programmable AI Governance evaluator. |
 | [`app/api/zk/compliance/route.ts`](app/api/zk/compliance/route.ts) | Deterministic policy seal builder. |
 | [`app/api/agents/handshake/route.ts`](app/api/agents/handshake/route.ts) | Cross-Agent Neural Handshake transcript API. |
@@ -827,7 +827,7 @@ YA is now part of the live developer access flow, not just a future roadmap item
 
 Current shipped base:
 
-- **Zero-Knowledge Reasoning (ZKR)** records the reasoning envelope as a reviewable 0G artifact.
+- **Zero-Knowledge Proof Layer** records the reasoning envelope as a reviewable 0G artifact.
 - **Programmable AI Governance** turns strategy policy into deterministic status, risk, and kill-switch output.
 - **Cross-Agent Neural Handshake** records the optimizer-to-auditor coordination transcript for external inspection.
 - **YA faucet and API Store tiers** connect developer access to the marketplace package flow.

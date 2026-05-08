@@ -179,15 +179,15 @@ export default async function JudgePage() {
         : "Open policy seal tx on Chainscan",
     },
     {
-      label: "ZKR Envelope CID",
+      label: "Zero-Knowledge Proof CID",
       value: data.latestZkReasoningProof?.proofCid,
-      empty: "No ZKR envelope CID yet",
+      empty: "No zero-knowledge proof CID yet",
       href:
         data.latestZkReasoningProof?.proofRegistryExplorerUrl ??
         data.latestZkReasoningProof?.explorerUrl,
       linkLabel: data.latestZkReasoningProof?.proofRegistryExplorerUrl
-        ? "Open ZKR envelope anchor on Chainscan"
-        : "Open ZKR envelope tx on Chainscan",
+        ? "Open zero-knowledge proof anchor on Chainscan"
+        : "Open zero-knowledge proof tx on Chainscan",
     },
     {
       label: "Governance CID",
@@ -754,7 +754,7 @@ export default async function JudgePage() {
               <div>
                 <h2 className={sectionTitleClass}>Military-grade integrity pipeline</h2>
                 <p className={sectionHelperClass}>
-                  Nine ordered layers show how each AI decision moves from identity and TEE verification into memory, rejection, stress, reasoning, governance, policy seal, and cross-agent evidence.
+                  Nine ordered layers use the same YieldBoost names across 1-click optimize, Vault, and the developer marketplace: blacklist, auditor, secure compute, memory, storage proof, ZK proof, registry anchor, governance, and cross-agent handshake.
                 </p>
               </div>
             </div>

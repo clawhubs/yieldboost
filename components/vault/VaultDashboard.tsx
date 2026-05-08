@@ -112,9 +112,9 @@ const layers = [
   {
     id: 3,
     key: "L3",
-    name: "TEE Secure Room",
+    name: "Secure Compute / TEE",
     icon: Shield,
-    desc: "TEE sandbox encryption inside a Firecracker VM.",
+    desc: "Isolated secure compute and TEE evidence.",
   },
   {
     id: 4,
@@ -126,14 +126,14 @@ const layers = [
   {
     id: 5,
     key: "L5",
-    name: "0G Storage Blob",
+    name: "0G Storage Proof Layer",
     icon: Database,
-    desc: "Encrypted payload storage anchor.",
+    desc: "Encrypted proof payload stored on 0G.",
   },
   {
     id: 6,
     key: "L6",
-    name: "ZK Reasoning",
+    name: "Zero-Knowledge Proof Layer",
     icon: Zap,
     desc: "Integrity envelope and hash proof.",
   },
@@ -147,14 +147,14 @@ const layers = [
   {
     id: 8,
     key: "L8",
-    name: "Governance Throttle",
+    name: "Programmable Governance",
     icon: Activity,
-    desc: "Rate and safety enforcement.",
+    desc: "Policy gate and safety enforcement.",
   },
   {
     id: 9,
     key: "L9",
-    name: "Neural Handshake",
+    name: "Cross-Agent Neural Handshake",
     icon: Fingerprint,
     desc: "Final audit and handshake log.",
   },

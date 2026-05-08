@@ -865,19 +865,27 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   ];
   const integrityStackCards: JudgeStatusCard[] = [
     {
-      label: "Sentinel Identity Gate",
-      value: sentinelVerified ? "Verified" : latestProof?.sentinelProof ? latestProof.sentinelProof.status : "Pending",
-      helper: sentinelVerified
-        ? `Noir agent_identity verified before optimize; nullifier ${shorten(latestProof?.sentinelProof?.publicSignals.sessionNullifier, 10)}.`
-        : "Noir Sentinel identity proof will attach after a verified 1-click optimize run.",
-      tone: sentinelVerified ? "green" : latestProof?.sentinelProof ? "amber" : "white",
+      label: "Hallucination Blacklist",
+      value: `${activeBlacklistEntries.length} entr${activeBlacklistEntries.length === 1 ? "y" : "ies"}`,
+      helper: latestBlacklistEntry
+        ? `Latest rejection indexed as ${shorten(latestBlacklistEntry.cid, 10)} before future inference.`
+        : "No rejected output has been indexed yet.",
+      tone: latestBlacklistEntry ? "green" : "amber",
     },
     {
-      label: "TEE Response Gate",
+      label: "Integrity Auditor",
+      value: latestProof?.integrityAudit?.status === "APPROVED" ? "Approved" : latestProof?.integrityAudit ? "Rejected" : "Pending",
+      helper: latestProof?.integrityAudit
+        ? `${latestProof.integrityAudit.source ?? "deterministic-logic-guardrail"} score ${latestProof.integrityAudit.score}/100.`
+        : "Deterministic guardrail result appears after the next stored proof.",
+      tone: latestProof?.integrityAudit?.status === "APPROVED" ? "green" : latestProof?.integrityAudit ? "amber" : "white",
+    },
+    {
+      label: "Secure Compute / TEE",
       value: teeResponseSignatureVerified ? "Verified" : latestProof?.teeVerified ? "Service verified" : "Pending",
       helper: teeResponseSignatureVerified
         ? `${latestProof?.teeModel ?? "0G Compute"} response signature verified with ZG-Res-Key ${shorten(latestProof?.teeChatId, 10)}.`
-        : "0G Compute response verification appears here only after broker signature verification succeeds.",
+        : "0G Compute TEE response verification appears after broker signature verification succeeds.",
       tone: teeResponseSignatureVerified ? "green" : latestProof?.teeVerified ? "teal" : "white",
     },
     {
@@ -889,58 +897,43 @@ export async function getJudgePageData(): Promise<JudgePageData> {
       tone: sovereignMemory ? "green" : "amber",
     },
     {
-      label: "Rejection Guard",
-      value: `${activeBlacklistEntries.length} entr${activeBlacklistEntries.length === 1 ? "y" : "ies"}`,
-      helper: latestBlacklistEntry
-        ? `Latest rejection indexed as ${shorten(latestBlacklistEntry.cid, 10)} before future inference.`
-        : "No rejected output has been indexed yet.",
-      tone: latestBlacklistEntry ? "green" : "amber",
+      label: "0G Storage Proof Layer",
+      value: latestProof?.cid ? "Stored" : "Pending",
+      helper: latestProof?.cid
+        ? `Latest proof CID ${shorten(latestProof.cid, 10)} is stored on ${getServer0GNetworkConfig(proofNetwork).label}.`
+        : "No 0G Storage proof CID has been recorded yet.",
+      tone: latestProof?.cid ? "green" : "white",
     },
     {
-      label: "Stress Replay",
-      value: latestStressReport ? latestStressReport.verdict : "Pending",
-      helper: latestStressReport
-        ? `Report ${shorten(latestStressReport.reportCid, 10)} verified APY ${latestStressReport.verifiedApy.toFixed(2)}%.`
-        : "No historical validation report has been generated yet.",
-      tone:
-        latestStressReport?.verdict === "PASS"
-          ? "green"
-          : latestStressReport
-            ? "amber"
-          : "white",
-    },
-    {
-      label: "Reasoning Envelope",
+      label: "Zero-Knowledge Proof Layer",
       value: latestZkReasoningProof
         ? formatFeatureStatus(latestZkReasoningProof.status)
         : "Pending",
       helper: latestZkReasoningProof
         ? `${getServer0GNetworkConfig(latestZkReasoningProof.networkKey).label} reasoning envelope CID ${shorten(latestZkReasoningProof.proofCid, 10)} (${latestZkReasoningProof.storageMode}); ${latestZkReasoningProof.proofType}.`
-        : "No TEE/ZK-ready reasoning proof envelope has been recorded yet.",
+        : "No TEE/ZK reasoning proof envelope has been recorded yet.",
       tone: toneForRecordedFeature(latestZkReasoningProof?.status),
     },
     {
-      label: "Governance Gate",
+      label: "ProofRegistry Anchor",
+      value: latestProof?.proofRegistryProofId ? `Proof #${latestProof.proofRegistryProofId}` : "Pending",
+      helper: latestProof?.proofRegistryTxHash
+        ? `Latest anchor tx ${shorten(latestProof.proofRegistryTxHash, 10)}.`
+        : "ProofRegistry anchor appears after the proof is recorded on-chain.",
+      tone: latestProof?.proofRegistryTxHash ? "green" : "white",
+    },
+    {
+      label: "Programmable Governance",
       value: latestGovernanceDecision
         ? formatFeatureStatus(latestGovernanceDecision.status)
         : "Pending",
       helper: latestGovernanceDecision
-        ? `${getServer0GNetworkConfig(latestGovernanceDecision.networkKey).label} ${formatRiskLabel(latestGovernanceDecision.riskScore).toLowerCase()}. ${latestGovernanceDecision.reason}`
+        ? `${getServer0GNetworkConfig(latestGovernanceDecision.networkKey).label} ${formatRiskLabel(latestGovernanceDecision.riskScore).toLowerCase()}. ${latestZkComplianceProof ? `ZK policy seal ${latestZkComplianceProof.policyCompliantPct}% matched.` : latestGovernanceDecision.reason}`
         : "No programmable governance decision has been evaluated yet.",
       tone: toneForRecordedFeature(latestGovernanceDecision?.status),
     },
     {
-      label: "ZK Policy Seal",
-      value: latestZkComplianceProof
-        ? `${latestZkComplianceProof.policyCompliantPct}%`
-        : "Pending",
-      helper: latestZkComplianceProof
-        ? `${getServer0GNetworkConfig(latestZkComplianceProof.networkKey).label} ZK policy seal ${shorten(latestZkComplianceProof.proofId, 10)} with governance ${formatFeatureStatus(latestZkComplianceProof.governanceStatus)}.`
-        : "No ZK policy seal has been recorded yet.",
-      tone: toneForRecordedFeature(latestZkComplianceProof?.status),
-    },
-    {
-      label: "Neural Handshake",
+      label: "Cross-Agent Neural Handshake",
       value: latestCrossAgentHandshake
         ? formatFeatureStatus(latestCrossAgentHandshake.status)
         : "Pending",
@@ -1149,7 +1142,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
         : "Report card runner ready",
     },
     {
-      title: "ZK Policy Seal",
+      title: "Programmable Governance",
       status: latestZkComplianceProof
         ? latestZkComplianceProof.status === "verified"
           ? "live"
@@ -1157,16 +1150,16 @@ export async function getJudgePageData(): Promise<JudgePageData> {
         : "configured",
       detail: latestZkComplianceProof
         ? `Latest ZK policy seal is ${formatFeatureStatus(latestZkComplianceProof.status)} at ${latestZkComplianceProof.policyCompliantPct}% policy match.`
-        : "Policy seal route can persist deterministic optimizer and governance verification artifacts to 0G.",
+        : "Programmable governance can persist deterministic optimizer policy and ZK seal artifacts to 0G.",
       href:
         latestZkComplianceProof?.proofRegistryExplorerUrl ??
         latestZkComplianceProof?.explorerUrl,
       meta: latestZkComplianceProof
         ? `Risk ${latestZkComplianceProof.riskScore}/100`
-        : "Policy seal verifier ready",
+        : "Governance verifier ready",
     },
     {
-      title: "ZK-Ready Reasoning",
+      title: "Zero-Knowledge Proof Layer",
       status: latestZkReasoningProof
         ? latestZkReasoningProof.status === "failed"
           ? "partial"
@@ -1174,11 +1167,11 @@ export async function getJudgePageData(): Promise<JudgePageData> {
         : "configured",
       detail: latestZkReasoningProof
         ? `${formatFeatureStatus(latestZkReasoningProof.status)} envelope stored as CID ${shorten(latestZkReasoningProof.proofCid, 12)}.`
-        : "ZKR route can record TEE/ZK-ready reasoning envelopes to 0G testnet without claiming full ZK cryptography.",
+        : "ZKR route can record TEE/ZK reasoning envelopes to 0G without overstating the proof surface.",
       href: latestZkReasoningProof?.proofRegistryExplorerUrl ?? latestZkReasoningProof?.explorerUrl,
       meta: latestZkReasoningProof
         ? latestZkReasoningProof.proofType
-        : "ZK-ready artifact route available",
+        : "Zero-knowledge artifact route available",
     },
     {
       title: "Programmable AI Governance",

@@ -133,7 +133,7 @@ async function runBackgroundIntegrityStack(input: {
     decision,
     portfolioSnapshot,
     reasoning: decision.reasoning,
-    summary: `TEE/ZK-ready reasoning envelope recorded after proof ${proof.cid}.`,
+    summary: `TEE/ZK reasoning envelope recorded after proof ${proof.cid}.`,
   }).catch((error) => {
     console.warn("[zk-reasoning] ZK reasoning envelope sync failed:", error);
     return null;

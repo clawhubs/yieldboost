@@ -8,15 +8,15 @@ The 9-layer military-grade stack is YieldBoost-owned infrastructure. Partner SDK
 
 The marketplace can expose the complete stack as one endpoint or expose each layer individually, but the core verification path remains independent:
 
-1. Noir Sentinel agent identity proof
-2. 0G Compute TEE response verification
-3. Integrity Auditor deterministic guardrail
-4. 0G Storage proof CID
-5. ProofRegistry on-chain anchor
-6. Sovereign Memory snapshot
-7. ZK Reasoning envelope
-8. Governance gate and ZK Policy Seal
-9. Neural Handshake evidence
+1. Hallucination Blacklist
+2. Integrity Auditor
+3. Secure Compute / TEE
+4. Sovereign Memory
+5. 0G Storage Proof Layer
+6. Zero-Knowledge Proof Layer
+7. ProofRegistry Anchor
+8. Programmable Governance
+9. Cross-Agent Neural Handshake
 
 ## VeilSolver Secure Proxy
 

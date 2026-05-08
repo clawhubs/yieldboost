@@ -41,15 +41,15 @@ interface ProviderError extends Error {
 const ERC20_TRANSFER_ABI = ["function transfer(address to,uint256 value) returns (bool)"];
 
 const CHECKOUT_LAYERS = [
-  "L1 Blacklist cleared",
-  "L2 Deterministic audit",
-  "L3 Secure room verified",
-  "L4 Wallet-bound state",
-  "L5 0G receipt anchored",
-  "L6 ZK envelope sealed",
-  "L7 Proof registry sync",
-  "L8 Throttle check passed",
-  "L9 Neural handshake log",
+  "L1 Hallucination Blacklist",
+  "L2 Integrity Auditor",
+  "L3 Secure Compute / TEE",
+  "L4 Sovereign Memory",
+  "L5 0G Storage Proof Layer",
+  "L6 Zero-Knowledge Proof Layer",
+  "L7 ProofRegistry Anchor",
+  "L8 Programmable Governance",
+  "L9 Cross-Agent Neural Handshake",
 ];
 
 function sleep(ms: number) {

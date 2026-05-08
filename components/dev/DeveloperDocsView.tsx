@@ -119,12 +119,12 @@ const endpointTable = [
   {
     method: "POST",
     path: "/v1/proof/run",
-    description: "Use L6 to generate or verify proof envelopes for arbitrary commitments.",
+    description: "Use L6 Zero-Knowledge Proof Layer to generate or verify proof envelopes for arbitrary commitments.",
   },
   {
     method: "POST",
     path: "/v1/governance/evaluate",
-    description: "Use L8 as a safety and throttling decision service for any product surface.",
+    description: "Use L8 Programmable Governance as a policy decision service for any product surface.",
   },
   {
     method: "POST",
@@ -144,15 +144,15 @@ const endpointTable = [
 ];
 
 const layerCards = [
-  ["L1", "Blacklist Shield", "Reject obviously hostile or disallowed payloads before secrets move anywhere."],
+  ["L1", "Hallucination Blacklist", "Reject obviously hostile or disallowed payloads before secrets move anywhere."],
   ["L2", "Integrity Auditor", "Deterministic logic checks catch malformed or suspicious requests."],
-  ["L3", "TEE / Ephemeral Sandbox", "Sensitive encryption and decryption happen inside isolated, on-demand compute."],
+  ["L3", "Secure Compute / TEE", "Sensitive encryption and decryption happen inside isolated, on-demand compute."],
   ["L4", "Sovereign Memory", "Ownership and integrity state are recorded without leaking payload content."],
-  ["L5", "0G Storage", "Encrypted blob receipts are pushed to decentralized storage."],
-  ["L6", "Integrity Proof", "Proof envelope and integrity hash are produced for later verification."],
-  ["L7", "0G Anchor", "Storage commitments are anchored to 0G so records become externally inspectable."],
-  ["L8", "Safety Throttle", "Abuse controls, rate limits, and circuit breakers protect the surface."],
-  ["L9", "Neural Handshake", "Security logs and cross-agent audit traces preserve operational accountability."],
+  ["L5", "0G Storage Proof Layer", "Encrypted proof receipts are pushed to decentralized storage."],
+  ["L6", "Zero-Knowledge Proof Layer", "Proof envelope and integrity hash are produced for later verification."],
+  ["L7", "ProofRegistry Anchor", "Storage commitments are anchored to 0G so records become externally inspectable."],
+  ["L8", "Programmable Governance", "Policy gates, rate limits, and circuit breakers protect the surface."],
+  ["L9", "Cross-Agent Neural Handshake", "Security logs and cross-agent audit traces preserve operational accountability."],
 ];
 
 export default function DeveloperDocsView() {

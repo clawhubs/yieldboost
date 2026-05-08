@@ -20,13 +20,13 @@ import { YA_API_PLANS } from "@/lib/ya-api-plans";
 const layers = [
   { id: "L1", label: "Hallucination Blacklist", sub: "Hostile prompt rejection" },
   { id: "L2", label: "Integrity Auditor", sub: "Deterministic payload checks" },
-  { id: "L3", label: "TEE Secure Room", sub: "Isolated encrypted execution" },
+  { id: "L3", label: "Secure Compute / TEE", sub: "Isolated secure execution" },
   { id: "L4", label: "Sovereign Memory", sub: "State without secret leakage" },
-  { id: "L5", label: "0G Storage Blob", sub: "Ciphertext anchored on 0G" },
-  { id: "L6", label: "ZK Reasoning Envelope", sub: "Integrity commitments" },
+  { id: "L5", label: "0G Storage Proof Layer", sub: "Proof payload stored on 0G" },
+  { id: "L6", label: "Zero-Knowledge Proof Layer", sub: "Integrity commitments" },
   { id: "L7", label: "ProofRegistry Anchor", sub: "On-chain proof trail" },
-  { id: "L8", label: "Governance Throttle", sub: "Abuse & rate protection" },
-  { id: "L9", label: "Neural Handshake", sub: "Audit-ready closure logs" },
+  { id: "L8", label: "Programmable Governance", sub: "Policy and safety gates" },
+  { id: "L9", label: "Cross-Agent Neural Handshake", sub: "Audit-ready closure logs" },
 ];
 
 export default function DeveloperLandingView({

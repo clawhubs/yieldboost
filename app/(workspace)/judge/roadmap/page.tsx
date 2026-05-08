@@ -44,7 +44,7 @@ function formatPercent(value: number | undefined) {
 const shippedCapabilities = [
   "0G Mainnet proof storage and ProofRegistry anchor path",
   "Judge Mode read-only wallet review with network switching",
-  "Integrity memory stack: Sovereign Memory, blacklist, stress report, ZKR, governance, policy seal, handshake",
+  "Integrity memory stack: Sovereign Memory, blacklist, stress report, Zero-Knowledge Proof Layer, Programmable Governance, policy seal, and Cross-Agent Neural Handshake",
   "Yield Strategy INFT and marketplace contracts surfaced for review",
   "Pitch deck, proof links, and evidence anchors available without wallet setup",
 ];
@@ -60,7 +60,7 @@ const roadmapPhases = [
       "Turn today's proof trail into a rewardable integrity network for AI decisions.",
     items: [
       {
-        title: "Neural Handshake mainnet expansion",
+        title: "Cross-Agent Neural Handshake mainnet expansion",
         body:
           "Move optimizer-auditor coordination from recorded artifacts into a permanent 0G Compute and 0G Storage coordination layer.",
       },

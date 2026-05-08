@@ -156,7 +156,7 @@ export function buildZkReasoningProofPayload(input: CreateZkReasoningProofInput)
   const createdAt = new Date().toISOString();
   const proofId = `zkr-${randomUUID()}`;
   const verifier = input.verifier ?? "0G Storage + YieldBoost deterministic verifier";
-  const proofType = input.proofType ?? "TEE/ZK-ready reasoning proof envelope";
+  const proofType = input.proofType ?? "TEE/ZK reasoning proof envelope";
   const privateInputCommitment = sha256Hex({
     prompt: input.prompt,
     reasoning: input.reasoning,
@@ -185,7 +185,7 @@ export function buildZkReasoningProofPayload(input: CreateZkReasoningProofInput)
     proofType,
     envelopeMode: "tee-zk-ready",
     cryptographyClaim:
-      "This records a TEE/ZK-ready reasoning commitment envelope; it does not claim a full ZK circuit proof.",
+      "This records a TEE/ZK reasoning commitment envelope; it does not claim a full ZK circuit proof.",
     publicSignals,
     privateInputCommitment,
     reasoningTraceCommitment: sha256Hex(input.reasoning ?? input.decision?.reasoning ?? ""),

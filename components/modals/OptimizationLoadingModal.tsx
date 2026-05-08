@@ -121,16 +121,17 @@ export default function OptimizationLoadingModal({
     if (verified) return "done";
     return progress === "done" ? "active" : getChecklistStatus(progress, "anchoring");
   };
+  const governanceStatus =
+    integrityLayers?.governance && integrityLayers.zkCompliance
+      ? "done"
+      : progress === "done"
+        ? "active"
+        : getChecklistStatus(progress, "anchoring");
   const proofChecklist = [
     {
-      label: "Wallet snapshot",
-      detail: "Live balance and APY baseline captured",
+      label: "Hallucination Blacklist",
+      detail: "Pre-inference defense",
       status: getChecklistStatus(progress, "analyzing", "optimizing"),
-    },
-    {
-      label: "AI route selected",
-      detail: "Best low-risk route computed",
-      status: getChecklistStatus(progress, "optimizing", "executing"),
     },
     {
       label: "Integrity Auditor",
@@ -138,14 +139,9 @@ export default function OptimizationLoadingModal({
       status: getChecklistStatus(progress, "executing", "anchoring"),
     },
     {
-      label: "0G Storage CID",
-      detail: "Primary proof payload upload",
-      status: getChecklistStatus(progress, "anchoring"),
-    },
-    {
-      label: "ProofRegistry tx",
-      detail: "On-chain proof anchor",
-      status: getChecklistStatus(progress, "anchoring"),
+      label: "Secure Compute / TEE",
+      detail: "0G Compute response evidence",
+      status: getChecklistStatus(progress, "optimizing", "executing"),
     },
     {
       label: "Sovereign Memory",
@@ -153,24 +149,29 @@ export default function OptimizationLoadingModal({
       status: getBackgroundStatus(integrityLayers?.sovereignMemory),
     },
     {
-      label: "ZK Reasoning",
+      label: "0G Storage Proof Layer",
+      detail: "Primary proof payload upload",
+      status: getChecklistStatus(progress, "anchoring"),
+    },
+    {
+      label: "Zero-Knowledge Proof Layer",
       detail: "Reasoning proof envelope",
       status: getBackgroundStatus(integrityLayers?.zkReasoning),
     },
     {
-      label: "Governance",
-      detail: "Policy decision record",
-      status: getBackgroundStatus(integrityLayers?.governance),
+      label: "ProofRegistry Anchor",
+      detail: "On-chain proof anchor",
+      status: getChecklistStatus(progress, "anchoring"),
     },
     {
-      label: "Neural Handshake",
+      label: "Programmable Governance",
+      detail: "Policy gate and ZK seal",
+      status: governanceStatus,
+    },
+    {
+      label: "Cross-Agent Neural Handshake",
       detail: "Optimizer-auditor transcript",
       status: getBackgroundStatus(integrityLayers?.neuralHandshake),
-    },
-    {
-      label: "ZK Policy Seal",
-      detail: "Zero-knowledge policy seal",
-      status: getBackgroundStatus(integrityLayers?.zkCompliance),
     },
   ] as const;
 

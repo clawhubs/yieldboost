@@ -2,15 +2,15 @@ import { YA_API_PLANS, type YaApiPlan } from "@/lib/ya-api-plans";
 
 export type ApiMarketplaceProductId =
   | "military-grade-full"
-  | "sentinel-identity"
-  | "tee-response"
+  | "hallucination-blacklist"
+  | "integrity-auditor"
+  | "secure-compute-tee"
   | "sovereign-memory"
-  | "rejection-guard"
-  | "stress-replay"
-  | "reasoning-envelope"
-  | "governance-gate"
-  | "compliance-proof"
-  | "neural-handshake"
+  | "zero-g-storage-proof-layer"
+  | "zero-knowledge-proof-layer"
+  | "proofregistry-anchor"
+  | "programmable-governance"
+  | "cross-agent-neural-handshake"
   | "veilsolver";
 
 export interface ApiMarketplaceLayer {
@@ -19,6 +19,7 @@ export interface ApiMarketplaceLayer {
   label: string;
   proof: string;
   endpoint: string;
+  legacySlugs?: string[];
 }
 
 export interface ApiMarketplacePlan {
@@ -61,66 +62,72 @@ export const API_MARKETPLACE_PLANS: ApiMarketplacePlan[] = YA_API_PLANS.map((pla
 export const MILITARY_GRADE_API_LAYERS: ApiMarketplaceLayer[] = [
   {
     id: "01",
-    slug: "sentinel-identity",
-    label: "Sentinel Identity Gate",
-    proof: "Noir agent_identity proof validates the caller or agent session.",
-    endpoint: "/api/dev/store/layers/sentinel-identity",
+    slug: "hallucination-blacklist",
+    label: "Hallucination Blacklist",
+    proof: "Known bad prompts, unsafe patterns, and rejected decisions are blocked before inference.",
+    endpoint: "/api/dev/store/layers/hallucination-blacklist",
+    legacySlugs: ["sentinel-identity", "rejection-guard"],
   },
   {
     id: "02",
-    slug: "tee-response",
-    label: "TEE Response Gate",
-    proof: "0G Compute response signature or attestation is checked before trust.",
-    endpoint: "/api/dev/store/layers/tee-response",
+    slug: "integrity-auditor",
+    label: "Integrity Auditor",
+    proof: "Deterministic guardrails verify the payload, ownership scope, and risk bounds.",
+    endpoint: "/api/dev/store/layers/integrity-auditor",
+    legacySlugs: ["tee-response"],
   },
   {
     id: "03",
+    slug: "secure-compute-tee",
+    label: "Secure Compute / TEE",
+    proof: "Sensitive execution uses the secure compute path and records TEE response evidence.",
+    endpoint: "/api/dev/store/layers/secure-compute-tee",
+    legacySlugs: ["stress-replay"],
+  },
+  {
+    id: "04",
     slug: "sovereign-memory",
     label: "Sovereign Memory",
     proof: "Decision state is packaged as a memory artifact with a 0G receipt.",
     endpoint: "/api/dev/store/layers/sovereign-memory",
   },
   {
-    id: "04",
-    slug: "rejection-guard",
-    label: "Rejection Guard",
-    proof: "Known bad or hallucinated decisions are checked before execution.",
-    endpoint: "/api/dev/store/layers/rejection-guard",
-  },
-  {
     id: "05",
-    slug: "stress-replay",
-    label: "Stress Replay",
-    proof: "Historical and adversarial scenarios replay the decision output.",
-    endpoint: "/api/dev/store/layers/stress-replay",
+    slug: "zero-g-storage-proof-layer",
+    label: "0G Storage Proof Layer",
+    proof: "Proof payloads are stored on 0G Storage with receipt metadata for audit.",
+    endpoint: "/api/dev/store/layers/zero-g-storage-proof-layer",
   },
   {
     id: "06",
-    slug: "reasoning-envelope",
-    label: "Reasoning Envelope",
+    slug: "zero-knowledge-proof-layer",
+    label: "Zero-Knowledge Proof Layer",
     proof: "Live TEE/ZK reasoning envelope binds inputs, output, and summary.",
-    endpoint: "/api/dev/store/layers/reasoning-envelope",
+    endpoint: "/api/dev/store/layers/zero-knowledge-proof-layer",
+    legacySlugs: ["reasoning-envelope", "compliance-proof"],
   },
   {
     id: "07",
-    slug: "governance-gate",
-    label: "Governance Gate",
-    proof: "Policy scoring and kill-switch checks run before downstream use.",
-    endpoint: "/api/dev/store/layers/governance-gate",
+    slug: "proofregistry-anchor",
+    label: "ProofRegistry Anchor",
+    proof: "Storage commitments are anchored on-chain through ProofRegistry.",
+    endpoint: "/api/dev/store/layers/proofregistry-anchor",
   },
   {
     id: "08",
-    slug: "compliance-proof",
-    label: "ZK Policy Seal",
-    proof: "Zero-knowledge policy seal percentage and proof id are produced.",
-    endpoint: "/api/dev/store/layers/compliance-proof",
+    slug: "programmable-governance",
+    label: "Programmable Governance",
+    proof: "Policy scoring, kill-switch checks, and ZK policy seal status are produced.",
+    endpoint: "/api/dev/store/layers/programmable-governance",
+    legacySlugs: ["governance-gate"],
   },
   {
     id: "09",
-    slug: "neural-handshake",
-    label: "Neural Handshake",
+    slug: "cross-agent-neural-handshake",
+    label: "Cross-Agent Neural Handshake",
     proof: "Cross-agent transcript confirms the optimizer and auditor agreed.",
-    endpoint: "/api/dev/store/layers/neural-handshake",
+    endpoint: "/api/dev/store/layers/cross-agent-neural-handshake",
+    legacySlugs: ["neural-handshake"],
   },
 ];
 
@@ -162,7 +169,7 @@ export const API_MARKETPLACE_PRODUCTS: ApiMarketplaceProduct[] = [
     partner: "YieldBoost YA",
     tagline: "All nine verification layers in one endpoint",
     description:
-      "One endpoint that runs the complete YieldBoost military-grade pipeline: Sentinel identity, TEE response, memory, rejection guard, stress replay, reasoning envelope, governance, policy seal, and neural handshake.",
+      "One endpoint that runs the complete YieldBoost military-grade pipeline: Hallucination Blacklist, Integrity Auditor, Secure Compute / TEE, Sovereign Memory, 0G Storage Proof Layer, Zero-Knowledge Proof Layer, ProofRegistry Anchor, Programmable Governance, and Cross-Agent Neural Handshake.",
     logoPath: "/marketplace/ya-9-layer-logo.png",
     endpoint: "/api/dev/store/military-grade",
     playgroundPath: "/dev/marketplace/military-grade-full",
@@ -218,9 +225,19 @@ const result = await response.json();`,
 ];
 
 export function getApiMarketplaceProduct(productId: ApiMarketplaceProductId) {
-  return API_MARKETPLACE_PRODUCTS.find((product) => product.id === productId) ?? null;
+  return (
+    API_MARKETPLACE_PRODUCTS.find((product) => product.id === productId) ??
+    API_MARKETPLACE_PRODUCTS.find((product) =>
+      product.layers.some((layer) => layer.legacySlugs?.includes(productId)),
+    ) ??
+    null
+  );
 }
 
 export function getApiMarketplaceLayer(layerSlug: string) {
-  return MILITARY_GRADE_API_LAYERS.find((layer) => layer.slug === layerSlug) ?? null;
+  return (
+    MILITARY_GRADE_API_LAYERS.find((layer) => layer.slug === layerSlug) ??
+    MILITARY_GRADE_API_LAYERS.find((layer) => layer.legacySlugs?.includes(layerSlug)) ??
+    null
+  );
 }
