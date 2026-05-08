@@ -44,7 +44,7 @@ function formatPercent(value: number | undefined) {
 const shippedCapabilities = [
   "0G Mainnet proof storage and ProofRegistry anchor path",
   "Judge Mode read-only wallet review with network switching",
-  "Integrity memory stack: Sovereign Memory, blacklist, stress report, ZKR, governance, compliance, handshake",
+  "Integrity memory stack: Sovereign Memory, blacklist, stress report, ZKR, governance, policy seal, handshake",
   "Yield Strategy INFT and marketplace contracts surfaced for review",
   "Pitch deck, proof links, and evidence anchors available without wallet setup",
 ];
@@ -128,7 +128,7 @@ const roadmapPhases = [
       {
         title: "RWA Sovereign Bridge",
         body:
-          "Bring real-world assets into AI yield strategies through mathematically verified collateral, pricing, and compliance artifacts.",
+          "Bring real-world assets into AI yield strategies through mathematically verified collateral, pricing, and policy seal artifacts.",
       },
     ],
     money:
@@ -141,7 +141,7 @@ const revenueEngines = [
     label: "Proof API",
     icon: Database,
     body:
-      "Protocols pay to query verified strategy output, proof history, compliance status, and agent reputation.",
+      "Protocols pay to query verified strategy output, proof history, policy seal status, and agent reputation.",
   },
   {
     label: "Guardian Enterprise",

@@ -735,7 +735,7 @@ export default function DashboardView() {
                         data-testid="zk-compliance-report"
                         className="mt-2 text-[11px] text-[#d7e0e8]"
                       >
-                        Last Strategy Execution: {latestResult.zkCompliance.policyCompliantPct}% Policy Compliant (Proof ID:{" "}
+                        ZK Policy Seal: {latestResult.zkCompliance.policyCompliantPct}% policy matched (Proof ID:{" "}
                         {zkComplianceLink ? (
                           <a
                             href={zkComplianceLink}
@@ -1356,7 +1356,7 @@ export default function DashboardView() {
             <span className="block truncate text-[11px] text-[#8fa3b0]">
               {progress === "done"
                 ? "Open progress to review receipt and background sync."
-                : "Open progress to see ProofRegistry, memory, ZK, and compliance steps."}
+                : "Open progress to see ProofRegistry, memory, ZK, and policy seal steps."}
             </span>
           </span>
         </button>

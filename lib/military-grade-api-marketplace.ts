@@ -111,8 +111,8 @@ export const MILITARY_GRADE_API_LAYERS: ApiMarketplaceLayer[] = [
   {
     id: "08",
     slug: "compliance-proof",
-    label: "Compliance Proof",
-    proof: "Deterministic compliance percentage and proof id are produced.",
+    label: "ZK Policy Seal",
+    proof: "Zero-knowledge policy seal percentage and proof id are produced.",
     endpoint: "/api/dev/store/layers/compliance-proof",
   },
   {
@@ -162,7 +162,7 @@ export const API_MARKETPLACE_PRODUCTS: ApiMarketplaceProduct[] = [
     partner: "YieldBoost YA",
     tagline: "All nine verification layers in one endpoint",
     description:
-      "One endpoint that runs the complete YieldBoost military-grade pipeline: Sentinel identity, TEE response, memory, rejection guard, stress replay, reasoning envelope, governance, compliance, and neural handshake.",
+      "One endpoint that runs the complete YieldBoost military-grade pipeline: Sentinel identity, TEE response, memory, rejection guard, stress replay, reasoning envelope, governance, policy seal, and neural handshake.",
     logoPath: "/marketplace/ya-9-layer-logo.png",
     endpoint: "/api/dev/store/military-grade",
     playgroundPath: "/dev/marketplace/military-grade-full",

@@ -166,8 +166,8 @@ export default function OptimizationLoadingModal({
       status: getBackgroundStatus(integrityLayers?.neuralHandshake),
     },
     {
-      label: "ZK Compliance",
-      detail: "Final deterministic compliance proof",
+      label: "ZK Policy Seal",
+      detail: "Zero-knowledge policy seal",
       status: getBackgroundStatus(integrityLayers?.zkCompliance),
     },
   ] as const;

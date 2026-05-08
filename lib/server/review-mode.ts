@@ -930,13 +930,13 @@ export async function getJudgePageData(): Promise<JudgePageData> {
       tone: toneForRecordedFeature(latestGovernanceDecision?.status),
     },
     {
-      label: "Compliance Proof",
+      label: "ZK Policy Seal",
       value: latestZkComplianceProof
         ? `${latestZkComplianceProof.policyCompliantPct}%`
         : "Pending",
       helper: latestZkComplianceProof
-        ? `${getServer0GNetworkConfig(latestZkComplianceProof.networkKey).label} compliance proof ${shorten(latestZkComplianceProof.proofId, 10)} with governance ${formatFeatureStatus(latestZkComplianceProof.governanceStatus)}.`
-        : "No deterministic compliance proof has been recorded yet.",
+        ? `${getServer0GNetworkConfig(latestZkComplianceProof.networkKey).label} ZK policy seal ${shorten(latestZkComplianceProof.proofId, 10)} with governance ${formatFeatureStatus(latestZkComplianceProof.governanceStatus)}.`
+        : "No ZK policy seal has been recorded yet.",
       tone: toneForRecordedFeature(latestZkComplianceProof?.status),
     },
     {
@@ -1149,21 +1149,21 @@ export async function getJudgePageData(): Promise<JudgePageData> {
         : "Report card runner ready",
     },
     {
-      title: "Deterministic Compliance",
+      title: "ZK Policy Seal",
       status: latestZkComplianceProof
         ? latestZkComplianceProof.status === "verified"
           ? "live"
           : "partial"
         : "configured",
       detail: latestZkComplianceProof
-        ? `Latest compliance proof is ${formatFeatureStatus(latestZkComplianceProof.status)} at ${latestZkComplianceProof.policyCompliantPct}% policy compliance.`
-        : "Compliance route can persist deterministic optimizer and governance verification artifacts to 0G.",
+        ? `Latest ZK policy seal is ${formatFeatureStatus(latestZkComplianceProof.status)} at ${latestZkComplianceProof.policyCompliantPct}% policy match.`
+        : "Policy seal route can persist deterministic optimizer and governance verification artifacts to 0G.",
       href:
         latestZkComplianceProof?.proofRegistryExplorerUrl ??
         latestZkComplianceProof?.explorerUrl,
       meta: latestZkComplianceProof
         ? `Risk ${latestZkComplianceProof.riskScore}/100`
-        : "Compliance verifier ready",
+        : "Policy seal verifier ready",
     },
     {
       title: "ZK-Ready Reasoning",

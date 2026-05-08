@@ -160,17 +160,17 @@ export function buildDeterministicCompliancePayload(
 
   return {
     appId: "yieldboost-ai",
-    artifactType: "zk-deterministic-compliance-proof",
+    artifactType: "zk-policy-seal-proof",
     proofId,
     createdAt,
     networkKey: input.networkKey,
     walletAddress: input.walletAddress,
     agentId: input.agentId,
-    proofType: "Deterministic optimizer + governance compliance proof",
+    proofType: "Deterministic optimizer + governance policy seal",
     verifier: "YieldBoost deterministic policy verifier",
     verificationMode: "deterministic-commitment-v1",
     cryptographyClaim:
-      "This proof verifies deterministic optimizer and governance compliance from committed inputs; it is structured for a future prover swap.",
+      "This proof seals deterministic optimizer and governance policy checks from committed inputs; it is structured for a future prover swap.",
     publicStatement: {
       recommended: input.decision.recommended,
       currentApy: input.decision.current_apy,
@@ -187,7 +187,7 @@ export function buildDeterministicCompliancePayload(
       witnessDigest,
     },
     summary: compliant
-      ? `Deterministic policy verifier confirmed the latest strategy run is 100% compliant.`
+      ? `Deterministic policy verifier sealed the latest strategy run with a 100% policy match.`
       : `Deterministic policy verifier found a governance or integrity mismatch.`,
     compliant,
     integrityReasons: integrityAudit.reasons,

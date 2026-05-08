@@ -168,15 +168,15 @@ export default async function JudgePage() {
       linkLabel: "Open stress tx on Chainscan",
     },
     {
-      label: "Compliance CID",
+      label: "ZK Policy CID",
       value: data.latestZkComplianceProof?.artifactCid,
-      empty: "No compliance CID yet",
+      empty: "No policy seal CID yet",
       href:
         data.latestZkComplianceProof?.proofRegistryExplorerUrl ??
         data.latestZkComplianceProof?.explorerUrl,
       linkLabel: data.latestZkComplianceProof?.proofRegistryExplorerUrl
-        ? "Open compliance anchor on Chainscan"
-        : "Open compliance tx on Chainscan",
+        ? "Open policy seal anchor on Chainscan"
+        : "Open policy seal tx on Chainscan",
     },
     {
       label: "ZKR Envelope CID",
@@ -752,7 +752,7 @@ export default async function JudgePage() {
               <div>
                 <h2 className={sectionTitleClass}>Military-grade integrity pipeline</h2>
                 <p className={sectionHelperClass}>
-                  Nine ordered layers show how each AI decision moves from identity and TEE verification into memory, rejection, stress, reasoning, governance, compliance, and cross-agent evidence.
+                  Nine ordered layers show how each AI decision moves from identity and TEE verification into memory, rejection, stress, reasoning, governance, policy seal, and cross-agent evidence.
                 </p>
               </div>
             </div>
