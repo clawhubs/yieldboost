@@ -78,6 +78,7 @@ class SealResponse(BaseModel):
     judge_url: str
     anchor_tx_hash: str | None = None
     anchor_explorer_url: str | None = None
+    transaction_hash: str | None = None
     layer_statuses: dict[str, str]
 
 
@@ -123,6 +124,7 @@ class VaultMetadataResponse(BaseModel):
     anchor_tx_hash: str | None = None
     anchor_explorer_url: str | None = None
     anchor_mode: str | None = None
+    transaction_hash: str | None = None
     created_at: str
     metadata: dict[str, Any]
     last_unsealed_at: str | None = None
@@ -141,6 +143,7 @@ class VaultListItem(BaseModel):
     storage_explorer_url: str | None = None
     anchor_tx_hash: str | None = None
     anchor_explorer_url: str | None = None
+    transaction_hash: str | None = None
     created_at: str
     last_unsealed_at: str | None = None
     layer_statuses: dict[str, str] = Field(default_factory=dict)

@@ -175,6 +175,7 @@ interface SealResponse {
   integrity_hash: string;
   anchor_tx_hash?: string | null;
   anchor_explorer_url?: string | null;
+  transaction_hash?: string | null;
   layer_statuses: Record<string, string>;
 }
 
@@ -191,6 +192,7 @@ interface VaultItem {
   storage_explorer_url?: string | null;
   anchor_tx_hash?: string | null;
   anchor_explorer_url?: string | null;
+  transaction_hash?: string | null;
   created_at: string;
   last_unsealed_at?: string | null;
   layer_statuses?: Record<string, string>;
@@ -325,6 +327,10 @@ function shortAddress(value?: string | null) {
 
 function sameAddress(left?: string | null, right?: string | null) {
   return Boolean(left && right && left.toLowerCase() === right.toLowerCase());
+}
+
+function buildTestnetTxUrl(txHash?: string | null) {
+  return txHash ? `${zeroGTestnetExplorer.replace(/\/$/, "")}/tx/${txHash}` : null;
 }
 
 function formatCount(value: number) {
@@ -484,7 +490,10 @@ function VaultDashboardInner() {
     if (lastSeal) {
       return {
         storageId: lastSeal.storage_id,
-        explorerUrl: lastSeal.storage_explorer_url ?? null,
+        ownerWallet: address ?? null,
+        userTxUrl: buildTestnetTxUrl(lastSeal.transaction_hash),
+        storageTxUrl: lastSeal.storage_explorer_url ?? null,
+        proofTxUrl: lastSeal.anchor_explorer_url ?? null,
       };
     }
     if (!latestWalletVaultItem) {
@@ -492,9 +501,12 @@ function VaultDashboardInner() {
     }
     return {
       storageId: latestWalletVaultItem.storage_id,
-      explorerUrl: latestWalletVaultItem.storage_explorer_url ?? null,
+      ownerWallet: latestWalletVaultItem.wallet_address,
+      userTxUrl: buildTestnetTxUrl(latestWalletVaultItem.transaction_hash),
+      storageTxUrl: latestWalletVaultItem.storage_explorer_url ?? null,
+      proofTxUrl: latestWalletVaultItem.anchor_explorer_url ?? null,
     };
-  }, [lastSeal, latestWalletVaultItem]);
+  }, [address, lastSeal, latestWalletVaultItem]);
   const challengeItem = useMemo<VaultItem | null>(() => {
     if (!publicChallenge.storageId) {
       return null;
@@ -739,7 +751,7 @@ function VaultDashboardInner() {
         method: "POST",
         body: form,
       });
-      setLastSeal(result);
+      setLastSeal({ ...result, transaction_hash: result.transaction_hash ?? txHash });
       setSealNotice({
         title: "Upload accepted",
         message: "0G accepted the sealed payload. Waiting for the new file to appear in The Vault.",
@@ -1632,16 +1644,41 @@ function VaultDashboardInner() {
               <div className="break-all font-mono text-[11px] text-emerald-50/55">
                 {latestWalletAnchor.storageId}
               </div>
-              {latestWalletAnchor.explorerUrl ? (
+              <div className="mt-2 text-[11px] text-emerald-50/45">
+                Owner wallet: <span className="font-mono text-emerald-100">{shortAddress(latestWalletAnchor.ownerWallet)}</span>
+              </div>
+              {latestWalletAnchor.userTxUrl ? (
                 <a
-                  href={latestWalletAnchor.explorerUrl}
+                  href={latestWalletAnchor.userTxUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="mt-3 inline-flex rounded-lg border border-emerald-300/25 px-3 py-2 text-xs font-bold text-emerald-100 transition hover:bg-emerald-400/10"
                 >
-                  Open 0G Storage Tx
+                  Open User Wallet Tx
                 </a>
               ) : null}
+              <div className="mt-3 flex flex-wrap gap-2">
+                {latestWalletAnchor.storageTxUrl ? (
+                  <a
+                    href={latestWalletAnchor.storageTxUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex rounded-lg border border-white/10 px-3 py-2 text-[11px] font-bold text-emerald-50/60 transition hover:bg-white/5"
+                  >
+                    Backend Storage Tx
+                  </a>
+                ) : null}
+                {latestWalletAnchor.proofTxUrl ? (
+                  <a
+                    href={latestWalletAnchor.proofTxUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex rounded-lg border border-white/10 px-3 py-2 text-[11px] font-bold text-emerald-50/60 transition hover:bg-white/5"
+                  >
+                    Backend Proof Tx
+                  </a>
+                ) : null}
+              </div>
             </div>
           ) : null}
         </aside>

@@ -319,6 +319,7 @@ class IntegrityPipeline:
                     judge_url=f"{self.settings.judge_base_url}?storage_id={ctx.storage_id}",
                     anchor_tx_hash=ctx.anchor_receipt.tx_hash if ctx.anchor_receipt else None,
                     anchor_explorer_url=ctx.anchor_receipt.explorer_url if ctx.anchor_receipt else None,
+                    transaction_hash=payload.transaction_hash,
                     layer_statuses=ctx.layer_statuses,
                 )
         except TimeoutError as exc:
@@ -660,6 +661,7 @@ class IntegrityPipeline:
             anchor_tx_hash=record.get("anchor_tx_hash"),
             anchor_explorer_url=record.get("anchor_explorer_url"),
             anchor_mode=record.get("anchor_mode"),
+            transaction_hash=record.get("transaction_hash"),
             created_at=record["created_at"],
             metadata=record.get("metadata", {}),
             last_unsealed_at=record.get("last_unsealed_at"),
@@ -690,6 +692,7 @@ class IntegrityPipeline:
                 storage_explorer_url=record.get("storage_explorer_url"),
                 anchor_tx_hash=record.get("anchor_tx_hash"),
                 anchor_explorer_url=record.get("anchor_explorer_url"),
+                transaction_hash=record.get("transaction_hash"),
                 created_at=record["created_at"],
                 last_unsealed_at=record.get("last_unsealed_at"),
                 layer_statuses=record.get("layer_statuses", {}),
