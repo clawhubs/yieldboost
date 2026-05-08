@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ethers } from "ethers";
-import { getStoredProofs } from "@/lib/server/runtime-store";
+import {
+  getAgentNftMetadataByContentHash,
+  getStoredProofs,
+} from "@/lib/server/runtime-store";
 import { getContractSignerPrivateKey } from "@/lib/server/network-credentials";
 import { decryptStrategy } from "@/lib/server/encryption";
 import {
@@ -175,8 +178,15 @@ export async function GET(req: NextRequest) {
             }
           | null = null;
 
+        const storedMetadata = await getAgentNftMetadataByContentHash(
+          networkKey,
+          String(strategy.contentHash),
+        );
+        const encryptedStrategy =
+          storedMetadata?.encryptedStrategy ?? String(strategy.encryptedUri);
+
         try {
-          decryptedPayload = decryptStrategy(strategy.encryptedUri) as {
+          decryptedPayload = decryptStrategy(encryptedStrategy) as {
             decision?: {
               current_apy?: number;
               optimized_apy?: number;
@@ -204,6 +214,7 @@ export async function GET(req: NextRequest) {
           tokenId: i,
           networkKey,
           encryptedUri: strategy.encryptedUri,
+          tokenUri: strategy.encryptedUri,
           contentHash: strategy.contentHash,
           apy: Number(strategy.apy) / 100, // Convert from basis points
           currentApy:

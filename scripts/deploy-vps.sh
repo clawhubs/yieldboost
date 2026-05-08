@@ -76,6 +76,7 @@ remove_env() {
 }
 
 append_or_replace_env "NEXT_PUBLIC_APP_URL" "$APP_URL"
+append_or_replace_env "NEXT_PUBLIC_AGENT_METADATA_BASE_URL" "$PUBLIC_SITE_URL"
 append_or_replace_env "NEXT_PUBLIC_INTEGRITY_API_BASE_URL" "$PUBLIC_API_URL"
 append_or_replace_env "NEXT_PUBLIC_DEFAULT_NETWORK_KEY" "mainnet"
 append_or_replace_env "INTEGRITY_DEV_PORTAL_API_BASE_URL" "$DEV_PORTAL_API_BASE_URL"

@@ -8,6 +8,7 @@ import {
 } from "@/lib/server/encryption";
 import { auditOptimizationDecision } from "@/lib/integrity-audit";
 import { getContractSignerPrivateKey } from "@/lib/server/network-credentials";
+import { recordAgentNftMetadata } from "@/lib/server/runtime-store";
 import {
   getYieldStrategyInftAddress,
   getYieldStrategyAttestationOracleAddress,
@@ -76,6 +77,14 @@ function normalizeMintError(error: unknown) {
   }
 
   return message.length > 360 ? `${message.slice(0, 360)}...` : message;
+}
+
+function getPublicAppBaseUrl() {
+  return (
+    process.env.NEXT_PUBLIC_AGENT_METADATA_BASE_URL?.trim() ||
+    process.env.YIELDBOOST_PUBLIC_SITE_URL?.trim() ||
+    "https://yieldboostai.xyz"
+  ).replace(/\/$/, "");
 }
 
 const mintRequestSchema = z.object({
@@ -212,8 +221,8 @@ export async function POST(req: NextRequest) {
     // Generate content hash
     const contentHash = hashStrategy({ portfolio, decision });
 
-    // Encrypt strategy data
-    const encryptedUri = encryptStrategy({
+    // Encrypt strategy data. This stays private inside the public NFT metadata JSON.
+    const encryptedStrategy = encryptStrategy({
       portfolio,
       decision,
       performance: {
@@ -229,9 +238,48 @@ export async function POST(req: NextRequest) {
       teeAttestation,
       timestamp: Date.now(),
     });
+    const publicAppBaseUrl = getPublicAppBaseUrl();
+    const tokenUri = `${publicAppBaseUrl}/api/agent/metadata/${networkKey}/${contentHash}`;
+    const metadataCreatedAt = new Date().toISOString();
 
     // Calculate APY in basis points
     const apyBps = Math.round(decision.optimized_apy * 100);
+    const metadataRecord = {
+      networkKey,
+      contentHash,
+      tokenUri,
+      encryptedStrategy,
+      name: "YieldBoost Strategy Agent",
+      description:
+        "Proof-backed YieldBoost AI strategy agent on 0G. The strategy payload is encrypted; public metadata exposes only review-safe proof fields.",
+      image: `${publicAppBaseUrl}/marketplace/ya-9-layer-logo.png`,
+      externalUrl: `${publicAppBaseUrl}/agents`,
+      attributes: [
+        { trait_type: "Network", value: networkConfig.label },
+        { trait_type: "9-Layer Stack", value: "Verified" },
+        { trait_type: "Privacy", value: "Encrypted Strategy" },
+        { trait_type: "Integrity Auditor", value: mintIntegrityAudit.status },
+        { trait_type: "Optimized APY", value: decision.optimized_apy },
+        { trait_type: "Current APY", value: decision.current_apy },
+      ],
+      proof: {
+        contentHash,
+        storageCid: storageCid ?? null,
+        proofTxHash: txHash ?? null,
+        proofExplorerUrl: txHash
+          ? `${networkConfig.explorerBase.replace(/\/$/, "")}/tx/${txHash}`
+          : null,
+        mintTxHash: null,
+        mintExplorerUrl: null,
+        contractAddress: inftAddress,
+      },
+      walletAddress: targetWalletAddress,
+      tokenId: null,
+      apy: decision.optimized_apy,
+      currentApy: decision.current_apy,
+      createdAt: metadataCreatedAt,
+    };
+    await recordAgentNftMetadata(metadataRecord);
 
     const attestationHash =
       teeAttestation?.isValid &&
@@ -291,7 +339,7 @@ export async function POST(req: NextRequest) {
 
       const mintTx = await inftContract.mintStrategy(
         targetWalletAddress,
-        encryptedUri,
+        tokenUri,
         contentHash,
         apyBps,
         attestationHash,
@@ -303,6 +351,18 @@ export async function POST(req: NextRequest) {
       const totalSupply = await inftContract.totalSupply();
       const tokenId = totalSupply;
       const strategy = await inftContract.getStrategy(tokenId);
+      const explorerUrl = `${networkConfig.explorerBase.replace(/\/$/, "")}/tx/${receipt.hash}`;
+      await recordAgentNftMetadata({
+        ...metadataRecord,
+        tokenId: tokenId.toString(),
+        name: `YieldBoost Strategy Agent #${tokenId.toString()}`,
+        externalUrl: `${publicAppBaseUrl}/agents`,
+        proof: {
+          ...metadataRecord.proof,
+          mintTxHash: receipt.hash,
+          mintExplorerUrl: explorerUrl,
+        },
+      });
 
       return NextResponse.json({
         success: true,
@@ -310,13 +370,15 @@ export async function POST(req: NextRequest) {
         txHash: receipt.hash,
         walletAddress: targetWalletAddress,
         blockNumber: receipt.blockNumber,
-        encryptedUri,
+        encryptedUri: tokenUri,
+        tokenUri,
+        encryptedStrategy,
         contentHash,
         apy: decision.optimized_apy,
         attestationOracleAddress: oracleAddress,
         verifiedOnChain: Boolean(strategy?.verified),
         integrityAudit: mintIntegrityAudit,
-        explorerUrl: `${networkConfig.explorerBase.replace(/\/$/, "")}/tx/${receipt.hash}`,
+        explorerUrl,
       });
     });
   } catch (error) {

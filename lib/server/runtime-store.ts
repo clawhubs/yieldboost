@@ -29,6 +29,7 @@ const ZK_REASONING_PROOFS_KEY = "yieldboost:zk-reasoning-proofs";
 const GOVERNANCE_DECISIONS_KEY = "yieldboost:governance-decisions";
 const CROSS_AGENT_HANDSHAKES_KEY = "yieldboost:cross-agent-handshakes";
 const ZK_COMPLIANCE_PROOFS_KEY = "yieldboost:zk-compliance-proofs";
+const AGENT_NFT_METADATA_KEY = "yieldboost:agent-nft-metadata";
 const SETTINGS_KEY = "yieldboost:settings";
 const MAX_PROOFS = 50;
 const MAX_MEMORY_RECORDS = 50;
@@ -38,8 +39,38 @@ const MAX_ZK_REASONING_PROOFS = 40;
 const MAX_GOVERNANCE_DECISIONS = 60;
 const MAX_CROSS_AGENT_HANDSHAKES = 60;
 const MAX_ZK_COMPLIANCE_PROOFS = 60;
+const MAX_AGENT_NFT_METADATA = 100;
 const LOCAL_STORE_PATH = path.join(process.cwd(), ".artifacts", "runtime-store.local.json");
 const LEGACY_LOCAL_STORE_PATH = path.join(process.cwd(), ".artifacts", "runtime-store.json");
+
+export interface StoredAgentNftMetadata {
+  networkKey: WalletNetworkKey;
+  contentHash: string;
+  tokenUri: string;
+  encryptedStrategy: string;
+  name: string;
+  description: string;
+  image: string;
+  externalUrl: string;
+  attributes: Array<{
+    trait_type: string;
+    value: string | number;
+  }>;
+  proof: {
+    contentHash: string;
+    storageCid?: string | null;
+    proofTxHash?: string | null;
+    proofExplorerUrl?: string | null;
+    mintTxHash?: string | null;
+    mintExplorerUrl?: string | null;
+    contractAddress?: string | null;
+  };
+  walletAddress: string;
+  tokenId?: string | null;
+  apy: number;
+  currentApy: number;
+  createdAt: string;
+}
 
 export function isRuntimeStoreKvConfigured() {
   return Boolean(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
@@ -55,6 +86,7 @@ interface RuntimeStore {
   governanceDecisions: StoredGovernanceDecision[];
   crossAgentHandshakes: StoredCrossAgentHandshake[];
   zkComplianceProofs: StoredZkComplianceProof[];
+  agentNftMetadata: StoredAgentNftMetadata[];
   settings: SettingsState;
 }
 
@@ -73,6 +105,7 @@ function getLocalStore(): RuntimeStore {
       governanceDecisions: [],
       crossAgentHandshakes: [],
       zkComplianceProofs: [],
+      agentNftMetadata: [],
       settings: getDefaultSettingsState(),
     };
   }
@@ -186,6 +219,9 @@ async function readLocalStoreFile(): Promise<RuntimeStore | null> {
             : [],
           zkComplianceProofs: Array.isArray(parsed.zkComplianceProofs)
             ? parsed.zkComplianceProofs
+            : [],
+          agentNftMetadata: Array.isArray(parsed.agentNftMetadata)
+            ? parsed.agentNftMetadata
             : [],
           settings: parsed.settings
             ? { ...getDefaultSettingsState(), ...parsed.settings }
@@ -826,4 +862,86 @@ export async function updateSettingsState(
   globalStore.__yieldboostRuntimeStore = store;
   await writeLocalStoreFile(store);
   return next;
+}
+
+function sameAgentNftMetadata(
+  left: StoredAgentNftMetadata,
+  right: StoredAgentNftMetadata,
+) {
+  return (
+    left.networkKey === right.networkKey &&
+    left.contentHash.toLowerCase() === right.contentHash.toLowerCase()
+  );
+}
+
+export async function recordAgentNftMetadata(
+  record: StoredAgentNftMetadata,
+): Promise<StoredAgentNftMetadata> {
+  const normalizedRecord = {
+    ...record,
+    contentHash: record.contentHash.toLowerCase(),
+  };
+
+  if (isRuntimeStoreKvConfigured()) {
+    try {
+      const existing = await kv.lrange<StoredAgentNftMetadata>(
+        AGENT_NFT_METADATA_KEY,
+        0,
+        MAX_AGENT_NFT_METADATA - 1,
+      );
+      const next = [
+        normalizedRecord,
+        ...(existing ?? []).filter((item) => !sameAgentNftMetadata(item, normalizedRecord)),
+      ].slice(0, MAX_AGENT_NFT_METADATA);
+      await kv.del(AGENT_NFT_METADATA_KEY);
+      if (next.length) await kv.rpush(AGENT_NFT_METADATA_KEY, ...next);
+      return normalizedRecord;
+    } catch (error) {
+      console.warn("[runtime-store] KV Agent NFT metadata write failed, using local fallback:", error);
+    }
+  }
+
+  const store = await loadLocalStore();
+  store.agentNftMetadata = [
+    normalizedRecord,
+    ...store.agentNftMetadata.filter((item) => !sameAgentNftMetadata(item, normalizedRecord)),
+  ].slice(0, MAX_AGENT_NFT_METADATA);
+  globalStore.__yieldboostRuntimeStore = store;
+  await writeLocalStoreFile(store);
+  return normalizedRecord;
+}
+
+export async function getAgentNftMetadataByContentHash(
+  networkKey: WalletNetworkKey,
+  contentHash: string,
+): Promise<StoredAgentNftMetadata | null> {
+  const normalizedHash = contentHash.toLowerCase();
+
+  if (isRuntimeStoreKvConfigured()) {
+    try {
+      const items = await kv.lrange<StoredAgentNftMetadata>(
+        AGENT_NFT_METADATA_KEY,
+        0,
+        MAX_AGENT_NFT_METADATA - 1,
+      );
+      return (
+        (items ?? []).find(
+          (item) =>
+            item.networkKey === networkKey &&
+            item.contentHash.toLowerCase() === normalizedHash,
+        ) ?? null
+      );
+    } catch (error) {
+      console.warn("[runtime-store] KV Agent NFT metadata read failed, using local fallback:", error);
+    }
+  }
+
+  const store = await loadLocalStore();
+  return (
+    store.agentNftMetadata.find(
+      (item) =>
+        item.networkKey === networkKey &&
+        item.contentHash.toLowerCase() === normalizedHash,
+    ) ?? null
+  );
 }
