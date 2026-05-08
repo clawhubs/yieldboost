@@ -79,6 +79,11 @@ append_or_replace_env "NEXT_PUBLIC_APP_URL" "$APP_URL"
 append_or_replace_env "NEXT_PUBLIC_INTEGRITY_API_BASE_URL" "$PUBLIC_API_URL"
 append_or_replace_env "NEXT_PUBLIC_DEFAULT_NETWORK_KEY" "mainnet"
 append_or_replace_env "INTEGRITY_DEV_PORTAL_API_BASE_URL" "$DEV_PORTAL_API_BASE_URL"
+append_or_replace_env "YB_SENTINEL_ENABLED" "true"
+append_or_replace_env "YB_SENTINEL_RUN_NARGO" "true"
+append_or_replace_env "YB_REQUIRE_TEE_ATTESTATION" "true"
+append_or_replace_env "NARGO_BIN" "${VPS_APP_HOME}/.nargo/bin/nargo"
+append_or_replace_env "BB_BIN" "${VPS_APP_HOME}/.bb/bb"
 remove_env "KV_REST_API_URL"
 remove_env "KV_REST_API_TOKEN"
 remove_env "UPSTASH_REDIS_REST_URL"
@@ -220,6 +225,9 @@ tar \
   --exclude=.env.development.local \
   --exclude=.env.test.local \
   --exclude='Acces Key and token' \
+  --exclude='military-grade-zk/circuits/*/target' \
+  --exclude='military-grade-zk/circuits/*/Prover.toml' \
+  --exclude='military-grade-zk/circuits/*/sentinel_*.toml' \
   --exclude=test-results \
   --exclude=playwright-report \
   --exclude=coverage \
