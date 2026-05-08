@@ -255,7 +255,7 @@ export default function AgentPanel() {
                     Sentinel Layer
                   </div>
                   <div className="mt-2 text-[13px] text-[#d8e1e8]">
-                    Noir agent_identity:{" "}
+                    ZK agent_identity:{" "}
                     <span className="font-medium text-white">
                       {latestResult.sentinelProof.status}
                     </span>

@@ -246,9 +246,9 @@ export async function createSentinelAgentIdentityProof(
       networkKey: input.networkKey,
       walletAddress: input.walletAddress,
       operation: input.operation,
-      verifier: "Noir agent_identity micro-circuit",
+      verifier: "ZK agent_identity circuit",
       publicSignals: {},
-      summary: "Sentinel layer could not find a matching local test wallet.",
+      summary: "ZK agent identity layer could not find a matching local test wallet.",
       note: "wallet_key_not_found",
     };
   }
@@ -271,7 +271,7 @@ export async function createSentinelAgentIdentityProof(
       networkKey: input.networkKey,
       walletAddress: input.walletAddress,
       operation: input.operation,
-      verifier: "Noir agent_identity micro-circuit",
+      verifier: "ZK agent_identity circuit",
       publicSignals: {
         agentCommitment: witness.agent_commitment,
         actionContextHash: witness.action_context_hash,
@@ -283,8 +283,8 @@ export async function createSentinelAgentIdentityProof(
       proofGenerated: proofRun.proofGenerated,
       summary:
         proofRun.status === "verified"
-          ? "Noir Sentinel verified the connected agent identity for this optimization action."
-          : "Sentinel witness generated; local Noir proving was disabled.",
+          ? "ZK agent_identity verified the connected agent identity for this optimization action."
+          : "ZK agent_identity witness generated; local Noir proving was disabled.",
       note: proofRun.note,
       actionContext,
     };
@@ -298,9 +298,9 @@ export async function createSentinelAgentIdentityProof(
       networkKey: input.networkKey,
       walletAddress: input.walletAddress,
       operation: input.operation,
-      verifier: "Noir agent_identity micro-circuit",
+      verifier: "ZK agent_identity circuit",
       publicSignals: {},
-      summary: "Sentinel layer failed while generating or verifying the Noir proof.",
+      summary: "ZK agent identity layer failed while generating or verifying the Noir proof.",
       note: message.slice(0, 240),
     };
   }

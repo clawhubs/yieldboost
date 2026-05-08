@@ -1079,13 +1079,13 @@ export async function getJudgePageData(): Promise<JudgePageData> {
           : "Provider address not set",
     },
     {
-      title: "Noir Sentinel",
+      title: "ZK Agent Identity",
       status: sentinelVerified ? "live" : latestProof?.sentinelProof ? "partial" : "configured",
       detail: sentinelVerified
         ? `Latest run verified agent_identity before optimization; session nullifier ${shorten(latestProof?.sentinelProof?.publicSignals.sessionNullifier, 10)}.`
         : latestProof?.sentinelProof
-          ? `Sentinel proof was recorded with status ${latestProof.sentinelProof.status}; run local Noir proving for a fully verified proof.`
-          : "Noir agent_identity micro-circuit is wired into storage, and the next optimize run will attach its proof metadata.",
+          ? `ZK agent_identity proof was recorded with status ${latestProof.sentinelProof.status}; run local Noir proving for a fully verified proof.`
+          : "ZK agent_identity circuit is wired into storage, and the next optimize run will attach its proof metadata.",
       meta: latestProof?.sentinelProof
         ? `Circuit ${latestProof.sentinelProof.circuit}`
         : "military-grade-zk/circuits/agent_identity",

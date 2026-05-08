@@ -98,16 +98,20 @@ export default async function JudgePage() {
     tone: "teal" | "green" | "amber" | "white";
   }> = [
     {
-      label: "Noir Sentinel identity",
+      label: "ZK Agent Identity",
       value:
         sentinelProof?.status === "verified"
           ? "Verified"
-          : sentinelProof?.status
-            ? sentinelProof.status
-            : "Awaiting latest run",
+        : sentinelProof?.status
+          ? sentinelProof.status
+          : data.latestProof
+            ? "ZK proof pending"
+            : "Awaiting first proof",
       helper: sentinelProof
         ? `Circuit ${sentinelProof.circuit}; verifier ${sentinelProof.verifier}; nullifier ${sentinelProof.publicSignals.sessionNullifier ?? "pending"}.`
-        : `Run 1-click optimize on ${data.reviewNetworkLabel.toLowerCase()} to attach the agent_identity Noir proof to the judge snapshot.`,
+        : data.latestProof
+          ? `Latest ${data.reviewNetworkLabel.toLowerCase()} proof has storage/TEE evidence; run 1-click optimize once more after the ZK prover is enabled to attach agent_identity.`
+          : `Run 1-click optimize on ${data.reviewNetworkLabel.toLowerCase()} to attach the ZK agent_identity proof to the judge snapshot.`,
       tone: sentinelProof?.status === "verified" ? "green" : "amber",
     },
     {
@@ -509,9 +513,9 @@ export default async function JudgePage() {
                 <ShieldCheck className="h-5 w-5" />
               </div>
               <div>
-                <h2 className={sectionTitleClass}>{data.reviewNetworkLabel} Sentinel + TEE proof stack</h2>
+                <h2 className={sectionTitleClass}>{data.reviewNetworkLabel} ZK + TEE proof stack</h2>
                 <p className={sectionHelperClass}>
-                  The review path is explicit: Noir agent identity proof, 0G Compute model evidence, response signature status, and 0G Storage anchoring for the active judge network.
+                  The review path is explicit: ZK agent identity proof, 0G Compute model evidence, response signature status, and 0G Storage anchoring for the active judge network.
                 </p>
               </div>
             </div>
