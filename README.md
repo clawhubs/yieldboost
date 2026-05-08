@@ -47,9 +47,9 @@
   <a href="#contributing">Contributing</a>
 </p>
 
-> YieldBoost AI is now positioned around a live 0G mainnet proof flow: detect underused wallet capital, generate a yield optimization result, persist it through 0G infrastructure, and let a judge verify the latest outcome from `/judge` without wallet friction.
+> YieldBoost AI is not just a DApp. It is a full-stack agentic ecosystem: native 9-layer agent infrastructure, verifiable yield execution, YA-powered API commerce, and sovereign privacy rails on 0G.
 
-YieldBoost AI is a Next.js application that helps Web3 users put idle crypto balances to work. Instead of leaving small or underused token allocations sitting unproductive in a wallet, the app analyzes the portfolio, recommends a better low-risk yield route, and turns that optimization run into an externally reviewable proof trail.
+YieldBoost AI helps Web3 users, developers, and partner agents turn idle crypto balances and private strategy payloads into proof-backed economic activity. The product starts with one-click yield optimization, but the shipped system is larger: a verifiable agent pipeline, a Strategy Agent NFT layer, a public vault challenge, a YA faucet, and a developer API marketplace where the same 9-layer stack can be consumed as infrastructure.
 
 The active implementation in this repository is now centered on a **mainnet-first** review path across the core 0G stack plus an integrity memory layer:
 
@@ -102,26 +102,39 @@ VeilSolver Secure Proxy is a partner SDK example in the developer marketplace: Y
 
 ## The Problem
 
-AI yield tools usually fail in three places:
+The next wave of AI x Web3 will not be blocked by another missing chat UI. It will be blocked by trust.
 
-- They recommend attractive APY numbers without proving the wallet data or audit trail behind the result.
-- They forget prior context, so an agent can repeat the same unsafe reasoning across sessions.
-- They treat historical validation as a slide-deck claim instead of a verifiable artifact that judges or users can inspect.
+Autonomous agents are starting to recommend trades, move liquidity, sell API services, and coordinate with other agents, but most stacks still fail at the exact moment they need to become economic actors:
 
-In DeFi, that is not a small UX issue. An unverified AI recommendation can route users toward impossible APY, mismatched assets, or stale market assumptions.
+- They generate financial recommendations without a proof trail that ties wallet state, model output, risk checks, and storage evidence together.
+- They expose private strategy intent too early, creating front-running, MEV, copy-trading, and operator-trust risks.
+- They forget state across sessions, so agent memory becomes either fake UX state or an opaque database nobody can audit.
+- They cannot sell agent capabilities cleanly because API keys, usage tiers, partner SDK wrappers, and developer payments are separate from the trust layer.
+- They make judges and users replay flows manually instead of showing a live, externally verifiable result.
+
+In DeFi, that is not a small product gap. A useful agent must prove what it saw, explain what it chose, preserve memory, reject unsafe output, protect private execution, and expose evidence that another app, judge, or marketplace buyer can verify.
 
 ## The Solution
 
-YieldBoost AI turns each optimization into a verifiable finance event:
+YieldBoost AI turns agentic finance into a verifiable operating system on 0G.
 
-- The agent creates an optimization result from the wallet snapshot.
-- The Integrity Auditor checks APY bounds, asset compatibility, liquidity evidence, and impossible-yield cases.
-- Approved results are stored on 0G Storage and optionally anchored through ProofRegistry.
+The live product combines four surfaces that share the same trust layer:
+
+- **One-click optimizer**: converts idle wallet balances into proof-backed yield routes.
+- **Native 9-layer stack**: Hallucination Blacklist, Integrity Auditor, Secure Compute / TEE, Sovereign Memory, 0G Storage Proof Layer, Zero-Knowledge Proof Layer, ProofRegistry Anchor, Programmable Governance, and Cross-Agent Neural Handshake.
+- **Autonomous economy layer**: YA faucet, API packages, developer portal, and marketplace endpoints let other builders consume the stack as a paid security service.
+- **Sovereign privacy layer**: vault sealing, isolated execution, TEE evidence, ZK envelopes, and wallet-scoped records keep private payloads auditable without turning them into public secrets.
+
+Each approved optimization becomes a stored and reviewable finance artifact:
+
+- The agent creates an optimization result from a wallet snapshot.
+- The 9-layer stack filters hallucination patterns, audits the output, records TEE/compute evidence, stores proof payloads, anchors registry metadata, and syncs memory.
+- Zero-Knowledge Proof Layer, Programmable Governance, and Cross-Agent Neural Handshake evidence are persisted as reviewable control-plane artifacts.
 - Rejected results are indexed into a hallucination blacklist and checked before future inference.
-- Agent memory snapshots are persisted as 0G Storage CIDs so the strategy can be rehydrated.
-- Historical market slices can be replayed through Multiverse Stress Test and stored as Integrity Report Cards.
+- Strategy Agent NFTs can promote verified optimization results into portable on-chain strategy artifacts.
+- Developer endpoints let partner apps call the full stack or one layer at a time, including the VeilSolver Secure Proxy wrapper.
 
-The product story becomes simple: **AI proposes, Auditor verifies, 0G stores, chain anchors, Judge verifies.**
+The product story becomes simple: **AI proposes, 9 layers verify, 0G stores, chain anchors, agents monetize, judges inspect.**
 
 ## Mainnet Live Verification
 
@@ -220,21 +233,69 @@ That combination is the project's strongest differentiator for a hackathon revie
 
 ## Hackathon Track Alignment
 
-YieldBoost AI is positioned first and foremost for **Track 2: Agentic Trading Arena (Verifiable Finance)**.
+YieldBoost AI spans four 0G hackathon tracks because it is not a single-purpose DApp. It is a full-stack agentic ecosystem where one native 9-layer security core powers agent infrastructure, verifiable trading, developer-facing API commerce, and sovereign privacy.
 
-Why this is the strongest fit:
+The mapping is direct: the same repo that runs 1-click optimize also exposes the proof ledger, vault, developer API store, YA faucet, Strategy Agent NFT layer, and partner SDK wrapper surface.
 
-- The core product is an **AI yield optimizer** for Web3 portfolios.
-- The live implementation turns each optimization run into a **verifiable finance artifact** through **0G Storage** and **ProofRegistry** anchoring on 0G mainnet.
-- The compute path is built around **0G Compute** with a TEE-oriented inference route when credentials are available.
-- `/judge` reduces review friction by exposing the latest proof-backed result without requiring wallet connection or faucet setup.
+### Track 1: Agentic Infrastructure & OpenClaw Lab
 
-Secondary alignment:
+**Track need:** cognitive backbone, orchestration, state persistence, data pipelines, and agent memory.
 
-- **Track 1: Agentic Infrastructure & OpenClaw Lab** because the repo includes an agent-style orchestration path, proof ledger, and contract-backed strategy extension flow.
-- **Track 5: Privacy & Sovereign Infrastructure** as a supporting angle because the architecture already incorporates TEE-oriented compute, proof persistence, and auditable execution surfaces.
+**Repo infrastructure:**
 
-The submission story, however, is clearest when framed as **verifiable DeFi intelligence on 0G**, which is why Track 2 is the primary category for this project.
+- **0G Compute path** through [`lib/server/og-compute.ts`](lib/server/og-compute.ts) for broker-aware inference and TEE response evidence.
+- **Sovereign Memory** through [`app/api/agent/memory`](app/api/agent/memory/route.ts), storing agent state snapshots as 0G-backed memory artifacts.
+- **Runtime proof ledger** through [`lib/server/runtime-store.ts`](lib/server/runtime-store.ts), allowing agents, judges, and API surfaces to rehydrate prior decisions.
+- **Prompt compression, semantic cache, and blacklist pre-checks** before inference, giving the agent a real orchestration path instead of raw prompt forwarding.
+- **Layer-as-a-service endpoints** in the developer marketplace, so the 9-layer stack can be called by external agent apps.
+
+This makes YieldBoost an agent infrastructure layer first: it gives autonomous finance agents memory, verification, state persistence, and reusable security modules.
+
+### Track 2: Agentic Trading Arena (Verifiable Finance)
+
+**Track need:** intelligent yield optimizers, risk-management bots, verifiable finance, sealed inference, TEE-based execution, and protection from front-running.
+
+**Repo infrastructure:**
+
+- **1-click optimize** is the trading entry point: it reads wallet state, computes a low-risk yield route, and produces a proof-backed recommendation.
+- **Native 9-layer military-grade stack** is the trading safety core:
+  Hallucination Blacklist, Integrity Auditor, Secure Compute / TEE, Sovereign Memory, 0G Storage Proof Layer, Zero-Knowledge Proof Layer, ProofRegistry Anchor, Programmable Governance, and Cross-Agent Neural Handshake.
+- **Secure Compute / TEE evidence** protects the execution path and supports sealed-inference style privacy for proprietary strategy logic.
+- **0G Storage + ProofRegistry** turn every approved optimization into an externally reviewable finance artifact.
+- **Strategy Agent NFTs** through `YieldStrategyINFT` promote verified strategies into portable on-chain agent assets.
+
+Track 2 is where the core product lands hardest: YieldBoost is not just recommending APY, it is proving why an agentic trading decision should be trusted.
+
+### Track 3: Agentic Economy & Autonomous Applications
+
+**Track need:** AI-native marketplaces, Agent-as-a-Service platforms, automated billing, micropayments, and revenue rails for autonomous apps.
+
+**Repo infrastructure:**
+
+- **Developer API Store & Marketplace** at [`/dev/marketplace`](https://dev.yieldboostai.xyz/dev/marketplace), exposing the full 9-layer API, individual layer APIs, and partner SDK wrappers.
+- **YA faucet** at [`/faucet`](https://yieldboostai.xyz/faucet), giving developers a live access path for testing API packages.
+- **API key playground and package tiers** connect developer usage, subscription intent, and security-layer access.
+- **Partner SDK wrapper model** proves that external agent services can be wrapped and sold through the same security envelope.
+- **VeilSolver Secure Proxy** is the live partner example: a third-party solver is exposed through YieldBoost isolated execution, ZK envelope, and 0G anchor semantics.
+
+Track 3 is the business surface: YieldBoost turns agent security into something other builders can subscribe to, test, and integrate.
+
+### Track 5: Privacy & Sovereign Infrastructure
+
+**Track need:** confidentiality rails, MEV-resistant infrastructure, privacy-preserving protocols, secure execution, and sovereign agent state.
+
+**Repo infrastructure:**
+
+- **Native 9-layer military-grade stack** is the core privacy and sovereignty system, not an add-on.
+- **Secure Compute / TEE** protects sensitive strategy execution and records response evidence.
+- **Vault sealing** through [`/vault`](https://yieldboostai.xyz/vault) gives users wallet-scoped private records with separated user tx, storage tx, and proof tx visibility.
+- **Sovereign Memory** persists agent state without reducing the strategy to a temporary browser session.
+- **Zero-Knowledge Proof Layer** creates reviewable proof envelopes for reasoning and policy evidence.
+- **Partner SDK wrapper architecture** shows how YieldBoost can secure third-party systems like VeilSolver without making that partner the source of the core 9-layer stack.
+
+Track 5 is where the 9-layer stack becomes the moat: private execution, memory, ZK evidence, and partner wrapping all share one sovereign verification core.
+
+The clearest submission sentence is: **YieldBoost AI is a full-stack agentic ecosystem on 0G: Track 1 infrastructure, Track 2 verifiable trading, Track 3 autonomous API economy, and Track 5 sovereign privacy, all powered by one native 9-layer military-grade stack.**
 
 ## Showcase
 
