@@ -460,6 +460,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           note?: string;
         }
       | null = null;
+    let proofRegistryAnchorErrorMessage: string | undefined;
 
     try {
       const proofRegistryMode =
@@ -584,27 +585,34 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           storageData.proofRegistryAddress &&
           activeWalletAddress
         ) {
-          const anchor = await anchorProofWithConnectedWallet({
-            currentApy:
-              optimizationData.current_apy ?? fallbackResult.current_apy,
-            optimizedApy:
-              optimizationData.optimized_apy ?? fallbackResult.optimized_apy,
-            storageData,
-            walletAddress: activeWalletAddress,
-            networkKey,
-          });
+          try {
+            const anchor = await anchorProofWithConnectedWallet({
+              currentApy:
+                optimizationData.current_apy ?? fallbackResult.current_apy,
+              optimizedApy:
+                optimizationData.optimized_apy ?? fallbackResult.optimized_apy,
+              storageData,
+              walletAddress: activeWalletAddress,
+              networkKey,
+            });
 
-          if (anchor) {
-            storageData = {
-              ...storageData,
-              walletAddress: anchor.walletAddress ?? storageData.walletAddress,
-              proofRegistryAddress:
-                anchor.proofRegistryAddress ?? storageData.proofRegistryAddress,
-              proofRegistryTxHash: anchor.proofRegistryTxHash,
-              proofRegistryProofId: anchor.proofRegistryProofId,
-              proofRegistryExplorerUrl: anchor.proofRegistryExplorerUrl,
-              note: undefined,
-            };
+            if (anchor) {
+              storageData = {
+                ...storageData,
+                walletAddress: anchor.walletAddress ?? storageData.walletAddress,
+                proofRegistryAddress:
+                  anchor.proofRegistryAddress ?? storageData.proofRegistryAddress,
+                proofRegistryTxHash: anchor.proofRegistryTxHash,
+                proofRegistryProofId: anchor.proofRegistryProofId,
+                proofRegistryExplorerUrl: anchor.proofRegistryExplorerUrl,
+                note: undefined,
+              };
+            }
+          } catch (error) {
+            proofRegistryAnchorErrorMessage =
+              error instanceof Error
+                ? error.message
+                : "ProofRegistry wallet signature did not complete.";
           }
         }
 
@@ -624,6 +632,17 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
     const resolvedWalletAddress = storageData?.walletAddress ?? activeWalletAddress;
     const resolvedScopeKey = buildWalletScopeKey(resolvedWalletAddress, networkKey);
+    const proofRegistryAnchorMissing = Boolean(
+      storageData?.cid &&
+        storageData.proofRegistryMode === "user" &&
+        storageData.proofRegistryAddress &&
+        !storageData.proofRegistryTxHash,
+    );
+    const proofStatusDetail =
+      proofRegistryAnchorErrorMessage ??
+      (proofRegistryAnchorMissing
+        ? "ProofRegistry wallet signature did not complete; confirm the second wallet transaction to finish the on-chain anchor."
+        : storageErrorMessage ?? storageData?.note);
     const nextResult: OptimizationResult = {
       ...fallbackResult,
       ...optimizationData,
@@ -678,10 +697,14 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
             fallbackResult.zkCompliance,
         ),
       },
-      proofStatus: storageData?.cid ? "stored" : storageErrorMessage ? "error" : "pending",
-      proofStatusDetail:
-        storageErrorMessage ??
-        storageData?.note,
+      proofStatus: storageData?.cid
+        ? proofRegistryAnchorMissing
+          ? "error"
+          : "stored"
+        : storageErrorMessage
+          ? "error"
+          : "pending",
+      proofStatusDetail,
     };
 
     const proofStillBelongsToActiveWallet =
