@@ -78,14 +78,14 @@ The YieldBoost AI 9-layer military-grade stack is built as a standalone verifica
 
 The standalone YieldBoost stack includes:
 
-1. Wallet/proof snapshot
-2. 0G Compute evidence
-3. Integrity Auditor
-4. 0G Storage CID
-5. ProofRegistry anchor
-6. Sovereign Memory
+1. Noir Sentinel agent identity proof
+2. 0G Compute TEE response verification
+3. Integrity Auditor deterministic guardrail
+4. 0G Storage proof CID
+5. ProofRegistry on-chain anchor
+6. Sovereign Memory snapshot
 7. ZK Reasoning envelope
-8. Governance and policy seal
+8. Governance gate and ZK Policy Seal
 9. Neural Handshake evidence
 
 VeilSolver Secure Proxy is a partner SDK example in the developer marketplace: YieldBoost wraps the partner solver with isolated execution, ZK proof packaging, and 0G anchoring so external developers can call a secured endpoint. The 9-layer military-grade stack remains YieldBoost's own verification layer, and partner SDKs can plug into it as secured modules.
@@ -278,60 +278,148 @@ The submission story, however, is clearest when framed as **verifiable DeFi inte
 
 ## Architecture
 
+The architecture is split into smaller flows so the core proof path, vault challenge, YA faucet, and developer API marketplace stay readable instead of living in one overloaded diagram.
+
+### Core Optimizer, TEE, and ZK Proof Flow
+
 ```mermaid
 flowchart TD
-    U[User or Judge] --> UI[Next.js App Router UI]
-
+    U[User] --> UI[Next.js App Router UI]
     UI --> OPT[/api/agent/optimize/]
     OPT --> COMPRESS[Prompt compression + portfolio digest]
+    OPT --> SNAP[buildOptimizationSnapshot]
     COMPRESS --> PRECHECK[Hallucination blacklist lookup]
     PRECHECK -->|hit| BLOCKED[Pre-inference rejection]
     PRECHECK -->|clear| CACHE[Semantic cache / embedding reuse]
-    OPT --> SNAP[buildOptimizationSnapshot]
-    CACHE -->|miss| TEE[runTEEInference via 0G broker]
     CACHE -->|hit| STREAM
-    TEE -->|if unavailable| FALLBACK[Deterministic local narrative fallback]
-    TEE --> STREAM[Stream narrative back to client]
+    CACHE -->|miss| TEE[0G Compute TEE inference]
+    TEE --> ACK[Provider signer acknowledgement]
+    ACK --> SIG[Response signature / attestation evidence]
+    SIG --> STREAM[Stream narrative back to client]
+    TEE -->|provider unavailable| FALLBACK[Deterministic local narrative]
     FALLBACK --> STREAM
     BLOCKED --> STREAM
     STREAM --> UI
 
     UI --> STORE[/api/0g/store/]
     STORE --> AUDIT[Integrity Auditor deterministic guardrail]
-    AUDIT -->|APPROVED| JSON[Write proof JSON temp file]
     AUDIT -->|REJECTED| BLWRITE[Index blacklist entry]
     BLWRITE --> BLSTORE[0G Storage blacklist artifact]
-    BLSTORE --> RUNTIME
+    AUDIT -->|APPROVED| JSON[Write proof JSON artifact]
     JSON --> ZGS[0G Storage Indexer.upload]
     ZGS --> PROOF[StoredProofRecord]
-    STORE -->|optional| REG[ProofRegistry.recordProof]
+    PROOF --> REG[ProofRegistry.recordProof]
+```
 
-    PROOF --> ZKR[/api/zk/verify/]
-    ZKR --> ZKENV[Zero-Knowledge Reasoning envelope]
-    PROOF --> GOV[/api/governance/evaluate/]
-    GOV --> GOVART[Programmable AI Governance artifact]
-    GOVART --> ZKCOMP[/api/zk/compliance/]
-    ZKCOMP --> ZKART[ZK Policy Seal]
-    PROOF --> HANDSHAKE[/api/agents/handshake/]
-    HANDSHAKE --> TRANSCRIPT[Cross-Agent Neural Handshake transcript]
+### Nine-Layer Evidence Pipeline
 
-    PROOF --> MEMORY[/api/agent/memory/]
-    MEMORY --> MEMSTORE[0G Storage memory snapshot]
+```mermaid
+flowchart TD
+    PROOF[StoredProofRecord] --> L1[Layer 1: Noir Sentinel identity]
+    L1 --> L2[Layer 2: 0G Compute TEE response]
+    L2 --> L3[Layer 3: Integrity Auditor]
+    L3 --> L4[Layer 4: 0G Storage CID]
+    L4 --> L5[Layer 5: ProofRegistry anchor]
+    L5 --> L6[Layer 6: Sovereign Memory]
+    L6 --> L7[Layer 7: ZK Reasoning envelope]
+    L7 --> L8[Layer 8: Governance + ZK Policy Seal]
+    L8 --> L9[Layer 9: Neural Handshake]
 
-    PROOF --> RUNTIME[Vercel KV or .artifacts/runtime-store.local.json]
-    REG --> RUNTIME
-    ZKENV --> RUNTIME
-    GOVART --> RUNTIME
-    ZKART --> RUNTIME
-    TRANSCRIPT --> RUNTIME
-    MEMSTORE --> RUNTIME
+    L6 --> MEMORY[/api/agent/memory/]
+    L7 --> ZKR[/api/zk/verify/]
+    L8 --> GOV[/api/governance/evaluate/]
+    GOV --> ZKCOMP[/api/zk/compliance/]
+    L9 --> HANDSHAKE[/api/agents/handshake/]
 
-    UI --> STRESS[/api/stress-test/run/]
+    MEMORY --> RUNTIME[Runtime proof ledger]
+    ZKR --> RUNTIME
+    ZKCOMP --> RUNTIME
+    HANDSHAKE --> RUNTIME
+```
+
+### Judge Review Flow
+
+```mermaid
+flowchart TD
+    JUDGE[/judge/] --> BOOT[JudgeModeBootstrap]
+    BOOT --> REVIEW[Read-only review wallet]
+    REVIEW --> LATEST[/api/agent/latest/]
+    REVIEW --> PROOFAPI[/api/0g/proof/]
+    REVIEW --> MEMORYAPI[/api/agent/memory/]
+    REVIEW --> BLACKLISTAPI[/api/auditor/blacklist/]
+    REVIEW --> ZKRAPI[/api/zk/verify/]
+    REVIEW --> GOVAPI[/api/governance/evaluate/]
+    REVIEW --> ZKCOMPAPI[/api/zk/compliance/]
+    REVIEW --> HANDSHAKEAPI[/api/agents/handshake/]
+    REVIEW --> HISTORY[/api/history/]
+    REVIEW --> LIST[/api/agent/list/]
+    JUDGE --> ROADMAP[/judge/roadmap/]
+```
+
+### Vault Challenge Flow
+
+```mermaid
+flowchart TD
+    WALLET[Connected user wallet] --> VAULTUI[/vault/]
+    VAULTUI --> SEAL[Seal file or payload]
+    SEAL --> VAULTAPI[/api/vault/.../]
+    VAULTAPI --> INTEGRITY[Integrity API vault pipeline]
+    INTEGRITY --> E2B[Isolated execution layer]
+    INTEGRITY --> ZK[ZK integrity envelope]
+    INTEGRITY --> STORAGE[0G Storage vault artifact]
+    INTEGRITY --> ANCHOR[ProofRegistry / anchor tx]
+    STORAGE --> RECORD[Wallet-scoped vault record]
+    ANCHOR --> RECORD
+    RECORD --> VAULTUI
+    VAULTUI --> USERLINK[User Wallet Tx]
+    VAULTUI --> BACKENDLINKS[Backend Storage / Proof Tx links]
+```
+
+### YA Faucet and Developer Access Flow
+
+```mermaid
+flowchart TD
+    DEV[Developer] --> FAUCET[/faucet/]
+    FAUCET --> CLAIM[/api/ya/faucet/claim/]
+    CLAIM --> YA[YA access balance / voucher state]
+    YA --> DEVPORTAL[dev.yieldboostai.xyz]
+    DEVPORTAL --> MARKET[/dev/marketplace/]
+    MARKET --> DOCS[Docs + playgrounds]
+    MARKET --> APIKEY[Bearer API key usage]
+```
+
+### Developer API Store and Partner Wrapper Flow
+
+```mermaid
+flowchart TD
+    APP[Partner or developer app] --> STOREUI[/dev/marketplace/]
+    STOREUI --> FULL[Full 9-layer API]
+    STOREUI --> SINGLE[Single-layer APIs]
+    STOREUI --> VEIL[VeilSolver Secure Proxy]
+    FULL --> YBPIPE[YieldBoost standalone 9-layer stack]
+    SINGLE --> YBPIPE
+    VEIL --> WRAP[YieldBoost isolated ZK wrapper]
+    WRAP --> PARTNER[VeilSolver partner solver]
+    PARTNER --> ENVELOPE[ZK response envelope + 0G anchor]
+    YBPIPE --> ENVELOPE
+```
+
+### Stress Replay Flow
+
+```mermaid
+flowchart TD
+    UI[Next.js App Router UI] --> STRESS[/api/stress-test/run/]
     STRESS --> HIST[Historical OHLCV / oracle replay]
     HIST --> REPORT[Integrity Report Card]
     REPORT --> REPORTSTORE[0G Storage report artifact]
-    REPORTSTORE --> RUNTIME
+    REPORTSTORE --> RUNTIME[Runtime proof ledger]
+```
 
+### Runtime Rehydration Flow
+
+```mermaid
+flowchart TD
+    RUNTIME[Vercel KV or .artifacts/runtime-store.local.json]
     RUNTIME --> LATEST[/api/agent/latest/]
     RUNTIME --> PROOFAPI[/api/0g/proof/]
     RUNTIME --> MEMORYAPI[/api/agent/memory/]
@@ -343,23 +431,6 @@ flowchart TD
     RUNTIME --> HANDSHAKEAPI[/api/agents/handshake/]
     RUNTIME --> LIST[/api/agent/list/]
     RUNTIME --> HISTORY[/api/history/]
-
-    UI --> JUDGE[/judge/]
-    JUDGE --> BOOT[JudgeModeBootstrap]
-    BOOT --> REVIEW[Read-only review wallet + cookies/localStorage]
-    REVIEW --> LATEST
-    REVIEW --> PROOFAPI
-    REVIEW --> MEMORYAPI
-    REVIEW --> BLACKLISTAPI
-    REVIEW --> STRESSAPI
-    REVIEW --> ZKRAPI
-    REVIEW --> GOVAPI
-    REVIEW --> ZKCOMPAPI
-    REVIEW --> HANDSHAKEAPI
-    REVIEW --> HISTORY
-    REVIEW --> LIST
-    JUDGE --> ROADMAP[/judge/roadmap/]
-    ROADMAP --> VALUE[Value capture + 2026-2027 0G roadmap]
 ```
 
 ## 0G-Native Data Flow
@@ -367,7 +438,7 @@ flowchart TD
 1. The client calls [`/api/agent/optimize`](app/api/agent/optimize/route.ts), which compresses the prompt, hashes the wallet scope, and builds a deterministic optimization snapshot.
 2. Before inference, the optimizer checks the **Hallucination Blacklist** in [`lib/server/hallucination-blacklist.ts`](lib/server/hallucination-blacklist.ts). Similar rejected patterns return a pre-inference block instead of spending compute.
 3. If no blacklist match is found, the optimizer checks exact cache and embedding-based semantic cache through [`lib/server/optimization-cache.ts`](lib/server/optimization-cache.ts).
-4. If no cache is available, the app attempts **0G Compute** inference through [`lib/server/og-compute.ts`](lib/server/og-compute.ts), then falls back honestly if the provider is unavailable.
+4. If no cache is available, the app attempts **0G Compute TEE** inference through [`lib/server/og-compute.ts`](lib/server/og-compute.ts), including provider signer acknowledgement and response signature / attestation evidence when the provider returns it.
 5. The client posts the finalized decision payload to [`/api/0g/store`](app/api/0g/store/route.ts).
 6. The storage route runs the deterministic Integrity Auditor from [`lib/integrity-audit.ts`](lib/integrity-audit.ts), comparing the worker prediction against the submitted wallet snapshot and the latest runtime proof reference when available.
 7. If the audit is `REJECTED`, the route indexes the failed input/output/reasoning into the Hallucination Blacklist and skips ProofRegistry promotion.
@@ -379,7 +450,7 @@ flowchart TD
 13. [`/api/agents/handshake`](app/api/agents/handshake/route.ts) records the optimizer-to-auditor **Cross-Agent Neural Handshake** transcript digest so the reasoning handoff is inspectable.
 14. [`/api/zk/compliance`](app/api/zk/compliance/route.ts) ties governance and the latest stored proof into a deterministic policy seal artifact.
 15. [`/api/stress-test/run`](app/api/stress-test/run/route.ts) can replay historical OHLCV/oracle slices, produce an Integrity Report Card, and store that report on 0G Storage.
-16. The full proof, memory, blacklist, stress-test, ZKR, governance, policy seal, and handshake records are persisted into the runtime ledger managed by [`lib/server/runtime-store.ts`](lib/server/runtime-store.ts), backed by **Vercel KV** when available or `.artifacts/runtime-store.local.json` as a local fallback.
+16. The full proof, Noir Sentinel identity status, TEE response metadata, memory, blacklist, stress-test, ZKR, governance, policy seal, and handshake records are persisted into the runtime ledger managed by [`lib/server/runtime-store.ts`](lib/server/runtime-store.ts), backed by **Vercel KV** when available or `.artifacts/runtime-store.local.json` as a local fallback.
 17. The proof can then be rehydrated across the product through:
    - [`/api/agent/latest`](app/api/agent/latest/route.ts)
    - [`/api/0g/proof`](app/api/0g/proof/route.ts)
