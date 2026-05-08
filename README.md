@@ -132,6 +132,9 @@ The current public deployment is now **mainnet-default**.
 | Live app | [`yieldboostai.xyz`](https://yieldboostai.xyz/) |
 | Judge entry point | [`/judge`](https://yieldboostai.xyz/judge) |
 | Public challenge vault | [`/vault`](https://yieldboostai.xyz/vault) |
+| YA faucet | [`/faucet`](https://yieldboostai.xyz/faucet) |
+| Developer portal | [`dev.yieldboostai.xyz`](https://dev.yieldboostai.xyz/) |
+| API marketplace | [`/dev/marketplace`](https://dev.yieldboostai.xyz/dev/marketplace) |
 | Public Integrity API | [`api.yieldboostai.xyz`](https://api.yieldboostai.xyz/) |
 | Mainnet `ProofRegistry` | [`0x8e63e117E71A80Cfc10fDF375F079e2e29cd7D7D`](https://chainscan.0g.ai/address/0x8e63e117E71A80Cfc10fDF375F079e2e29cd7D7D) |
 | Mainnet `YieldStrategyINFT` | [`0xb264D861264B0e4f8fb98A61B7694BA8a3B6BBe3`](https://chainscan.0g.ai/address/0xb264D861264B0e4f8fb98A61B7694BA8a3B6BBe3) |
@@ -700,6 +703,7 @@ This repository is no longer in “mainnet prep only” mode. The current live s
 - mainnet `YieldStrategyINFT` deployed
 - mainnet storage tx and registry anchor already recorded
 - live app defaults to mainnet
+- public vault, YA faucet, and developer API marketplace are live
 - judge mode can still switch to testnet when needed
 
 Mainnet-related commands remain available for future redeployments or contract updates:
@@ -727,6 +731,9 @@ npm run setup:tee-broker:mainnet
 | [`app/api/governance/evaluate/route.ts`](app/api/governance/evaluate/route.ts) | Programmable AI Governance evaluator. |
 | [`app/api/zk/compliance/route.ts`](app/api/zk/compliance/route.ts) | Deterministic policy seal builder. |
 | [`app/api/agents/handshake/route.ts`](app/api/agents/handshake/route.ts) | Cross-Agent Neural Handshake transcript API. |
+| [`app/faucet/page.tsx`](app/faucet/page.tsx) | Public YA faucet page for claiming API access tokens. |
+| [`app/api/ya/faucet/claim`](app/api/ya/faucet/claim/route.ts) | Faucet claim endpoint for YA access flow. |
+| [`app/dev/marketplace/page.tsx`](app/dev/marketplace/page.tsx) | Developer API Store for the 9-layer stack and partner SDK wrappers. |
 | [`lib/server/runtime-store.ts`](lib/server/runtime-store.ts) | Proof persistence layer. |
 | [`app/(workspace)/judge/page.tsx`](<app/(workspace)/judge/page.tsx>) | Main judge review surface. |
 | [`app/(workspace)/judge/roadmap/page.tsx`](<app/(workspace)/judge/roadmap/page.tsx>) | Judge-adjacent roadmap and value-capture surface. |
@@ -736,25 +743,34 @@ npm run setup:tee-broker:mainnet
 | [`contracts/GlobalBlacklistRegistry.sol`](contracts/GlobalBlacklistRegistry.sol) | Append-only CID registry for rejected hallucination artifacts. |
 | [`contracts/ValidationRegistry.sol`](contracts/ValidationRegistry.sol) | On-chain anchor design for stress-test report cards. |
 
-## Roadmap: $YA0G and Proof-of-Optimization
+## Live YA Token Access and Proof-of-Optimization
 
-The items below are **future roadmap**, not current live functionality in this repository.
+YA is now part of the live developer access flow, not just a future roadmap item. The public faucet and API marketplace are available from the production deployment:
 
-Current shipped base for that roadmap:
+| Surface | Live path | Purpose |
+| --- | --- | --- |
+| YA faucet | [`yieldboostai.xyz/faucet`](https://yieldboostai.xyz/faucet) | Lets developers claim YA access for API testing and marketplace tiers. |
+| Developer portal | [`dev.yieldboostai.xyz`](https://dev.yieldboostai.xyz/) | Hosts docs, marketplace, playgrounds, and API integration surfaces. |
+| API marketplace | [`dev.yieldboostai.xyz/dev/marketplace`](https://dev.yieldboostai.xyz/dev/marketplace) | Exposes the full 9-layer endpoint, individual layer endpoints, and partner SDK wrappers. |
+| Public vault | [`yieldboostai.xyz/vault`](https://yieldboostai.xyz/vault) | Runs the 9-layer integrity challenge with wallet-scoped proof records. |
+
+Current shipped base:
 
 - **Zero-Knowledge Reasoning (ZKR)** records the reasoning envelope as a reviewable 0G artifact.
 - **Programmable AI Governance** turns strategy policy into deterministic status, risk, and kill-switch output.
 - **Cross-Agent Neural Handshake** records the optimizer-to-auditor coordination transcript for external inspection.
+- **YA faucet and API Store tiers** connect developer access to the marketplace package flow.
 
-### `$YA0G` Utility Layer
+### YA Utility Layer
 
 - Reward wallets that submit optimization runs that are successfully stored and externally verifiable.
-- Use proof-backed activity, not vanity clicks, as the basis for ecosystem participation.
-- Align token utility with storage-backed execution history, strategy quality, and long-term protocol usage.
+- Use proof-backed activity and API subscriptions, not vanity clicks, as the basis for ecosystem participation.
+- Align YA utility with storage-backed execution history, strategy quality, API marketplace access, and long-term protocol usage.
+- Give developers a faucet path first, then paid package tiers for higher-volume or partner-grade API usage.
 
 ### Proof-of-Optimization Mining
 
-- Introduce a mining model where emission is tied to **successful optimization proofs**, not raw prompt volume.
+- Extend the live proof flow into a mining model where emission is tied to **successful optimization proofs**, not raw prompt volume.
 - Weight rewards by signals such as proof anchoring success, portfolio size bands, APY improvement bands, and repeat verifiability.
 - Treat **ProofRegistry-backed executions** as the highest-quality mining events.
 
