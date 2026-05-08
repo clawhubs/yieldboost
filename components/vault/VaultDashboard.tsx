@@ -50,6 +50,7 @@ import {
 import { injected } from "wagmi/connectors";
 import { defineChain, parseEther, type Address } from "viem";
 import VoucherRewardModal, { type VoucherReward } from "@/components/ui/VoucherRewardModal";
+import { DEFAULT_WALLET_ADDRESS } from "@/lib/wallet";
 
 const zeroGTestnetChainId = Number(
   process.env.NEXT_PUBLIC_0G_TESTNET_CHAIN_ID ?? "16602",
@@ -451,10 +452,12 @@ function VaultDashboardInner() {
   const [sealNotice, setSealNotice] = useState<SealNotice | null>(null);
   const [voucherReward, setVoucherReward] = useState<VoucherReward | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [pipelineOpen, setPipelineOpen] = useState(false);
   const [auditTrailOpen, setAuditTrailOpen] = useState(false);
   const pipelineTimer = useRef<number | null>(null);
 
-  const founderWallet = process.env.NEXT_PUBLIC_FOUNDER_WALLET_ADDRESS;
+  const founderWallet =
+    process.env.NEXT_PUBLIC_FOUNDER_WALLET_ADDRESS?.trim() || DEFAULT_WALLET_ADDRESS;
   const latestFounderChallengeItem = useMemo(() => {
     return [...founderVaultItems].sort((left, right) => {
       return Date.parse(right.created_at) - Date.parse(left.created_at);
@@ -475,7 +478,7 @@ function VaultDashboardInner() {
       announcement:
         configuredAnnouncement ||
         (storageId
-          ? "Founder challenge target is live. Every wallet can attempt an unseal against the same public vault file."
+          ? "Founder challenge target is live. Every wallet can attempt the same sealed vault; non-owner attempts are recorded as shield checks."
           : DEFAULT_CHALLENGE_ANNOUNCEMENT),
     };
   }, [latestFounderChallengeItem]);
@@ -527,7 +530,7 @@ function VaultDashboardInner() {
     return {
       storage_id: publicChallenge.storageId,
       network: "testnet",
-      wallet_address: founderWallet ?? "0x0000000000000000000000000000000000000000",
+      wallet_address: founderWallet,
       integrity_hash: "challenge-pending",
       payload_sha256: "challenge-pending",
       mime_type: "application/octet-stream",
@@ -539,6 +542,17 @@ function VaultDashboardInner() {
       },
     };
   }, [founderWallet, latestFounderChallengeItem, publicChallenge]);
+  const publicChallengeEvidence = useMemo(() => {
+    if (!challengeItem) {
+      return null;
+    }
+    return {
+      ownerWallet: challengeItem.wallet_address,
+      userTxUrl: buildTestnetTxUrl(challengeItem.transaction_hash),
+      storageTxUrl: challengeItem.storage_explorer_url ?? null,
+      proofTxUrl: challengeItem.anchor_explorer_url ?? null,
+    };
+  }, [challengeItem]);
 
   const stopPipeline = useCallback(() => {
     if (pipelineTimer.current) {
@@ -619,10 +633,6 @@ function VaultDashboardInner() {
   }, [address]);
 
   const refreshPublicChallenge = useCallback(async () => {
-    if (!founderWallet) {
-      setFounderVaultItems([]);
-      return;
-    }
     const data = await fetchJson<VaultListResponse>(
       `/v1/integrity/records?wallet_address=${founderWallet}&network=testnet`,
     );
@@ -898,7 +908,7 @@ function VaultDashboardInner() {
           tone: "blocked",
           message:
             message === "Only the sealing wallet can unseal this vault."
-              ? "Access denied. Only the sealing wallet can open the live challenge target. Your attempt has been logged."
+              ? "Challenge attempt recorded. The vault stayed sealed for this wallet and the failed attempt was added to the live counter."
               : message,
         });
       } else {
@@ -1316,63 +1326,110 @@ function VaultDashboardInner() {
             </AnimatePresence>
           </div>
 
-          <div className="rounded-lg border border-white/10 bg-black/35 p-5 backdrop-blur-xl md:p-6">
-            <div className="mb-5 flex items-center justify-between">
-              <h2 className="inline-flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-[0.22em] text-emerald-300">
-                <Activity className="h-4 w-4" />
-                Integrity Pipeline
-              </h2>
-              <span className="font-mono text-[10px] text-emerald-50/45">
-                {currentLayer}/9
-              </span>
-            </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="rounded-lg border border-emerald-300/25 bg-emerald-400/[0.07] p-4 shadow-[0_0_38px_rgba(16,185,129,0.12)] backdrop-blur-xl md:p-5">
+            <button
+              type="button"
+              onClick={() => setPipelineOpen((value) => !value)}
+              className="flex w-full flex-col gap-4 text-left md:flex-row md:items-center md:justify-between"
+            >
+              <div className="flex items-center gap-3">
+                <div className="grid h-11 w-11 place-items-center rounded-lg border border-emerald-300/25 bg-black/35 text-emerald-300">
+                  <Shield className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-emerald-300">
+                    9-Layer Military-Grade Stack
+                  </div>
+                  <div className="mt-1 text-lg font-black text-white">
+                    Live proof banner
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="rounded-lg border border-emerald-300/20 bg-black/35 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-100">
+                  {currentLayer}/9 active
+                </span>
+                <div className="grid h-9 w-9 place-items-center rounded-lg border border-white/10 bg-black/35 text-emerald-200">
+                  {pipelineOpen ? (
+                    <ChevronDown className="h-4 w-4" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4" />
+                  )}
+                </div>
+              </div>
+            </button>
+            <div className="mt-4 grid grid-cols-9 gap-1.5">
               {layers.map((layer) => {
-                const Icon = layer.icon;
                 const active = currentLayer >= layer.id || Boolean(layerStatuses[layer.key]);
-                const current = currentLayer === layer.id && Boolean(processing);
                 return (
-                  <motion.div
+                  <div
                     key={layer.key}
-                    layout
-                    className={`rounded-lg border p-4 transition ${
-                      active
-                        ? "border-emerald-300/35 bg-emerald-400/8"
-                        : "border-white/10 bg-white/[0.025] opacity-55"
-                    } ${current ? "shadow-[0_0_24px_rgba(16,185,129,0.18)]" : ""}`}
-                  >
-                    <div className="mb-3 flex items-center gap-3">
-                      <div
-                        className={`grid h-8 w-8 place-items-center rounded-lg ${
-                          active ? "bg-emerald-400/15 text-emerald-300" : "bg-white/5 text-white/35"
-                        }`}
-                      >
-                        <Icon className="h-4 w-4" />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="truncate text-xs font-black text-white">
-                          {layer.key}: {layer.name}
-                        </div>
-                        <div className="truncate text-[11px] text-emerald-50/45">
-                          {layerStatuses[layer.key] ?? layer.desc}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-black/60">
-                      <motion.div
-                        className="h-full rounded-full bg-emerald-400"
-                        initial={false}
-                        animate={{ width: active ? "100%" : "0%" }}
-                        transition={{ duration: 0.45 }}
-                      />
-                    </div>
-                  </motion.div>
+                    className={`h-2 rounded-full ${
+                      active ? "bg-emerald-300" : "bg-white/15"
+                    }`}
+                    title={`${layer.key}: ${layer.name}`}
+                  />
                 );
               })}
             </div>
+            <AnimatePresence initial={false}>
+              {pipelineOpen ? (
+                <motion.div
+                  initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                  animate={{ opacity: 1, height: "auto", marginTop: 16 }}
+                  exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    {layers.map((layer) => {
+                      const Icon = layer.icon;
+                      const active = currentLayer >= layer.id || Boolean(layerStatuses[layer.key]);
+                      const current = currentLayer === layer.id && Boolean(processing);
+                      return (
+                        <motion.div
+                          key={layer.key}
+                          layout
+                          className={`rounded-lg border p-4 transition ${
+                            active
+                              ? "border-emerald-300/35 bg-emerald-400/8"
+                              : "border-white/10 bg-white/[0.025] opacity-55"
+                          } ${current ? "shadow-[0_0_24px_rgba(16,185,129,0.18)]" : ""}`}
+                        >
+                          <div className="mb-3 flex items-center gap-3">
+                            <div
+                              className={`grid h-8 w-8 place-items-center rounded-lg ${
+                                active ? "bg-emerald-400/15 text-emerald-300" : "bg-white/5 text-white/35"
+                              }`}
+                            >
+                              <Icon className="h-4 w-4" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="truncate text-xs font-black text-white">
+                                {layer.key}: {layer.name}
+                              </div>
+                              <div className="truncate text-[11px] text-emerald-50/45">
+                                {layerStatuses[layer.key] ?? layer.desc}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="h-1.5 overflow-hidden rounded-full bg-black/60">
+                            <motion.div
+                              className="h-full rounded-full bg-emerald-400"
+                              initial={false}
+                              animate={{ width: active ? "100%" : "0%" }}
+                              transition={{ duration: 0.45 }}
+                            />
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
           </div>
 
-          <div className="rounded-lg border border-emerald-300/20 bg-black/40 p-5 backdrop-blur-xl md:p-6">
+          <div className="rounded-lg border border-emerald-300/20 bg-black/40 p-5 backdrop-blur-xl md:p-6 lg:hidden">
             <div className="mb-4 flex items-start justify-between gap-4">
               <div>
                 <div className="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-300">
@@ -1413,12 +1470,61 @@ function VaultDashboardInner() {
                   Public Rules
                 </div>
                 <div className="mt-2 space-y-1 text-sm text-emerald-50/70">
-                  <div>Every wallet sees the same target once the founder publishes it.</div>
-                  <div>All failed unseal attempts are logged to the live counter.</div>
-                  <div>The announcement stays visible even before the target file exists.</div>
+                  <div>Every wallet sees the same published target.</div>
+                  <div>Only the sealing wallet can open the payload.</div>
+                  <div>All failed public attempts are logged to the live counter.</div>
                 </div>
               </div>
             </div>
+            {publicChallengeEvidence ? (
+              <div className="mt-3 rounded-lg border border-emerald-300/15 bg-emerald-400/[0.06] p-4">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-200/70">
+                      Founder Upload Evidence
+                    </div>
+                    <div className="mt-1 text-xs text-emerald-50/60">
+                      Target sealed by{" "}
+                      <span className="font-mono text-emerald-100">
+                        {shortAddress(publicChallengeEvidence.ownerWallet)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {publicChallengeEvidence.userTxUrl ? (
+                      <a
+                        href={publicChallengeEvidence.userTxUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex rounded-lg border border-emerald-300/25 px-3 py-2 text-[11px] font-bold text-emerald-100 transition hover:bg-emerald-400/10"
+                      >
+                        Founder Wallet Tx
+                      </a>
+                    ) : null}
+                    {publicChallengeEvidence.storageTxUrl ? (
+                      <a
+                        href={publicChallengeEvidence.storageTxUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex rounded-lg border border-white/10 px-3 py-2 text-[11px] font-bold text-emerald-50/70 transition hover:bg-white/5"
+                      >
+                        0G Storage Tx
+                      </a>
+                    ) : null}
+                    {publicChallengeEvidence.proofTxUrl ? (
+                      <a
+                        href={publicChallengeEvidence.proofTxUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex rounded-lg border border-white/10 px-3 py-2 text-[11px] font-bold text-emerald-50/70 transition hover:bg-white/5"
+                      >
+                        ProofRegistry Tx
+                      </a>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            ) : null}
             <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="text-xs text-emerald-50/55">
                 {publicChallenge.storageId
@@ -1463,10 +1569,219 @@ function VaultDashboardInner() {
               ) : null}
             </AnimatePresence>
           </div>
+          <div className="hidden rounded-lg border border-white/10 bg-white/[0.045] p-5 backdrop-blur-2xl md:p-6 lg:block">
+            <div className="mb-5 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <Lock className="h-5 w-5 text-emerald-400" />
+                <h2 className="text-xl font-black text-white">The Vault</h2>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {isFounder ? (
+                  <span className="rounded-lg border border-emerald-300/20 bg-emerald-400/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-200">
+                    Founder
+                  </span>
+                ) : null}
+                <span className="rounded-lg border border-emerald-300/20 bg-emerald-400/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-200">
+                  {vaultItems.length} blobs
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {vaultItems.map((item) => (
+                <div
+                  key={`desktop-${item.storage_id}`}
+                  className="rounded-lg border border-white/10 bg-black/45 p-4 transition hover:border-emerald-300/30"
+                >
+                  <div className="mb-3 flex items-start gap-3">
+                    <div className="grid h-10 w-10 place-items-center rounded-lg bg-emerald-400/10 text-emerald-300">
+                      <Database className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-black text-white">
+                        {item.file_name ?? "Sealed Vault Blob"}
+                      </div>
+                      <div className="truncate font-mono text-[11px] text-emerald-50/45">
+                        {item.storage_id}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mb-3 flex items-center gap-2 text-[11px] text-emerald-50/45">
+                    <Check className="h-3.5 w-3.5 text-emerald-300" />
+                    {item.storage_tx_hash ? "0G anchored" : "Local fallback"}
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => void unsealItem(item)}
+                      disabled={Boolean(processing)}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-emerald-300/25 bg-emerald-400/10 px-4 py-3 text-sm font-black text-emerald-100 transition hover:bg-emerald-400/15 disabled:opacity-50"
+                    >
+                      <Download className="h-4 w-4" />
+                      Unseal
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void deleteItem(item)}
+                      disabled={Boolean(processing)}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-red-300/20 bg-red-400/10 px-4 py-3 text-sm font-black text-red-100 transition hover:bg-red-400/15 disabled:opacity-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {!vaultItems.length ? (
+                <div className="rounded-lg border border-white/10 bg-black/35 p-6 text-sm text-emerald-50/55">
+                  No sealed blobs for {shortAddress(address)}.
+                </div>
+              ) : null}
+            </div>
+          </div>
         </section>
 
         <aside className="space-y-6 lg:col-span-5">
-          <div className="rounded-lg border border-white/10 bg-white/[0.045] p-5 backdrop-blur-2xl md:p-6">
+          <div className="hidden rounded-lg border border-emerald-300/20 bg-black/40 p-5 backdrop-blur-xl md:p-6 lg:block">
+            <div className="mb-4 flex items-start justify-between gap-4">
+              <div>
+                <div className="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-300">
+                  <Shield className="h-4 w-4" />
+                  Public Challenge
+                </div>
+                <h2 className="mt-2 text-2xl font-black text-white">
+                  {publicChallenge.title}
+                </h2>
+              </div>
+              <div
+                className={`rounded-lg px-3 py-2 font-mono text-[10px] uppercase tracking-[0.18em] ${
+                  publicChallenge.storageId
+                    ? "border border-emerald-300/20 bg-emerald-400/10 text-emerald-100"
+                    : "border border-amber-300/20 bg-amber-300/10 text-amber-100"
+                }`}
+              >
+                {publicChallenge.storageId ? "Target Live" : "Founder Upload Pending"}
+              </div>
+            </div>
+            <p className="text-sm leading-6 text-emerald-50/70">
+              {publicChallenge.announcement}
+            </p>
+            <div className="mt-4 grid gap-3">
+              <div className="rounded-lg border border-white/10 bg-black/35 p-4">
+                <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-50/45">
+                  Challenge Target
+                </div>
+                <div className="mt-2 text-sm font-black text-white">
+                  {publicChallenge.fileName}
+                </div>
+                <div className="mt-1 break-all font-mono text-[11px] text-emerald-50/50">
+                  {publicChallenge.storageId ?? "Storage ID will be revealed after founder upload."}
+                </div>
+              </div>
+              <div className="rounded-lg border border-white/10 bg-black/35 p-4">
+                <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-50/45">
+                  Public Rules
+                </div>
+                <div className="mt-2 space-y-1 text-sm text-emerald-50/70">
+                  <div>Every wallet sees the same published target.</div>
+                  <div>Only the sealing wallet can open the payload.</div>
+                  <div>All failed public attempts are logged to the live counter.</div>
+                </div>
+              </div>
+            </div>
+            {publicChallengeEvidence ? (
+              <div className="mt-3 rounded-lg border border-emerald-300/15 bg-emerald-400/[0.06] p-4">
+                <div>
+                  <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-200/70">
+                    Founder Upload Evidence
+                  </div>
+                  <div className="mt-1 text-xs text-emerald-50/60">
+                    Target sealed by{" "}
+                    <span className="font-mono text-emerald-100">
+                      {shortAddress(publicChallengeEvidence.ownerWallet)}
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {publicChallengeEvidence.userTxUrl ? (
+                    <a
+                      href={publicChallengeEvidence.userTxUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex rounded-lg border border-emerald-300/25 px-3 py-2 text-[11px] font-bold text-emerald-100 transition hover:bg-emerald-400/10"
+                    >
+                      Founder Wallet Tx
+                    </a>
+                  ) : null}
+                  {publicChallengeEvidence.storageTxUrl ? (
+                    <a
+                      href={publicChallengeEvidence.storageTxUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex rounded-lg border border-white/10 px-3 py-2 text-[11px] font-bold text-emerald-50/70 transition hover:bg-white/5"
+                    >
+                      0G Storage Tx
+                    </a>
+                  ) : null}
+                  {publicChallengeEvidence.proofTxUrl ? (
+                    <a
+                      href={publicChallengeEvidence.proofTxUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex rounded-lg border border-white/10 px-3 py-2 text-[11px] font-bold text-emerald-50/70 transition hover:bg-white/5"
+                    >
+                      ProofRegistry Tx
+                    </a>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
+            <div className="mt-4 flex flex-col gap-3">
+              <div className="text-xs text-emerald-50/55">
+                {publicChallenge.storageId
+                  ? "Connect a wallet and sign an unseal proof to attempt the public challenge."
+                  : "No founder blob has been published yet, so the challenge cannot be attempted."}
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (challengeItem) {
+                    void unsealItem(challengeItem);
+                  }
+                }}
+                disabled={!challengeItem || !isConnected || Boolean(processing)}
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-300/25 bg-emerald-400/10 px-4 py-3 text-sm font-black text-emerald-100 transition hover:bg-emerald-400/15 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/35"
+              >
+                <Download className="h-4 w-4" />
+                {publicChallenge.storageId
+                  ? "Attempt Unseal Challenge Vault"
+                  : "Founder Upload Pending"}
+              </button>
+            </div>
+            <AnimatePresence>
+              {challengeFeedback ? (
+                <motion.div
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  className={`mt-4 flex items-start gap-2 rounded-lg border p-3 text-sm ${
+                    challengeFeedback.tone === "success"
+                      ? "border-emerald-300/20 bg-emerald-400/10 text-emerald-50"
+                      : "border-amber-300/20 bg-amber-300/10 text-amber-50"
+                  }`}
+                >
+                  {challengeFeedback.tone === "success" ? (
+                    <Check className="mt-0.5 h-4 w-4 shrink-0" />
+                  ) : (
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                  )}
+                  <span>{challengeFeedback.message}</span>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
+          </div>
+
+          <div className="rounded-lg border border-white/10 bg-white/[0.045] p-5 backdrop-blur-2xl md:p-6 lg:hidden">
             <div className="mb-5 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <Lock className="h-5 w-5 text-emerald-400" />

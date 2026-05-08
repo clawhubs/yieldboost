@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { ethers } from "ethers";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -13,7 +14,13 @@ import {
 } from "lucide-react";
 import AgentCard from "./AgentCard";
 import { usePortfolio } from "@/hooks/usePortfolio";
-import type { WalletNetworkKey } from "@/lib/wallet";
+import {
+  sameWalletAddress,
+  WALLET_CHANGE_EVENT,
+  WALLET_OVERRIDE_STORAGE_KEY,
+  type WalletChangeDetail,
+  type WalletNetworkKey,
+} from "@/lib/wallet";
 
 const ProofModal = lazy(() => import("@/components/modals/ProofModal"));
 
@@ -43,6 +50,18 @@ interface Strategy {
   sourceLabel?: string | null;
 }
 
+interface MarketplaceListing {
+  tokenId: number;
+  seller: string;
+  priceWei: string;
+  price0G: string;
+  active: boolean;
+}
+
+interface InjectedEthereum {
+  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+}
+
 type FilterMode = "all" | "latest" | "verified" | "unique";
 type SortMode = "latest" | "apy" | "gain";
 
@@ -70,46 +89,167 @@ function sortStrategies(strategies: Strategy[], sortMode: SortMode) {
 
 export default function AgentGallery() {
   const { networkKey, portfolio } = usePortfolio();
+  const [activeWalletAddress, setActiveWalletAddress] = useState<string | undefined>(() =>
+    typeof window !== "undefined"
+      ? window.localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY) ?? undefined
+      : undefined,
+  );
   const [strategies, setStrategies] = useState<Strategy[]>([]);
+  const [listings, setListings] = useState<MarketplaceListing[]>([]);
+  const [marketplaceAddress, setMarketplaceAddress] = useState<string | null>(null);
+  const [inftAddress, setInftAddress] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [emptyMessage, setEmptyMessage] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
+  const [actionText, setActionText] = useState<string | null>(null);
   const [source, setSource] = useState<string | null>(null);
   const [filterMode, setFilterMode] = useState<FilterMode>("all");
   const [sortMode, setSortMode] = useState<SortMode>("latest");
   const [selectedStrategy, setSelectedStrategy] = useState<Strategy | null>(null);
 
   useEffect(() => {
-    async function loadStrategies() {
+    setActiveWalletAddress(
+      portfolio?.walletAddress ??
+        (typeof window !== "undefined"
+          ? window.localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY) ?? undefined
+          : undefined),
+    );
+  }, [portfolio?.walletAddress]);
+
+  useEffect(() => {
+    function handleWalletChange(event: Event) {
+      const detail = (event as CustomEvent<WalletChangeDetail>).detail;
+      setActiveWalletAddress(
+        detail?.walletAddress ??
+          window.localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY) ??
+          undefined,
+      );
+    }
+
+    window.addEventListener(WALLET_CHANGE_EVENT, handleWalletChange as EventListener);
+    return () => window.removeEventListener(WALLET_CHANGE_EVENT, handleWalletChange as EventListener);
+  }, []);
+
+  const loadMarketplaceListings = useCallback(async () => {
+    const params = new URLSearchParams({ network: networkKey });
+    const response = await fetch(`/api/marketplace/list?${params.toString()}`, {
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      throw new Error("Failed to load marketplace listing status");
+    }
+    const data = await response.json();
+    if (!data.success) {
+      throw new Error(data.error || "Failed to load marketplace listing status");
+    }
+    setListings(Array.isArray(data.listings) ? data.listings : []);
+    setMarketplaceAddress(data.marketplaceAddress ?? null);
+    setInftAddress(data.inftAddress ?? null);
+  }, [networkKey]);
+
+  const loadStrategies = useCallback(async () => {
       try {
         setLoading(true);
         const params = new URLSearchParams({ network: networkKey });
-        if (portfolio?.walletAddress) {
-          params.set("wallet", portfolio.walletAddress);
-        }
-        const response = await fetch(`/api/agent/list?${params.toString()}`, { cache: "no-store" });
-        if (!response.ok) {
-          throw new Error("Failed to load strategies");
-        }
-        const data = await response.json();
-        if (data.success) {
-          setStrategies(Array.isArray(data.strategies) ? data.strategies : []);
-          setEmptyMessage(data.message ?? null);
-          setInfoMessage(data.source === "proof_fallback" ? data.message ?? null : null);
-          setSource(data.source ?? null);
-        } else {
-          setError(data.error || "Failed to load strategies");
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Unknown error");
-      } finally {
-        setLoading(false);
+      if (activeWalletAddress) {
+        params.set("wallet", activeWalletAddress);
       }
+      const [agentResponse] = await Promise.all([
+        fetch(`/api/agent/list?${params.toString()}`, { cache: "no-store" }),
+        loadMarketplaceListings(),
+      ]);
+      if (!agentResponse.ok) {
+        throw new Error("Failed to load strategies");
+      }
+      const data = await agentResponse.json();
+      if (data.success) {
+        setStrategies(Array.isArray(data.strategies) ? data.strategies : []);
+        setEmptyMessage(data.message ?? null);
+        setInfoMessage(data.source === "proof_fallback" ? data.message ?? null : null);
+        setSource(data.source ?? null);
+        setError(null);
+      } else {
+        setError(data.error || "Failed to load strategies");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setLoading(false);
+    }
+  }, [activeWalletAddress, loadMarketplaceListings, networkKey]);
+
+  useEffect(() => {
+    void loadStrategies();
+  }, [loadStrategies]);
+
+  const listingMap = useMemo(() => {
+    return new Map(listings.map((listing) => [listing.tokenId, listing]));
+  }, [listings]);
+
+  async function getSigner() {
+    const ethereum = (window as typeof window & { ethereum?: InjectedEthereum }).ethereum;
+    if (!ethereum) {
+      throw new Error("MetaMask or an injected wallet is required for listing.");
     }
 
-    void loadStrategies();
-  }, [networkKey, portfolio?.walletAddress]);
+    await ethereum.request({ method: "eth_requestAccounts" });
+    const provider = new ethers.BrowserProvider(ethereum);
+    return provider.getSigner();
+  }
+
+  async function handleListStrategy(strategy: Strategy) {
+    if (!marketplaceAddress || !inftAddress) {
+      alert("Marketplace contract is not configured for this network yet.");
+      return;
+    }
+
+    try {
+      setActionText(`Listing Agent NFT #${strategy.tokenId} for 0.01 0G...`);
+      const signer = await getSigner();
+      const account = await signer.getAddress();
+      if (!sameWalletAddress(account, strategy.owner)) {
+        throw new Error("Connect the wallet that owns this Agent NFT before listing.");
+      }
+
+      const inft = new ethers.Contract(
+        inftAddress,
+        [
+          "function getApproved(uint256 tokenId) view returns (address)",
+          "function isApprovedForAll(address owner,address operator) view returns (bool)",
+          "function approve(address to,uint256 tokenId) external",
+        ],
+        signer,
+      );
+      const approved = await inft.getApproved(strategy.tokenId).catch(() => ethers.ZeroAddress);
+      const approvedForAll = await inft.isApprovedForAll(account, marketplaceAddress).catch(() => false);
+      if (
+        approved.toLowerCase() !== marketplaceAddress.toLowerCase() &&
+        !approvedForAll
+      ) {
+        setActionText(`Approving Agent NFT #${strategy.tokenId}...`);
+        const approveTx = await inft.approve(marketplaceAddress, strategy.tokenId);
+        await approveTx.wait();
+      }
+
+      const marketplace = new ethers.Contract(
+        marketplaceAddress,
+        ["function listStrategy(uint256 tokenId,uint256 price) external"],
+        signer,
+      );
+      const tx = await marketplace.listStrategy(
+        strategy.tokenId,
+        ethers.parseEther("0.01"),
+      );
+      await tx.wait();
+      setActionText(`Agent NFT #${strategy.tokenId} listed at 0.01 0G.`);
+      await loadMarketplaceListings();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to list Agent NFT");
+    } finally {
+      setActionText(null);
+    }
+  }
 
   const sortedStrategies = useMemo(
     () => sortStrategies(strategies, sortMode),
@@ -271,6 +411,11 @@ export default function AgentGallery() {
               {infoMessage}
             </div>
           ) : null}
+          {actionText ? (
+            <div className="rounded-[18px] border border-[rgba(104,255,122,0.18)] bg-[rgba(104,255,122,0.07)] px-4 py-3 text-[13px] text-[#dfffe4]">
+              {actionText}
+            </div>
+          ) : null}
 
           <div className="grid gap-4 xl:grid-cols-[1.3fr_0.7fr]">
             <div className="rounded-[22px] border border-[#16232d] bg-[rgba(255,255,255,0.02)] p-4">
@@ -374,26 +519,50 @@ export default function AgentGallery() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
-            {filteredStrategies.map((strategy, index) => (
-              <AgentCard
-                key={`${strategy.tokenId}-${strategy.timestamp}`}
-                tokenId={strategy.tokenId}
-                apy={strategy.apy}
-                currentApy={strategy.currentApy}
-                yieldIncreasePct={strategy.yieldIncreasePct}
-                estimatedAnnualGain={strategy.estimatedAnnualGain}
-                confidence={strategy.confidence}
-                recommended={strategy.recommended}
-                proofRegistryProofId={strategy.proofRegistryProofId}
-                sourceLabel={strategy.sourceLabel}
-                latest={index === 0 && sortMode === "latest"}
-                creator={strategy.creator}
-                verified={strategy.verified}
-                timestamp={strategy.timestamp}
-                owner={strategy.owner}
-                onClick={() => setSelectedStrategy(strategy)}
-              />
-            ))}
+            {filteredStrategies.map((strategy, index) => {
+              const listing = listingMap.get(strategy.tokenId);
+              const isContractNft = source === "contract" && strategy.sourceLabel === "YieldStrategy NFT";
+              const ownedByActiveWallet =
+                Boolean(activeWalletAddress) &&
+                sameWalletAddress(strategy.owner, activeWalletAddress);
+              const canList =
+                isContractNft &&
+                ownedByActiveWallet &&
+                !listing &&
+                Boolean(marketplaceAddress && inftAddress);
+              const actionHint = listing
+                ? `Listed on marketplace for ${listing.price0G} 0G.`
+                : isContractNft
+                  ? ownedByActiveWallet
+                    ? "Owned by this wallet. You can list it from here."
+                    : "Read-only: connect the owner wallet to list this NFT."
+                  : "Proof records are not marketplace-listable until they are minted as Agent NFTs.";
+
+              return (
+                <AgentCard
+                  key={`${strategy.tokenId}-${strategy.timestamp}`}
+                  tokenId={strategy.tokenId}
+                  apy={strategy.apy}
+                  currentApy={strategy.currentApy}
+                  yieldIncreasePct={strategy.yieldIncreasePct}
+                  estimatedAnnualGain={strategy.estimatedAnnualGain}
+                  confidence={strategy.confidence}
+                  recommended={strategy.recommended}
+                  proofRegistryProofId={strategy.proofRegistryProofId}
+                  sourceLabel={strategy.sourceLabel}
+                  latest={index === 0 && sortMode === "latest"}
+                  creator={strategy.creator}
+                  verified={strategy.verified}
+                  timestamp={strategy.timestamp}
+                  owner={strategy.owner}
+                  actionLabel={canList ? "List 0.01 0G" : undefined}
+                  actionDisabled={Boolean(actionText)}
+                  actionHint={actionHint}
+                  onAction={canList ? () => void handleListStrategy(strategy) : undefined}
+                  onClick={() => setSelectedStrategy(strategy)}
+                />
+              );
+            })}
           </div>
         </div>
       </section>

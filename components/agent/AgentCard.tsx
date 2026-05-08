@@ -3,6 +3,7 @@ import {
   Clock3,
   Database,
   Fingerprint,
+  ListPlus,
   ShieldCheck,
   Sparkles,
   TrendingUp,
@@ -25,6 +26,10 @@ interface AgentCardProps {
   timestamp: string;
   owner: string;
   onClick?: () => void;
+  actionLabel?: string;
+  actionDisabled?: boolean;
+  actionHint?: string;
+  onAction?: () => void;
 }
 
 export default function AgentCard({
@@ -43,15 +48,17 @@ export default function AgentCard({
   timestamp,
   owner,
   onClick,
+  actionLabel,
+  actionDisabled = false,
+  actionHint,
+  onAction,
 }: AgentCardProps) {
   const shortAddress = (addr: string) => `${addr.slice(0, 6)}...${addr.slice(-4)}`;
   const hasLiveOptimizationFields = typeof currentApy === "number" && typeof estimatedAnnualGain === "number";
   const apyLift = typeof currentApy === "number" ? apy - currentApy : null;
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <article
       className="group relative flex w-full flex-col overflow-hidden rounded-[24px] border border-[#17242f] bg-[radial-gradient(circle_at_top_right,rgba(31,227,190,0.14),transparent_34%),linear-gradient(180deg,#081017_0%,#060c12_100%)] p-5 text-left transition hover:border-[rgba(34,221,208,0.4)] hover:shadow-[0_18px_40px_rgba(0,0,0,0.28)]"
     >
       <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(34,221,208,0.55),transparent)] opacity-70" />
@@ -179,18 +186,42 @@ export default function AgentCard({
         <span>Owner: {shortAddress(owner)}</span>
       </div>
 
-      <div className="mt-3 flex items-center justify-between border-t border-[#16232d] pt-4">
+      <div className="mt-3 flex flex-col gap-3 border-t border-[#16232d] pt-4">
+        {actionHint ? (
+          <div className="rounded-[14px] border border-[#1a2b36] bg-[#081017] px-3 py-2 text-[12px] leading-5 text-[#a8b8c6]">
+            {actionHint}
+          </div>
+        ) : null}
+        <div className="flex items-center justify-between gap-3">
         <div>
           <div className="text-[11px] text-[#7f94a2]">Creator</div>
           <div className="mt-1 text-[13px] font-medium text-white">
             {shortAddress(creator)}
           </div>
         </div>
-        <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(34,221,208,0.2)] bg-[rgba(34,221,208,0.08)] px-3 py-2 text-[12px] font-medium text-[#92ece3] transition group-hover:border-[rgba(34,221,208,0.34)] group-hover:text-white">
-          View details
-          <ArrowUpRight className="h-3.5 w-3.5" />
+        <div className="flex flex-wrap justify-end gap-2">
+          {actionLabel && onAction ? (
+            <button
+              type="button"
+              onClick={onAction}
+              disabled={actionDisabled}
+              className="inline-flex items-center gap-2 rounded-full border border-[rgba(104,255,122,0.24)] bg-[rgba(104,255,122,0.1)] px-3 py-2 text-[12px] font-medium text-[#dfffe4] transition hover:border-[rgba(104,255,122,0.4)] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <ListPlus className="h-3.5 w-3.5" />
+              {actionLabel}
+            </button>
+          ) : null}
+          <button
+            type="button"
+            onClick={onClick}
+            className="inline-flex items-center gap-2 rounded-full border border-[rgba(34,221,208,0.2)] bg-[rgba(34,221,208,0.08)] px-3 py-2 text-[12px] font-medium text-[#92ece3] transition group-hover:border-[rgba(34,221,208,0.34)] group-hover:text-white"
+          >
+            View details
+            <ArrowUpRight className="h-3.5 w-3.5" />
+          </button>
+        </div>
         </div>
       </div>
-    </button>
+    </article>
   );
 }

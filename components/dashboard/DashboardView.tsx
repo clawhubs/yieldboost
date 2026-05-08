@@ -40,14 +40,19 @@ const HeroChart = lazy(() => import("@/components/dashboard/HeroChart"));
 import { useYieldOptimizer } from "@/hooks/useYieldOptimizer";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import {
+  DEFAULT_WALLET_ADDRESS,
   getAvailableWalletNetworks,
   getWalletNetworkConfig,
   isWalletAddress,
+  JUDGE_MODE_COOKIE_KEY,
+  JUDGE_MODE_STORAGE_KEY,
   sameWalletAddress,
+  WALLET_COOKIE_KEY,
   WALLET_CONNECT_REQUEST_EVENT,
   WALLET_CHANGE_EVENT,
   WALLET_NETWORK_CHANGE_REQUEST_EVENT,
   WALLET_OVERRIDE_STORAGE_KEY,
+  WALLET_PROVIDER_STORAGE_KEY,
   type WalletChangeDetail,
   type WalletNetworkKey,
 } from "@/lib/wallet";
@@ -92,6 +97,10 @@ const footerItems = [
 const walletNetworks = getAvailableWalletNetworks();
 const ENTRY_MODE_STORAGE_KEY = "yb_entry_mode_selected";
 const OPTIMIZATION_AUTO_DISMISS_PREFIX = "yb_optimization_auto_dismissed";
+
+function clearCookie(name: string) {
+  document.cookie = `${name}=; path=/; max-age=0; SameSite=Lax`;
+}
 
 function formatPortfolioMetricValue(value: number, unit?: string) {
   const isNativeBalance = unit === "0G";
@@ -186,6 +195,26 @@ export default function DashboardView() {
   function enterUserMode() {
     if (typeof window !== "undefined") {
       window.localStorage.setItem(ENTRY_MODE_STORAGE_KEY, "user");
+      window.localStorage.removeItem(JUDGE_MODE_STORAGE_KEY);
+      clearCookie(JUDGE_MODE_COOKIE_KEY);
+
+      const storedWallet = window.localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY);
+      const storedProvider = window.localStorage.getItem(WALLET_PROVIDER_STORAGE_KEY);
+      if (!storedProvider && sameWalletAddress(storedWallet, DEFAULT_WALLET_ADDRESS)) {
+        window.localStorage.removeItem(WALLET_OVERRIDE_STORAGE_KEY);
+        clearCookie(WALLET_COOKIE_KEY);
+      }
+
+      window.dispatchEvent(
+        new CustomEvent(WALLET_CHANGE_EVENT, {
+          detail: {
+            walletAddress: undefined,
+            networkKey,
+            walletLabel: undefined,
+            connected: false,
+          } satisfies WalletChangeDetail,
+        }),
+      );
     }
     setEntryModeOpen(false);
   }

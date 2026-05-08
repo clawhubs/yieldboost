@@ -120,7 +120,7 @@ YieldBoost AI turns agentic finance into a verifiable operating system on 0G.
 
 The live product combines four surfaces that share the same trust layer:
 
-- **One-click optimizer**: converts idle wallet balances into proof-backed yield routes.
+- **One-click optimizer**: converts idle wallet balances into proof-backed yield routes while exercising the same Track 1 infrastructure and Track 5 sovereign privacy stack used by the rest of the product.
 - **Native 9-layer stack**: Hallucination Blacklist, Integrity Auditor, Secure Compute / TEE, Sovereign Memory, 0G Storage Proof Layer, Zero-Knowledge Proof Layer, ProofRegistry Anchor, Programmable Governance, and Cross-Agent Neural Handshake.
 - **Autonomous economy layer**: YA faucet, API packages, developer portal, and marketplace endpoints let other builders consume the stack as a paid security service.
 - **Sovereign privacy layer**: vault sealing, isolated execution, TEE evidence, ZK envelopes, and wallet-scoped records keep private payloads auditable without turning them into public secrets.
@@ -235,7 +235,7 @@ That combination is the project's strongest differentiator for a hackathon revie
 
 YieldBoost AI spans four 0G hackathon tracks because it is not a single-purpose DApp. It is a full-stack agentic ecosystem where one native 9-layer security core powers agent infrastructure, verifiable trading, developer-facing API commerce, and sovereign privacy.
 
-The mapping is direct: the same repo that runs 1-click optimize also exposes the proof ledger, vault, developer API store, YA faucet, Strategy Agent NFT layer, and partner SDK wrapper surface.
+The mapping is direct: the same repo that runs 1-click optimize also exposes the proof ledger, vault, developer API store, YA faucet, Strategy Agent NFT layer, and partner SDK wrapper surface. The 1-click optimizer is the clearest live demo because one run touches the agent infrastructure path, the verifiable trading path, and the sovereign privacy path at the same time.
 
 ### Track 1: Agentic Infrastructure & OpenClaw Lab
 
@@ -244,6 +244,7 @@ The mapping is direct: the same repo that runs 1-click optimize also exposes the
 **Repo infrastructure:**
 
 - **0G Compute path** through [`lib/server/og-compute.ts`](lib/server/og-compute.ts) for broker-aware inference and TEE response evidence.
+- **1-click optimize** is the first consumer of that infrastructure: it orchestrates prompt compression, blacklist checks, semantic cache, compute, storage, registry anchoring, memory sync, governance, ZK evidence, and cross-agent handoff in one user action.
 - **Sovereign Memory** through [`app/api/agent/memory`](app/api/agent/memory/route.ts), storing agent state snapshots as 0G-backed memory artifacts.
 - **Runtime proof ledger** through [`lib/server/runtime-store.ts`](lib/server/runtime-store.ts), allowing agents, judges, and API surfaces to rehydrate prior decisions.
 - **Prompt compression, semantic cache, and blacklist pre-checks** before inference, giving the agent a real orchestration path instead of raw prompt forwarding.
@@ -264,7 +265,7 @@ This makes YieldBoost an agent infrastructure layer first: it gives autonomous f
 - **0G Storage + ProofRegistry** turn every approved optimization into an externally reviewable finance artifact.
 - **Strategy Agent NFTs** through `YieldStrategyINFT` promote verified strategies into portable on-chain agent assets.
 
-Track 2 is where the core product lands hardest: YieldBoost is not just recommending APY, it is proving why an agentic trading decision should be trusted.
+Track 2 is where the core product lands hardest: YieldBoost is not just recommending APY, it is proving why an agentic trading decision should be trusted. The same 1-click run also supplies Track 1 evidence through orchestration and state persistence, and Track 5 evidence through TEE, sovereign memory, ZK envelopes, and proof anchoring.
 
 ### Track 3: Agentic Economy & Autonomous Applications
 
@@ -287,13 +288,14 @@ Track 3 is the business surface: YieldBoost turns agent security into something 
 **Repo infrastructure:**
 
 - **Native 9-layer military-grade stack** is the core privacy and sovereignty system, not an add-on.
+- **1-click optimize** is the live Track 5 surface: the optimizer does not only produce APY output; it routes the decision through Secure Compute / TEE, Sovereign Memory, Zero-Knowledge Proof Layer, ProofRegistry Anchor, and Cross-Agent Neural Handshake.
 - **Secure Compute / TEE** protects sensitive strategy execution and records response evidence.
 - **Vault sealing** through [`/vault`](https://yieldboostai.xyz/vault) gives users wallet-scoped private records with separated user tx, storage tx, and proof tx visibility.
 - **Sovereign Memory** persists agent state without reducing the strategy to a temporary browser session.
 - **Zero-Knowledge Proof Layer** creates reviewable proof envelopes for reasoning and policy evidence.
 - **Partner SDK wrapper architecture** shows how YieldBoost can secure third-party systems like VeilSolver without making that partner the source of the core 9-layer stack.
 
-Track 5 is where the 9-layer stack becomes the moat: private execution, memory, ZK evidence, and partner wrapping all share one sovereign verification core.
+Track 5 is where the 9-layer stack becomes the moat: private execution, memory, ZK evidence, and partner wrapping all share one sovereign verification core. `/vault` strengthens the privacy story, but the core Track 5 claim already lives inside the main 1-click optimizer path.
 
 The clearest submission sentence is: **YieldBoost AI is a full-stack agentic ecosystem on 0G: Track 1 infrastructure, Track 2 verifiable trading, Track 3 autonomous API economy, and Track 5 sovereign privacy, all powered by one native 9-layer military-grade stack.**
 
