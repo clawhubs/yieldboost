@@ -170,14 +170,12 @@ export default function DeveloperApiPlayground({
               </div>
             </div>
 
-            {product.upstreamUrl ? (
+            {product.id === "veilsolver" ? (
               <a
-                href={product.upstreamUrl}
-                target="_blank"
-                rel="noreferrer"
+                href={product.endpoint}
                 className="mt-4 inline-flex items-center gap-2 rounded-xl border border-[#22ddd0]/20 px-3 py-2 text-[12px] font-semibold text-[#9ff7f0]"
               >
-                Partner upstream <ExternalLink className="h-3.5 w-3.5" />
+                YieldBoost wrapper endpoint <ExternalLink className="h-3.5 w-3.5" />
               </a>
             ) : null}
           </div>

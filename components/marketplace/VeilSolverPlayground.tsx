@@ -118,8 +118,8 @@ export default function VeilSolverPlayground() {
                 <div className="text-[11px] uppercase tracking-[0.16em] text-[#22ddd0]">Playground endpoint</div>
                 <div className="mt-1 font-mono text-[13px] text-[#dce7ef]">{product.endpoint}</div>
               </div>
-              <a href={product.upstreamUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-[#22ddd0]/20 px-3 py-2 text-[12px] text-[#9ff7f0]">
-                VeilSolver <ExternalLink className="h-3.5 w-3.5" />
+              <a href={product.endpoint} className="inline-flex items-center gap-2 rounded-full border border-[#22ddd0]/20 px-3 py-2 text-[12px] text-[#9ff7f0]">
+                Wrapper endpoint <ExternalLink className="h-3.5 w-3.5" />
               </a>
             </div>
 

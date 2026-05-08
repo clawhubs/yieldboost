@@ -7,10 +7,14 @@ import type { ApiMarketplaceProduct } from "@/lib/military-grade-api-marketplace
 function productPayload(product: ApiMarketplaceProduct) {
   if (product.id === "veilsolver") {
     return `{
-  "intent": "private 0G route",
+  "action": "SWAP",
   "chainId": 16602,
-  "amount": "1.0",
-  "asset": "0G"
+  "tokenIn": "0x0000000000000000000000000000000000000000",
+  "tokenOut": "0x0000000000000000000000000000000000000000",
+  "amountIn": "1.0",
+  "decimalsIn": 18,
+  "maxSlippageBps": 50,
+  "userAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D"
 }`;
   }
 
