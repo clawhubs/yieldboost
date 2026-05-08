@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { JsonRpcProvider } from "ethers";
-import { getLatestStoredProof, getStoredProofByCid } from "@/lib/server/runtime-store";
+import {
+  getLatestStoredProof,
+  getStoredProofByCid,
+  recordStoredProof,
+} from "@/lib/server/runtime-store";
+import { resolveProofHistoryForWallet } from "@/lib/server/proof-resolution";
 import {
   getServer0GNetworkConfig,
   getServerDefaultNetworkKey,
+  isWalletAddress,
   resolveWalletNetworkKey,
 } from "@/lib/wallet";
+import type { StoredProofRecord } from "@/lib/backend-data";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -37,17 +44,88 @@ async function resolveBlockNumber(
   }
 }
 
+function sameHash(left: string | undefined, right: string | undefined) {
+  return Boolean(left && right && left.toLowerCase() === right.toLowerCase());
+}
+
+function findMatchingProof(
+  proofs: StoredProofRecord[],
+  cid: string | null,
+  txHash: string | undefined,
+) {
+  return proofs.find((proof) => {
+    if (cid && proof.cid === cid) return true;
+    return sameHash(proof.txHash, txHash);
+  }) ?? null;
+}
+
+async function hydrateProofRegistryFromChain(
+  proof: StoredProofRecord | null,
+  cid: string | null,
+  txHash: string | undefined,
+  networkKey: ReturnType<typeof resolveWalletNetworkKey>,
+  walletAddress?: string | null,
+) {
+  if (proof?.proofRegistryTxHash) {
+    return proof;
+  }
+
+  const targetWallet = proof?.walletAddress ?? walletAddress;
+  if (typeof targetWallet !== "string" || !isWalletAddress(targetWallet)) {
+    return proof;
+  }
+
+  const history = await resolveProofHistoryForWallet(
+    targetWallet,
+    resolveWalletNetworkKey(proof?.networkKey ?? networkKey),
+  );
+  const resolvedProof = findMatchingProof(history, cid, txHash);
+  if (!resolvedProof?.proofRegistryTxHash) {
+    return proof;
+  }
+
+  await recordStoredProof(resolvedProof).catch(() => undefined);
+  return resolvedProof;
+}
+
+function toProofResponseData(proof: StoredProofRecord, blockNumber: number | undefined) {
+  return {
+    cid: proof.cid,
+    txHash: proof.txHash,
+    block: blockNumber,
+    timestamp: proof.timestamp,
+    networkKey: proof.networkKey,
+    explorerUrl: proof.explorerUrl,
+    walletAddress: proof.walletAddress,
+    decision: proof.decision,
+    proofRegistryAddress: proof.proofRegistryAddress,
+    proofRegistryTxHash: proof.proofRegistryTxHash,
+    proofRegistryProofId: proof.proofRegistryProofId,
+    proofRegistryExplorerUrl: proof.proofRegistryExplorerUrl,
+    integrityAudit: proof.integrityAudit,
+  };
+}
+
 export async function GET(req: NextRequest) {
   const cid = req.nextUrl.searchParams.get("cid");
   const txHash = req.nextUrl.searchParams.get("txHash") ?? undefined;
+  const walletAddress = req.nextUrl.searchParams.get("wallet");
   const requestedNetwork = req.nextUrl.searchParams.get("network");
   const networkKey = requestedNetwork
     ? resolveWalletNetworkKey(requestedNetwork)
     : getServerDefaultNetworkKey();
 
-  const storedProof = cid
+  let storedProof = cid
     ? await getStoredProofByCid(cid)
     : await getLatestStoredProof();
+
+  storedProof = await hydrateProofRegistryFromChain(
+    storedProof,
+    cid,
+    txHash,
+    networkKey,
+    walletAddress,
+  );
 
   if (storedProof) {
     const blockNumber = await resolveBlockNumber(
@@ -58,21 +136,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: {
-        cid: storedProof.cid,
-        txHash: storedProof.txHash,
-        block: blockNumber,
-        timestamp: storedProof.timestamp,
-        networkKey: storedProof.networkKey,
-        explorerUrl: storedProof.explorerUrl,
-        walletAddress: storedProof.walletAddress,
-        decision: storedProof.decision,
-        proofRegistryAddress: storedProof.proofRegistryAddress,
-        proofRegistryTxHash: storedProof.proofRegistryTxHash,
-        proofRegistryProofId: storedProof.proofRegistryProofId,
-        proofRegistryExplorerUrl: storedProof.proofRegistryExplorerUrl,
-        integrityAudit: storedProof.integrityAudit,
-      },
+      data: toProofResponseData(storedProof, blockNumber),
     });
   }
 
@@ -99,6 +163,26 @@ export async function GET(req: NextRequest) {
 
   const networkConfig = getServer0GNetworkConfig(networkKey);
   const storageUrl = networkConfig.storageUrl;
+  const chainProof = await hydrateProofRegistryFromChain(
+    null,
+    cid,
+    txHash,
+    networkKey,
+    walletAddress,
+  );
+
+  if (chainProof) {
+    const blockNumber = await resolveBlockNumber(
+      chainProof.txHash,
+      chainProof.blockNumber,
+      chainProof.networkKey,
+    );
+
+    return NextResponse.json({
+      success: true,
+      data: toProofResponseData(chainProof, blockNumber),
+    });
+  }
 
   if (storageUrl) {
     try {

@@ -78,7 +78,7 @@ export default function JudgeNetworkSwitcher({
               Review network
             </div>
             <div className="mt-1 text-[13px] leading-6 text-[#d7e0e8]">
-              Switch the judge snapshot between mainnet and testnet without leaving this page.
+              Choose which network this judge snapshot reads from.
             </div>
           </div>
           <div className="inline-flex flex-wrap gap-2">
@@ -103,7 +103,7 @@ export default function JudgeNetworkSwitcher({
                       ? syncing
                         ? "Syncing latest proof"
                         : "Current review network"
-                      : network.chainName}
+                      : "Available review network"}
                   </div>
                 </button>
               );

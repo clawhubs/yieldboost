@@ -72,6 +72,10 @@ const YieldOptimizerContext = createContext<YieldOptimizerContextValue | null>(
 const PortfolioContext = createContext<PortfolioContextValue | null>(null);
 const LATEST_RESULT_STORAGE_KEY = "yb_latest_result";
 
+function clearCookieString(name: string) {
+  return `${name}=; path=/; max-age=0; SameSite=Lax`;
+}
+
 function buildEmptyPortfolio(walletAddress?: string): PortfolioResponse {
   return {
     walletAddress,
@@ -107,17 +111,11 @@ function parseStreamingChunk(
 }
 
 function getClientActiveWalletAddress(fallback?: string): string | undefined {
-  if (isWalletAddress(fallback)) {
-    return fallback;
-  }
-
-  if (typeof window === "undefined") {
-    return isWalletAddress(fallback) ? fallback : undefined;
-  }
-
-  const storedWallet = window.localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY);
-  if (isWalletAddress(storedWallet)) {
-    return storedWallet ?? undefined;
+  if (typeof window !== "undefined") {
+    const storedWallet = window.localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY);
+    if (isWalletAddress(storedWallet)) {
+      return storedWallet ?? undefined;
+    }
   }
 
   return isWalletAddress(fallback) ? fallback : undefined;
@@ -164,6 +162,27 @@ function readStoredLatestResult(scopeKey: string) {
   } catch {
     return null;
   }
+}
+
+function latestResultMatchesWallet(
+  result: OptimizationResult | null | undefined,
+  walletAddress: string | undefined,
+) {
+  if (!result) return false;
+
+  if (!isWalletAddress(walletAddress)) {
+    return !isWalletAddress(result.walletAddress);
+  }
+
+  return (
+    isWalletAddress(result.walletAddress) &&
+    sameWalletAddress(result.walletAddress, walletAddress)
+  );
+}
+
+function readScopedLatestResult(scopeKey: string, walletAddress: string | undefined) {
+  const result = readStoredLatestResult(scopeKey);
+  return latestResultMatchesWallet(result, walletAddress) ? result : null;
 }
 
 function persistLatestResult(scopeKey: string, result: OptimizationResult) {
@@ -215,6 +234,11 @@ function toBasisPoints(value: number | undefined) {
 
 function canUseConnectedWalletSigner(walletAddress: string | undefined) {
   if (typeof window === "undefined" || !isWalletAddress(walletAddress)) {
+    return false;
+  }
+
+  const storedWallet = window.localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY);
+  if (!sameWalletAddress(storedWallet, walletAddress)) {
     return false;
   }
 
@@ -660,7 +684,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         storageData?.note,
     };
 
-    if (activeScopeRef.current === scopeKey || activeScopeRef.current === resolvedScopeKey) {
+    const proofStillBelongsToActiveWallet =
+      activeScopeRef.current === scopeKey || activeScopeRef.current === resolvedScopeKey;
+
+    if (proofStillBelongsToActiveWallet) {
       startTransition(() => {
         setLatestResult(nextResult);
         setOptimizations((previous) => [nextResult, ...previous.filter((item) => item.timestamp !== nextResult.timestamp)].slice(0, 10));
@@ -668,7 +695,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     }
     persistLatestResult(resolvedScopeKey, nextResult);
 
-    if (storageData?.cid && resolvedWalletAddress) {
+    if (storageData?.cid && resolvedWalletAddress && proofStillBelongsToActiveWallet) {
       activeScopeRef.current = resolvedScopeKey;
       void refreshPortfolio(resolvedWalletAddress, networkKey);
       void hydrateLatest(resolvedWalletAddress, networkKey);
@@ -689,10 +716,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setJudgeMode(true);
     if (typeof window !== "undefined") {
       window.localStorage.setItem(JUDGE_MODE_STORAGE_KEY, "true");
-      window.localStorage.removeItem(WALLET_OVERRIDE_STORAGE_KEY);
-      window.localStorage.removeItem(WALLET_PROVIDER_STORAGE_KEY);
       document.cookie = `${JUDGE_MODE_COOKIE_KEY}=true; path=/; max-age=31536000; SameSite=Lax`;
-      document.cookie = `${WALLET_COOKIE_KEY}=; path=/; max-age=0; SameSite=Lax`;
+      document.cookie = clearCookieString(WALLET_COOKIE_KEY);
     }
   }, []);
 
@@ -700,7 +725,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setJudgeMode(false);
     if (typeof window !== "undefined") {
       window.localStorage.removeItem(JUDGE_MODE_STORAGE_KEY);
-      document.cookie = `${JUDGE_MODE_COOKIE_KEY}=; path=/; max-age=0; SameSite=Lax`;
+      document.cookie = clearCookieString(JUDGE_MODE_COOKIE_KEY);
     }
   }, []);
 
@@ -792,12 +817,21 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       ) {
         return;
       }
-      const cachedResult = readStoredLatestResult(scopeKey);
+      const apiResult = latestResultMatchesWallet(data.data, walletAddress)
+        ? data.data ?? null
+        : null;
+      const cachedResult = readScopedLatestResult(scopeKey, walletAddress);
+      const currentResult = latestResultMatchesWallet(
+        latestResultRef.current,
+        walletAddress,
+      )
+        ? latestResultRef.current
+        : null;
       const preferredResult = pickNewerResult(
-        pickNewerResult(data.data ?? null, cachedResult),
-        latestResultRef.current?.walletAddress &&
-          buildWalletScopeKey(latestResultRef.current.walletAddress, nextNetwork) === scopeKey
-          ? latestResultRef.current
+        pickNewerResult(apiResult, cachedResult),
+        currentResult &&
+          buildWalletScopeKey(currentResult.walletAddress, nextNetwork) === scopeKey
+          ? currentResult
           : null,
       );
       if (preferredResult) {
@@ -844,7 +878,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
     setNetworkKey(initialNetwork);
     setJudgeMode(Boolean(initialJudgeMode));
-    const cachedInitialResult = readStoredLatestResult(activeScopeRef.current);
+    const cachedInitialResult = readScopedLatestResult(
+      activeScopeRef.current,
+      initialWallet,
+    );
     if (initialWallet) {
       void refreshPortfolio(initialWallet, initialNetwork);
     } else {
@@ -881,7 +918,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         if (detail.connected && !judgeModeActive) {
           exitJudgeMode();
         }
-        const cachedResult = readStoredLatestResult(activeScopeRef.current);
+        const cachedResult = readScopedLatestResult(
+          activeScopeRef.current,
+          nextWalletAddress,
+        );
         // Force portfolio refresh on wallet change
         setPortfolio(buildEmptyPortfolio());
         setLatestResult(cachedResult);

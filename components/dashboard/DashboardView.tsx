@@ -42,8 +42,13 @@ import { usePortfolio } from "@/hooks/usePortfolio";
 import {
   getAvailableWalletNetworks,
   getWalletNetworkConfig,
+  isWalletAddress,
+  sameWalletAddress,
   WALLET_CONNECT_REQUEST_EVENT,
+  WALLET_CHANGE_EVENT,
   WALLET_NETWORK_CHANGE_REQUEST_EVENT,
+  WALLET_OVERRIDE_STORAGE_KEY,
+  type WalletChangeDetail,
   type WalletNetworkKey,
 } from "@/lib/wallet";
 import { buildStrategyPlan } from "@/components/dashboard/strategy-plan";
@@ -112,7 +117,13 @@ export default function DashboardView() {
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [alertsOpen, setAlertsOpen] = useState(false);
   const [walletMenuOpen, setWalletMenuOpen] = useState(false);
-  const { latestResult, optimize, isOptimizing, progress, streamingText } = useYieldOptimizer();
+  const {
+    latestResult: rawLatestResult,
+    optimize,
+    isOptimizing,
+    progress,
+    streamingText,
+  } = useYieldOptimizer();
   const { portfolio, networkKey, loading, judgeMode } = usePortfolio();
   const alertsRef = useRef<HTMLDivElement | null>(null);
   const walletMenuRef = useRef<HTMLDivElement | null>(null);
@@ -120,6 +131,42 @@ export default function DashboardView() {
     hasData: boolean;
     formatted: { users: string; computeJobs: string; tvl: string; recentJobs24h: string; protocols: string };
   } | null>(null);
+  const [activeTrackedWallet, setActiveTrackedWallet] = useState<string | undefined>(() => {
+    if (typeof window === "undefined") return undefined;
+    const storedWallet = window.localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY);
+    return storedWallet && isWalletAddress(storedWallet) ? storedWallet : undefined;
+  });
+  const activeWalletForResult = isWalletAddress(activeTrackedWallet)
+    ? activeTrackedWallet
+    : portfolio?.walletAddress;
+  const latestResult = useMemo(() => {
+    if (!rawLatestResult) return null;
+    if (
+      isWalletAddress(activeWalletForResult) &&
+      isWalletAddress(rawLatestResult.walletAddress) &&
+      !sameWalletAddress(activeWalletForResult, rawLatestResult.walletAddress)
+    ) {
+      return null;
+    }
+
+    return rawLatestResult;
+  }, [activeWalletForResult, rawLatestResult]);
+
+  useEffect(() => {
+    function syncActiveWallet(event?: Event) {
+      const detail = (event as CustomEvent<WalletChangeDetail> | undefined)?.detail;
+      const nextWallet = isWalletAddress(detail?.walletAddress)
+        ? detail?.walletAddress
+        : window.localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY) ?? undefined;
+      setActiveTrackedWallet(isWalletAddress(nextWallet) ? nextWallet : undefined);
+    }
+
+    syncActiveWallet();
+    window.addEventListener(WALLET_CHANGE_EVENT, syncActiveWallet as EventListener);
+    return () => {
+      window.removeEventListener(WALLET_CHANGE_EVENT, syncActiveWallet as EventListener);
+    };
+  }, []);
 
   useEffect(() => {
     if (isOptimizing) {
@@ -386,16 +433,7 @@ export default function DashboardView() {
     if (!proofKey) return null;
     return `${OPTIMIZATION_AUTO_DISMISS_PREFIX}:${networkKey}:${wallet.toLowerCase()}:${proofKey}`;
   }, [latestResult, networkKey, portfolio?.walletAddress]);
-  const integrityStackVerified = Boolean(
-    latestResult?.storageProof &&
-      latestResult?.proofRegistryTxHash &&
-      latestResult.integrityLayers?.sovereignMemory &&
-      latestResult.integrityLayers?.zkReasoning &&
-      latestResult.integrityLayers?.governance &&
-      latestResult.integrityLayers?.neuralHandshake &&
-      latestResult.integrityLayers?.zkCompliance,
-  );
-  const hasOptimizationProgress = isOptimizing || (progress === "done" && !integrityStackVerified);
+  const hasOptimizationProgress = isOptimizing || progress === "done";
   const showOptimizationModal =
     hasOptimizationProgress && !optimizationModalDismissed && !optimizationModalMinimized;
   const showOptimizationProgressChip =
@@ -417,20 +455,6 @@ export default function DashboardView() {
       setOptimizationModalMinimized(false);
     }
   }, [isOptimizing, optimizationAutoDismissKey]);
-
-  useEffect(() => {
-    if (isOptimizing || progress !== "done" || optimizationModalDismissed) return;
-    const timer = window.setTimeout(() => {
-      dismissOptimizationProgress();
-    }, 2500);
-
-    return () => window.clearTimeout(timer);
-  }, [dismissOptimizationProgress, isOptimizing, optimizationModalDismissed, progress]);
-
-  useEffect(() => {
-    if (!integrityStackVerified) return;
-    dismissOptimizationProgress();
-  }, [dismissOptimizationProgress, integrityStackVerified]);
 
   return (
     <>
@@ -1331,6 +1355,10 @@ export default function DashboardView() {
             if (progress === "done") {
               dismissOptimizationProgress();
             }
+          }}
+          onViewProof={() => {
+            setOptimizationModalMinimized(true);
+            setProofOpen(true);
           }}
         />
       </Suspense>

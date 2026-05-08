@@ -19,6 +19,65 @@ import {
 
 export const runtime = "nodejs";
 
+const globalMintQueues = globalThis as typeof globalThis & {
+  __yieldboostMintQueues?: Map<string, Promise<void>>;
+};
+
+function getMintQueues() {
+  if (!globalMintQueues.__yieldboostMintQueues) {
+    globalMintQueues.__yieldboostMintQueues = new Map();
+  }
+  return globalMintQueues.__yieldboostMintQueues;
+}
+
+async function withMintSignerQueue<T>(key: string, task: () => Promise<T>) {
+  const queues = getMintQueues();
+  const previous = queues.get(key) ?? Promise.resolve();
+  const current = previous.catch(() => undefined).then(task);
+
+  queues.set(
+    key,
+    current.then(
+      () => undefined,
+      () => undefined,
+    ),
+  );
+
+  return current;
+}
+
+function bumpFee(value: bigint | null | undefined) {
+  return value
+    ? (value * BigInt(125)) / BigInt(100) + BigInt(1)
+    : undefined;
+}
+
+async function buildTxOverrides(
+  provider: ethers.JsonRpcProvider,
+  nonce: number,
+) {
+  const feeData = await provider.getFeeData();
+  const maxFeePerGas = bumpFee(feeData.maxFeePerGas);
+  const maxPriorityFeePerGas = bumpFee(feeData.maxPriorityFeePerGas);
+
+  if (maxFeePerGas && maxPriorityFeePerGas) {
+    return { nonce, maxFeePerGas, maxPriorityFeePerGas };
+  }
+
+  const gasPrice = bumpFee(feeData.gasPrice);
+  return gasPrice ? { nonce, gasPrice } : { nonce };
+}
+
+function normalizeMintError(error: unknown) {
+  const message = error instanceof Error ? error.message : "Unknown error";
+
+  if (message.toLowerCase().includes("replacement fee too low")) {
+    return "A previous mint transaction from the server signer is still pending. Wait for it to confirm, then mint again.";
+  }
+
+  return message.length > 360 ? `${message.slice(0, 360)}...` : message;
+}
+
 const mintRequestSchema = z.object({
   portfolio: z.record(z.number()),
   walletAddress: z.string(),
@@ -204,60 +263,68 @@ export async function POST(req: NextRequest) {
       "function recordAttestation(bytes32 attestationHash) external",
     ];
 
-    const inftContract = new ethers.Contract(inftAddress, inftAbi, wallet);
+    return await withMintSignerQueue(`${networkKey}:${wallet.address.toLowerCase()}`, async () => {
+      const inftContract = new ethers.Contract(inftAddress, inftAbi, wallet);
+      let nextNonce = await provider.getTransactionCount(wallet.address, "pending");
 
-    if (attestationHash !== ethers.ZeroHash && teeAttestation?.isValid && oracleAddress) {
-      const currentOracle = await inftContract.oracle();
-      if (currentOracle.toLowerCase() !== oracleAddress.toLowerCase()) {
-        const setOracleTx = await inftContract.setOracle(oracleAddress);
-        await setOracleTx.wait();
+      if (attestationHash !== ethers.ZeroHash && teeAttestation?.isValid && oracleAddress) {
+        const currentOracle = await inftContract.oracle();
+        if (currentOracle.toLowerCase() !== oracleAddress.toLowerCase()) {
+          const setOracleTx = await inftContract.setOracle(
+            oracleAddress,
+            await buildTxOverrides(provider, nextNonce++),
+          );
+          await setOracleTx.wait();
+        }
+
+        const oracleContract = new ethers.Contract(oracleAddress, oracleAbi, wallet);
+        const alreadyVerified = await oracleContract.verifyAttestation(attestationHash);
+
+        if (!alreadyVerified) {
+          const recordAttestationTx = await oracleContract.recordAttestation(
+            attestationHash,
+            await buildTxOverrides(provider, nextNonce++),
+          );
+          await recordAttestationTx.wait();
+        }
       }
 
-      const oracleContract = new ethers.Contract(oracleAddress, oracleAbi, wallet);
-      const alreadyVerified = await oracleContract.verifyAttestation(attestationHash);
+      const mintTx = await inftContract.mintStrategy(
+        targetWalletAddress,
+        encryptedUri,
+        contentHash,
+        apyBps,
+        attestationHash,
+        await buildTxOverrides(provider, nextNonce++),
+      );
 
-      if (!alreadyVerified) {
-        const recordAttestationTx = await oracleContract.recordAttestation(attestationHash);
-        await recordAttestationTx.wait();
-      }
-    }
+      const receipt = await mintTx.wait();
 
-    // Mint the strategy NFT
-    const mintTx = await inftContract.mintStrategy(
-      targetWalletAddress,
-      encryptedUri,
-      contentHash,
-      apyBps,
-      attestationHash
-    );
+      const totalSupply = await inftContract.totalSupply();
+      const tokenId = totalSupply;
+      const strategy = await inftContract.getStrategy(tokenId);
 
-    const receipt = await mintTx.wait();
-
-    // Get the token ID from the event or total supply
-    const totalSupply = await inftContract.totalSupply();
-    const tokenId = totalSupply;
-    const strategy = await inftContract.getStrategy(tokenId);
-
-    return NextResponse.json({
-      success: true,
-      tokenId: tokenId.toString(),
-      txHash: receipt.hash,
-      walletAddress: targetWalletAddress,
-      blockNumber: receipt.blockNumber,
-      encryptedUri,
-      contentHash,
-      apy: decision.optimized_apy,
-      attestationOracleAddress: oracleAddress,
-      verifiedOnChain: Boolean(strategy?.verified),
-      integrityAudit: mintIntegrityAudit,
-      explorerUrl: `${networkConfig.explorerBase.replace(/\/$/, "")}/tx/${receipt.hash}`,
+      return NextResponse.json({
+        success: true,
+        tokenId: tokenId.toString(),
+        txHash: receipt.hash,
+        walletAddress: targetWalletAddress,
+        blockNumber: receipt.blockNumber,
+        encryptedUri,
+        contentHash,
+        apy: decision.optimized_apy,
+        attestationOracleAddress: oracleAddress,
+        verifiedOnChain: Boolean(strategy?.verified),
+        integrityAudit: mintIntegrityAudit,
+        explorerUrl: `${networkConfig.explorerBase.replace(/\/$/, "")}/tx/${receipt.hash}`,
+      });
     });
   } catch (error) {
     console.error("Mint error:", error);
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: normalizeMintError(error),
       },
       { status: 500 }
     );

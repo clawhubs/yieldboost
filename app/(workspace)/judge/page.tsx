@@ -91,7 +91,7 @@ export default async function JudgePage() {
     data.latestProof?.teeServiceAttestationVerified === true ||
     data.latestProof?.teeServiceSignerMatched === true ||
     data.latestProof?.teeServiceComposeVerified === true;
-  const mainnetProofStackCards: Array<{
+  const networkProofStackCards: Array<{
     label: string;
     value: string;
     helper: string;
@@ -107,17 +107,17 @@ export default async function JudgePage() {
             : "Awaiting latest run",
       helper: sentinelProof
         ? `Circuit ${sentinelProof.circuit}; verifier ${sentinelProof.verifier}; nullifier ${sentinelProof.publicSignals.sessionNullifier ?? "pending"}.`
-        : "Run 1-click optimize on mainnet to attach the agent_identity Noir proof to the judge snapshot.",
+        : `Run 1-click optimize on ${data.reviewNetworkLabel.toLowerCase()} to attach the agent_identity Noir proof to the judge snapshot.`,
       tone: sentinelProof?.status === "verified" ? "green" : "amber",
     },
     {
       label: "0G Compute model",
       value: data.latestProof?.teeModel ?? (reviewingMainnet ? "openai/gpt-5.4-mini" : "Pending"),
       helper: data.latestProof?.teeProvider
-        ? `Provider ${data.latestProof.teeProvider}. Mainnet GPT requests use max_completion_tokens.`
+        ? `Provider ${data.latestProof.teeProvider}. ${data.reviewNetworkLabel} compute requests are tied to this snapshot.`
         : reviewingMainnet
           ? "Mainnet provider is configured for GPT-5.4 Mini; the next verified run will attach the provider address."
-          : "Switch Judge Mode to mainnet to review the GPT-5.4 Mini compute path.",
+          : `Run 1-click optimize on ${data.reviewNetworkLabel.toLowerCase()} to attach the compute model and provider address.`,
       tone: data.latestProof?.teeModel || reviewingMainnet ? "teal" : "amber",
     },
     {
@@ -141,7 +141,7 @@ export default async function JudgePage() {
         ? "Latest optimization is stored on 0G and anchored through ProofRegistry."
         : data.latestProof?.cid
           ? "Latest optimization is stored on 0G; ProofRegistry anchor is shown when available."
-          : "The next mainnet optimize run will attach storage and anchor metadata.",
+          : `The next ${data.reviewNetworkLabel.toLowerCase()} optimize run will attach storage and anchor metadata.`,
       tone: data.latestProof?.proofRegistryProofId ? "green" : data.latestProof?.cid ? "teal" : "amber",
     },
   ];
@@ -352,7 +352,7 @@ export default async function JudgePage() {
                   title: "What is live",
                   body: reviewingMainnet
                     ? "0G Mainnet proof data, explorer links, and ProofRegistry anchoring from the latest recorded run."
-                    : "A testnet proof snapshot for comparison, while Mainnet remains the production review target.",
+                    : "0G Testnet proof data, explorer links, and ProofRegistry anchoring from the latest recorded testnet run.",
                 },
               ].map((item) => (
                 <div key={item.title} className="glass-inset rounded-[14px] px-4 py-4">
@@ -415,7 +415,9 @@ export default async function JudgePage() {
                 );
               })}
             </div>
-            <p className="mt-5 text-[13px] text-[#d8e1e8]">{data.runtimeLabel}</p>
+            <p className="mt-5 text-[13px] text-[#d8e1e8]">
+              Reviewing {data.reviewNetworkLabel} snapshot for the active judge wallet.
+            </p>
           </div>
         </div>
       </header>
@@ -498,7 +500,7 @@ export default async function JudgePage() {
         </section>
 
         <section
-          data-testid="judge-mainnet-sentinel-tee-stack"
+          data-testid="judge-network-sentinel-tee-stack"
           className={sectionShellClass}
         >
           <div className={sectionHeaderRowClass}>
@@ -507,9 +509,9 @@ export default async function JudgePage() {
                 <ShieldCheck className="h-5 w-5" />
               </div>
               <div>
-                <h2 className={sectionTitleClass}>Mainnet Sentinel + TEE proof stack</h2>
+                <h2 className={sectionTitleClass}>{data.reviewNetworkLabel} Sentinel + TEE proof stack</h2>
                 <p className={sectionHelperClass}>
-                  The review path is explicit: Noir agent identity proof, 0G Compute GPT-5.4 Mini, response signature via ZG-Res-Key, and 0G Storage anchoring.
+                  The review path is explicit: Noir agent identity proof, 0G Compute model evidence, response signature status, and 0G Storage anchoring for the active judge network.
                 </p>
               </div>
             </div>
@@ -527,7 +529,7 @@ export default async function JudgePage() {
           </div>
 
           <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            {mainnetProofStackCards.map((card) => (
+            {networkProofStackCards.map((card) => (
               <div key={card.label} className={subCardClass}>
                 <div className={eyebrowClass}>{card.label}</div>
                 <div className={`mt-2 text-[18px] font-semibold leading-tight ${toneClass(card.tone)}`}>

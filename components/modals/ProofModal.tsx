@@ -113,6 +113,7 @@ export default function ProofModal({
         params.set("cid", cid);
         if (txHash) params.set("txHash", txHash);
         if (networkKey) params.set("network", networkKey);
+        if (walletAddress) params.set("wallet", walletAddress);
         const endpoint = `/api/0g/proof?${params.toString()}`;
         const response = await fetch(endpoint, { cache: "no-store" });
 
@@ -140,7 +141,7 @@ export default function ProofModal({
     return () => {
       cancelled = true;
     };
-  }, [cid, networkKey, open, txHash]);
+  }, [cid, networkKey, open, txHash, walletAddress]);
 
   async function copy(
     value: string,
@@ -196,13 +197,44 @@ export default function ProofModal({
     walletAddress,
   ]);
 
-  const activeProof = proof ?? seededProof;
+  const activeProof = useMemo<ProofPayload | null>(() => {
+    if (!proof) return seededProof;
+    if (!seededProof) return proof;
+
+    return {
+      cid: proof.cid ?? seededProof.cid,
+      txHash: proof.txHash ?? seededProof.txHash,
+      block: proof.block ?? seededProof.block,
+      timestamp: proof.timestamp ?? seededProof.timestamp,
+      explorerUrl: proof.explorerUrl ?? seededProof.explorerUrl,
+      walletAddress: proof.walletAddress ?? seededProof.walletAddress,
+      proofRegistryAddress: proof.proofRegistryAddress ?? seededProof.proofRegistryAddress,
+      proofRegistryTxHash: proof.proofRegistryTxHash ?? seededProof.proofRegistryTxHash,
+      proofRegistryProofId: proof.proofRegistryProofId ?? seededProof.proofRegistryProofId,
+      proofRegistryExplorerUrl:
+        proof.proofRegistryExplorerUrl ?? seededProof.proofRegistryExplorerUrl,
+      integrityAudit: proof.integrityAudit ?? seededProof.integrityAudit,
+      teeProvider: proof.teeProvider ?? seededProof.teeProvider,
+      teeModel: proof.teeModel ?? seededProof.teeModel,
+      teeChatId: proof.teeChatId ?? seededProof.teeChatId,
+      teeVerified: proof.teeVerified ?? seededProof.teeVerified,
+      teeVerificationMethod:
+        proof.teeVerificationMethod ?? seededProof.teeVerificationMethod,
+      teeSignedTextMatches:
+        proof.teeSignedTextMatches ?? seededProof.teeSignedTextMatches,
+      llmProvider: proof.llmProvider ?? seededProof.llmProvider,
+    };
+  }, [proof, seededProof]);
   const activeIntegrityAudit = activeProof?.integrityAudit ?? integrityAudit;
   const explorerHref = buildExplorerHref(activeProof?.explorerUrl, activeProof?.txHash);
   const proofRegistryHref = buildExplorerHref(
     activeProof?.proofRegistryExplorerUrl,
     activeProof?.proofRegistryTxHash,
   );
+  const primaryExplorerHref = proofRegistryHref ?? explorerHref;
+  const primaryExplorerLabel = proofRegistryHref
+    ? "View ProofRegistry TX"
+    : "View Storage TX";
   const hasLiveVerificationHandle = Boolean(activeProof?.txHash || activeProof?.cid);
   const statusMessage = loading
     ? "Loading proof details from 0G..."
@@ -236,7 +268,7 @@ export default function ProofModal({
       {open ? (
         <motion.div
           data-testid="proof-modal"
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/55 p-0 backdrop-blur-md sm:items-center sm:p-4"
+          className="fixed inset-0 z-[95] flex items-end justify-center bg-black/55 p-0 backdrop-blur-md sm:items-center sm:p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -279,7 +311,7 @@ export default function ProofModal({
               <div className="space-y-4">
                 <div className="rounded-[20px] border border-white/8 bg-[rgba(255,255,255,0.02)] p-4 sm:rounded-[24px]">
                 <p className="text-xs uppercase tracking-[0.18em] text-[var(--text-muted)]">
-                  TX Hash
+                  0G Storage TX
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-3">
                   <p className="font-medium text-white">
@@ -492,7 +524,10 @@ export default function ProofModal({
                           Registry TX
                         </p>
                         <div className="mt-2 flex flex-wrap items-center gap-3">
-                          <p className="break-all font-medium text-white">
+                          <p
+                            data-testid="proof-modal-registry-tx"
+                            className="break-all font-medium text-white"
+                          >
                             {activeProof.proofRegistryTxHash
                               ? shorten(activeProof.proofRegistryTxHash)
                               : "Unavailable"}
@@ -542,15 +577,15 @@ export default function ProofModal({
 
             <div className="sticky bottom-0 z-10 -mx-4 -mb-4 mt-4 border-t border-white/8 bg-[rgba(3,6,9,0.92)] px-4 py-4 backdrop-blur-md sm:-mx-5 sm:-mb-5 sm:px-5 md:-mx-6 md:-mb-6 md:px-6">
               <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                {explorerHref ? (
+                {primaryExplorerHref ? (
                   <a
-                    href={explorerHref}
+                    href={primaryExplorerHref}
                     target="_blank"
                     rel="noreferrer"
                     data-testid="open-0g-explorer"
                     className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#00c9b1,#13d4ff)] px-5 py-3 text-sm font-semibold text-slate-950 transition hover:brightness-110 sm:w-auto"
                   >
-                    View on 0G Explorer
+                    {primaryExplorerLabel}
                     <ExternalLink className="h-4 w-4" />
                   </a>
                 ) : null}

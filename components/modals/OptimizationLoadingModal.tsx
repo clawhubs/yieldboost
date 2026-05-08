@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { CheckCheck, CircleDashed, Minus, ShieldCheck, Wallet2, X, Zap } from "lucide-react";
+import { CheckCheck, CircleDashed, ExternalLink, Minus, ShieldCheck, Wallet2, X, Zap } from "lucide-react";
 import { useEffect } from "react";
 import type { OptimizationState } from "@/lib/optimizations";
 
@@ -20,6 +20,7 @@ interface OptimizationLoadingModalProps {
   };
   onClose?: () => void;
   onMinimize?: () => void;
+  onViewProof?: () => void;
 }
 
 const progressSteps = [
@@ -97,6 +98,7 @@ export default function OptimizationLoadingModal({
   integrityLayers,
   onClose,
   onMinimize,
+  onViewProof,
 }: OptimizationLoadingModalProps) {
   useEffect(() => {
     if (!open) return;
@@ -177,7 +179,7 @@ export default function OptimizationLoadingModal({
       {open ? (
         <motion.div
           data-testid="optimization-loading-modal"
-          className="fixed inset-0 z-[60] flex items-end justify-center bg-black/70 p-0 backdrop-blur-md sm:items-center sm:p-4"
+          className="fixed inset-0 z-[90] flex items-end justify-center bg-black/70 p-0 backdrop-blur-md sm:items-center sm:p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -398,6 +400,18 @@ export default function OptimizationLoadingModal({
                   </p>
                 </div>
               </div>
+
+              {progress === "done" && onViewProof ? (
+                <button
+                  type="button"
+                  data-testid="optimization-view-proof"
+                  onClick={onViewProof}
+                  className="mt-5 flex w-full items-center justify-center gap-2 rounded-[16px] border border-[#2ad7c8]/35 bg-[#22ddd0] px-4 py-3 text-[14px] font-semibold text-[#031012] shadow-[0_16px_36px_rgba(34,221,208,0.2)] transition hover:bg-[#7feee4]"
+                >
+                  View proof & mint Agent
+                  <ExternalLink className="h-4 w-4" />
+                </button>
+              ) : null}
             </div>
           </motion.div>
         </motion.div>

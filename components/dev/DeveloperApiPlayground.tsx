@@ -33,10 +33,14 @@ const veilSolverPath = [
 function buildDefaultPayload(product: ApiMarketplaceProduct) {
   if (product.id === "veilsolver") {
     return {
-      intent: "private intent settlement for a confidential 0G strategy",
+      action: "SWAP",
       chainId: 16602,
-      amount: "1.0",
-      asset: "0G",
+      tokenIn: "0x0000000000000000000000000000000000000000",
+      tokenOut: "0x0000000000000000000000000000000000000000",
+      amountIn: "1.0",
+      decimalsIn: 18,
+      maxSlippageBps: 50,
+      userAddress: "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
     };
   }
 
@@ -80,7 +84,7 @@ export default function DeveloperApiPlayground({
   const [error, setError] = useState<string | null>(null);
 
   const curlSnippet = useMemo(() => {
-    return `curl -X POST http://127.0.0.1:3030${product.endpoint} \\
+    return `curl -X POST ${product.endpoint} \\
   -H "Authorization: Bearer ${apiKey || "yb_free_tier_local"}" \\
   -H "Content-Type: application/json" \\
   -d '${payloadText.replace(/\n/g, "")}'`;

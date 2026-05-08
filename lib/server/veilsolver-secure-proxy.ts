@@ -1,9 +1,17 @@
 import "server-only";
 
 import { createHash, randomUUID } from "node:crypto";
+import {
+  buildIntent,
+  callSolverAPI,
+  encryptIntent,
+  type ActionType,
+  type TradingIntent,
+} from "veilsolver-sdk";
 import { getApiMarketplaceProduct } from "@/lib/military-grade-api-marketplace";
 
 const product = getApiMarketplaceProduct("veilsolver");
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 function sha256Hex(value: unknown) {
   return createHash("sha256")
@@ -53,41 +61,98 @@ function validateApiKey(headers: Headers) {
   };
 }
 
-async function callVeilSolverDirect(payload: unknown) {
+function asString(value: unknown, fallback: string) {
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
+
+function asNumber(value: unknown, fallback: number) {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return fallback;
+}
+
+function asActionType(value: unknown): ActionType {
+  return value === "TRANSFER" || value === "ARBITRARY_CALL" || value === "SWAP"
+    ? value
+    : "SWAP";
+}
+
+async function buildVeilSolverSdkRequest(payload: Record<string, unknown>) {
+  if (!product) throw new Error("VeilSolver product is not registered.");
+  if (!product.upstreamUrl) throw new Error("VeilSolver upstream URL is not configured.");
+  if (!product.solverPublicKey) throw new Error("VeilSolver solver public key is not configured.");
+
+  const intent = buildIntent({
+    action: asActionType(payload.action),
+    tokenIn: asString(payload.tokenIn, ZERO_ADDRESS),
+    tokenOut: asString(payload.tokenOut, ZERO_ADDRESS),
+    amountIn: asString(payload.amountIn ?? payload.amount, "1.0"),
+    decimalsIn: asNumber(payload.decimalsIn, 18),
+    maxSlippageBps: asNumber(payload.maxSlippageBps, 50),
+    userAddress: asString(
+      payload.userAddress,
+      "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+    ),
+    chainId: asNumber(payload.chainId, 16602),
+    deadlineSeconds: asNumber(payload.deadlineSeconds, 120),
+    strategyId: typeof payload.strategyId === "string" ? payload.strategyId : undefined,
+    recipient: typeof payload.recipient === "string" ? payload.recipient : undefined,
+    target: typeof payload.target === "string" ? payload.target : undefined,
+    callData: typeof payload.callData === "string" ? payload.callData : undefined,
+    ethValue: typeof payload.ethValue === "string" ? payload.ethValue : undefined,
+  });
+  const encryptedIntent = await encryptIntent(intent, product.solverPublicKey);
+
+  return {
+    apiUrl: product.upstreamUrl,
+    solveUrl: `${product.upstreamUrl.replace(/\/$/, "")}/solve`,
+    intent,
+    encryptedIntent,
+  };
+}
+
+async function callVeilSolverDirect(payload: Record<string, unknown>) {
   if (!product) throw new Error("VeilSolver product is not registered.");
   if (!product.upstreamUrl) throw new Error("VeilSolver upstream URL is not configured.");
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15_000);
+  const sdkRequest = await buildVeilSolverSdkRequest(payload);
 
   try {
-    const response = await fetch(product.upstreamUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-      signal: controller.signal,
-    });
-    const text = await response.text();
-    let body: unknown = text;
-    try {
-      body = JSON.parse(text);
-    } catch {
-      // Keep plain text response.
-    }
-
+    const body = await callSolverAPI(
+      sdkRequest.intent,
+      sdkRequest.encryptedIntent,
+      sdkRequest.apiUrl,
+    );
     return {
-      mode: "direct-proxy",
-      ok: response.ok,
-      status: response.status,
+      mode: "sdk-direct",
+      ok: true,
+      status: 200,
       body,
-      error: response.ok ? null : `VeilSolver upstream returned ${response.status}`,
+      error: null,
+      intent: sdkRequest.intent,
     };
-  } finally {
-    clearTimeout(timeout);
+  } catch (error) {
+    return {
+      mode: "sdk-direct",
+      ok: false,
+      status:
+        typeof error === "object" &&
+        error !== null &&
+        "status" in error &&
+        typeof (error as { status?: unknown }).status === "number"
+          ? (error as { status: number }).status
+          : 0,
+      body: null,
+      error: error instanceof Error ? error.message : "veilsolver_sdk_failed",
+      intent: sdkRequest.intent,
+    };
   }
 }
 
-async function callVeilSolverThroughE2B(payload: unknown) {
+async function callVeilSolverThroughE2B(payload: Record<string, unknown>) {
   if (!product) throw new Error("VeilSolver product is not registered.");
   if (!product.upstreamUrl) throw new Error("VeilSolver upstream URL is not configured.");
 
@@ -95,6 +160,7 @@ async function callVeilSolverThroughE2B(payload: unknown) {
     return callVeilSolverDirect(payload);
   }
 
+  const sdkRequest = await buildVeilSolverSdkRequest(payload);
   const { Sandbox } = await import("@e2b/code-interpreter");
   const sandbox = await Sandbox.create({ timeoutMs: 120_000 });
   try {
@@ -103,8 +169,11 @@ import json
 import urllib.request
 import urllib.error
 
-payload = ${JSON.stringify(JSON.stringify(payload))}
-url = ${JSON.stringify(product.upstreamUrl)}
+payload = ${JSON.stringify(JSON.stringify({
+      intent: sdkRequest.intent,
+      encryptedIntent: sdkRequest.encryptedIntent,
+    }))}
+url = ${JSON.stringify(sdkRequest.solveUrl)}
 request = urllib.request.Request(
     url,
     data=payload.encode("utf-8"),
@@ -149,6 +218,7 @@ except Exception as error:
       status: parsed.status ?? 0,
       body,
       error: parsed.error ?? null,
+      intent: sdkRequest.intent,
     };
   } finally {
     await sandbox.kill().catch(() => undefined);
@@ -166,14 +236,37 @@ function buildFallbackVeilSolverResult(payload: Record<string, unknown>, request
     settlement: "atomic-onchain-ready",
     tee_attestation: {
       status: "local-dev-simulated",
-      verifier: "YieldBoost Secure Proxy",
-      note: "Configure secure runtime credentials and VeilSolver upstream availability for live isolated execution.",
+      verifier: "YieldBoost Secure Proxy + veilsolver-sdk",
+      note: "Fallback only. The live path uses veilsolver-sdk encrypted intents and /solve.",
     },
   };
 }
 
 function getPublicRuntimeMode(mode: string) {
   return mode === "e2b-sandbox" ? "isolated-secure-runtime" : "secure-proxy";
+}
+
+function normalizeVeilSolverResponse(data: unknown, intent?: TradingIntent) {
+  if (!data || typeof data !== "object") {
+    return data;
+  }
+
+  return {
+    ...(data as Record<string, unknown>),
+    sdk: {
+      name: "veilsolver-sdk",
+      version: "0.1.1",
+      encrypted_intent: true,
+      endpoint: "/solve",
+      action: intent?.action,
+      chainId: intent?.chainId,
+      intentHash:
+        "plan" in data &&
+        typeof (data as { plan?: { intentHash?: unknown } }).plan?.intentHash === "string"
+          ? (data as { plan: { intentHash: string } }).plan.intentHash
+          : undefined,
+    },
+  };
 }
 
 export async function runVeilSolverSecureProxy(headers: Headers, payload: Record<string, unknown>) {
@@ -204,14 +297,15 @@ export async function runVeilSolverSecureProxy(headers: Headers, payload: Record
     status: 0,
     body: null,
     error: error instanceof Error ? error.message : "veilsolver_proxy_failed",
+    intent: undefined as TradingIntent | undefined,
   }));
 
-  const data =
+  const upstreamData =
     upstream.ok && upstream.body
-      ? upstream.body
+      ? normalizeVeilSolverResponse(upstream.body, upstream.intent)
       : buildFallbackVeilSolverResult(payload, requestId);
   const requestDigest = sha256Hex(payload);
-  const dataDigest = sha256Hex(data);
+  const dataDigest = sha256Hex(upstreamData);
   const zkProof = `0x${sha256Hex({
     product: product.id,
     requestDigest,
@@ -242,7 +336,7 @@ export async function runVeilSolverSecureProxy(headers: Headers, payload: Record
         upstream_status: upstream.status,
         upstream_error: upstream.error,
       },
-      data,
+      data: upstreamData,
       zk_proof: zkProof,
       zk_envelope: {
         circuit: "veilsolver_secure_proxy_envelope",

@@ -128,19 +128,35 @@ function rememberPreJudgeWalletState(input: {
 }) {
   if (typeof window === "undefined") return;
 
-  if (input.walletAddress && isWalletAddress(input.walletAddress)) {
-    window.localStorage.setItem(JUDGE_PREVIOUS_WALLET_STORAGE_KEY, input.walletAddress);
+  const restorableWallet = getRestorablePreJudgeWallet(
+    input.walletAddress,
+    input.providerId,
+  );
+
+  if (restorableWallet) {
+    window.localStorage.setItem(JUDGE_PREVIOUS_WALLET_STORAGE_KEY, restorableWallet);
   } else {
     window.localStorage.removeItem(JUDGE_PREVIOUS_WALLET_STORAGE_KEY);
   }
 
-  if (input.providerId) {
+  if (restorableWallet && input.providerId) {
     window.localStorage.setItem(JUDGE_PREVIOUS_PROVIDER_STORAGE_KEY, input.providerId);
   } else {
     window.localStorage.removeItem(JUDGE_PREVIOUS_PROVIDER_STORAGE_KEY);
   }
 
   window.localStorage.setItem(JUDGE_PREVIOUS_NETWORK_STORAGE_KEY, input.networkKey);
+}
+
+function getRestorablePreJudgeWallet(
+  walletAddress?: string | null,
+  providerId?: string | null,
+) {
+  if (!isWalletAddress(walletAddress)) return null;
+  if (!providerId && sameWalletAddress(walletAddress, DEFAULT_WALLET_ADDRESS)) {
+    return null;
+  }
+  return walletAddress;
 }
 
 function readPreJudgeWalletState() {
@@ -155,10 +171,11 @@ function readPreJudgeWalletState() {
   const walletAddress = window.localStorage.getItem(JUDGE_PREVIOUS_WALLET_STORAGE_KEY);
   const providerId = window.localStorage.getItem(JUDGE_PREVIOUS_PROVIDER_STORAGE_KEY);
   const networkValue = window.localStorage.getItem(JUDGE_PREVIOUS_NETWORK_STORAGE_KEY);
+  const restorableWallet = getRestorablePreJudgeWallet(walletAddress, providerId);
 
   return {
-    walletAddress: isWalletAddress(walletAddress) ? walletAddress : null,
-    providerId,
+    walletAddress: restorableWallet,
+    providerId: restorableWallet ? providerId : null,
     networkKey: networkValue
       ? resolveWalletNetworkKey(networkValue)
       : getDefaultWalletNetworkKey(),
@@ -824,22 +841,29 @@ export default function Sidebar() {
     const snapshot = readPreJudgeWalletState();
     exitJudgeMode();
     const restoredNetwork = snapshot.networkKey ?? selectedNetworkRef.current;
+    const currentWallet = getRestorablePreJudgeWallet(
+      walletAddrRef.current,
+      providerIdRef.current,
+    );
+    const storedWallet = getRestorablePreJudgeWallet(
+      localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY),
+      localStorage.getItem(WALLET_PROVIDER_STORAGE_KEY),
+    );
     const restoredWallet =
       snapshot.walletAddress ??
-      (sameWalletAddress(walletAddrRef.current, DEFAULT_WALLET_ADDRESS)
-        ? DEFAULT_WALLET_ADDRESS
-        : walletAddrRef.current) ??
-      localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY) ??
-      DEFAULT_WALLET_ADDRESS;
-    const restoredProviderId =
-      snapshot.providerId ??
-      providerIdRef.current ??
-      localStorage.getItem(WALLET_PROVIDER_STORAGE_KEY);
+      currentWallet ??
+      storedWallet;
+    const restoredProviderId = restoredWallet
+      ? snapshot.providerId ??
+        providerIdRef.current ??
+        localStorage.getItem(WALLET_PROVIDER_STORAGE_KEY)
+      : null;
     const restoredProvider = restoredProviderId
       ? getInjectedWalletById(restoredProviderId)
       : null;
 
     clearPreJudgeWalletState();
+    cleanupProviderListeners();
 
     if (restoredProvider && restoredWallet && isWalletAddress(restoredWallet)) {
       setWalletAddr(restoredWallet);
@@ -859,6 +883,9 @@ export default function Sidebar() {
       localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, restoredNetwork);
       broadcastWalletChange(restoredWallet, restoredNetwork, null, false);
     } else {
+      clearCookie(WALLET_COOKIE_KEY);
+      localStorage.removeItem(WALLET_OVERRIDE_STORAGE_KEY);
+      localStorage.removeItem(WALLET_PROVIDER_STORAGE_KEY);
       applyDisconnectedState(restoredNetwork);
     }
     setMobileNavOpen(false);
@@ -1150,20 +1177,24 @@ export default function Sidebar() {
               <>
                 <div className="mt-4 flex items-center gap-3 text-[13px] text-[#e5edf5]">
                   <Gift className="h-4 w-4 text-[#f3a441]" />
-                  <span>Refer friends → Earn YA0G</span>
+                  <span>YA Genesis Faucet</span>
                 </div>
 
                 <div className="mt-4">
-                  <p className="text-[14px] text-[#27de6b]">15 YA0G</p>
-                  <p className="mt-1 text-[13px] text-[#d9e2ea]">pending rewards</p>
+                  <p className="text-[14px] text-[#27de6b]">Free 888 YA</p>
+                  <p className="mt-1 text-[13px] text-[#d9e2ea]">exclusive faucet voucher</p>
                 </div>
 
                 <button
                   type="button"
                   data-testid="claim-rewards"
+                  onClick={() => {
+                    setMobileNavOpen(false);
+                    router.push("/faucet");
+                  }}
                   className="mt-4 flex w-full items-center justify-center gap-2 rounded-[11px] bg-[linear-gradient(180deg,#1fd7ce_0%,#11b7bf_100%)] px-4 py-3 text-[14px] font-medium text-[#081116]"
                 >
-                  Claim Now
+                  Open Faucet
                   <ArrowRight className="h-4 w-4" />
                 </button>
               </>
