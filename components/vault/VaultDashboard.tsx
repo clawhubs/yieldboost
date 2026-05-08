@@ -475,6 +475,26 @@ function VaultDashboardInner() {
   }, [latestFounderChallengeItem]);
   const isFounder = sameAddress(address, founderWallet);
   const canSeal = Boolean(isConnected && address && (plaintext.trim() || selectedFile));
+  const latestWalletVaultItem = useMemo(() => {
+    return [...vaultItems].sort((left, right) => {
+      return Date.parse(right.created_at) - Date.parse(left.created_at);
+    })[0] ?? null;
+  }, [vaultItems]);
+  const latestWalletAnchor = useMemo(() => {
+    if (lastSeal) {
+      return {
+        storageId: lastSeal.storage_id,
+        explorerUrl: lastSeal.storage_explorer_url ?? null,
+      };
+    }
+    if (!latestWalletVaultItem) {
+      return null;
+    }
+    return {
+      storageId: latestWalletVaultItem.storage_id,
+      explorerUrl: latestWalletVaultItem.storage_explorer_url ?? null,
+    };
+  }, [lastSeal, latestWalletVaultItem]);
   const challengeItem = useMemo<VaultItem | null>(() => {
     if (!publicChallenge.storageId) {
       return null;
@@ -618,6 +638,10 @@ function VaultDashboardInner() {
   useEffect(() => {
     void refreshVaults().catch(() => undefined);
   }, [refreshVaults]);
+
+  useEffect(() => {
+    setLastSeal(null);
+  }, [address]);
 
   useEffect(() => {
     if (sealNotice && lastSeal && vaultItems.some((item) => item.storage_id === lastSeal.storage_id)) {
@@ -1599,18 +1623,18 @@ function VaultDashboardInner() {
             </div>
           </div>
 
-          {lastSeal ? (
+          {latestWalletAnchor ? (
             <div className="rounded-lg border border-white/10 bg-black/35 p-5">
               <div className="mb-2 flex items-center gap-2 text-sm font-black text-white">
                 <Globe className="h-4 w-4 text-emerald-300" />
                 Latest Anchor
               </div>
               <div className="break-all font-mono text-[11px] text-emerald-50/55">
-                {lastSeal.storage_id}
+                {latestWalletAnchor.storageId}
               </div>
-              {lastSeal.storage_explorer_url ? (
+              {latestWalletAnchor.explorerUrl ? (
                 <a
-                  href={lastSeal.storage_explorer_url}
+                  href={latestWalletAnchor.explorerUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="mt-3 inline-flex rounded-lg border border-emerald-300/25 px-3 py-2 text-xs font-bold text-emerald-100 transition hover:bg-emerald-400/10"
