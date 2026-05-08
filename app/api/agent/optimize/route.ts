@@ -144,6 +144,7 @@ export async function POST(req: NextRequest) {
   let cacheStatus: "miss" | "exact-hit" | "embedding-hit" = "miss";
   let cacheSimilarity: number | null = null;
   const providerPrompt = compressedInput.compactPrompt;
+  const requireTeeAttestation = process.env.YB_REQUIRE_TEE_ATTESTATION === "true";
 
   if (!hasDetectedAssets(portfolio)) {
     const responseHeaders: Record<string, string> = {
@@ -209,7 +210,9 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  const exactCacheEntry = await findExactOptimizationCacheEntry(cacheKey);
+  const exactCacheEntry = requireTeeAttestation
+    ? null
+    : await findExactOptimizationCacheEntry(cacheKey);
   if (exactCacheEntry) {
     const hydratedResult = withFreshResult(exactCacheEntry.result, portfolio);
     const responseHeaders: Record<string, string> = {
@@ -230,7 +233,7 @@ export async function POST(req: NextRequest) {
   }
 
   let requestEmbedding: number[] | null = null;
-  if (hasAlibabaEmbeddingConfig()) {
+  if (!requireTeeAttestation && hasAlibabaEmbeddingConfig()) {
     try {
       requestEmbedding = await generateAlibabaTextEmbedding(compressedInput.requestDocument);
     } catch (error) {
@@ -318,6 +321,27 @@ export async function POST(req: NextRequest) {
   if (teeAttestation) {
     responseHeaders["X-TEE-Attestation"] = JSON.stringify(teeAttestation);
     responseHeaders["Access-Control-Expose-Headers"] += ", X-TEE-Attestation";
+  }
+
+  if (requireTeeAttestation && !teeAttestation?.isValid) {
+    return new Response(
+      createMockStream(
+        computeError ??
+          "TEE attestation is required but no verified 0G Compute attestation was produced.",
+      ),
+      {
+        status: 503,
+        headers: {
+          ...responseHeaders,
+          "X-Compute-Status": computeStatus,
+          "X-Compute-Error":
+            computeError ??
+            "TEE attestation is required but no verified 0G Compute attestation was produced.",
+          "Access-Control-Expose-Headers":
+            `${responseHeaders["Access-Control-Expose-Headers"]}, X-Compute-Error`,
+        },
+      },
+    );
   }
 
   const entry = buildOptimizationCacheEntry({

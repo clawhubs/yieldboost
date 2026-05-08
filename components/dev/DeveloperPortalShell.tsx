@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Code2, KeyRound, Shield, TerminalSquare } from "lucide-react";
+import { Code2, KeyRound, Layers3, Shield, TerminalSquare } from "lucide-react";
 import ParticleCanvas from "@/components/dev/ParticleCanvas";
 
 interface DeveloperPortalShellProps {
@@ -11,6 +11,7 @@ interface DeveloperPortalShellProps {
 
 const navigation = [
   { href: "/dev", label: "Overview", icon: Shield },
+  { href: "/dev/marketplace", label: "API Store", icon: Layers3 },
   { href: "/dev/docs", label: "Docs", icon: Code2 },
   { href: "/dev/apps", label: "Dashboard", icon: KeyRound },
   { href: "https://api.yieldboostai.xyz/docs", label: "OpenAPI", icon: TerminalSquare },

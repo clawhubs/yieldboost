@@ -98,6 +98,17 @@ export async function GET(req: NextRequest) {
     proofRegistryProofId: storedProof.proofRegistryProofId,
     proofRegistryExplorerUrl: storedProof.proofRegistryExplorerUrl,
     integrityAudit: storedProof.integrityAudit,
+    sentinelProof: storedProof.sentinelProof,
+    teeProvider: storedProof.teeProvider,
+    teeModel: storedProof.teeModel,
+    teeChatId: storedProof.teeChatId,
+    teeVerified: storedProof.teeVerified,
+    teeVerificationMethod: storedProof.teeVerificationMethod,
+    teeSignedTextMatches: storedProof.teeSignedTextMatches,
+    teeServiceAttestationVerified: storedProof.teeServiceAttestationVerified,
+    teeServiceSignerMatched: storedProof.teeServiceSignerMatched,
+    teeServiceComposeVerified: storedProof.teeServiceComposeVerified,
+    llmProvider: storedProof.llmProvider,
     zkCompliance: latestZkCompliance
       ? {
           proofId: latestZkCompliance.proofId,

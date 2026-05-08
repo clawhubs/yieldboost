@@ -12,6 +12,7 @@ import {
 } from "react";
 import {
   type PortfolioResponse,
+  type SentinelAgentIdentityProof,
   type ZkComplianceProofStatus,
 } from "@/lib/backend-data";
 import {
@@ -392,6 +393,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       timestamp: string;
       verificationMethod?: string;
       signedTextMatches?: boolean;
+      serviceAttestationVerified?: boolean;
+      serviceSignerMatched?: boolean;
+      serviceComposeVerified?: boolean;
     };
   }) {
     let storageErrorMessage: string | undefined;
@@ -410,6 +414,17 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           proofRegistryExplorerUrl?: string;
           proofRegistryMode?: "backend" | "user";
           integrityAudit?: IntegrityAudit;
+          sentinelProof?: SentinelAgentIdentityProof | null;
+          teeProvider?: string;
+          teeModel?: string;
+          teeChatId?: string;
+          teeVerified?: boolean;
+          teeVerificationMethod?: string;
+          teeSignedTextMatches?: boolean;
+          teeServiceAttestationVerified?: boolean;
+          teeServiceSignerMatched?: boolean;
+          teeServiceComposeVerified?: boolean;
+          llmProvider?: string;
           zkComplianceProof?: {
             proofId: string;
             status: ZkComplianceProofStatus;
@@ -476,6 +491,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           teeVerified: teeAttestation?.isValid,
           teeVerificationMethod: teeAttestation?.verificationMethod,
           teeSignedTextMatches: teeAttestation?.signedTextMatches,
+          teeServiceAttestationVerified: teeAttestation?.serviceAttestationVerified,
+          teeServiceSignerMatched: teeAttestation?.serviceSignerMatched,
+          teeServiceComposeVerified: teeAttestation?.serviceComposeVerified,
           llmProvider,
         }),
       });
@@ -511,8 +529,19 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           proofRegistryProofId?: string;
           proofRegistryExplorerUrl?: string;
           proofRegistryMode?: "backend" | "user";
-          integrityAudit?: IntegrityAudit;
-          zkComplianceProof?: {
+            integrityAudit?: IntegrityAudit;
+            sentinelProof?: SentinelAgentIdentityProof | null;
+            teeProvider?: string;
+            teeModel?: string;
+            teeChatId?: string;
+            teeVerified?: boolean;
+            teeVerificationMethod?: string;
+            teeSignedTextMatches?: boolean;
+            teeServiceAttestationVerified?: boolean;
+            teeServiceSignerMatched?: boolean;
+            teeServiceComposeVerified?: boolean;
+            llmProvider?: string;
+            zkComplianceProof?: {
             proofId: string;
             status: ZkComplianceProofStatus;
             policyCompliantPct: number;
@@ -589,7 +618,21 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         storageAudit ??
         optimizationData.integrityAudit ??
         fallbackResult.integrityAudit,
-        zkCompliance: storageData?.zkComplianceProof
+      sentinelProof:
+        storageData?.sentinelProof ??
+        optimizationData.sentinelProof ??
+        fallbackResult.sentinelProof,
+      teeProvider: storageData?.teeProvider,
+      teeModel: storageData?.teeModel,
+      teeChatId: storageData?.teeChatId,
+      teeVerified: storageData?.teeVerified,
+      teeVerificationMethod: storageData?.teeVerificationMethod,
+      teeSignedTextMatches: storageData?.teeSignedTextMatches,
+      teeServiceAttestationVerified: storageData?.teeServiceAttestationVerified,
+      teeServiceSignerMatched: storageData?.teeServiceSignerMatched,
+      teeServiceComposeVerified: storageData?.teeServiceComposeVerified,
+      llmProvider: storageData?.llmProvider ?? llmProvider,
+      zkCompliance: storageData?.zkComplianceProof
         ? {
             proofId: storageData.zkComplianceProof.proofId,
             status: storageData.zkComplianceProof.status,
@@ -907,6 +950,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
             timestamp: string;
             verificationMethod?: string;
             signedTextMatches?: boolean;
+            serviceAttestationVerified?: boolean;
+            serviceSignerMatched?: boolean;
+            serviceComposeVerified?: boolean;
           })
         : undefined;
 

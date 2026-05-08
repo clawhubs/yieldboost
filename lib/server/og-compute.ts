@@ -4,6 +4,10 @@
  */
 
 import { ethers } from "ethers";
+import { createHash } from "node:crypto";
+import { promises as fs } from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import {
   createZGComputeNetworkBroker,
   InferenceVerifier,
@@ -25,8 +29,11 @@ export interface TEEAttestation {
   provider: string;
   model: string;
   timestamp: string;
-  verificationMethod: "broker-response-signature";
+  verificationMethod: "broker-response-signature" | "service-attestation-report";
   signedTextMatches: boolean;
+  serviceAttestationVerified?: boolean;
+  serviceSignerMatched?: boolean;
+  serviceComposeVerified?: boolean;
 }
 
 export interface ComputeResult {
@@ -57,8 +64,22 @@ interface CandidateProvider {
 }
 
 const brokerInstances: Partial<Record<WalletNetworkKey, ZGBroker>> = {};
-const MIN_INFERENCE_SUBACCOUNT_FUND = BigInt(10 ** 18);
+const serviceAttestationCache = new Map<
+  string,
+  {
+    checkedAt: number;
+    result: {
+      success: boolean;
+      signerMatched: boolean;
+      composeVerified: boolean;
+    };
+  }
+>();
+const DEFAULT_INFERENCE_SUBACCOUNT_FUND = ethers.parseEther("1.0");
 const COMPUTE_REQUEST_TIMEOUT_MS = 15_000;
+const TEE_SIGNATURE_RETRY_COUNT = 8;
+const TEE_SIGNATURE_RETRY_DELAY_MS = 2_000;
+const SERVICE_ATTESTATION_CACHE_TTL_MS = 10 * 60_000;
 const PREFERRED_CHATBOT_MODELS = [
   "openai/gpt-5.4-mini",
   "deepseek/deepseek-chat-v3-0324",
@@ -68,6 +89,43 @@ const PREFERRED_CHATBOT_MODELS = [
 
 function normalizeSignedText(text: string) {
   return text.replace(/\r\n/g, "\n").trim();
+}
+
+function sha256Hex(value: string) {
+  return createHash("sha256").update(value).digest("hex");
+}
+
+function usesOpenAIChatCompletionRules(model: string) {
+  return /^openai\/gpt-/i.test(model);
+}
+
+function buildChatCompletionPayload(model: string, prompt: string) {
+  const messages = [
+    {
+      role: "system",
+      content:
+        "You are YieldBoost AI. Reply in under 60 words. Be concise. Mention 0G Compute Network and 0G Storage. Do not include chain-of-thought.",
+    },
+    {
+      role: "user",
+      content: prompt,
+    },
+  ];
+
+  if (usesOpenAIChatCompletionRules(model)) {
+    return {
+      model,
+      messages,
+      max_completion_tokens: 512,
+    };
+  }
+
+  return {
+    model,
+    messages,
+    max_tokens: 512,
+    temperature: 0.2,
+  };
 }
 
 function getBrokerBaseUrl(endpoint: string) {
@@ -89,10 +147,87 @@ function extractErrorMessage(error: unknown) {
   return String(error);
 }
 
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function getInferenceSubAccountFund() {
+  const configuredAmount = process.env.YB_COMPUTE_SUBACCOUNT_FUND_OG?.trim();
+  if (!configuredAmount) {
+    return DEFAULT_INFERENCE_SUBACCOUNT_FUND;
+  }
+
+  try {
+    const amount = ethers.parseEther(configuredAmount);
+    return amount > BigInt(0) ? amount : DEFAULT_INFERENCE_SUBACCOUNT_FUND;
+  } catch {
+    console.warn(
+      `0G Compute: Invalid YB_COMPUTE_SUBACCOUNT_FUND_OG=${configuredAmount}; using 1.0 0G.`,
+    );
+    return DEFAULT_INFERENCE_SUBACCOUNT_FUND;
+  }
+}
+
+function canAutoFundInferenceSubAccount(networkKey: WalletNetworkKey) {
+  return (
+    networkKey !== "mainnet" ||
+    process.env.YB_ALLOW_MAINNET_COMPUTE_FUNDING === "true"
+  );
+}
+
+async function verifyServiceAttestation(
+  broker: ZGBroker,
+  providerAddress: string,
+) {
+  const cached = serviceAttestationCache.get(providerAddress.toLowerCase());
+  if (
+    cached &&
+    Date.now() - cached.checkedAt < SERVICE_ATTESTATION_CACHE_TTL_MS
+  ) {
+    return cached.result;
+  }
+
+  const outputDir = path.join(
+    os.tmpdir(),
+    `yieldboost-tee-${providerAddress.slice(2, 10)}-${Date.now()}`,
+  );
+
+  try {
+    await fs.mkdir(outputDir, { recursive: true });
+    const result = await broker.inference.verifyService(providerAddress, outputDir);
+    if (!result) {
+      throw new Error("TEE service verifier returned an empty result.");
+    }
+    const signerMatched = Boolean(result.signerVerification?.allMatch);
+    const composeVerified = Boolean(result.composeVerification?.passed);
+    const verification = {
+      success: Boolean(result.success && signerMatched && composeVerified),
+      signerMatched,
+      composeVerified,
+    };
+    serviceAttestationCache.set(providerAddress.toLowerCase(), {
+      checkedAt: Date.now(),
+      result: verification,
+    });
+    return verification;
+  } catch (error) {
+    const message = extractErrorMessage(error);
+    console.warn("0G Compute: service attestation verification failed", message);
+    return {
+      success: false,
+      signerMatched: false,
+      composeVerified: false,
+    };
+  } finally {
+    await fs.rm(outputDir, { recursive: true, force: true }).catch(() => undefined);
+  }
+}
+
 async function ensureInferenceSubAccount(
   broker: ZGBroker,
   providerAddress: string,
   wallet: ethers.Wallet,
+  networkKey: WalletNetworkKey,
 ) {
   try {
     await broker.inference.getAccount(providerAddress);
@@ -104,23 +239,44 @@ async function ensureInferenceSubAccount(
     }
   }
 
+  if (!canAutoFundInferenceSubAccount(networkKey)) {
+    throw new Error(
+      `0G Compute mainnet sub-account is missing for provider ${providerAddress}. ` +
+        "Auto-funding is disabled. Set YB_ALLOW_MAINNET_COMPUTE_FUNDING=true and " +
+        "YB_COMPUTE_SUBACCOUNT_FUND_OG to an explicit small amount if you want to fund it.",
+    );
+  }
+
   const provider = wallet.provider;
+  const subAccountFund = getInferenceSubAccountFund();
   const nativeBalance = provider
     ? await provider.getBalance(wallet.address)
     : BigInt(0);
 
-  if (nativeBalance < MIN_INFERENCE_SUBACCOUNT_FUND) {
+  if (nativeBalance < subAccountFund) {
     throw new Error(
-      `0G Compute wallet ${wallet.address} needs at least 1.0 0G to initialize the inference sub-account. Current balance: ${ethers.formatUnits(nativeBalance, 18)} 0G.`,
+      `0G Compute wallet ${wallet.address} needs at least ${ethers.formatEther(subAccountFund)} 0G to initialize the inference sub-account. Current balance: ${ethers.formatUnits(nativeBalance, 18)} 0G.`,
     );
   }
 
-  console.log("0G Compute: Creating inference sub-account with initial 1.0 0G funding...");
+  console.log(
+    `0G Compute: Creating inference sub-account with initial ${ethers.formatEther(subAccountFund)} 0G funding...`,
+  );
   await broker.ledger.transferFund(
     providerAddress,
     "inference",
-    MIN_INFERENCE_SUBACCOUNT_FUND,
+    subAccountFund,
   );
+}
+
+async function prepareInferenceProvider(
+  broker: ZGBroker,
+  providerAddress: string,
+  wallet: ethers.Wallet,
+  networkKey: WalletNetworkKey,
+) {
+  await ensureInferenceSubAccount(broker, providerAddress, wallet, networkKey);
+  await broker.inference.acknowledgeProviderSigner(providerAddress);
 }
 
 function isServiceNotFoundError(error: unknown) {
@@ -176,23 +332,6 @@ function getOrderedCandidateProviders(
   }
 
   return ordered.slice(0, 4);
-}
-
-async function hasInferenceSubAccount(
-  broker: ZGBroker,
-  providerAddress: string,
-) {
-  try {
-    await broker.inference.getAccount(providerAddress);
-    return true;
-  } catch (error) {
-    const message = extractErrorMessage(error);
-    if (/AccountNotExists|Account does not exist|Sub-account not found/i.test(message)) {
-      return false;
-    }
-
-    throw error;
-  }
 }
 
 async function resolveActiveProviderAddress(
@@ -355,37 +494,15 @@ export async function runTEEInference(
       const providerAddress = candidateProvider.address;
 
       try {
-        if (index === 0) {
-          await ensureInferenceSubAccount(broker, providerAddress, wallet);
-        } else {
-          const hasAccount = await hasInferenceSubAccount(broker, providerAddress);
-          if (!hasAccount) {
-            console.warn(
-              `0G Compute: Skipping fallback provider ${providerAddress} because no inference sub-account exists for it yet.`,
-            );
-            continue;
-          }
-        }
+        await prepareInferenceProvider(broker, providerAddress, wallet, networkKey);
 
         console.log(`0G Compute: Getting service metadata for provider ${providerAddress}`);
         const { endpoint, model } = await broker.inference.getServiceMetadata(providerAddress);
         console.log(`0G Compute: Service endpoint ${endpoint}, model ${model}`);
 
-        const requestBody = JSON.stringify({
-          model,
-          messages: [
-            {
-              role: "system",
-              content: "You are YieldBoost AI. Reply in under 60 words. Be concise. Mention 0G Compute Network and 0G Storage. Do not include chain-of-thought.",
-            },
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-          max_tokens: 512,
-          temperature: 0.2,
-        });
+        const requestBody = JSON.stringify(
+          buildChatCompletionPayload(model, prompt),
+        );
 
         const headers = await broker.inference.getRequestHeaders(
           providerAddress,
@@ -414,7 +531,9 @@ export async function runTEEInference(
         }
 
         const data = await response.json();
-        const chatId = typeof data.id === "string" ? data.id : "";
+        const completionId = typeof data.id === "string" ? data.id : "";
+        const responseKey = response.headers.get("ZG-Res-Key") ?? "";
+        const chatId = responseKey || completionId;
         const text = data.choices?.[0]?.message?.content || "";
 
         if (!text) {
@@ -428,39 +547,77 @@ export async function runTEEInference(
         if (chatId) {
           let signatureVerified = false;
           let signedTextMatches = false;
+          const usageContent = data.usage
+            ? JSON.stringify({
+                input_tokens:
+                  data.usage.prompt_tokens ?? data.usage.input_tokens ?? 0,
+                output_tokens:
+                  data.usage.completion_tokens ?? data.usage.output_tokens ?? 0,
+              })
+            : undefined;
 
-          try {
-            const verificationResult = await broker.inference.processResponse(
-              providerAddress,
-              chatId,
-              undefined,
-            );
-            signatureVerified = verificationResult === true;
-          } catch (verificationError) {
-            console.warn("0G Compute: broker response verification failed", verificationError);
+          for (let attempt = 1; attempt <= TEE_SIGNATURE_RETRY_COUNT; attempt += 1) {
+            try {
+              const verificationResult = await broker.inference.processResponse(
+                providerAddress,
+                chatId,
+                usageContent,
+              );
+              signatureVerified = verificationResult === true;
+            } catch (verificationError) {
+              if (attempt === TEE_SIGNATURE_RETRY_COUNT) {
+                console.warn("0G Compute: broker response verification failed", verificationError);
+              }
+            }
+
+            try {
+              const responseSignature = await InferenceVerifier.fetchSignatureByChatID(
+                getBrokerBaseUrl(endpoint),
+                chatId,
+                model,
+              );
+              signedTextMatches =
+                normalizeSignedText(responseSignature.text) ===
+                  normalizeSignedText(text) ||
+                responseSignature.text.includes(sha256Hex(requestBody)) ||
+                signatureVerified;
+            } catch (signatureLookupError) {
+              if (attempt === TEE_SIGNATURE_RETRY_COUNT) {
+                console.warn("0G Compute: signature lookup failed", signatureLookupError);
+              }
+            }
+
+            if (signatureVerified && signedTextMatches) {
+              break;
+            }
+
+            if (attempt < TEE_SIGNATURE_RETRY_COUNT) {
+              await wait(TEE_SIGNATURE_RETRY_DELAY_MS);
+            }
           }
 
-          try {
-            const responseSignature = await InferenceVerifier.fetchSignatureByChatID(
-              getBrokerBaseUrl(endpoint),
-              chatId,
-              model,
-            );
-            signedTextMatches =
-              normalizeSignedText(responseSignature.text) ===
-              normalizeSignedText(text);
-          } catch (signatureLookupError) {
-            console.warn("0G Compute: signature lookup failed", signatureLookupError);
-          }
+          const responseSignatureVerified = signatureVerified && signedTextMatches;
+          const serviceAttestation = responseSignatureVerified
+            ? {
+                success: false,
+                signerMatched: false,
+                composeVerified: false,
+              }
+            : await verifyServiceAttestation(broker, providerAddress);
 
           attestation = {
             chatId,
-            isValid: signatureVerified && signedTextMatches,
+            isValid: responseSignatureVerified || serviceAttestation.success,
             provider: providerAddress,
             model,
             timestamp: new Date().toISOString(),
-            verificationMethod: "broker-response-signature",
+            verificationMethod: responseSignatureVerified
+              ? "broker-response-signature"
+              : "service-attestation-report",
             signedTextMatches,
+            serviceAttestationVerified: serviceAttestation.success,
+            serviceSignerMatched: serviceAttestation.signerMatched,
+            serviceComposeVerified: serviceAttestation.composeVerified,
           };
         }
 

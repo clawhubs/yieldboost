@@ -82,6 +82,69 @@ export default async function JudgePage() {
     : "Open latest tx";
   const integrityAudit = data.latestProof?.integrityAudit;
   const integrityApproved = integrityAudit?.status === "APPROVED";
+  const sentinelProof = data.latestProof?.sentinelProof;
+  const teeVerified = data.latestProof?.teeVerified === true;
+  const teeResponseSignatureVerified =
+    teeVerified &&
+    data.latestProof?.teeVerificationMethod === "broker-response-signature";
+  const teeServiceVerified =
+    data.latestProof?.teeServiceAttestationVerified === true ||
+    data.latestProof?.teeServiceSignerMatched === true ||
+    data.latestProof?.teeServiceComposeVerified === true;
+  const mainnetProofStackCards: Array<{
+    label: string;
+    value: string;
+    helper: string;
+    tone: "teal" | "green" | "amber" | "white";
+  }> = [
+    {
+      label: "Noir Sentinel identity",
+      value:
+        sentinelProof?.status === "verified"
+          ? "Verified"
+          : sentinelProof?.status
+            ? sentinelProof.status
+            : "Awaiting latest run",
+      helper: sentinelProof
+        ? `Circuit ${sentinelProof.circuit}; verifier ${sentinelProof.verifier}; nullifier ${sentinelProof.publicSignals.sessionNullifier ?? "pending"}.`
+        : "Run 1-click optimize on mainnet to attach the agent_identity Noir proof to the judge snapshot.",
+      tone: sentinelProof?.status === "verified" ? "green" : "amber",
+    },
+    {
+      label: "0G Compute model",
+      value: data.latestProof?.teeModel ?? (reviewingMainnet ? "openai/gpt-5.4-mini" : "Pending"),
+      helper: data.latestProof?.teeProvider
+        ? `Provider ${data.latestProof.teeProvider}. Mainnet GPT requests use max_completion_tokens.`
+        : reviewingMainnet
+          ? "Mainnet provider is configured for GPT-5.4 Mini; the next verified run will attach the provider address."
+          : "Switch Judge Mode to mainnet to review the GPT-5.4 Mini compute path.",
+      tone: data.latestProof?.teeModel || reviewingMainnet ? "teal" : "amber",
+    },
+    {
+      label: "TEE response signature",
+      value: teeResponseSignatureVerified ? "Verified" : teeVerified ? "Service verified" : "Pending",
+      helper: teeResponseSignatureVerified
+        ? `broker.processResponse returned true using ZG-Res-Key ${data.latestProof?.teeChatId ?? "from the response header"}.`
+        : teeServiceVerified
+          ? "TEE service attestation is verified; response-level signature is shown only after a ZG-Res-Key run."
+          : "The UI does not claim response verification until ZG-Res-Key signature verification succeeds.",
+      tone: teeResponseSignatureVerified ? "green" : teeVerified ? "teal" : "amber",
+    },
+    {
+      label: "0G Storage / anchor",
+      value: data.latestProof?.proofRegistryProofId
+        ? `Proof #${data.latestProof.proofRegistryProofId}`
+        : data.latestProof?.cid
+          ? "Storage CID ready"
+          : "Pending",
+      helper: data.latestProof?.proofRegistryExplorerUrl
+        ? "Latest optimization is stored on 0G and anchored through ProofRegistry."
+        : data.latestProof?.cid
+          ? "Latest optimization is stored on 0G; ProofRegistry anchor is shown when available."
+          : "The next mainnet optimize run will attach storage and anchor metadata.",
+      tone: data.latestProof?.proofRegistryProofId ? "green" : data.latestProof?.cid ? "teal" : "amber",
+    },
+  ];
   const integrityEvidenceArtifacts = [
     {
       label: "Memory CID",
@@ -434,6 +497,48 @@ export default async function JudgePage() {
           </div>
         </section>
 
+        <section
+          data-testid="judge-mainnet-sentinel-tee-stack"
+          className={sectionShellClass}
+        >
+          <div className={sectionHeaderRowClass}>
+            <div className="flex items-start gap-3">
+              <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className={sectionTitleClass}>Mainnet Sentinel + TEE proof stack</h2>
+                <p className={sectionHelperClass}>
+                  The review path is explicit: Noir agent identity proof, 0G Compute GPT-5.4 Mini, response signature via ZG-Res-Key, and 0G Storage anchoring.
+                </p>
+              </div>
+            </div>
+            <span
+              className={`rounded-full border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] ${
+                teeResponseSignatureVerified && sentinelProof?.status === "verified"
+                  ? "border-[rgba(47,224,109,0.28)] bg-[rgba(47,224,109,0.08)] text-[#68ff7a]"
+                  : "border-[rgba(246,193,102,0.24)] bg-[rgba(246,193,102,0.08)] text-[#f6c166]"
+              }`}
+            >
+              {teeResponseSignatureVerified && sentinelProof?.status === "verified"
+                ? "Response verified"
+                : "Transparent status"}
+            </span>
+          </div>
+
+          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {mainnetProofStackCards.map((card) => (
+              <div key={card.label} className={subCardClass}>
+                <div className={eyebrowClass}>{card.label}</div>
+                <div className={`mt-2 text-[18px] font-semibold leading-tight ${toneClass(card.tone)}`}>
+                  {card.value}
+                </div>
+                <div className="mt-2 text-[12px] leading-6 text-[#cdd7e0]">{card.helper}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
         <section className={sectionShellClass}>
           <div className={sectionHeaderRowClass}>
             <div className="flex items-start gap-3">
@@ -645,9 +750,9 @@ export default async function JudgePage() {
                 <Sparkles className="h-5 w-5" />
               </div>
               <div>
-                <h2 className={sectionTitleClass}>Integrity memory stack</h2>
+                <h2 className={sectionTitleClass}>Military-grade integrity pipeline</h2>
                 <p className={sectionHelperClass}>
-                  Deployment says what is live; this package shows how each AI decision keeps memory, rejection, stress, compliance, governance, and handshake evidence attached.
+                  Nine ordered layers show how each AI decision moves from identity and TEE verification into memory, rejection, stress, reasoning, governance, compliance, and cross-agent evidence.
                 </p>
               </div>
             </div>
@@ -665,14 +770,19 @@ export default async function JudgePage() {
           </div>
 
           <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            {data.integrityStackCards.map((card) => (
+            {data.integrityStackCards.map((card, index) => (
               <div
                 key={card.label}
                 className="relative overflow-hidden rounded-[14px] border border-[rgba(34,221,208,0.16)] bg-[linear-gradient(180deg,rgba(34,221,208,0.07),rgba(255,255,255,0.02))] px-4 py-4 shadow-[0_12px_30px_rgba(0,0,0,0.22)]"
               >
                 <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,rgba(34,221,208,0.7),transparent)]" />
                 <div className="flex items-start justify-between gap-2">
-                  <div className={cardTitleClass}>{card.label}</div>
+                  <div>
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#22ddd0]">
+                      Layer {String(index + 1).padStart(2, "0")}
+                    </div>
+                    <div className={`mt-1 ${cardTitleClass}`}>{card.label}</div>
+                  </div>
                   <span className="mt-1 h-2 w-2 rounded-full bg-[#22ddd0] shadow-[0_0_18px_rgba(34,221,208,0.72)]" />
                 </div>
                 <div className={`mt-3 text-[20px] font-semibold leading-tight ${toneClass(card.tone)}`}>

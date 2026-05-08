@@ -48,6 +48,8 @@ test-results/
 playwright-report/
 Plan/
 memory/daily/
+military-grade-zk/circuits/**/target/
+military-grade-zk/circuits/**/sentinel_*.toml
 
 # vercel
 .vercel
@@ -61,5 +63,8 @@ Hakcaton 0G
 
 # internal QA / automation files
 playwright.config.ts
-tests/
+!tests/
+/tests/*
+!/tests/sentinel-agent-identity.spec.ts
+api/tests/
 RUNBOOK_MAINNET.md

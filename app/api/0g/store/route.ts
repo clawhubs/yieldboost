@@ -32,6 +32,7 @@ import { recordHallucinationBlacklistEntry } from "@/lib/server/hallucination-bl
 import { syncSovereignMemory } from "@/lib/server/sovereign-memory";
 import { createZkComplianceProof } from "@/lib/server/zk-compliance";
 import { createZkReasoningProof } from "@/lib/server/zk-reasoning";
+import { createSentinelAgentIdentityProof } from "@/lib/server/sentinel-agent-identity";
 
 export const runtime = "nodejs";
 
@@ -215,6 +216,9 @@ export async function POST(req: NextRequest) {
     teeVerified?: boolean;
     teeVerificationMethod?: string;
     teeSignedTextMatches?: boolean;
+    teeServiceAttestationVerified?: boolean;
+    teeServiceSignerMatched?: boolean;
+    teeServiceComposeVerified?: boolean;
     llmProvider?: string;
   };
   const decision = decisionSchema.parse(payload.decision) as StoredDecisionPayload;
@@ -268,6 +272,23 @@ export async function POST(req: NextRequest) {
   }
 
   const timestamp = new Date().toISOString();
+  const sentinelProof = await createSentinelAgentIdentityProof({
+    networkKey,
+    walletAddress,
+    operation: "one-click-optimize",
+    actionContext: {
+      timestamp,
+      recommended: decision.recommended,
+      currentApy: decision.current_apy,
+      optimizedApy: decision.optimized_apy,
+      proofRegistryMode,
+      portfolioTotal: portfolioSnapshot?.totalUSD,
+    },
+  }).catch((error) => {
+    const message = error instanceof Error ? error.message : "sentinel_failed";
+    console.warn("[sentinel-agent-identity] Proof generation failed:", message);
+    return null;
+  });
   const tempFile = path.join(os.tmpdir(), `yieldboost-proof-${randomUUID()}.json`);
 
   try {
@@ -282,12 +303,16 @@ export async function POST(req: NextRequest) {
           decision,
           portfolioSnapshot,
           integrityAudit,
+          sentinelProof,
           teeProvider: payload.teeProvider,
           teeModel: payload.teeModel,
           teeChatId: payload.teeChatId,
           teeVerified: payload.teeVerified,
           teeVerificationMethod: payload.teeVerificationMethod,
           teeSignedTextMatches: payload.teeSignedTextMatches,
+          teeServiceAttestationVerified: payload.teeServiceAttestationVerified,
+          teeServiceSignerMatched: payload.teeServiceSignerMatched,
+          teeServiceComposeVerified: payload.teeServiceComposeVerified,
           llmProvider: payload.llmProvider,
         },
         null,
@@ -386,6 +411,7 @@ export async function POST(req: NextRequest) {
         walletAddress: walletAddress ?? signer.address,
         portfolioSnapshot,
         integrityAudit,
+        sentinelProof,
         note: receipt ? undefined : "pending_receipt",
         // TEE / 0G Compute metadata
         teeProvider: payload.teeProvider,
@@ -394,6 +420,9 @@ export async function POST(req: NextRequest) {
         teeVerified: payload.teeVerified,
         teeVerificationMethod: payload.teeVerificationMethod,
         teeSignedTextMatches: payload.teeSignedTextMatches,
+        teeServiceAttestationVerified: payload.teeServiceAttestationVerified,
+        teeServiceSignerMatched: payload.teeServiceSignerMatched,
+        teeServiceComposeVerified: payload.teeServiceComposeVerified,
         llmProvider: payload.llmProvider,
       };
 
@@ -459,6 +488,7 @@ export async function POST(req: NextRequest) {
         proofRegistryExplorerUrl: proof.proofRegistryExplorerUrl,
         proofRegistryMode,
         integrityAudit: proof.integrityAudit,
+        sentinelProof: proof.sentinelProof,
         backgroundIntegrityStatus: "syncing",
         note: proof.note,
         // TEE / 0G Compute metadata
@@ -468,6 +498,9 @@ export async function POST(req: NextRequest) {
         teeVerified: proof.teeVerified,
         teeVerificationMethod: proof.teeVerificationMethod,
         teeSignedTextMatches: proof.teeSignedTextMatches,
+        teeServiceAttestationVerified: proof.teeServiceAttestationVerified,
+        teeServiceSignerMatched: proof.teeServiceSignerMatched,
+        teeServiceComposeVerified: proof.teeServiceComposeVerified,
         llmProvider: proof.llmProvider,
       });
     } finally {

@@ -246,6 +246,56 @@ export default function AgentPanel() {
                   </div>
                 </div>
               ) : null}
+              {latestResult.sentinelProof ? (
+                <div
+                  data-testid="sentinel-layer-card"
+                  className="glass-accent rounded-[12px] px-4 py-3"
+                >
+                  <div className="text-[11px] uppercase tracking-[0.08em] text-[#22ddd0]">
+                    Sentinel Layer
+                  </div>
+                  <div className="mt-2 text-[13px] text-[#d8e1e8]">
+                    Noir agent_identity:{" "}
+                    <span className="font-medium text-white">
+                      {latestResult.sentinelProof.status}
+                    </span>
+                  </div>
+                  {latestResult.sentinelProof.publicSignals.sessionNullifier ? (
+                    <div className="mt-2 truncate text-[12px] text-[#9faab6]">
+                      Nullifier: {latestResult.sentinelProof.publicSignals.sessionNullifier.slice(0, 18)}...
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+              {latestResult.teeProvider ? (
+                <div
+                  data-testid="tee-attestation-card"
+                  className="glass-accent rounded-[12px] px-4 py-3"
+                >
+                  <div className="text-[11px] uppercase tracking-[0.08em] text-[#22ddd0]">
+                    TEE Attestation
+                  </div>
+                  <div className="mt-2 text-[13px] text-[#d8e1e8]">
+                    0G Compute:{" "}
+                    <span className="font-medium text-white">
+                      {latestResult.teeVerified ? "verified" : "unverified"}
+                    </span>
+                  </div>
+                  {latestResult.teeVerificationMethod ? (
+                    <div className="mt-1 text-[12px] text-[#9faab6]">
+                      Method: {latestResult.teeVerificationMethod}
+                    </div>
+                  ) : null}
+                  <div className="mt-2 truncate text-[12px] text-[#9faab6]">
+                    Provider: {latestResult.teeProvider.slice(0, 10)}...{latestResult.teeProvider.slice(-6)}
+                  </div>
+                  {latestResult.teeChatId ? (
+                    <div className="mt-1 truncate text-[12px] text-[#9faab6]">
+                      Chat: {latestResult.teeChatId}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           </div>
         ) : (

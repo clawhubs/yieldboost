@@ -258,6 +258,33 @@ export interface StoredPortfolioSnapshot {
   displayLabel?: string;
 }
 
+export interface SentinelAgentIdentityProof {
+  proofId: string;
+  circuit: "agent_identity";
+  status:
+    | "verified"
+    | "witness-generated"
+    | "wallet-not-found"
+    | "failed";
+  createdAt: string;
+  networkKey?: WalletNetworkKey;
+  walletAddress?: string;
+  operation: string;
+  verifier: string;
+  publicSignals: {
+    agentCommitment?: string;
+    actionContextHash?: string;
+    sessionNullifier?: string;
+  };
+  actionContextHash?: string;
+  proofDigest?: string;
+  publicInputDigest?: string;
+  proofGenerated?: boolean;
+  summary: string;
+  note?: string;
+  actionContext?: Record<string, unknown>;
+}
+
 export interface StoredProofRecord {
   cid: string;
   txHash: string;
@@ -273,6 +300,7 @@ export interface StoredProofRecord {
   proofRegistryProofId?: string;
   proofRegistryExplorerUrl?: string;
   integrityAudit?: IntegrityAudit;
+  sentinelProof?: SentinelAgentIdentityProof | null;
   note?: string;
   // TEE / 0G Compute metadata
   teeProvider?: string;
@@ -281,6 +309,9 @@ export interface StoredProofRecord {
   teeVerified?: boolean;
   teeVerificationMethod?: string;
   teeSignedTextMatches?: boolean;
+  teeServiceAttestationVerified?: boolean;
+  teeServiceSignerMatched?: boolean;
+  teeServiceComposeVerified?: boolean;
   llmProvider?: string;
 }
 

@@ -1,6 +1,9 @@
 import { z } from "zod";
 import type { IntegrityAudit } from "@/lib/integrity-audit";
-import type { ZkComplianceProofStatus } from "@/lib/backend-data";
+import type {
+  SentinelAgentIdentityProof,
+  ZkComplianceProofStatus,
+} from "@/lib/backend-data";
 
 export type OptimizationState = "analyzing" | "optimizing" | "executing" | "anchoring" | "done";
 export type FeedState = "analyzing" | "optimizing" | "complete";
@@ -38,6 +41,17 @@ export interface OptimizationResult {
   proofStatus?: "stored" | "error" | "pending";
   proofStatusDetail?: string;
   integrityAudit?: IntegrityAudit;
+  sentinelProof?: SentinelAgentIdentityProof | null;
+  teeProvider?: string;
+  teeModel?: string;
+  teeChatId?: string;
+  teeVerified?: boolean;
+  teeVerificationMethod?: string;
+  teeSignedTextMatches?: boolean;
+  teeServiceAttestationVerified?: boolean;
+  teeServiceSignerMatched?: boolean;
+  teeServiceComposeVerified?: boolean;
+  llmProvider?: string;
   zkCompliance?: {
     proofId: string;
     status: ZkComplianceProofStatus;

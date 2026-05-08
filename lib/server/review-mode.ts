@@ -832,6 +832,10 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   const mainnetConfig = networks.find((network) => network.key === "mainnet") ?? preferredConfig;
   const latestExplorer = trimUrl(latestProof?.explorerUrl);
   const latestRegistryExplorer = trimUrl(latestProof?.proofRegistryExplorerUrl);
+  const teeResponseSignatureVerified =
+    latestProof?.teeVerified === true &&
+    latestProof.teeVerificationMethod === "broker-response-signature";
+  const sentinelVerified = latestProof?.sentinelProof?.status === "verified";
   const envChecklist = buildEnvChecklist();
   const mainnetChecklist = buildMainnetChecklist({
     runtimeStatus,
@@ -861,6 +865,22 @@ export async function getJudgePageData(): Promise<JudgePageData> {
   ];
   const integrityStackCards: JudgeStatusCard[] = [
     {
+      label: "Sentinel Identity Gate",
+      value: sentinelVerified ? "Verified" : latestProof?.sentinelProof ? latestProof.sentinelProof.status : "Pending",
+      helper: sentinelVerified
+        ? `Noir agent_identity verified before optimize; nullifier ${shorten(latestProof?.sentinelProof?.publicSignals.sessionNullifier, 10)}.`
+        : "Noir Sentinel identity proof will attach after a verified 1-click optimize run.",
+      tone: sentinelVerified ? "green" : latestProof?.sentinelProof ? "amber" : "white",
+    },
+    {
+      label: "TEE Response Gate",
+      value: teeResponseSignatureVerified ? "Verified" : latestProof?.teeVerified ? "Service verified" : "Pending",
+      helper: teeResponseSignatureVerified
+        ? `${latestProof?.teeModel ?? "0G Compute"} response signature verified with ZG-Res-Key ${shorten(latestProof?.teeChatId, 10)}.`
+        : "0G Compute response verification appears here only after broker signature verification succeeds.",
+      tone: teeResponseSignatureVerified ? "green" : latestProof?.teeVerified ? "teal" : "white",
+    },
+    {
       label: "Sovereign Memory",
       value: sovereignMemory ? `v${sovereignMemory.memoryVersion}` : "Pending",
       helper: sovereignMemory
@@ -869,7 +889,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
       tone: sovereignMemory ? "green" : "amber",
     },
     {
-      label: "Hallucination Blacklist",
+      label: "Rejection Guard",
       value: `${activeBlacklistEntries.length} entr${activeBlacklistEntries.length === 1 ? "y" : "ies"}`,
       helper: latestBlacklistEntry
         ? `Latest rejection indexed as ${shorten(latestBlacklistEntry.cid, 10)} before future inference.`
@@ -877,7 +897,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
       tone: latestBlacklistEntry ? "green" : "amber",
     },
     {
-      label: "Multiverse Stress Test",
+      label: "Stress Replay",
       value: latestStressReport ? latestStressReport.verdict : "Pending",
       helper: latestStressReport
         ? `Report ${shorten(latestStressReport.reportCid, 10)} verified APY ${latestStressReport.verifiedApy.toFixed(2)}%.`
@@ -890,17 +910,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
           : "white",
     },
     {
-      label: "ZK-Ready Compliance",
-      value: latestZkComplianceProof
-        ? `${latestZkComplianceProof.policyCompliantPct}%`
-        : "Pending",
-      helper: latestZkComplianceProof
-        ? `${getServer0GNetworkConfig(latestZkComplianceProof.networkKey).label} compliance proof ${shorten(latestZkComplianceProof.proofId, 10)} with governance ${formatFeatureStatus(latestZkComplianceProof.governanceStatus)}.`
-        : "No deterministic compliance proof has been recorded yet.",
-      tone: toneForRecordedFeature(latestZkComplianceProof?.status),
-    },
-    {
-      label: "ZKR Envelope",
+      label: "Reasoning Envelope",
       value: latestZkReasoningProof
         ? formatFeatureStatus(latestZkReasoningProof.status)
         : "Pending",
@@ -910,7 +920,7 @@ export async function getJudgePageData(): Promise<JudgePageData> {
       tone: toneForRecordedFeature(latestZkReasoningProof?.status),
     },
     {
-      label: "Governance",
+      label: "Governance Gate",
       value: latestGovernanceDecision
         ? formatFeatureStatus(latestGovernanceDecision.status)
         : "Pending",
@@ -918,6 +928,16 @@ export async function getJudgePageData(): Promise<JudgePageData> {
         ? `${getServer0GNetworkConfig(latestGovernanceDecision.networkKey).label} ${formatRiskLabel(latestGovernanceDecision.riskScore).toLowerCase()}. ${latestGovernanceDecision.reason}`
         : "No programmable governance decision has been evaluated yet.",
       tone: toneForRecordedFeature(latestGovernanceDecision?.status),
+    },
+    {
+      label: "Compliance Proof",
+      value: latestZkComplianceProof
+        ? `${latestZkComplianceProof.policyCompliantPct}%`
+        : "Pending",
+      helper: latestZkComplianceProof
+        ? `${getServer0GNetworkConfig(latestZkComplianceProof.networkKey).label} compliance proof ${shorten(latestZkComplianceProof.proofId, 10)} with governance ${formatFeatureStatus(latestZkComplianceProof.governanceStatus)}.`
+        : "No deterministic compliance proof has been recorded yet.",
+      tone: toneForRecordedFeature(latestZkComplianceProof?.status),
     },
     {
       label: "Neural Handshake",
@@ -1049,15 +1069,33 @@ export async function getJudgePageData(): Promise<JudgePageData> {
     },
     {
       title: "0G Compute Network",
-      status: computeConfigured ? "configured" : "partial",
+      status: teeResponseSignatureVerified ? "live" : computeConfigured ? "configured" : "partial",
       detail: computeConfigured
-        ? `TEE-ready provider credentials are present for ${reviewNetworkConfig.label}. If the provider is unavailable at runtime, the app still falls back honestly.`
+        ? teeResponseSignatureVerified
+          ? `Latest run used ${latestProof?.teeModel ?? "0G Compute"} and verified the broker response signature with the ZG-Res-Key header.`
+          : reviewNetwork === "mainnet"
+            ? "Mainnet compute is configured for GPT-5.4 Mini. The app uses max_completion_tokens and verifies response signatures with ZG-Res-Key when a fresh proof is recorded."
+            : `TEE-ready provider credentials are present for ${reviewNetworkConfig.label}. If the provider is unavailable at runtime, the app still falls back honestly.`
         : `The app will keep working with deterministic narrative fallback until compute provider envs are completed for ${reviewNetworkConfig.label}.`,
       meta: computeProviderAddress
-        ? shorten(computeProviderAddress, 8)
+        ? latestProof?.teeChatId && teeResponseSignatureVerified
+          ? `ZG-Res-Key ${shorten(latestProof.teeChatId, 8)}`
+          : `${shorten(computeProviderAddress, 8)}${reviewNetwork === "mainnet" ? " / GPT-5.4 Mini" : ""}`
         : computeLedgerPrivateKey
           ? "Signer present, provider address missing"
           : "Provider address not set",
+    },
+    {
+      title: "Noir Sentinel",
+      status: sentinelVerified ? "live" : latestProof?.sentinelProof ? "partial" : "configured",
+      detail: sentinelVerified
+        ? `Latest run verified agent_identity before optimization; session nullifier ${shorten(latestProof?.sentinelProof?.publicSignals.sessionNullifier, 10)}.`
+        : latestProof?.sentinelProof
+          ? `Sentinel proof was recorded with status ${latestProof.sentinelProof.status}; run local Noir proving for a fully verified proof.`
+          : "Noir agent_identity micro-circuit is wired into storage, and the next optimize run will attach its proof metadata.",
+      meta: latestProof?.sentinelProof
+        ? `Circuit ${latestProof.sentinelProof.circuit}`
+        : "military-grade-zk/circuits/agent_identity",
     },
     {
       title: "ProofRegistry",

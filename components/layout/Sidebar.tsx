@@ -827,9 +827,10 @@ export default function Sidebar() {
     const restoredWallet =
       snapshot.walletAddress ??
       (sameWalletAddress(walletAddrRef.current, DEFAULT_WALLET_ADDRESS)
-        ? null
+        ? DEFAULT_WALLET_ADDRESS
         : walletAddrRef.current) ??
-      localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY);
+      localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY) ??
+      DEFAULT_WALLET_ADDRESS;
     const restoredProviderId =
       snapshot.providerId ??
       providerIdRef.current ??

@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { ArrowRight, Store } from "lucide-react";
+
 import DeveloperPortalShell from "@/components/dev/DeveloperPortalShell";
 import { getDevPortalSetupState } from "@/lib/dev-portal";
 
@@ -192,6 +195,30 @@ export default function DeveloperDocsView() {
             <p className="mt-3 text-[14px] leading-7 text-[#d4f6f1]">
               Raw API keys are shown once at creation time. YieldBoost stores only a hashed representation after that. New keys default to broad platform scopes so one partner app can call integrity, audit, proof, governance, handshake, and status services. If a partner loses the raw key, the secure path is to revoke and mint a new one, not to reveal it again from the server.
             </p>
+          </div>
+
+          <div className="mt-4 rounded-[20px] border border-[rgba(104,255,122,0.18)] bg-[rgba(104,255,122,0.07)] p-5">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <div className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.18em] text-[#dfffe4]">
+                  <Store className="h-4 w-4" />
+                  API Store
+                </div>
+                <p className="mt-3 text-[14px] leading-7 text-[#dfffe4]">
+                  For productized endpoints, open the API Store. Each card has its own playground and docs for plugging a YieldBoost API key into another developer&apos;s web app.
+                </p>
+                <p className="mt-2 text-[13px] leading-6 text-[#c8f7d0]">
+                  Public base: <span className="font-mono text-white">https://dev.yieldboostai.xyz</span>. Local base: <span className="font-mono text-white">http://127.0.0.1:3030</span>.
+                </p>
+              </div>
+              <Link
+                href="/dev/marketplace"
+                className="yb-teal-button inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-4 py-3 text-[13px] font-bold text-slate-950"
+              >
+                Open API Store
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
         </div>
 

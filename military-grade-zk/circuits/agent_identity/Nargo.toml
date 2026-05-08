@@ -1,0 +1,6 @@
+[package]
+name = "agent_identity"
+type = "bin"
+authors = ["YieldBoost AI"]
+
+[dependencies]

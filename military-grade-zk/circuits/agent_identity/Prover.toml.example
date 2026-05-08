@@ -1,0 +1,5 @@
+agent_id = "123"
+agent_secret = "456"
+agent_commitment = "250651622"
+action_context_hash = "789"
+session_nullifier = "10095047"

@@ -219,6 +219,7 @@ function mergeProofRecords(
     walletAddress: storedProof.walletAddress ?? liveProof.walletAddress,
     portfolioSnapshot: storedProof.portfolioSnapshot ?? liveProof.portfolioSnapshot,
     integrityAudit: storedProof.integrityAudit ?? liveProof.integrityAudit,
+    sentinelProof: storedProof.sentinelProof ?? liveProof.sentinelProof,
     note: storedProof.note ?? liveProof.note,
     teeProvider: storedProof.teeProvider ?? liveProof.teeProvider,
     teeModel: storedProof.teeModel ?? liveProof.teeModel,
@@ -228,8 +229,38 @@ function mergeProofRecords(
       storedProof.teeVerificationMethod ?? liveProof.teeVerificationMethod,
     teeSignedTextMatches:
       storedProof.teeSignedTextMatches ?? liveProof.teeSignedTextMatches,
+    teeServiceAttestationVerified:
+      storedProof.teeServiceAttestationVerified ??
+      liveProof.teeServiceAttestationVerified,
+    teeServiceSignerMatched:
+      storedProof.teeServiceSignerMatched ?? liveProof.teeServiceSignerMatched,
+    teeServiceComposeVerified:
+      storedProof.teeServiceComposeVerified ?? liveProof.teeServiceComposeVerified,
     llmProvider: storedProof.llmProvider ?? liveProof.llmProvider,
   } satisfies StoredProofRecord;
+}
+
+function hasProofStackEvidence(proof: StoredProofRecord | null | undefined) {
+  return Boolean(
+    proof?.sentinelProof ||
+      proof?.teeProvider ||
+      proof?.teeModel ||
+      proof?.teeChatId ||
+      proof?.teeVerified ||
+      proof?.teeVerificationMethod,
+  );
+}
+
+function hasSameDecisionSignature(
+  left: StoredProofRecord | null | undefined,
+  right: StoredProofRecord | null | undefined,
+) {
+  if (!left || !right) return false;
+
+  return (
+    left.decision.current_apy === right.decision.current_apy &&
+    left.decision.optimized_apy === right.decision.optimized_apy
+  );
 }
 
 function getStoredProofIdentityMatches(
@@ -306,12 +337,16 @@ async function readProofPayloadFromStorageUncached(
       decision?: StoredDecisionPayload;
       portfolioSnapshot?: StoredPortfolioSnapshot;
       walletAddress?: string;
+      sentinelProof?: StoredProofRecord["sentinelProof"];
       teeProvider?: string;
       teeModel?: string;
       teeChatId?: string;
       teeVerified?: boolean;
       teeVerificationMethod?: string;
       teeSignedTextMatches?: boolean;
+      teeServiceAttestationVerified?: boolean;
+      teeServiceSignerMatched?: boolean;
+      teeServiceComposeVerified?: boolean;
       llmProvider?: string;
       integrityAudit?: IntegrityAudit;
     };
@@ -553,12 +588,16 @@ async function buildLiveProofFromRegistryLog({
     walletAddress: storagePayload.walletAddress ?? liveProof.walletAddress,
     portfolioSnapshot: storagePayload.portfolioSnapshot,
     integrityAudit: storagePayload.integrityAudit ?? liveProof.integrityAudit,
+    sentinelProof: storagePayload.sentinelProof,
     teeProvider: storagePayload.teeProvider,
     teeModel: storagePayload.teeModel,
     teeChatId: storagePayload.teeChatId,
     teeVerified: storagePayload.teeVerified,
     teeVerificationMethod: storagePayload.teeVerificationMethod,
     teeSignedTextMatches: storagePayload.teeSignedTextMatches,
+    teeServiceAttestationVerified: storagePayload.teeServiceAttestationVerified,
+    teeServiceSignerMatched: storagePayload.teeServiceSignerMatched,
+    teeServiceComposeVerified: storagePayload.teeServiceComposeVerified,
     llmProvider: storagePayload.llmProvider,
   } satisfies StoredProofRecord;
 }
@@ -785,6 +824,16 @@ export async function resolveLatestProofForWallet(
   }
 
   if (sameProofIdentity(storedProof, liveProof)) {
+    return mergeProofRecords(liveProof, storedProof);
+  }
+
+  if (
+    storedProof &&
+    compareProofRecency(liveProof, storedProof) >= 0 &&
+    !hasProofStackEvidence(liveProof) &&
+    hasProofStackEvidence(storedProof) &&
+    hasSameDecisionSignature(liveProof, storedProof)
+  ) {
     return mergeProofRecords(liveProof, storedProof);
   }
 

@@ -1,0 +1,5 @@
+circuits/**/Prover*.toml
+circuits/**/Verifier*.toml
+circuits/**/target/
+artifacts/*
+!artifacts/.gitkeep
