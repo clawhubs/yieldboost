@@ -4,7 +4,12 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Copy, ExternalLink, X, ShieldCheck } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { IntegrityAudit } from "@/lib/integrity-audit";
-import { isWalletAddress, type WalletNetworkKey, WALLET_OVERRIDE_STORAGE_KEY } from "@/lib/wallet";
+import {
+  isWalletAddress,
+  sameWalletAddress,
+  type WalletNetworkKey,
+  WALLET_OVERRIDE_STORAGE_KEY,
+} from "@/lib/wallet";
 
 interface ProofModalProps {
   open: boolean;
@@ -56,8 +61,16 @@ interface ProofPayload {
   llmProvider?: string;
 }
 
+const proofRegistryAbi = [
+  "function recordProof(string cid, bytes32 rootHash, bytes32 storageTxHash, uint256 currentApyBps, uint256 optimizedApyBps) external returns (uint256 proofId)",
+] as const;
+
 function shorten(value: string) {
   return `${value.slice(0, 10)}...${value.slice(-8)}`;
+}
+
+function toBasisPoints(value: number) {
+  return Math.round(value * 100);
 }
 
 function buildExplorerHref(url?: string, txHash?: string) {
@@ -91,6 +104,7 @@ export default function ProofModal({
   const [proof, setProof] = useState<ProofPayload | null>(null);
   const [loading, setLoading] = useState(false);
   const [minting, setMinting] = useState(false);
+  const [registryAnchoring, setRegistryAnchoring] = useState(false);
 
   useEffect(() => {
     if (!open) {
@@ -236,8 +250,16 @@ export default function ProofModal({
     ? "View ProofRegistry TX"
     : "View Storage TX";
   const hasLiveVerificationHandle = Boolean(activeProof?.txHash || activeProof?.cid);
+  const needsRegistryAnchor = Boolean(
+    activeProof?.proofRegistryAddress &&
+      activeProof.cid &&
+      activeProof.txHash &&
+      !activeProof.proofRegistryTxHash,
+  );
   const statusMessage = loading
     ? "Loading proof details from 0G..."
+    : needsRegistryAnchor
+      ? "Storage, TEE, and ZK are recorded. ProofRegistry still needs the wallet anchor transaction."
     : proof
       ? "Fetched from the live proof endpoint."
       : hasLiveVerificationHandle
@@ -259,9 +281,100 @@ export default function ProofModal({
     showMintAction &&
     activeIntegrityAudit?.status !== "REJECTED" &&
     hasLiveVerificationHandle &&
+    Boolean(activeProof?.proofRegistryTxHash) &&
     Boolean(decision) &&
     Boolean(targetWalletAddress) &&
     Boolean(mintPortfolio && Object.keys(mintPortfolio).length > 0);
+
+  async function retryProofRegistryAnchor() {
+    if (
+      !activeProof?.cid ||
+      !activeProof.txHash ||
+      !activeProof.proofRegistryAddress ||
+      !decision ||
+      !targetWalletAddress
+    ) {
+      alert("ProofRegistry anchor needs a connected wallet and a complete proof package.");
+      return;
+    }
+
+    const ethereum = (window as unknown as { ethereum?: unknown }).ethereum;
+    if (!ethereum) {
+      alert("Connect a browser wallet first to anchor the ProofRegistry tx.");
+      return;
+    }
+
+    setRegistryAnchoring(true);
+
+    try {
+      const { BrowserProvider, Contract } = await import("ethers");
+      const provider = new BrowserProvider(
+        ethereum as {
+          request: (request: {
+            method: string;
+            params?: unknown[] | Record<string, unknown>;
+          }) => Promise<unknown>;
+        },
+      );
+      const signer = await provider.getSigner();
+      const signerAddress = await signer.getAddress();
+
+      if (!sameWalletAddress(signerAddress, targetWalletAddress)) {
+        throw new Error("Connected wallet does not match this proof owner.");
+      }
+
+      const proofRegistry = new Contract(
+        activeProof.proofRegistryAddress,
+        proofRegistryAbi,
+        signer,
+      );
+      const nonce = await provider.getTransactionCount(signerAddress, "pending");
+      const tx = await proofRegistry.recordProof(
+        activeProof.cid,
+        activeProof.cid,
+        activeProof.txHash,
+        toBasisPoints(decision.current_apy),
+        toBasisPoints(decision.optimized_apy),
+        { nonce },
+      );
+      await tx.wait();
+
+      const response = await fetch("/api/0g/anchor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cid: activeProof.cid,
+          networkKey,
+          walletAddress: targetWalletAddress,
+          proofRegistryTxHash: tx.hash,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`ProofRegistry anchor sync failed with status ${response.status}`);
+      }
+
+      const payload = (await response.json()) as {
+        data?: Pick<
+          ProofPayload,
+          | "proofRegistryAddress"
+          | "proofRegistryTxHash"
+          | "proofRegistryProofId"
+          | "proofRegistryExplorerUrl"
+          | "walletAddress"
+        >;
+      };
+
+      setProof((current) => ({
+        ...(current ?? activeProof),
+        ...payload.data,
+      }));
+    } catch (error) {
+      alert(`ProofRegistry anchor failed: ${error instanceof Error ? error.message : error}`);
+    } finally {
+      setRegistryAnchoring(false);
+    }
+  }
 
   return (
     <AnimatePresence>
@@ -548,8 +661,8 @@ export default function ProofModal({
                       </div>
                     </div>
 
-                    {proofRegistryHref ? (
-                      <div className="mt-4 flex flex-wrap gap-3">
+	                    {proofRegistryHref ? (
+	                      <div className="mt-4 flex flex-wrap gap-3">
                         <a
                           href={proofRegistryHref}
                           target="_blank"
@@ -568,10 +681,24 @@ export default function ProofModal({
                           Open Contract ABI
                           <ExternalLink className="h-4 w-4" />
                         </a>
-                      </div>
-                    ) : null}
-                  </div>
-                ) : null}
+	                      </div>
+	                    ) : needsRegistryAnchor ? (
+	                      <div className="mt-4 rounded-[18px] border border-[rgba(246,193,102,0.24)] bg-[rgba(246,193,102,0.06)] p-3">
+	                        <p className="text-sm text-[#ffd28a]">
+	                          ProofRegistry tx is not attached yet. Confirm the wallet anchor to complete the on-chain proof.
+	                        </p>
+	                        <button
+	                          type="button"
+	                          onClick={retryProofRegistryAnchor}
+	                          disabled={registryAnchoring}
+	                          className="mt-3 inline-flex items-center gap-2 rounded-full border border-[rgba(246,193,102,0.28)] px-4 py-2 text-sm font-semibold text-[#ffd28a] transition hover:border-[rgba(246,193,102,0.5)] disabled:cursor-not-allowed disabled:opacity-60"
+	                        >
+	                          {registryAnchoring ? "Anchoring..." : "Retry ProofRegistry TX"}
+	                        </button>
+	                      </div>
+	                    ) : null}
+	                  </div>
+	                ) : null}
               </div>
             </div>
 
@@ -589,9 +716,19 @@ export default function ProofModal({
                     <ExternalLink className="h-4 w-4" />
                   </a>
                 ) : null}
-                {showMintAction ? (
-                  <button
-                    type="button"
+	                {needsRegistryAnchor ? (
+	                  <button
+	                    type="button"
+	                    onClick={retryProofRegistryAnchor}
+	                    disabled={registryAnchoring}
+	                    className="inline-flex w-full items-center justify-center rounded-full border border-[rgba(246,193,102,0.28)] bg-[rgba(246,193,102,0.08)] px-5 py-3 text-sm font-semibold text-[#ffd28a] transition hover:border-[rgba(246,193,102,0.5)] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+	                  >
+	                    {registryAnchoring ? "Anchoring Registry..." : "Complete Registry TX"}
+	                  </button>
+	                ) : null}
+	                {showMintAction ? (
+	                  <button
+	                    type="button"
                     disabled={!canMintAgent || minting}
                     onClick={async () => {
                       if (!targetWalletAddress) {
