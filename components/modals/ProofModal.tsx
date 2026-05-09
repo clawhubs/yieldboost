@@ -61,6 +61,18 @@ interface ProofPayload {
   llmProvider?: string;
 }
 
+interface LatestAgentProofResponse {
+  data?: {
+    storageProof?: string;
+    txHash?: string;
+    walletAddress?: string;
+    proofRegistryAddress?: string;
+    proofRegistryTxHash?: string;
+    proofRegistryProofId?: string;
+    proofRegistryExplorerUrl?: string;
+  } | null;
+}
+
 const proofRegistryAbi = [
   "function recordProof(string cid, bytes32 rootHash, bytes32 storageTxHash, uint256 currentApyBps, uint256 optimizedApyBps) external returns (uint256 proofId)",
 ] as const;
@@ -136,8 +148,52 @@ export default function ProofModal({
         }
 
         const data = (await response.json()) as { data?: ProofPayload };
-        if (!cancelled && data.data) {
-          setProof(data.data);
+        let nextProof = data.data ?? null;
+
+        if (
+          nextProof &&
+          !nextProof.proofRegistryTxHash &&
+          walletAddress &&
+          networkKey
+        ) {
+          const latestParams = new URLSearchParams({
+            network: networkKey,
+            wallet: walletAddress,
+          });
+          const latestResponse = await fetch(
+            `/api/agent/latest?${latestParams.toString()}`,
+            { cache: "no-store" },
+          );
+
+          if (latestResponse.ok) {
+            const latestData = (await latestResponse.json()) as LatestAgentProofResponse;
+            const latestProof = latestData.data;
+            const matchesRequestedProof =
+              Boolean(
+                latestProof &&
+                  ((latestProof.storageProof && latestProof.storageProof === cid) ||
+                    (latestProof.txHash && txHash && latestProof.txHash === txHash)),
+              );
+
+            if (matchesRequestedProof && latestProof?.proofRegistryTxHash) {
+              nextProof = {
+                ...nextProof,
+                walletAddress: latestProof.walletAddress ?? nextProof.walletAddress,
+                proofRegistryAddress:
+                  latestProof.proofRegistryAddress ?? nextProof.proofRegistryAddress,
+                proofRegistryTxHash:
+                  latestProof.proofRegistryTxHash ?? nextProof.proofRegistryTxHash,
+                proofRegistryProofId:
+                  latestProof.proofRegistryProofId ?? nextProof.proofRegistryProofId,
+                proofRegistryExplorerUrl:
+                  latestProof.proofRegistryExplorerUrl ?? nextProof.proofRegistryExplorerUrl,
+              };
+            }
+          }
+        }
+
+        if (!cancelled && nextProof) {
+          setProof(nextProof);
         }
       } catch {
         if (!cancelled) {
