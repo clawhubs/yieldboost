@@ -25,6 +25,7 @@ import {
   DEFAULT_WALLET_ADDRESS,
   type WalletChangeDetail,
   getDefaultWalletNetworkKey,
+  getWalletNetworkConfig,
   JUDGE_NETWORK_STORAGE_KEY,
   JUDGE_MODE_COOKIE_KEY,
   type WalletNetworkKey,
@@ -40,6 +41,11 @@ import {
   isWalletAddress,
   resolveWalletNetworkKey,
 } from "@/lib/wallet";
+import {
+  getDefaultInjectedWallet,
+  getInjectedWalletById,
+  switchOrAddNetwork,
+} from "@/lib/browser-wallet";
 import VoucherRewardModal, { type VoucherReward } from "@/components/ui/VoucherRewardModal";
 
 interface YieldOptimizerContextValue {
@@ -325,15 +331,39 @@ async function anchorProofWithConnectedWallet({
     return null;
   }
 
+  const networkConfig = getWalletNetworkConfig(networkKey);
+  if (!networkConfig.enabled) {
+    throw new Error(`${networkConfig.label} is not configured for wallet confirmation.`);
+  }
+
+  const providerId = window.localStorage.getItem(WALLET_PROVIDER_STORAGE_KEY);
+  const selectedWallet =
+    getInjectedWalletById(providerId) ?? getDefaultInjectedWallet();
+
+  if (!selectedWallet) {
+    throw new Error("No injected wallet is available for ProofRegistry signing.");
+  }
+
+  await switchOrAddNetwork(selectedWallet.provider, networkConfig);
+
   const { BrowserProvider, Contract } = await import("ethers");
   const provider = new BrowserProvider(
-    ethereum as {
+    selectedWallet.provider as {
       request: (request: {
         method: string;
         params?: unknown[] | Record<string, unknown>;
       }) => Promise<unknown>;
     },
   );
+  const activeNetwork = await provider.getNetwork();
+  const activeChainId = Number(activeNetwork.chainId);
+
+  if (networkConfig.chainId && activeChainId !== networkConfig.chainId) {
+    throw new Error(
+      `Wallet is still on chain ${activeChainId}. Switch to ${networkConfig.label} before confirming step 2/2.`,
+    );
+  }
+
   const signer = await provider.getSigner();
   const signerAddress = await signer.getAddress();
 
