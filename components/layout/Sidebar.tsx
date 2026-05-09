@@ -48,6 +48,8 @@ import {
   getAvailableWalletNetworks,
   getDefaultWalletNetworkKey,
   isWalletAddress,
+  JUDGE_NETWORK_COOKIE_KEY,
+  JUDGE_NETWORK_STORAGE_KEY,
   JUDGE_PREVIOUS_NETWORK_STORAGE_KEY,
   JUDGE_PREVIOUS_PROVIDER_STORAGE_KEY,
   JUDGE_PREVIOUS_WALLET_STORAGE_KEY,
@@ -520,12 +522,17 @@ export default function Sidebar() {
   ) => {
     setSelectedNetwork(nextNetwork);
     selectedNetworkRef.current = nextNetwork;
-    localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, nextNetwork);
-    setCookie(WALLET_NETWORK_COOKIE_KEY, nextNetwork);
 
     const judgeModeActive =
       typeof window !== "undefined" &&
       window.localStorage.getItem(JUDGE_MODE_STORAGE_KEY) === "true";
+    if (judgeModeActive) {
+      localStorage.setItem(JUDGE_NETWORK_STORAGE_KEY, nextNetwork);
+      setCookie(JUDGE_NETWORK_COOKIE_KEY, nextNetwork);
+    } else {
+      localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, nextNetwork);
+      setCookie(WALLET_NETWORK_COOKIE_KEY, nextNetwork);
+    }
     const activeWallet =
       judgeModeActive
         ? DEFAULT_WALLET_ADDRESS
@@ -577,15 +584,23 @@ export default function Sidebar() {
     window.addEventListener("focus", refreshWalletOptions);
     const intervalId = window.setInterval(refreshWalletOptions, 1500);
 
-    const savedNetworkValue =
-      localStorage.getItem(WALLET_NETWORK_STORAGE_KEY) ??
-      getCookieValue(WALLET_NETWORK_COOKIE_KEY);
+    const judgeModeActive = localStorage.getItem(JUDGE_MODE_STORAGE_KEY) === "true";
+    const savedNetworkValue = judgeModeActive
+      ? localStorage.getItem(JUDGE_NETWORK_STORAGE_KEY) ??
+        getCookieValue(JUDGE_NETWORK_COOKIE_KEY) ??
+        localStorage.getItem(WALLET_NETWORK_STORAGE_KEY) ??
+        getCookieValue(WALLET_NETWORK_COOKIE_KEY)
+      : localStorage.getItem(WALLET_NETWORK_STORAGE_KEY) ??
+        getCookieValue(WALLET_NETWORK_COOKIE_KEY);
     const savedNetwork = savedNetworkValue
       ? resolveWalletNetworkKey(savedNetworkValue)
       : getDefaultWalletNetworkKey();
     setSelectedNetwork(savedNetwork);
-    setCookie(WALLET_NETWORK_COOKIE_KEY, savedNetwork);
-    const judgeModeActive = localStorage.getItem(JUDGE_MODE_STORAGE_KEY) === "true";
+    if (judgeModeActive) {
+      setCookie(JUDGE_NETWORK_COOKIE_KEY, savedNetwork);
+    } else {
+      setCookie(WALLET_NETWORK_COOKIE_KEY, savedNetwork);
+    }
 
     const savedProviderId = localStorage.getItem(WALLET_PROVIDER_STORAGE_KEY);
     const savedWallet = localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY);

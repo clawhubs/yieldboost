@@ -44,13 +44,21 @@ import {
   getAvailableWalletNetworks,
   getWalletNetworkConfig,
   isWalletAddress,
+  JUDGE_NETWORK_COOKIE_KEY,
+  JUDGE_NETWORK_STORAGE_KEY,
+  JUDGE_PREVIOUS_NETWORK_STORAGE_KEY,
+  JUDGE_PREVIOUS_PROVIDER_STORAGE_KEY,
+  JUDGE_PREVIOUS_WALLET_STORAGE_KEY,
   JUDGE_MODE_COOKIE_KEY,
   JUDGE_MODE_STORAGE_KEY,
+  resolveWalletNetworkKey,
   sameWalletAddress,
   WALLET_COOKIE_KEY,
   WALLET_CONNECT_REQUEST_EVENT,
   WALLET_CHANGE_EVENT,
   WALLET_NETWORK_CHANGE_REQUEST_EVENT,
+  WALLET_NETWORK_COOKIE_KEY,
+  WALLET_NETWORK_STORAGE_KEY,
   WALLET_OVERRIDE_STORAGE_KEY,
   WALLET_PROVIDER_STORAGE_KEY,
   type WalletChangeDetail,
@@ -100,6 +108,21 @@ const OPTIMIZATION_AUTO_DISMISS_PREFIX = "yb_optimization_auto_dismissed";
 
 function clearCookie(name: string) {
   document.cookie = `${name}=; path=/; max-age=0; SameSite=Lax`;
+}
+
+function setCookie(name: string, value: string) {
+  document.cookie = `${name}=${value}; path=/; max-age=31536000; SameSite=Lax`;
+}
+
+function getDashboardRestorableWallet(
+  walletAddress?: string | null,
+  providerId?: string | null,
+) {
+  if (!isWalletAddress(walletAddress)) return null;
+  if (!providerId && sameWalletAddress(walletAddress, DEFAULT_WALLET_ADDRESS)) {
+    return null;
+  }
+  return walletAddress;
 }
 
 function formatPortfolioMetricValue(value: number, unit?: string) {
@@ -196,22 +219,54 @@ export default function DashboardView() {
     if (typeof window !== "undefined") {
       window.localStorage.setItem(ENTRY_MODE_STORAGE_KEY, "user");
       window.localStorage.removeItem(JUDGE_MODE_STORAGE_KEY);
+      window.localStorage.removeItem(JUDGE_NETWORK_STORAGE_KEY);
       clearCookie(JUDGE_MODE_COOKIE_KEY);
+      clearCookie(JUDGE_NETWORK_COOKIE_KEY);
 
-      const storedWallet = window.localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY);
-      const storedProvider = window.localStorage.getItem(WALLET_PROVIDER_STORAGE_KEY);
-      if (!storedProvider && sameWalletAddress(storedWallet, DEFAULT_WALLET_ADDRESS)) {
-        window.localStorage.removeItem(WALLET_OVERRIDE_STORAGE_KEY);
-        clearCookie(WALLET_COOKIE_KEY);
+      const savedWallet = getDashboardRestorableWallet(
+        window.localStorage.getItem(JUDGE_PREVIOUS_WALLET_STORAGE_KEY),
+        window.localStorage.getItem(JUDGE_PREVIOUS_PROVIDER_STORAGE_KEY),
+      );
+      const savedProvider = savedWallet
+        ? window.localStorage.getItem(JUDGE_PREVIOUS_PROVIDER_STORAGE_KEY)
+        : null;
+      const savedNetworkValue = window.localStorage.getItem(
+        JUDGE_PREVIOUS_NETWORK_STORAGE_KEY,
+      );
+      const restoredNetwork = savedNetworkValue
+        ? resolveWalletNetworkKey(savedNetworkValue)
+        : networkKey;
+
+      window.localStorage.removeItem(JUDGE_PREVIOUS_WALLET_STORAGE_KEY);
+      window.localStorage.removeItem(JUDGE_PREVIOUS_PROVIDER_STORAGE_KEY);
+      window.localStorage.removeItem(JUDGE_PREVIOUS_NETWORK_STORAGE_KEY);
+      window.localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, restoredNetwork);
+      setCookie(WALLET_NETWORK_COOKIE_KEY, restoredNetwork);
+
+      if (savedWallet) {
+        window.localStorage.setItem(WALLET_OVERRIDE_STORAGE_KEY, savedWallet);
+        if (savedProvider) {
+          window.localStorage.setItem(WALLET_PROVIDER_STORAGE_KEY, savedProvider);
+        } else {
+          window.localStorage.removeItem(WALLET_PROVIDER_STORAGE_KEY);
+        }
+        setCookie(WALLET_COOKIE_KEY, savedWallet);
+      } else {
+        const storedWallet = window.localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY);
+        const storedProvider = window.localStorage.getItem(WALLET_PROVIDER_STORAGE_KEY);
+        if (!storedProvider && sameWalletAddress(storedWallet, DEFAULT_WALLET_ADDRESS)) {
+          window.localStorage.removeItem(WALLET_OVERRIDE_STORAGE_KEY);
+          clearCookie(WALLET_COOKIE_KEY);
+        }
       }
 
       window.dispatchEvent(
         new CustomEvent(WALLET_CHANGE_EVENT, {
           detail: {
-            walletAddress: undefined,
-            networkKey,
+            walletAddress: savedWallet ?? undefined,
+            networkKey: restoredNetwork,
             walletLabel: undefined,
-            connected: false,
+            connected: Boolean(savedWallet && savedProvider),
           } satisfies WalletChangeDetail,
         }),
       );

@@ -7,8 +7,6 @@ import {
   JUDGE_NETWORK_COOKIE_KEY,
   JUDGE_NETWORK_STORAGE_KEY,
   WALLET_NETWORK_CHANGE_REQUEST_EVENT,
-  WALLET_NETWORK_COOKIE_KEY,
-  WALLET_NETWORK_STORAGE_KEY,
   type WalletNetworkKey,
 } from "@/lib/wallet";
 import JudgeSyncOverlay from "@/components/judge/JudgeSyncOverlay";
@@ -47,8 +45,6 @@ export default function JudgeNetworkSwitcher({
     setPendingNetwork(nextNetwork);
     window.localStorage.setItem(JUDGE_NETWORK_STORAGE_KEY, nextNetwork);
     setCookie(JUDGE_NETWORK_COOKIE_KEY, nextNetwork);
-    window.localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, nextNetwork);
-    setCookie(WALLET_NETWORK_COOKIE_KEY, nextNetwork);
     window.dispatchEvent(
       new CustomEvent(WALLET_NETWORK_CHANGE_REQUEST_EVENT, {
         detail: { networkKey: nextNetwork },

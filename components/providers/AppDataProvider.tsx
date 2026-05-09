@@ -25,6 +25,7 @@ import {
   DEFAULT_WALLET_ADDRESS,
   type WalletChangeDetail,
   getDefaultWalletNetworkKey,
+  JUDGE_NETWORK_STORAGE_KEY,
   JUDGE_MODE_COOKIE_KEY,
   type WalletNetworkKey,
   JUDGE_MODE_STORAGE_KEY,
@@ -872,20 +873,28 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    const initialJudgeMode =
+      typeof window !== "undefined" &&
+      window.localStorage.getItem(JUDGE_MODE_STORAGE_KEY) === "true";
+    const judgeNetworkValue =
+      typeof window !== "undefined"
+        ? window.localStorage.getItem(JUDGE_NETWORK_STORAGE_KEY) ?? undefined
+        : undefined;
     const savedWallet =
       typeof window !== "undefined"
         ? window.localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY) ?? undefined
         : undefined;
     const savedNetworkValue =
       typeof window !== "undefined"
-        ? window.localStorage.getItem(WALLET_NETWORK_STORAGE_KEY) ?? undefined
+        ? (initialJudgeMode
+            ? judgeNetworkValue ??
+              window.localStorage.getItem(WALLET_NETWORK_STORAGE_KEY) ??
+              undefined
+            : window.localStorage.getItem(WALLET_NETWORK_STORAGE_KEY) ?? undefined)
         : undefined;
     const savedNetwork =
       savedNetworkValue ? resolveWalletNetworkKey(savedNetworkValue) : undefined;
 
-    const initialJudgeMode =
-      typeof window !== "undefined" &&
-      window.localStorage.getItem(JUDGE_MODE_STORAGE_KEY) === "true";
     const staleDemoTrackedWallet = isStaleDemoTrackedWallet(
       savedWallet,
       Boolean(initialJudgeMode),
