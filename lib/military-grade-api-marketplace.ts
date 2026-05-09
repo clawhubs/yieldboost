@@ -187,7 +187,7 @@ export const API_MARKETPLACE_PRODUCTS: ApiMarketplaceProduct[] = [
     partner: "Shlok / VeilSolver",
     tagline: "Private Intent Solver on 0G",
     description:
-      "Partner integration example: the VeilSolver SDK is wrapped and secured by YieldBoost Secure Proxy. Developers call the partner solver through isolated secure execution and receive a ZK proof envelope.",
+      "Partner SDK: the VeilSolver SDK is wrapped and secured by YieldBoost Secure Proxy. Developers call the partner solver through isolated secure execution and receive a ZK proof envelope.",
     logoPath: "/marketplace/veilsolver-logo.svg",
     endpoint: "/api/dev/store/veilsolver",
     playgroundPath: "/dev/marketplace/veilsolver",
