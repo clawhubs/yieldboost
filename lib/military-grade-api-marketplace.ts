@@ -102,7 +102,7 @@ export const MILITARY_GRADE_API_LAYERS: ApiMarketplaceLayer[] = [
     id: "06",
     slug: "zero-knowledge-proof-layer",
     label: "Zero-Knowledge Proof Layer",
-    proof: "Live TEE/ZK reasoning envelope binds inputs, output, and summary.",
+    proof: "ZK proof envelope verifies the committed inputs, output, and summary without exposing private witness data.",
     endpoint: "/api/dev/store/layers/zero-knowledge-proof-layer",
     legacySlugs: ["reasoning-envelope", "compliance-proof"],
   },
