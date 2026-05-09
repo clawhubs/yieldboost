@@ -13,7 +13,7 @@ export default function DevMarketplacePage() {
     <DeveloperPortalShell
       eyebrow="API Store"
       title="Developer marketplace for 9-layer verification APIs."
-      description="Choose the complete military-grade endpoint, one exact verification layer, or the VeilSolver secure proxy from the developer portal."
+      description="Browse ready-to-call verification APIs, compare endpoint tiers, open playgrounds, and copy integration docs from one developer store."
     >
       <DeveloperApiStore />
     </DeveloperPortalShell>

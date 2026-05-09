@@ -29,10 +29,10 @@ export default function DeveloperApiStore() {
             API Store
           </div>
           <h2 className="mt-3 text-[30px] font-extrabold tracking-tight text-white md:text-[38px]">
-            Pick the full stack or one exact layer.
+            API products for every verification path.
           </h2>
           <p className="mt-2 max-w-3xl text-[14px] leading-6 text-[#c8dae6]">
-            11 developer endpoints: 1 full 9-layer military-grade API, 9 single-layer APIs, and 1 VeilSolver partner SDK wrapped and secured by YieldBoost verification.
+            A developer store with 11 endpoints: the complete 9-layer military-grade API, 9 single-layer verification APIs, and one secure proxy product ready for playground testing and API-key integration.
           </p>
         </div>
         <div className="rounded-xl border border-[rgba(0,201,177,0.18)] bg-[rgba(0,201,177,0.06)] px-4 py-3 text-[13px] font-bold text-[#dfffe4]">
