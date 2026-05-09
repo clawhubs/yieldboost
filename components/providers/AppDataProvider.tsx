@@ -328,12 +328,14 @@ async function anchorProofWithConnectedWallet({
     proofRegistryAbi,
     signer,
   );
+  const nonce = await provider.getTransactionCount(signerAddress, "pending");
   const tx = await proofRegistry.recordProof(
     storageData.cid,
     storageData.cid,
     storageData.txHash,
     toBasisPoints(currentApy),
     toBasisPoints(optimizedApy),
+    { nonce },
   );
   await tx.wait();
 
