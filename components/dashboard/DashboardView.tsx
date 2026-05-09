@@ -155,6 +155,10 @@ export default function DashboardView() {
     isOptimizing,
     progress,
     streamingText,
+    pendingRegistryAnchorRequired,
+    pendingRegistryAnchorBusy,
+    pendingRegistryAnchorError,
+    completePendingRegistryAnchor,
   } = useYieldOptimizer();
   const { portfolio, networkKey, loading, judgeMode } = usePortfolio();
   const alertsRef = useRef<HTMLDivElement | null>(null);
@@ -517,7 +521,8 @@ export default function DashboardView() {
     if (!proofKey) return null;
     return `${OPTIMIZATION_AUTO_DISMISS_PREFIX}:${networkKey}:${wallet.toLowerCase()}:${proofKey}`;
   }, [latestResult, networkKey, portfolio?.walletAddress]);
-  const hasOptimizationProgress = isOptimizing || progress === "done";
+  const hasOptimizationProgress =
+    isOptimizing || progress === "done" || pendingRegistryAnchorRequired;
   const showOptimizationModal =
     hasOptimizationProgress && !optimizationModalDismissed && !optimizationModalMinimized;
   const showOptimizationProgressChip =
@@ -1434,6 +1439,12 @@ export default function DashboardView() {
           walletLabel={portfolio?.walletAddress ? portfolioWalletLabel : "Wallet not connected"}
           portfolioValue={portfolioMetricValue}
           integrityLayers={latestResult?.integrityLayers}
+          walletActionRequired={pendingRegistryAnchorRequired}
+          walletActionPending={pendingRegistryAnchorBusy}
+          walletActionError={pendingRegistryAnchorError}
+          onConfirmWalletAction={() => {
+            void completePendingRegistryAnchor();
+          }}
           onMinimize={() => setOptimizationModalMinimized(true)}
           onClose={() => {
             if (progress === "done") {
@@ -1463,12 +1474,18 @@ export default function DashboardView() {
           </span>
           <span className="min-w-0">
             <span className="block text-[13px] font-semibold text-white">
-              {progress === "done" ? "Primary proof ready" : "Optimization running"}
+              {progress === "done"
+                ? "Primary proof ready"
+                : pendingRegistryAnchorRequired
+                  ? "Waiting for wallet step 2/2"
+                  : "Optimization running"}
             </span>
             <span className="block truncate text-[11px] text-[#8fa3b0]">
               {progress === "done"
                 ? "Open progress to review receipt and background sync."
-                : "Open progress to see ProofRegistry, memory, ZK, and policy seal steps."}
+                : pendingRegistryAnchorRequired
+                  ? "Open progress to confirm the ProofRegistry wallet transaction."
+                  : "Open progress to see ProofRegistry, memory, ZK, and policy seal steps."}
             </span>
           </span>
         </button>

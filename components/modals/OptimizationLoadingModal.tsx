@@ -11,6 +11,9 @@ interface OptimizationLoadingModalProps {
   streamingText: string;
   walletLabel: string;
   portfolioValue: string;
+  walletActionRequired?: boolean;
+  walletActionPending?: boolean;
+  walletActionError?: string | null;
   integrityLayers?: {
     sovereignMemory?: boolean;
     zkReasoning?: boolean;
@@ -18,6 +21,7 @@ interface OptimizationLoadingModalProps {
     neuralHandshake?: boolean;
     zkCompliance?: boolean;
   };
+  onConfirmWalletAction?: () => void;
   onClose?: () => void;
   onMinimize?: () => void;
   onViewProof?: () => void;
@@ -95,7 +99,11 @@ export default function OptimizationLoadingModal({
   streamingText,
   walletLabel,
   portfolioValue,
+  walletActionRequired = false,
+  walletActionPending = false,
+  walletActionError,
   integrityLayers,
+  onConfirmWalletAction,
   onClose,
   onMinimize,
   onViewProof,
@@ -115,7 +123,16 @@ export default function OptimizationLoadingModal({
   const activePercent =
     progressSteps.find((step) => step.key === progress)?.percent ??
     (progress === "done" ? 100 : 28);
-  const copy = progressCopy[progress];
+  const copy =
+    walletActionRequired && progress === "anchoring"
+      ? {
+          title: "Confirm wallet step 2/2",
+          message:
+            "The 0G Storage proof is already saved. YieldBoost now needs the second wallet transaction to finish the ProofRegistry anchor.",
+          helper:
+            "Approve the next wallet popup to complete the on-chain anchor and clear the pending status.",
+        }
+      : progressCopy[progress];
   const canClose = progress === "done";
   const getBackgroundStatus = (verified?: boolean) => {
     if (verified) return "done";
@@ -160,8 +177,10 @@ export default function OptimizationLoadingModal({
     },
     {
       label: "ProofRegistry Anchor",
-      detail: "On-chain proof anchor",
-      status: getChecklistStatus(progress, "anchoring"),
+      detail: walletActionRequired
+        ? "Waiting for wallet confirmation"
+        : "On-chain proof anchor",
+      status: walletActionRequired ? "active" : getChecklistStatus(progress, "anchoring"),
     },
     {
       label: "Programmable Governance",
@@ -383,6 +402,38 @@ export default function OptimizationLoadingModal({
                   })}
                 </div>
               </div>
+
+              {walletActionRequired ? (
+                <div className="mt-5 rounded-[20px] border border-[rgba(255,189,89,0.22)] bg-[linear-gradient(180deg,rgba(42,30,10,0.28)_0%,rgba(15,11,6,0.68)_100%)] p-4">
+                  <div className="text-[11px] uppercase tracking-[0.14em] text-[#f5c56b]">
+                    Wallet confirmation
+                  </div>
+                  <div className="mt-2 text-[14px] leading-6 text-[#e6edf3]">
+                    Step 1/2 is complete. Step 2/2 records the ProofRegistry anchor on-chain. This is why the wallet needs one more confirmation.
+                  </div>
+                  {walletActionError ? (
+                    <div className="mt-3 rounded-[14px] border border-[rgba(255,120,120,0.22)] bg-[rgba(120,20,20,0.18)] px-3 py-3 text-[12px] leading-5 text-[#ffb4b4]">
+                      {walletActionError}
+                    </div>
+                  ) : null}
+                  {onConfirmWalletAction ? (
+                    <button
+                      type="button"
+                      data-testid="optimization-confirm-wallet-step"
+                      disabled={walletActionPending}
+                      onClick={onConfirmWalletAction}
+                      className={`mt-4 flex w-full items-center justify-center gap-2 rounded-[16px] border px-4 py-3 text-[14px] font-semibold transition ${
+                        walletActionPending
+                          ? "cursor-not-allowed border-white/10 bg-white/[0.04] text-[#7c8a96]"
+                          : "border-[#f5c56b]/35 bg-[#f5c56b] text-[#141006] hover:bg-[#ffd88e]"
+                      }`}
+                    >
+                      {walletActionPending ? "Waiting for wallet..." : "Confirm wallet step 2/2"}
+                      <Wallet2 className="h-4 w-4" />
+                    </button>
+                  ) : null}
+                </div>
+              ) : null}
 
               <div className="mt-5 rounded-[20px] border border-white/8 bg-[rgba(255,255,255,0.03)] p-4">
                 <div className="text-[11px] uppercase tracking-[0.14em] text-[#8fa3b0]">

@@ -5,9 +5,12 @@ import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { Indexer, ZgFile } from "@0gfoundation/0g-ts-sdk";
-import { JsonRpcProvider, Wallet } from "ethers";
 import { getServer0GNetworkConfig, type WalletNetworkKey } from "@/lib/wallet";
 import type { ProofStorageMode } from "@/lib/backend-data";
+import {
+  waitForTransactionReceipt,
+  withBackendSignerQueue,
+} from "@/lib/server/backend-signer";
 
 export interface ZeroGJsonUploadResult {
   cid: string;
@@ -60,6 +63,7 @@ export async function uploadJsonToZeroGStorage(input: {
   payload: unknown;
   filenamePrefix: string;
   allowLocalFallback?: boolean;
+  priority?: "high" | "normal";
 }): Promise<ZeroGJsonUploadResult> {
   const config = getServer0GNetworkConfig(input.networkKey);
 
@@ -83,80 +87,82 @@ export async function uploadJsonToZeroGStorage(input: {
     const file = await ZgFile.fromFilePath(tempFile);
 
     try {
-      const provider = new JsonRpcProvider(config.rpcUrl);
-      const signer = new Wallet(config.privateKey, provider);
-      const storageUrlCandidates = getStorageUrlCandidates(
-        input.networkKey,
-        config.storageUrl,
-      );
+      return await withBackendSignerQueue(input.networkKey, async ({
+        config: queuedConfig,
+        provider,
+        signer,
+      }) => {
+        const storageUrlCandidates = getStorageUrlCandidates(
+          input.networkKey,
+          queuedConfig.storageUrl,
+        );
 
-      let uploadResult:
-        | { txHash: string; rootHash: string }
-        | { txHashes: string[]; rootHashes: string[] }
-        | null = null;
-      let lastUploadError: unknown = null;
+        let uploadResult:
+          | { txHash: string; rootHash: string }
+          | { txHashes: string[]; rootHashes: string[] }
+          | null = null;
+        let lastUploadError: unknown = null;
 
-      for (const storageUrl of storageUrlCandidates) {
-        try {
-          const indexer = new Indexer(storageUrl);
-          const [nextUploadResult, uploadError] = await indexer.upload(
-            file,
-            config.rpcUrl,
-            signer,
-          );
+        for (const storageUrl of storageUrlCandidates) {
+          try {
+            const indexer = new Indexer(storageUrl);
+            const [nextUploadResult, uploadError] = await indexer.upload(
+              file,
+              queuedConfig.rpcUrl!,
+              signer,
+            );
 
-          if (uploadError) {
-            lastUploadError = uploadError;
-            continue;
+            if (uploadError) {
+              lastUploadError = uploadError;
+              continue;
+            }
+
+            uploadResult = nextUploadResult;
+            break;
+          } catch (error) {
+            lastUploadError = error;
+          }
+        }
+
+        if (!uploadResult) {
+          if (input.allowLocalFallback) {
+            const fallback = await writeLocalFallback(
+              input.payload,
+              input.filenamePrefix,
+            );
+            const message =
+              lastUploadError instanceof Error
+                ? lastUploadError.message
+                : "0G storage upload failed across all configured endpoints.";
+            return {
+              ...fallback,
+              note: `${fallback.note}; upload fallback reason: ${message}`,
+            };
           }
 
-          uploadResult = nextUploadResult;
-          break;
-        } catch (error) {
-          lastUploadError = error;
-        }
-      }
-
-      if (!uploadResult) {
-        if (input.allowLocalFallback) {
-          const fallback = await writeLocalFallback(
-            input.payload,
-            input.filenamePrefix,
-          );
-          const message =
-            lastUploadError instanceof Error
-              ? lastUploadError.message
-              : "0G storage upload failed across all configured endpoints.";
-          return {
-            ...fallback,
-            note: `${fallback.note}; upload fallback reason: ${message}`,
-          };
+          throw lastUploadError instanceof Error
+            ? lastUploadError
+            : new Error("0G storage upload failed across all configured endpoints.");
         }
 
-        throw lastUploadError instanceof Error
-          ? lastUploadError
-          : new Error("0G storage upload failed across all configured endpoints.");
-      }
+        const txHash =
+          "txHash" in uploadResult ? uploadResult.txHash : uploadResult.txHashes[0];
+        const rootHash =
+          "rootHash" in uploadResult ? uploadResult.rootHash : uploadResult.rootHashes[0];
+        const receipt = await waitForTransactionReceipt(provider, txHash);
 
-      const txHash =
-        "txHash" in uploadResult ? uploadResult.txHash : uploadResult.txHashes[0];
-      const rootHash =
-        "rootHash" in uploadResult ? uploadResult.rootHash : uploadResult.rootHashes[0];
-      const receipt = txHash
-        ? await provider.getTransactionReceipt(txHash).catch(() => null)
-        : null;
-
-      return {
-        cid: rootHash,
-        rootHash,
-        txHash,
-        blockNumber: receipt?.blockNumber ?? 0,
-        explorerUrl: txHash
-          ? `${config.explorerBase.replace(/\/$/, "")}/tx/${txHash}`
-          : undefined,
-        storageMode: "0g",
-        note: receipt ? undefined : "pending_receipt",
-      };
+        return {
+          cid: rootHash,
+          rootHash,
+          txHash,
+          blockNumber: receipt?.blockNumber ?? 0,
+          explorerUrl: txHash
+            ? `${queuedConfig.explorerBase.replace(/\/$/, "")}/tx/${txHash}`
+            : undefined,
+          storageMode: "0g" as const,
+          note: receipt ? undefined : "pending_receipt",
+        };
+      }, { priority: input.priority });
     } finally {
       await file.close();
     }

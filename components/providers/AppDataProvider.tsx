@@ -48,6 +48,10 @@ interface YieldOptimizerContextValue {
   optimizations: OptimizationResult[];
   progress: OptimizationState;
   streamingText: string;
+  pendingRegistryAnchorRequired: boolean;
+  pendingRegistryAnchorBusy: boolean;
+  pendingRegistryAnchorError: string | null;
+  completePendingRegistryAnchor: () => Promise<void>;
   optimize: (
     portfolio: Record<string, number>,
     prompt?: string,
@@ -229,6 +233,19 @@ const proofRegistryAbi = [
   "function recordProof(string cid, bytes32 rootHash, bytes32 storageTxHash, uint256 currentApyBps, uint256 optimizedApyBps) external returns (uint256 proofId)",
 ] as const;
 
+interface PendingRegistryAnchor {
+  walletAddress: string;
+  networkKey: WalletNetworkKey;
+  currentApy: number;
+  optimizedApy: number;
+  scopeKey: string;
+  storageData: {
+    cid: string;
+    txHash: string;
+    proofRegistryAddress?: string;
+  };
+}
+
 function toBasisPoints(value: number | undefined) {
   return Math.round((value ?? 0) * 100);
 }
@@ -379,6 +396,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const [progress, setProgress] = useState<OptimizationState>("analyzing");
   const [latestResult, setLatestResult] = useState<OptimizationResult | null>(null);
   const [voucherReward, setVoucherReward] = useState<VoucherReward | null>(null);
+  const [pendingRegistryAnchor, setPendingRegistryAnchor] = useState<PendingRegistryAnchor | null>(null);
+  const [pendingRegistryAnchorBusy, setPendingRegistryAnchorBusy] = useState(false);
+  const [pendingRegistryAnchorError, setPendingRegistryAnchorError] = useState<string | null>(null);
   const activeScopeRef = useRef(buildWalletScopeKey(undefined, getDefaultWalletNetworkKey()));
   const portfolioRequestIdRef = useRef(0);
   const latestRequestIdRef = useRef(0);
@@ -463,8 +483,6 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           note?: string;
         }
       | null = null;
-    let proofRegistryAnchorErrorMessage: string | undefined;
-
     try {
       const proofRegistryMode =
         canUseConnectedWalletSigner(activeWalletAddress) ? "user" : "backend";
@@ -581,44 +599,6 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         };
         storageAudit = storageData.integrityAudit;
 
-        if (
-          storageData.cid &&
-          storageData.txHash &&
-          storageData.proofRegistryMode === "user" &&
-          storageData.proofRegistryAddress &&
-          activeWalletAddress
-        ) {
-          try {
-            const anchor = await anchorProofWithConnectedWallet({
-              currentApy:
-                optimizationData.current_apy ?? fallbackResult.current_apy,
-              optimizedApy:
-                optimizationData.optimized_apy ?? fallbackResult.optimized_apy,
-              storageData,
-              walletAddress: activeWalletAddress,
-              networkKey,
-            });
-
-            if (anchor) {
-              storageData = {
-                ...storageData,
-                walletAddress: anchor.walletAddress ?? storageData.walletAddress,
-                proofRegistryAddress:
-                  anchor.proofRegistryAddress ?? storageData.proofRegistryAddress,
-                proofRegistryTxHash: anchor.proofRegistryTxHash,
-                proofRegistryProofId: anchor.proofRegistryProofId,
-                proofRegistryExplorerUrl: anchor.proofRegistryExplorerUrl,
-                note: undefined,
-              };
-            }
-          } catch (error) {
-            proofRegistryAnchorErrorMessage =
-              error instanceof Error
-                ? error.message
-                : "ProofRegistry wallet signature did not complete.";
-          }
-        }
-
         if (storageData.cid) {
           applyStorageProofEvent(
             networkKey,
@@ -642,10 +622,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         !storageData.proofRegistryTxHash,
     );
     const proofStatusDetail =
-      proofRegistryAnchorErrorMessage ??
-      (proofRegistryAnchorMissing
-        ? "ProofRegistry wallet signature did not complete; confirm the second wallet transaction to finish the on-chain anchor."
-        : storageErrorMessage ?? storageData?.note);
+      proofRegistryAnchorMissing
+        ? "Storage proof is saved. Confirm wallet step 2/2 to finish the ProofRegistry anchor."
+        : storageErrorMessage ?? storageData?.note;
     const nextResult: OptimizationResult = {
       ...fallbackResult,
       ...optimizationData,
@@ -702,7 +681,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       },
       proofStatus: storageData?.cid
         ? proofRegistryAnchorMissing
-          ? "error"
+          ? "pending"
           : "stored"
         : storageErrorMessage
           ? "error"
@@ -872,6 +851,85 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const completePendingRegistryAnchor = useCallback(async () => {
+    if (!pendingRegistryAnchor) {
+      return;
+    }
+
+    setPendingRegistryAnchorBusy(true);
+    setPendingRegistryAnchorError(null);
+    setProgress("anchoring");
+    setIsOptimizing(true);
+
+    try {
+      const anchor = await anchorProofWithConnectedWallet({
+        currentApy: pendingRegistryAnchor.currentApy,
+        optimizedApy: pendingRegistryAnchor.optimizedApy,
+        storageData: pendingRegistryAnchor.storageData,
+        walletAddress: pendingRegistryAnchor.walletAddress,
+        networkKey: pendingRegistryAnchor.networkKey,
+      });
+
+      if (!anchor?.proofRegistryTxHash) {
+        throw new Error("ProofRegistry wallet signature did not return an anchor receipt.");
+      }
+
+      const nextResult = latestResultRef.current
+        ? {
+            ...latestResultRef.current,
+            walletAddress: anchor.walletAddress ?? latestResultRef.current.walletAddress,
+            proofRegistryAddress:
+              anchor.proofRegistryAddress ?? latestResultRef.current.proofRegistryAddress,
+            proofRegistryTxHash: anchor.proofRegistryTxHash,
+            proofRegistryProofId: anchor.proofRegistryProofId,
+            proofRegistryExplorerUrl: anchor.proofRegistryExplorerUrl,
+            proofStatus: "stored" as const,
+            proofStatusDetail: undefined,
+          }
+        : null;
+
+      if (nextResult) {
+        startTransition(() => {
+          setLatestResult(nextResult);
+          setOptimizations((previous) =>
+            [nextResult, ...previous.filter((item) => item.timestamp !== nextResult.timestamp)].slice(0, 10),
+          );
+        });
+        persistLatestResult(pendingRegistryAnchor.scopeKey, nextResult);
+      }
+
+      void refreshPortfolio(
+        pendingRegistryAnchor.walletAddress,
+        pendingRegistryAnchor.networkKey,
+      );
+      void hydrateLatest(
+        pendingRegistryAnchor.walletAddress,
+        pendingRegistryAnchor.networkKey,
+      );
+      scheduleFollowUpProofRefresh(
+        pendingRegistryAnchor.scopeKey,
+        pendingRegistryAnchor.walletAddress,
+        pendingRegistryAnchor.networkKey,
+        activeScopeRef,
+        refreshPortfolio,
+        hydrateLatest,
+      );
+
+      setPendingRegistryAnchor(null);
+      setProgress("done");
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "ProofRegistry wallet signature did not complete.";
+      setPendingRegistryAnchorError(message);
+      setProgress("anchoring");
+    } finally {
+      setPendingRegistryAnchorBusy(false);
+      setIsOptimizing(false);
+    }
+  }, [hydrateLatest, pendingRegistryAnchor, refreshPortfolio]);
+
   useEffect(() => {
     const initialJudgeMode =
       typeof window !== "undefined" &&
@@ -952,6 +1010,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         if (detail.connected && !judgeModeActive) {
           exitJudgeMode();
         }
+        setPendingRegistryAnchor(null);
+        setPendingRegistryAnchorBusy(false);
+        setPendingRegistryAnchorError(null);
         const cachedResult = readScopedLatestResult(
           activeScopeRef.current,
           nextWalletAddress,
@@ -969,6 +1030,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       setLatestResult(null);
       setOptimizations([]);
+      setPendingRegistryAnchor(null);
+      setPendingRegistryAnchorBusy(false);
+      setPendingRegistryAnchorError(null);
     }
 
     window.addEventListener(WALLET_CHANGE_EVENT, handleWalletChange as EventListener);
@@ -985,6 +1049,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setIsOptimizing(true);
     setStreamingText("");
     setProgress("analyzing");
+    setPendingRegistryAnchor(null);
+    setPendingRegistryAnchorBusy(false);
+    setPendingRegistryAnchorError(null);
     latestRequestIdRef.current += 1;
     portfolioRequestIdRef.current += 1;
 
@@ -996,6 +1063,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         headers: { 
           "Content-Type": "application/json",
           "X-Wallet-Extension-Bypass": "true",
+          "X-Require-Tee-Attestation": "true",
         },
         credentials: "same-origin",
         body: JSON.stringify({ portfolio: portfolioInput, prompt, networkKey }),
@@ -1095,6 +1163,32 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           teeAttestation,
       });
 
+      const needsManualRegistryAnchor = Boolean(
+        activeWalletAddress &&
+          proofBackedResult.storageProof &&
+          proofBackedResult.txHash &&
+          proofBackedResult.proofRegistryAddress &&
+          !proofBackedResult.proofRegistryTxHash,
+      );
+
+      if (needsManualRegistryAnchor && activeWalletAddress) {
+        setPendingRegistryAnchor({
+          walletAddress: activeWalletAddress,
+          networkKey,
+          currentApy: proofBackedResult.current_apy,
+          optimizedApy: proofBackedResult.optimized_apy,
+          scopeKey: optimisticScopeKey,
+          storageData: {
+            cid: proofBackedResult.storageProof!,
+            txHash: proofBackedResult.txHash!,
+            proofRegistryAddress: proofBackedResult.proofRegistryAddress,
+          },
+        });
+        setPendingRegistryAnchorError(null);
+        setProgress("anchoring");
+        return proofBackedResult;
+      }
+
       if (networkKey === "testnet") {
         void fetch("/api/ya/voucher/issue", {
           method: "POST",
@@ -1157,6 +1251,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           optimizations,
           progress,
           streamingText,
+          pendingRegistryAnchorRequired: Boolean(pendingRegistryAnchor),
+          pendingRegistryAnchorBusy,
+          pendingRegistryAnchorError,
+          completePendingRegistryAnchor,
           optimize,
         }}
       >

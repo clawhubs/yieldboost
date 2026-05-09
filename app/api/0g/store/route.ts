@@ -1,14 +1,4 @@
-import { randomUUID } from "node:crypto";
-import { promises as fs } from "node:fs";
-import os from "node:os";
-import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";
-import { Indexer, ZgFile } from "@0gfoundation/0g-ts-sdk";
-import {
-  Contract,
-  JsonRpcProvider,
-  Wallet,
-} from "ethers";
 import { z } from "zod";
 import {
   type StoredProofRecord,
@@ -33,6 +23,8 @@ import { syncSovereignMemory } from "@/lib/server/sovereign-memory";
 import { createZkComplianceProof } from "@/lib/server/zk-compliance";
 import { createZkReasoningProof } from "@/lib/server/zk-reasoning";
 import { createSentinelAgentIdentityProof } from "@/lib/server/sentinel-agent-identity";
+import { recordProofRegistryAnchor } from "@/lib/server/backend-signer";
+import { uploadJsonToZeroGStorage } from "@/lib/server/zero-g-storage";
 
 export const runtime = "nodejs";
 
@@ -71,11 +63,6 @@ function resolveMainnetFirstNetwork(value: string | null | undefined): WalletNet
   return value ? resolveWalletNetworkKey(value) : getServerDefaultNetworkKey();
 }
 
-const proofRegistryAbi = [
-  "event ProofRecorded(uint256 indexed proofId,address indexed owner,string cid,bytes32 indexed rootHash,bytes32 storageTxHash,uint256 currentApyBps,uint256 optimizedApyBps,uint64 timestamp)",
-  "function recordProof(string cid, bytes32 rootHash, bytes32 storageTxHash, uint256 currentApyBps, uint256 optimizedApyBps) external returns (uint256 proofId)",
-] as const;
-
 function toBasisPoints(value: number) {
   return Math.round(value * 100);
 }
@@ -83,28 +70,6 @@ function toBasisPoints(value: number) {
 function joinNotes(...notes: Array<string | undefined>) {
   const values = notes.filter(Boolean);
   return values.length ? values.join(",") : undefined;
-}
-
-function getStorageUrlCandidates(
-  networkKey: WalletNetworkKey,
-  configuredUrl: string | undefined,
-) {
-  const candidates =
-    networkKey === "testnet"
-      ? [
-          configuredUrl,
-          "https://indexer-storage-testnet-turbo.0g.ai",
-          "https://indexer-storage-testnet-standard.0g.ai",
-        ]
-      : [
-          configuredUrl,
-          "https://indexer-storage-turbo.0g.ai",
-        ];
-
-  return candidates.filter(
-    (value, index, items): value is string =>
-      Boolean(value) && items.indexOf(value) === index,
-  );
 }
 
 async function runBackgroundIntegrityStack(input: {
@@ -289,223 +254,131 @@ export async function POST(req: NextRequest) {
     console.warn("[sentinel-agent-identity] Proof generation failed:", message);
     return null;
   });
-  const tempFile = path.join(os.tmpdir(), `yieldboost-proof-${randomUUID()}.json`);
+  const proofPayload = {
+    appId: "yieldboost-ai",
+    timestamp,
+    networkKey,
+    walletAddress: walletAddress ?? undefined,
+    decision,
+    portfolioSnapshot,
+    integrityAudit,
+    sentinelProof,
+    teeProvider: payload.teeProvider,
+    teeModel: payload.teeModel,
+    teeChatId: payload.teeChatId,
+    teeVerified: payload.teeVerified,
+    teeVerificationMethod: payload.teeVerificationMethod,
+    teeSignedTextMatches: payload.teeSignedTextMatches,
+    teeServiceAttestationVerified: payload.teeServiceAttestationVerified,
+    teeServiceSignerMatched: payload.teeServiceSignerMatched,
+    teeServiceComposeVerified: payload.teeServiceComposeVerified,
+    llmProvider: payload.llmProvider,
+  };
 
   try {
-    await fs.writeFile(
-      tempFile,
-      JSON.stringify(
-        {
-          appId: "yieldboost-ai",
-          timestamp,
-          networkKey,
-          walletAddress: walletAddress ?? undefined,
-          decision,
-          portfolioSnapshot,
-          integrityAudit,
-          sentinelProof,
-          teeProvider: payload.teeProvider,
-          teeModel: payload.teeModel,
-          teeChatId: payload.teeChatId,
-          teeVerified: payload.teeVerified,
-          teeVerificationMethod: payload.teeVerificationMethod,
-          teeSignedTextMatches: payload.teeSignedTextMatches,
-          teeServiceAttestationVerified: payload.teeServiceAttestationVerified,
-          teeServiceSignerMatched: payload.teeServiceSignerMatched,
-          teeServiceComposeVerified: payload.teeServiceComposeVerified,
-          llmProvider: payload.llmProvider,
-        },
-        null,
-        2,
-      ),
-      "utf8",
-    );
+    const upload = await uploadJsonToZeroGStorage({
+      networkKey,
+      payload: proofPayload,
+      filenamePrefix: "yieldboost-proof",
+      allowLocalFallback: false,
+      priority: "high",
+    });
 
-    const file = await ZgFile.fromFilePath(tempFile);
+    const proof: StoredProofRecord = {
+      cid: upload.cid,
+      txHash: upload.txHash ?? "",
+      blockNumber: upload.blockNumber ?? 0,
+      timestamp,
+      networkKey,
+      explorerUrl: upload.explorerUrl ?? "",
+      decision,
+      walletAddress,
+      portfolioSnapshot,
+      integrityAudit,
+      sentinelProof,
+      note: upload.note,
+      // TEE / 0G Compute metadata
+      teeProvider: payload.teeProvider,
+      teeModel: payload.teeModel,
+      teeChatId: payload.teeChatId,
+      teeVerified: payload.teeVerified,
+      teeVerificationMethod: payload.teeVerificationMethod,
+      teeSignedTextMatches: payload.teeSignedTextMatches,
+      teeServiceAttestationVerified: payload.teeServiceAttestationVerified,
+      teeServiceSignerMatched: payload.teeServiceSignerMatched,
+      teeServiceComposeVerified: payload.teeServiceComposeVerified,
+      llmProvider: payload.llmProvider,
+    };
 
-    try {
-      const provider = new JsonRpcProvider(config.rpcUrl);
-      const signer = new Wallet(config.privateKey, provider);
-      const storageUrlCandidates = getStorageUrlCandidates(
+    if (!config.proofRegistryAddress) {
+      proof.note = joinNotes(proof.note, "proof_registry_not_configured");
+    }
+
+    if (config.proofRegistryAddress && proofRegistryMode === "backend") {
+      const anchor = await recordProofRegistryAnchor({
         networkKey,
-        config.storageUrl,
-      );
+        cid: upload.cid,
+        rootHash: upload.rootHash,
+        storageTxHash: upload.txHash,
+        currentApyBps: toBasisPoints(decision.current_apy),
+        optimizedApyBps: toBasisPoints(decision.optimized_apy),
+        priority: "high",
+      });
 
-      console.log("0G Storage upload starting...");
-      console.log("Storage URL candidates:", storageUrlCandidates);
-      console.log("RPC URL:", config.rpcUrl);
+      proof.proofRegistryAddress = anchor.proofRegistryAddress;
+      proof.proofRegistryTxHash = anchor.proofRegistryTxHash;
+      proof.proofRegistryProofId = anchor.proofRegistryProofId;
+      proof.proofRegistryExplorerUrl = anchor.proofRegistryExplorerUrl;
+      proof.note = joinNotes(proof.note, anchor.note);
+    } else if (config.proofRegistryAddress && proofRegistryMode === "user") {
+      proof.proofRegistryAddress = config.proofRegistryAddress;
+      proof.note = joinNotes(proof.note, "awaiting_user_registry_signature");
+    }
 
-      let uploadResult:
-        | {
-            txHash: string;
-            rootHash: string;
-          }
-        | {
-            txHashes: string[];
-            rootHashes: string[];
-          }
-        | null = null;
-      let lastUploadError: unknown = null;
+    await recordStoredProof(proof);
 
-      for (const storageUrl of storageUrlCandidates) {
-        try {
-          const indexer = new Indexer(storageUrl);
-          const [nextUploadResult, uploadError] = await indexer.upload(
-            file,
-            config.rpcUrl,
-            signer,
-          );
-
-          if (uploadError) {
-            lastUploadError = uploadError;
-            console.error(`0G Storage upload error via ${storageUrl}:`, uploadError);
-            continue;
-          }
-
-          uploadResult = nextUploadResult;
-          console.log(`0G Storage upload success via ${storageUrl}:`, uploadResult);
-          break;
-        } catch (error) {
-          lastUploadError = error;
-          console.error(`0G Storage upload threw via ${storageUrl}:`, error);
-        }
-      }
-
-      if (!uploadResult) {
-        const message =
-          lastUploadError instanceof Error
-            ? lastUploadError.message
-            : "0G storage upload failed across all configured endpoints.";
-
-        return NextResponse.json(
-          {
-            success: false,
-            error: message,
-          },
-          { status: 502 },
-        );
-      }
-
-      const txHash =
-        "txHash" in uploadResult ? uploadResult.txHash : uploadResult.txHashes[0];
-      const rootHash =
-        "rootHash" in uploadResult ? uploadResult.rootHash : uploadResult.rootHashes[0];
-      let receipt = null;
-
-      if (txHash) {
-        try {
-          receipt = await provider.getTransactionReceipt(txHash);
-        } catch {
-          receipt = null;
-        }
-      }
-
-      const proof: StoredProofRecord = {
-        cid: rootHash,
-        txHash,
-        blockNumber: receipt?.blockNumber ?? 0,
-        timestamp,
-        networkKey,
-        explorerUrl: `${config.explorerBase.replace(/\/$/, "")}/tx/${txHash}`,
-        decision,
-        walletAddress: walletAddress ?? signer.address,
-        portfolioSnapshot,
-        integrityAudit,
-        sentinelProof,
-        note: receipt ? undefined : "pending_receipt",
-        // TEE / 0G Compute metadata
-        teeProvider: payload.teeProvider,
-        teeModel: payload.teeModel,
-        teeChatId: payload.teeChatId,
-        teeVerified: payload.teeVerified,
-        teeVerificationMethod: payload.teeVerificationMethod,
-        teeSignedTextMatches: payload.teeSignedTextMatches,
-        teeServiceAttestationVerified: payload.teeServiceAttestationVerified,
-        teeServiceSignerMatched: payload.teeServiceSignerMatched,
-        teeServiceComposeVerified: payload.teeServiceComposeVerified,
-        llmProvider: payload.llmProvider,
-      };
-
-      if (!config.proofRegistryAddress) {
-        proof.note = joinNotes(proof.note, "proof_registry_not_configured");
-      }
-
-      if (config.proofRegistryAddress && proofRegistryMode === "backend") {
-        try {
-          const proofRegistry = new Contract(
-            config.proofRegistryAddress,
-            proofRegistryAbi,
-            signer,
-          );
-
-          const registryTx = await proofRegistry.recordProof(
-            rootHash,
-            rootHash,
-            txHash,
-            toBasisPoints(decision.current_apy),
-            toBasisPoints(decision.optimized_apy),
-          );
-
-          proof.proofRegistryAddress = config.proofRegistryAddress;
-          proof.proofRegistryTxHash = registryTx.hash;
-          proof.proofRegistryExplorerUrl = `${config.explorerBase.replace(/\/$/, "")}/tx/${registryTx.hash}`;
-
-          proof.note = joinNotes(proof.note, "pending_registry_receipt");
-        } catch (error) {
-          const message = error instanceof Error ? error.message : "proof_registry_failed";
-          proof.note = joinNotes(proof.note, `proof_registry_failed:${message}`);
-        }
-      } else if (config.proofRegistryAddress && proofRegistryMode === "user") {
-        proof.proofRegistryAddress = config.proofRegistryAddress;
-        proof.note = joinNotes(proof.note, "awaiting_user_registry_signature");
-      }
-
-      await recordStoredProof(proof);
-
+    if (proof.walletAddress) {
       void runBackgroundIntegrityStack({
         networkKey,
-        walletAddress: proof.walletAddress ?? signer.address,
+        walletAddress: proof.walletAddress,
         proof,
         decision,
         portfolioSnapshot,
       }).catch((error) => {
         console.warn("[integrity-stack] Background integrity stack failed:", error);
       });
-
-      return NextResponse.json({
-        success: true,
-        cid: proof.cid,
-        rootHash,
-        txHash: proof.txHash,
-        blockNumber: proof.blockNumber,
-        timestamp: proof.timestamp,
-        networkKey: proof.networkKey,
-        explorerUrl: proof.explorerUrl,
-        walletAddress: proof.walletAddress,
-        proofRegistryAddress: proof.proofRegistryAddress,
-        proofRegistryTxHash: proof.proofRegistryTxHash,
-        proofRegistryProofId: proof.proofRegistryProofId,
-        proofRegistryExplorerUrl: proof.proofRegistryExplorerUrl,
-        proofRegistryMode,
-        integrityAudit: proof.integrityAudit,
-        sentinelProof: proof.sentinelProof,
-        backgroundIntegrityStatus: "syncing",
-        note: proof.note,
-        // TEE / 0G Compute metadata
-        teeProvider: proof.teeProvider,
-        teeModel: proof.teeModel,
-        teeChatId: proof.teeChatId,
-        teeVerified: proof.teeVerified,
-        teeVerificationMethod: proof.teeVerificationMethod,
-        teeSignedTextMatches: proof.teeSignedTextMatches,
-        teeServiceAttestationVerified: proof.teeServiceAttestationVerified,
-        teeServiceSignerMatched: proof.teeServiceSignerMatched,
-        teeServiceComposeVerified: proof.teeServiceComposeVerified,
-        llmProvider: proof.llmProvider,
-      });
-    } finally {
-      await file.close();
     }
+
+    return NextResponse.json({
+      success: true,
+      cid: proof.cid,
+      rootHash: upload.rootHash,
+      txHash: proof.txHash,
+      blockNumber: proof.blockNumber,
+      timestamp: proof.timestamp,
+      networkKey: proof.networkKey,
+      explorerUrl: proof.explorerUrl,
+      walletAddress: proof.walletAddress,
+      proofRegistryAddress: proof.proofRegistryAddress,
+      proofRegistryTxHash: proof.proofRegistryTxHash,
+      proofRegistryProofId: proof.proofRegistryProofId,
+      proofRegistryExplorerUrl: proof.proofRegistryExplorerUrl,
+      proofRegistryMode,
+      integrityAudit: proof.integrityAudit,
+      sentinelProof: proof.sentinelProof,
+      backgroundIntegrityStatus: "syncing",
+      note: proof.note,
+      teeProvider: proof.teeProvider,
+      teeModel: proof.teeModel,
+      teeChatId: proof.teeChatId,
+      teeVerified: proof.teeVerified,
+      teeVerificationMethod: proof.teeVerificationMethod,
+      teeSignedTextMatches: proof.teeSignedTextMatches,
+      teeServiceAttestationVerified: proof.teeServiceAttestationVerified,
+      teeServiceSignerMatched: proof.teeServiceSignerMatched,
+      teeServiceComposeVerified: proof.teeServiceComposeVerified,
+      llmProvider: proof.llmProvider,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown 0G storage error";
 
@@ -516,7 +389,5 @@ export async function POST(req: NextRequest) {
       },
       { status: 502 },
     );
-  } finally {
-    await fs.rm(tempFile, { force: true }).catch(() => undefined);
   }
 }

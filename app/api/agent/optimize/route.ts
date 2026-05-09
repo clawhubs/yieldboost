@@ -144,7 +144,10 @@ export async function POST(req: NextRequest) {
   let cacheStatus: "miss" | "exact-hit" | "embedding-hit" = "miss";
   let cacheSimilarity: number | null = null;
   const providerPrompt = compressedInput.compactPrompt;
-  const requireTeeAttestation = process.env.YB_REQUIRE_TEE_ATTESTATION === "true";
+  const requireFreshTeeAttestation =
+    req.headers.get("x-require-tee-attestation") === "true";
+  const requireTeeAttestation =
+    process.env.YB_REQUIRE_TEE_ATTESTATION === "true" || requireFreshTeeAttestation;
 
   if (!hasDetectedAssets(portfolio)) {
     const responseHeaders: Record<string, string> = {

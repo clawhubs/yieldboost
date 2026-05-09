@@ -1,13 +1,6 @@
 import "server-only";
 
 import { createHash } from "node:crypto";
-import {
-  Contract,
-  JsonRpcProvider,
-  Wallet,
-  ZeroHash,
-  type LogDescription,
-} from "ethers";
 import { auditOptimizationDecision } from "@/lib/integrity-audit";
 import type {
   StoredDecisionPayload,
@@ -16,17 +9,10 @@ import type {
   StoredProofRecord,
   StoredZkComplianceProof,
 } from "@/lib/backend-data";
-import {
-  getServer0GNetworkConfig,
-  type WalletNetworkKey,
-} from "@/lib/wallet";
+import { type WalletNetworkKey } from "@/lib/wallet";
 import { recordZkComplianceProof } from "@/lib/server/runtime-store";
+import { recordProofRegistryAnchor } from "@/lib/server/backend-signer";
 import { uploadJsonToZeroGStorage } from "@/lib/server/zero-g-storage";
-
-const proofRegistryAbi = [
-  "event ProofRecorded(uint256 indexed proofId,address indexed owner,string cid,bytes32 indexed rootHash,bytes32 storageTxHash,uint256 currentApyBps,uint256 optimizedApyBps,uint64 timestamp)",
-  "function recordProof(string cid, bytes32 rootHash, bytes32 storageTxHash, uint256 currentApyBps, uint256 optimizedApyBps) external returns (uint256 proofId)",
-] as const;
 
 export interface CreateZkComplianceProofInput {
   networkKey: WalletNetworkKey;
@@ -77,55 +63,14 @@ async function anchorComplianceArtifact(input: {
   networkKey: WalletNetworkKey;
   decision: StoredDecisionPayload;
 }) {
-  const config = getServer0GNetworkConfig(input.networkKey);
-
-  if (!config.rpcUrl || !config.privateKey || !config.proofRegistryAddress) {
-    return { note: "proof_registry_not_configured" };
-  }
-
-  try {
-    const provider = new JsonRpcProvider(config.rpcUrl);
-    const signer = new Wallet(config.privateKey, provider);
-    const proofRegistry = new Contract(
-      config.proofRegistryAddress,
-      proofRegistryAbi,
-      signer,
-    );
-    const tx = await proofRegistry.recordProof(
-      input.cid,
-      asBytes32(input.rootHash) ?? ZeroHash,
-      asBytes32(input.storageTxHash) ?? ZeroHash,
-      Math.round(input.decision.current_apy * 100),
-      Math.round(input.decision.optimized_apy * 100),
-    );
-    const receipt = await tx.wait(1).catch(() => null);
-    const parsedLogs: Array<LogDescription | null> = (receipt?.logs ?? []).map((log: unknown) => {
-      try {
-        return proofRegistry.interface.parseLog(
-          log as { topics: string[]; data: string },
-        );
-      } catch {
-        return null;
-      }
-    });
-    const proofRecorded = parsedLogs.find(
-      (log): log is LogDescription => log?.name === "ProofRecorded",
-    );
-
-    return {
-      proofRegistryAddress: config.proofRegistryAddress,
-      proofRegistryTxHash: tx.hash as string,
-      proofRegistryProofId: proofRecorded?.args?.[0]?.toString(),
-      proofRegistryExplorerUrl: `${config.explorerBase.replace(/\/$/, "")}/tx/${tx.hash}`,
-      note: receipt ? undefined : "pending_registry_receipt",
-    };
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "proof_registry_failed";
-    return {
-      note: `proof_registry_failed:${message.slice(0, 160)}`,
-    };
-  }
+  return recordProofRegistryAnchor({
+    networkKey: input.networkKey,
+    cid: input.cid,
+    rootHash: asBytes32(input.rootHash),
+    storageTxHash: asBytes32(input.storageTxHash),
+    currentApyBps: Math.round(input.decision.current_apy * 100),
+    optimizedApyBps: Math.round(input.decision.optimized_apy * 100),
+  });
 }
 
 export function buildDeterministicCompliancePayload(

@@ -116,7 +116,7 @@ test("Sentinel agent_identity and TEE attestation run through 1-click optimize f
     }
 
     await expect(page.getByTestId("sentinel-layer-card")).toContainText(
-      "Noir agent_identity: verified",
+      "ZK agent_identity: verified",
       { timeout: 60_000 },
     );
     await expect(page.getByTestId("tee-attestation-card")).toContainText(
