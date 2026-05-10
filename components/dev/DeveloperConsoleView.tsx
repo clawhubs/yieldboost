@@ -197,7 +197,7 @@ export default function DeveloperConsoleView({
             <div className="yb-card rounded-2xl p-6">
               <h2 className="text-[18px] font-semibold text-white">Login stance</h2>
               <p className="mt-3 text-[13px] leading-7 text-[#c8dae6]">
-                For beta operators and early developer onboarding, 0G testnet wallet login is the right first stop. It exercises the real signature path without forcing early mainnet operational risk.
+                The developer portal is now mainnet-first: wallet login can stay lightweight, but checkout, explorer receipts, and issued API keys should reflect the real 0G mainnet path.
               </p>
             </div>
           </section>

@@ -23,7 +23,7 @@ export default function DevPlanActionButton({
 }: DevPlanActionButtonProps) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const label = plan.priceYa ? `Buy ${plan.name} with YA` : "Start free";
+  const label = plan.checkoutPrice0g !== "0" ? `Buy ${plan.name} with 0G` : "Start free";
   const className = `mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-[13px] font-semibold transition ${
     prominent
       ? "yb-teal-button text-slate-950"

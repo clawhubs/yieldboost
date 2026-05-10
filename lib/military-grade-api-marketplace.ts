@@ -25,9 +25,11 @@ export interface ApiMarketplaceLayer {
 export interface ApiMarketplacePlan {
   id: YaApiPlan["id"];
   name: string;
-  priceYa: number;
+  checkoutPrice0g: string;
+  listPrice0g?: string | null;
   quota: string;
   cta: string;
+  promoLabel?: string | null;
 }
 
 export interface ApiMarketplaceProduct {
@@ -54,9 +56,11 @@ export interface ApiMarketplaceProduct {
 export const API_MARKETPLACE_PLANS: ApiMarketplacePlan[] = YA_API_PLANS.map((plan) => ({
   id: plan.id,
   name: plan.name,
-  priceYa: plan.priceYa,
+  checkoutPrice0g: plan.checkoutPrice0g,
+  listPrice0g: plan.listPrice0g,
   quota: plan.quotaLabel,
-  cta: plan.priceYa ? "Subscribe with YA" : "Try endpoint",
+  cta: plan.checkoutPrice0g !== "0" ? "Subscribe with 0G" : "Try endpoint",
+  promoLabel: plan.promoLabel,
 }));
 
 export const MILITARY_GRADE_API_LAYERS: ApiMarketplaceLayer[] = [
@@ -147,14 +151,14 @@ const verified = await response.json();`;
 const layerProducts: ApiMarketplaceProduct[] = MILITARY_GRADE_API_LAYERS.map((layer) => ({
   id: layer.slug,
   name: layer.label,
-  partner: "YieldBoost YA",
+  partner: "YieldBoost 0G",
   tagline: `Layer ${layer.id} endpoint`,
   description: layer.proof,
   logoPath: "/marketplace/ya-9-layer-logo.png",
   endpoint: layer.endpoint,
   playgroundPath: `/dev/marketplace/${layer.slug}`,
   docsPath: `/dev/marketplace/${layer.slug}/docs`,
-  status: "testnet-live",
+  status: "mainnet-live",
   category: "single-layer",
   layerId: layer.id,
   layers: [layer],
@@ -166,7 +170,7 @@ export const API_MARKETPLACE_PRODUCTS: ApiMarketplaceProduct[] = [
   {
     id: "military-grade-full",
     name: "Full 9-Layer Military-Grade API",
-    partner: "YieldBoost YA",
+    partner: "YieldBoost 0G",
     tagline: "All nine verification layers in one endpoint",
     description:
       "One endpoint that runs the complete YieldBoost military-grade pipeline: Hallucination Blacklist, Integrity Auditor, Secure Compute / TEE, Sovereign Memory, 0G Storage Proof Layer, Zero-Knowledge Proof Layer, ProofRegistry Anchor, Programmable Governance, and Cross-Agent Neural Handshake.",
@@ -174,7 +178,7 @@ export const API_MARKETPLACE_PRODUCTS: ApiMarketplaceProduct[] = [
     endpoint: "/api/dev/store/military-grade",
     playgroundPath: "/dev/marketplace/military-grade-full",
     docsPath: "/dev/marketplace/military-grade-full/docs",
-    status: "testnet-live",
+    status: "mainnet-live",
     category: "full-stack",
     layers: MILITARY_GRADE_API_LAYERS,
     plans: API_MARKETPLACE_PLANS,
@@ -196,7 +200,7 @@ export const API_MARKETPLACE_PRODUCTS: ApiMarketplaceProduct[] = [
     contractAddress: "0x4181c06901Ee172c169fFDf44c6C192c22265aF",
     solverPublicKey:
       "0x039a5b81f4b2bc0c181b1292f3aeb55721de43dc7e3d07c6c44ba3aa087ecaae04",
-    status: "testnet-live",
+    status: "mainnet-live",
     category: "partner-sdk",
     layers: MILITARY_GRADE_API_LAYERS,
     plans: API_MARKETPLACE_PLANS,
@@ -210,7 +214,7 @@ const response = await fetch("https://dev.yieldboostai.xyz/api/dev/store/veilsol
   },
   body: JSON.stringify({
     action: "SWAP",
-    chainId: 16602,
+    chainId: 16661,
     tokenIn: "0x0000000000000000000000000000000000000000",
     tokenOut: "0x0000000000000000000000000000000000000000",
     amountIn: "1.0",

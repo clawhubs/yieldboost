@@ -52,6 +52,7 @@ export interface ManagedApiKey {
   plan_id?: string | null;
   plan_name?: string | null;
   plan_price_ya?: number | null;
+  plan_price_og?: string | null;
   plan_max_keys?: number | null;
   plan_quota_monthly?: number | null;
   plan_expires_at?: string | null;
@@ -75,15 +76,16 @@ export interface ManagedApiKeysResponse {
   total: number;
 }
 
-export interface YaCheckoutVerifyResponse {
+export interface CheckoutVerifyResponse {
   success: boolean;
   request_id: string;
   verified: boolean;
   plan_id: string;
   wallet_address: string;
-  amount_ya: number;
+  amount_og: string;
   tx_hash: string | null;
-  token_address: string;
+  asset_symbol: string;
+  network: "mainnet" | "testnet";
   treasury_address: string;
   proof_type: string;
   integrity_hash: string;
@@ -190,6 +192,7 @@ export async function createManagedApiKey(input: {
   planId?: string;
   planName?: string;
   planPriceYa?: number;
+  planPriceOg?: string;
   planMaxKeys?: number;
   planQuotaMonthly?: number;
   planExpiresAt?: string;
@@ -208,6 +211,7 @@ export async function createManagedApiKey(input: {
       plan_id: input.planId || null,
       plan_name: input.planName || null,
       plan_price_ya: input.planPriceYa ?? null,
+      plan_price_og: input.planPriceOg ?? null,
       plan_max_keys: input.planMaxKeys ?? null,
       plan_quota_monthly: input.planQuotaMonthly ?? null,
       plan_expires_at: input.planExpiresAt || null,
@@ -221,18 +225,18 @@ export async function createManagedApiKey(input: {
   };
 }
 
-export async function verifyYaCheckout(input: {
+export async function verify0GCheckout(input: {
   walletAddress: string;
   planId: string;
-  amountYa: number;
+  amountOg: string;
   txHash?: string;
-}): Promise<YaCheckoutVerifyResponse> {
-  return portalFetch<YaCheckoutVerifyResponse>("/v1/ya/checkout/verify", {
+}): Promise<CheckoutVerifyResponse> {
+  return portalFetch<CheckoutVerifyResponse>("/v1/checkout/verify", {
     method: "POST",
     body: JSON.stringify({
       wallet_address: input.walletAddress,
       plan_id: input.planId,
-      amount_ya: input.amountYa,
+      amount_og: input.amountOg,
       tx_hash: input.txHash || null,
       recent_request_count: 0,
     }),

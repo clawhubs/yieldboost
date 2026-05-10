@@ -109,10 +109,17 @@ export default function DeveloperApiStore() {
                 {product.plans.map((plan) => (
                   <div key={plan.id} className="rounded-xl border border-white/[0.06] bg-white/[0.03] px-2 py-2">
                     <div className="text-[10px] text-[#96b0c2]">{plan.name}</div>
-                    <div className="mt-1 flex items-center gap-1 text-[12px] font-bold text-[#68ff7a]">
-                      <Image src="/ya-icon.png" alt="YA" width={14} height={14} />
-                      {plan.priceYa}
+                    {plan.listPrice0g ? (
+                      <div className="mt-1 text-[10px] text-[#96b0c2]">
+                        <span className="line-through">{plan.listPrice0g} 0G</span>
+                      </div>
+                    ) : null}
+                    <div className="mt-1 text-[12px] font-bold text-[#68ff7a]">
+                      {plan.checkoutPrice0g} 0G
                     </div>
+                    {plan.promoLabel ? (
+                      <div className="mt-1 text-[10px] text-[#9ff7f0]">{plan.promoLabel}</div>
+                    ) : null}
                   </div>
                 ))}
               </div>

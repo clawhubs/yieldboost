@@ -75,7 +75,7 @@ def create_app() -> FastAPI:
             },
             {
                 "name": "platform-checkout",
-                "description": "YA token checkout verification guarded by the 9-layer integrity stack.",
+                "description": "Native 0G checkout verification guarded by the 9-layer integrity stack.",
             },
         ],
     )
@@ -136,7 +136,7 @@ def create_app() -> FastAPI:
                     category = "handshake"
                 elif request.url.path.startswith("/v1/status"):
                     category = "status"
-                elif request.url.path.startswith("/v1/ya/checkout"):
+                elif request.url.path.startswith("/v1/checkout"):
                     category = "governance"
                 elif request.url.path.startswith("/v1/admin"):
                     category = "admin"

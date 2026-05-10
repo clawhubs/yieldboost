@@ -1,15 +1,20 @@
+export const O_G_MAINNET_CHAIN_ID = 16661;
+export const O_G_MAINNET_CHAIN_ID_HEX = "0x4115";
+export const O_G_MAINNET_RPC_URL = "https://evmrpc.0g.ai";
+export const O_G_MAINNET_EXPLORER_URL = "https://chainscan.0g.ai";
+export const O_G_TREASURY_ADDRESS_FALLBACK =
+  "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D";
 export const YA_TOKEN_ADDRESS = "0xa8018A4920ecA7AF0Df88caCFD5E21b939A678b5";
 export const YA_TOKEN_DECIMALS = 18;
 export const YA_TESTNET_CHAIN_ID = 16602;
 export const YA_TESTNET_CHAIN_ID_HEX = "0x40da";
 export const YA_TESTNET_RPC_URL = "https://evmrpc-testnet.0g.ai";
-export const YA_TREASURY_ADDRESS_FALLBACK =
-  "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D";
 
 export interface YaApiPlan {
   id: "free" | "builder" | "pro" | "protocol";
   name: string;
-  priceYa: number;
+  listPrice0g?: string | null;
+  checkoutPrice0g: string;
   priceLabel: string;
   renewalLabel: string;
   apiKeys: number;
@@ -19,20 +24,22 @@ export interface YaApiPlan {
   environment: "testnet" | "mainnet" | "multi";
   scopes: string[];
   features: string[];
+  promoLabel?: string | null;
 }
 
 export const YA_API_PLANS: YaApiPlan[] = [
   {
     id: "free",
     name: "Free Trial",
-    priceYa: 0,
-    priceLabel: "0 YA",
+    listPrice0g: null,
+    checkoutPrice0g: "0",
+    priceLabel: "0 0G",
     renewalLabel: "No payment",
     apiKeys: 1,
     monthlyQuota: 3000,
     expiresInDays: 30,
     quotaLabel: "100 requests/day",
-    environment: "testnet",
+    environment: "mainnet",
     scopes: ["status:read", "blacklist:check", "audit:run", "proof:run"],
     features: [
       "1 test API key",
@@ -44,14 +51,15 @@ export const YA_API_PLANS: YaApiPlan[] = [
   {
     id: "builder",
     name: "Builder",
-    priceYa: 88,
-    priceLabel: "88 YA",
+    listPrice0g: null,
+    checkoutPrice0g: "88",
+    priceLabel: "88 0G",
     renewalLabel: "30 days",
     apiKeys: 1,
     monthlyQuota: 10000,
     expiresInDays: 30,
     quotaLabel: "10,000 requests/month",
-    environment: "testnet",
+    environment: "mainnet",
     scopes: ["status:read", "blacklist:check", "audit:run", "proof:run"],
     features: [
       "1 production API key",
@@ -63,14 +71,15 @@ export const YA_API_PLANS: YaApiPlan[] = [
   {
     id: "pro",
     name: "Pro",
-    priceYa: 888,
-    priceLabel: "888 YA",
+    listPrice0g: "888",
+    checkoutPrice0g: "0.00001",
+    priceLabel: "0.00001 0G",
     renewalLabel: "30 days",
     apiKeys: 3,
     monthlyQuota: 150000,
     expiresInDays: 30,
     quotaLabel: "150,000 requests/month",
-    environment: "multi",
+    environment: "mainnet",
     scopes: [
       "status:read",
       "blacklist:check",
@@ -89,12 +98,14 @@ export const YA_API_PLANS: YaApiPlan[] = [
       "Vault and governance endpoints",
       "Webhook-ready integration",
     ],
+    promoLabel: "30-day trial",
   },
   {
     id: "protocol",
     name: "Protocol",
-    priceYa: 8888,
-    priceLabel: "8,888 YA",
+    listPrice0g: null,
+    checkoutPrice0g: "8888",
+    priceLabel: "8,888 0G",
     renewalLabel: "30 days",
     apiKeys: 10,
     monthlyQuota: 2000000,
@@ -127,10 +138,15 @@ export function getYaApiPlan(planId: string | null | undefined) {
   return YA_API_PLANS.find((plan) => plan.id === planId) ?? YA_API_PLANS[0];
 }
 
-export function getYaTreasuryAddress() {
+export function get0GTreasuryAddress() {
   return (
+    process.env.NEXT_PUBLIC_0G_TREASURY_ADDRESS?.trim() ||
     process.env.NEXT_PUBLIC_YA_TREASURY_ADDRESS?.trim() ||
     process.env.NEXT_PUBLIC_FOUNDER_WALLET_ADDRESS?.trim() ||
-    YA_TREASURY_ADDRESS_FALLBACK
+    O_G_TREASURY_ADDRESS_FALLBACK
   );
+}
+
+export function getYaTreasuryAddress() {
+  return get0GTreasuryAddress();
 }

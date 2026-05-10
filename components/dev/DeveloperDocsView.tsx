@@ -15,7 +15,7 @@ const client = new YieldBoostClient({
 const signer = new Wallet(process.env.TEST_WALLET_PRIVATE_KEY!);
 
 const sealed = await sealWithSigner(client, signer, {
-  network: "testnet",
+  network: "mainnet",
   plaintext: "portfolio snapshot that must stay private",
   metadata: {
     app: "acme-backend",
@@ -24,7 +24,7 @@ const sealed = await sealWithSigner(client, signer, {
 });
 
 const opened = await unsealWithSigner(client, signer, {
-  network: "testnet",
+  network: "mainnet",
   storageId: sealed.storage_id,
 });
 
@@ -45,7 +45,7 @@ const walletAddress = await requestBrowserWalletAddress(window.ethereum);
 const sealed = await sealWithBrowserWallet(client, {
   provider: window.ethereum,
   walletAddress,
-  network: "testnet",
+  network: "mainnet",
   plaintext: "user-owned secret",
   metadata: {
     tenant: "consumer-app",
@@ -70,9 +70,9 @@ print(metadata["anchor_tx_hash"])`;
 
 const restFlow = `curl -X POST https://api.yieldboostai.xyz/v1/integrity/seal \\
   -H "Content-Type: application/json" \\
-  -H "X-API-Key: yb_test_xxx" \\
+  -H "X-API-Key: yb_live_xxx" \\
   -d '{
-    "network": "testnet",
+    "network": "mainnet",
     "wallet_address": "0xYourWallet",
     "signature_kind": "eip191",
     "message": "signed wallet authorization message",
@@ -103,7 +103,7 @@ const endpointTable = [
   },
   {
     method: "GET",
-    path: "/v1/integrity/records?wallet_address=0x...&network=testnet",
+    path: "/v1/integrity/records?wallet_address=0x...&network=mainnet",
     description: "List integrity records for one wallet without exposing secret payload contents.",
   },
   {
@@ -238,8 +238,8 @@ export default function DeveloperDocsView() {
             <h2 className="text-[20px] font-semibold text-white">Recommended Login Stance</h2>
             <div className="mt-4 space-y-3 text-[14px] leading-6 text-[#c8dae6]">
               <p><span className="text-white">Developer portal:</span> wallet-first login is the right model because this product is ownership-native.</p>
-              <p><span className="text-white">Beta phase:</span> start with a 0G testnet wallet. It keeps the real auth path while lowering operational risk.</p>
-              <p><span className="text-white">Mainnet later:</span> same route shape, same payload fields, same app key model. Mainnet should be validation, not a rewrite.</p>
+              <p><span className="text-white">Mainnet-first:</span> start with a 0G mainnet wallet so the payment, explorer, and API-key path stay submission-ready.</p>
+              <p><span className="text-white">Testnet fallback:</span> the request shape stays compatible, but the public developer portal now treats mainnet as the source of truth.</p>
             </div>
           </div>
 

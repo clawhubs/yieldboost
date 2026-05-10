@@ -63,15 +63,15 @@ export default function DeveloperAppsView({
         <StatCard label="API keys" value={String(apiKeys.length)} tone="white" />
         <StatCard label="Requests" value={String(totalRequests)} tone="white" />
         <StatCard label="Blocked" value={String(blockedRequests)} tone={blockedRequests > 0 ? "amber" : "white"} />
-        <StatCard label="Network" value="0G testnet" tone="green" />
+        <StatCard label="Network" value="0G mainnet" tone="green" />
       </section>
 
       {/* ── Create key + key list ────────────────────────── */}
       <section className="fade-in-up fade-in-up-2 grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
         <div className="yb-card rounded-2xl p-6">
-          <h2 className="text-[20px] font-semibold text-white">Buy API access with YA</h2>
+          <h2 className="text-[20px] font-semibold text-white">Buy API access with 0G</h2>
           <p className="mt-2 text-[13px] leading-6 text-[#c8dae6]">
-            Choose a package, pay with YA on 0G Galileo testnet, then generate a scoped API key.
+            Choose a package, pay with native 0G on mainnet, then generate a scoped API key.
           </p>
           <ManagedApiKeyCreateForm
             ownerWalletAddress={session.walletAddress}

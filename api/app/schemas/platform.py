@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field, model_validator
@@ -95,7 +96,7 @@ class LayerStatusResponse(BaseModel):
 class YaCheckoutVerifyRequest(BaseModel):
     wallet_address: str = Field(pattern=r"^0x[a-fA-F0-9]{40}$")
     plan_id: str = Field(min_length=1, max_length=32)
-    amount_ya: int = Field(ge=0)
+    amount_og: Decimal = Field(ge=0)
     tx_hash: str | None = Field(default=None, pattern=r"^0x[a-fA-F0-9]{64}$")
     recent_request_count: int = Field(default=0, ge=0)
 
@@ -106,9 +107,10 @@ class YaCheckoutVerifyResponse(BaseModel):
     verified: bool
     plan_id: str
     wallet_address: str
-    amount_ya: int
+    amount_og: str
     tx_hash: str | None
-    token_address: str
+    asset_symbol: str
+    network: Literal["mainnet", "testnet"]
     treasury_address: str
     proof_type: str
     integrity_hash: str

@@ -219,7 +219,10 @@ export default function DeveloperApiProductDocs({
                   {product.plans.map((plan) => (
                     <div key={plan.id} className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 py-2">
                       <span className="text-[12px] font-semibold text-white">{plan.name}</span>
-                      <span className="text-[12px] text-[#9ff7f0]">{plan.priceYa.toLocaleString("en-US")} YA</span>
+                      <span className="text-right text-[12px] text-[#9ff7f0]">
+                        {plan.listPrice0g ? <span className="mr-2 line-through text-[#96b0c2]">{plan.listPrice0g} 0G</span> : null}
+                        {plan.checkoutPrice0g} 0G
+                      </span>
                     </div>
                   ))}
                 </div>

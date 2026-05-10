@@ -34,7 +34,7 @@ function buildDefaultPayload(product: ApiMarketplaceProduct) {
   if (product.id === "veilsolver") {
     return {
       action: "SWAP",
-      chainId: 16602,
+      chainId: 16661,
       tokenIn: "0x0000000000000000000000000000000000000000",
       tokenOut: "0x0000000000000000000000000000000000000000",
       amountIn: "1.0",
@@ -54,7 +54,7 @@ function buildDefaultPayload(product: ApiMarketplaceProduct) {
           strategy: "low-risk 0G route",
           amount: "1.0",
         },
-        network: "testnet",
+        network: "mainnet",
       },
     };
   }
@@ -67,7 +67,7 @@ function buildDefaultPayload(product: ApiMarketplaceProduct) {
         strategy: "low-risk 0G yield route",
         amount: "1.0",
       },
-      network: "testnet",
+      network: "mainnet",
     },
   };
 }

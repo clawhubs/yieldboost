@@ -15,6 +15,7 @@ class ApiKeyCreateRequest(BaseModel):
     plan_id: str | None = Field(default=None, max_length=32)
     plan_name: str | None = Field(default=None, max_length=80)
     plan_price_ya: int | None = Field(default=None, ge=0)
+    plan_price_og: str | None = Field(default=None, max_length=32)
     plan_max_keys: int | None = Field(default=None, ge=1)
     plan_quota_monthly: int | None = Field(default=None, ge=1)
     plan_expires_at: str | None = None
@@ -33,6 +34,7 @@ class ApiKeyListItem(BaseModel):
     plan_id: str | None = None
     plan_name: str | None = None
     plan_price_ya: int | None = None
+    plan_price_og: str | None = None
     plan_max_keys: int | None = None
     plan_quota_monthly: int | None = None
     plan_expires_at: str | None = None

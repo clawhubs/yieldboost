@@ -22,6 +22,7 @@ def _api_key_item_from_record(record: dict) -> ApiKeyListItem:
         plan_id=record.get("plan_id"),
         plan_name=record.get("plan_name"),
         plan_price_ya=record.get("plan_price_ya"),
+        plan_price_og=record.get("plan_price_og"),
         plan_max_keys=record.get("plan_max_keys"),
         plan_quota_monthly=record.get("plan_quota_monthly"),
         plan_expires_at=record.get("plan_expires_at"),
@@ -188,7 +189,7 @@ async def create_api_key(
             and item.get("plan_id") != payload.plan_id
         ]
         if conflicting_tx:
-            raise IntegrityError("YA checkout receipt is already bound to another plan.", status_code=409, layer="L4")
+            raise IntegrityError("Checkout receipt is already bound to another plan.", status_code=409, layer="L4")
 
     raw_key, record = build_api_key_record(
         master_key=request.app.state.integrity_pipeline.settings.master_key,
@@ -201,6 +202,7 @@ async def create_api_key(
         plan_id=payload.plan_id,
         plan_name=payload.plan_name,
         plan_price_ya=payload.plan_price_ya,
+        plan_price_og=payload.plan_price_og,
         plan_max_keys=payload.plan_max_keys,
         plan_quota_monthly=payload.plan_quota_monthly,
         plan_expires_at=payload.plan_expires_at,

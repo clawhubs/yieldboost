@@ -5,16 +5,16 @@ from ...schemas.common import ErrorResponse
 from ...schemas.platform import YaCheckoutVerifyRequest, YaCheckoutVerifyResponse
 
 
-router = APIRouter(prefix="/v1/ya/checkout", tags=["platform-checkout"])
+router = APIRouter(prefix="/v1/checkout", tags=["platform-checkout"])
 
 
 @router.post(
     "/verify",
     response_model=YaCheckoutVerifyResponse,
     responses={401: {"model": ErrorResponse}, 403: {"model": ErrorResponse}, 422: {"model": ErrorResponse}},
-    summary="Verify a YA checkout through the 9-layer integrity stack",
+    summary="Verify a native 0G checkout through the 9-layer integrity stack",
     description=(
-        "Validates a YA token payment receipt, binds it to the developer wallet, and records "
+        "Validates a native 0G mainnet payment receipt, binds it to the developer wallet, and records "
         "a 9-layer integrity envelope before API access is issued."
     ),
 )

@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BrowserProvider, Contract, parseUnits } from "ethers";
+import { BrowserProvider, parseEther } from "ethers";
 
 import {
   createApiKeyAction,
@@ -11,12 +11,10 @@ import {
 import CreatedApiKeyCard from "@/components/dev/CreatedApiKeyCard";
 import type { InjectedProvider } from "@/lib/browser-wallet";
 import {
-  getYaTreasuryAddress,
+  get0GTreasuryAddress,
+  O_G_MAINNET_CHAIN_ID_HEX,
+  O_G_MAINNET_RPC_URL,
   YA_API_PLANS,
-  YA_TESTNET_CHAIN_ID_HEX,
-  YA_TESTNET_RPC_URL,
-  YA_TOKEN_ADDRESS,
-  YA_TOKEN_DECIMALS,
   type YaApiPlan,
 } from "@/lib/ya-api-plans";
 
@@ -37,8 +35,6 @@ interface ManagedApiKeyCreateFormProps {
 interface ProviderError extends Error {
   code?: number;
 }
-
-const ERC20_TRANSFER_ABI = ["function transfer(address to,uint256 value) returns (bool)"];
 
 const CHECKOUT_LAYERS = [
   "L1 Hallucination Blacklist",
@@ -76,7 +72,7 @@ export default function ManagedApiKeyCreateForm({
     initialCreateApiKeyActionState,
   );
   const selectedPlan = YA_API_PLANS.find((plan) => plan.id === selectedPlanId) ?? YA_API_PLANS[0];
-  const paymentRequired = paymentMode !== "admin" && selectedPlan.priceYa > 0;
+  const paymentRequired = paymentMode !== "admin" && selectedPlan.checkoutPrice0g !== "0";
   const canSubmit =
     acknowledged && !pending && (!paymentRequired || (Boolean(paymentTxHash) && checkoutGuardComplete));
 
@@ -108,7 +104,7 @@ export default function ManagedApiKeyCreateForm({
     setCheckoutGuardComplete(true);
   }
 
-  async function switchTo0GTestnet() {
+  async function switchTo0GMainnet() {
     const provider = window.ethereum;
     if (!provider) {
       throw new Error("Wallet extension not detected. Install MetaMask or another EVM wallet first.");
@@ -117,7 +113,7 @@ export default function ManagedApiKeyCreateForm({
     try {
       await provider.request({
         method: "wallet_switchEthereumChain",
-        params: [{ chainId: YA_TESTNET_CHAIN_ID_HEX }],
+        params: [{ chainId: O_G_MAINNET_CHAIN_ID_HEX }],
       });
     } catch (error) {
       const providerError = error as ProviderError;
@@ -129,22 +125,22 @@ export default function ManagedApiKeyCreateForm({
         method: "wallet_addEthereumChain",
         params: [
           {
-            chainId: YA_TESTNET_CHAIN_ID_HEX,
-            chainName: "0G Galileo Testnet",
+            chainId: O_G_MAINNET_CHAIN_ID_HEX,
+            chainName: "0G Mainnet",
             nativeCurrency: {
               name: "0G",
               symbol: "OG",
               decimals: 18,
             },
-            rpcUrls: [YA_TESTNET_RPC_URL],
-            blockExplorerUrls: ["https://chainscan-galileo.0g.ai"],
+            rpcUrls: [O_G_MAINNET_RPC_URL],
+            blockExplorerUrls: ["https://chainscan.0g.ai"],
           },
         ],
       });
     }
   }
 
-  async function payWithYa() {
+  async function payWith0G() {
     setPaymentError("");
     setPaymentStatus("Opening wallet...");
     try {
@@ -153,7 +149,7 @@ export default function ManagedApiKeyCreateForm({
       }
 
       await window.ethereum.request({ method: "eth_requestAccounts" });
-      await switchTo0GTestnet();
+      await switchTo0GMainnet();
 
       const provider = new BrowserProvider(window.ethereum as InjectedProvider);
       const signer = await provider.getSigner();
@@ -164,12 +160,14 @@ export default function ManagedApiKeyCreateForm({
       ) {
         throw new Error("The paying wallet must match the wallet signed into the developer portal.");
       }
-      const token = new Contract(YA_TOKEN_ADDRESS, ERC20_TRANSFER_ABI, signer);
-      const amount = parseUnits(String(selectedPlan.priceYa), YA_TOKEN_DECIMALS);
-      const treasuryAddress = getYaTreasuryAddress();
+      const amount = parseEther(selectedPlan.checkoutPrice0g);
+      const treasuryAddress = get0GTreasuryAddress();
 
-      setPaymentStatus(`Paying ${selectedPlan.priceLabel}...`);
-      const transaction = await token.transfer(treasuryAddress, amount);
+      setPaymentStatus(`Sending ${selectedPlan.priceLabel}...`);
+      const transaction = await signer.sendTransaction({
+        to: treasuryAddress,
+        value: amount,
+      });
       setPaymentStatus("Waiting for 0G confirmation...");
       const receipt = await transaction.wait();
       const receiptHash = receipt?.hash || transaction.hash;
@@ -184,7 +182,7 @@ export default function ManagedApiKeyCreateForm({
       setPaymentStatus(`Payment confirmed: ${receiptHash.slice(0, 10)}...${receiptHash.slice(-6)}`);
     } catch (error) {
       setPaymentStatus("");
-      setPaymentError(error instanceof Error ? error.message : "YA payment failed.");
+      setPaymentError(error instanceof Error ? error.message : "0G payment failed.");
     }
   }
 
@@ -202,7 +200,7 @@ export default function ManagedApiKeyCreateForm({
         ) : null}
         <input type="hidden" name="plan_id" value={selectedPlan.id} />
         <input type="hidden" name="payment_tx_hash" value={paymentTxHash} />
-        <input type="hidden" name="payment_amount_ya" value={String(selectedPlan.priceYa)} />
+        <input type="hidden" name="payment_amount_og" value={selectedPlan.checkoutPrice0g} />
 
         <div className="grid gap-3">
           <div>
@@ -210,7 +208,7 @@ export default function ManagedApiKeyCreateForm({
               API package
             </span>
             <p className="mt-1.5 text-[14px] leading-6 text-[#e0eaf2]">
-              Paid developer keys are unlocked by a verified YA transfer on 0G Galileo testnet.
+              Paid developer keys are unlocked by a verified native 0G transfer on 0G Mainnet.
             </p>
           </div>
           <div className="grid gap-2 md:grid-cols-2">
@@ -248,6 +246,12 @@ export default function ManagedApiKeyCreateForm({
                 <p className="mt-1 pl-4 text-[12px] leading-5 text-[#c0d4e2]">
                   {plan.features.slice(0, 2).join(" · ")}
                 </p>
+                {plan.listPrice0g ? (
+                  <p className="mt-1 pl-4 text-[11px] font-medium text-[#96b0c2]">
+                    <span className="line-through">{plan.listPrice0g} 0G</span>
+                    {plan.promoLabel ? <span className="ml-2 text-[#72f3c7]">{plan.promoLabel}</span> : null}
+                  </p>
+                ) : null}
               </label>
             ))}
           </div>
@@ -258,7 +262,7 @@ export default function ManagedApiKeyCreateForm({
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#72f3c7]">
-                  YA Checkout
+                  0G Checkout
                 </p>
                 <p className="mt-1.5 text-[14px] font-medium leading-6 text-[#d4f6f1]">
                   Pay {selectedPlan.priceLabel} to unlock the {selectedPlan.name} API package.
@@ -267,14 +271,20 @@ export default function ManagedApiKeyCreateForm({
                   The paying wallet must match the wallet signed into this developer portal, so a
                   payment receipt cannot be reused by another account.
                 </p>
+                {selectedPlan.listPrice0g ? (
+                  <p className="mt-1 text-[12px] leading-5 text-[#9cf3e8]">
+                    List price <span className="line-through">{selectedPlan.listPrice0g} 0G</span>
+                    {selectedPlan.promoLabel ? <span className="ml-2">{selectedPlan.promoLabel}</span> : null}
+                  </p>
+                ) : null}
               </div>
               <button
                 type="button"
-                onClick={payWithYa}
+                onClick={payWith0G}
                 disabled={pending || Boolean(paymentStatus && !paymentTxHash)}
                 className="yb-teal-button shrink-0 rounded-xl px-5 py-2.5 text-[13px] font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-70"
               >
-                {paymentTxHash ? "Paid" : "Pay with YA"}
+                {paymentTxHash ? "Paid" : "Pay with 0G"}
               </button>
             </div>
             {paymentStatus ? (
@@ -311,7 +321,7 @@ export default function ManagedApiKeyCreateForm({
           </div>
         ) : paymentMode === "admin" ? (
           <div className="rounded-[18px] border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.04)] px-4 py-4 text-[14px] leading-6 text-[#e0eaf2]">
-            Owner console mode: internal keys can be issued without a YA checkout receipt.
+            Owner console mode: internal keys can be issued without a checkout receipt.
           </div>
         ) : null}
 
@@ -341,12 +351,12 @@ export default function ManagedApiKeyCreateForm({
             <span className="text-[12px] font-medium uppercase tracking-[0.16em] text-[#d0e0ec]">Environment</span>
             <select
               name="environment"
-              defaultValue="testnet"
+              defaultValue="mainnet"
               className="glass-inset rounded-xl border border-white/10 px-3.5 py-2.5 text-[14px] text-white placeholder:text-[#7a95a8] outline-none transition focus:border-[rgba(0,201,177,0.35)]"
             >
-              <option value="testnet">testnet</option>
               <option value="mainnet">mainnet</option>
               <option value="multi">multi</option>
+              <option value="testnet">testnet</option>
             </select>
           </label>
 

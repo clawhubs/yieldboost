@@ -935,11 +935,11 @@ class IntegrityPipeline:
     ) -> YaCheckoutVerifyResponse:
         layer_statuses: dict[str, str] = {}
         tx_hash = payload.tx_hash
-        if payload.amount_ya > 0 and not tx_hash:
-            raise IntegrityError("Paid YA checkout requires a transaction hash.", status_code=422, layer="L2")
+        if payload.amount_og > 0 and not tx_hash:
+            raise IntegrityError("Paid 0G checkout requires a transaction hash.", status_code=422, layer="L2")
 
         checkout_text = (
-            f"YA checkout plan={payload.plan_id} amount={payload.amount_ya} "
+            f"0G checkout plan={payload.plan_id} amount={payload.amount_og} "
             f"wallet={payload.wallet_address} tx={tx_hash or 'free-trial'}"
         )
         await l1_blacklist.run(checkout_text)
@@ -957,25 +957,25 @@ class IntegrityPipeline:
 
         receipt_block = None
         explorer_url = None
-        if payload.amount_ya > 0:
-            receipt_block = await self._verify_ya_transfer_receipt(
+        if payload.amount_og > 0:
+            receipt_block = await self._verify_native_og_transfer_receipt(
                 tx_hash=str(tx_hash),
                 wallet_address=payload.wallet_address,
-                amount_ya=payload.amount_ya,
+                amount_og=payload.amount_og,
             )
-            explorer_url = f"{self.settings.zg_testnet_explorer_base_url.rstrip('/')}/tx/{tx_hash}"
+            explorer_url = f"{self.settings.zg_mainnet_explorer_base_url.rstrip('/')}/tx/{tx_hash}"
             layer_statuses["L5"] = "0g-chain-receipt-observed"
-            layer_statuses["L7"] = "ya-transfer-anchored-on-0g-galileo"
+            layer_statuses["L7"] = "native-0g-transfer-anchored-on-mainnet"
         else:
             layer_statuses["L5"] = "free-trial-receipt-not-required"
             layer_statuses["L7"] = "free-trial-anchor-not-required"
 
         integrity_hash, envelope = await l6_zk_reasoning.run(
             {
-                "type": "ya_checkout_receipt",
+                "type": "0g_checkout_receipt",
                 "wallet_address": payload.wallet_address.lower(),
                 "plan_id": payload.plan_id,
-                "amount_ya": payload.amount_ya,
+                "amount_og": str(payload.amount_og),
                 "tx_hash": tx_hash,
                 "payload_sha256": payload_sha256,
                 "receipt_block": receipt_block,
@@ -990,17 +990,17 @@ class IntegrityPipeline:
         handshake = await l9_handshake.run(
             tx_hash or f"free-{payload.wallet_address.lower()}-{payload.plan_id}",
             payload.wallet_address,
-            "ya_checkout_verify",
+            "og_checkout_verify",
         )
         layer_statuses["L9"] = str(handshake.get("status", "logged"))
 
         await self.store.append_event(
             {
-                "type": "ya_checkout_verified",
+                "type": "og_checkout_verified",
                 "request_id": request_id,
                 "wallet_address": payload.wallet_address,
                 "plan_id": payload.plan_id,
-                "amount_ya": payload.amount_ya,
+                "amount_og": str(payload.amount_og),
                 "tx_hash": tx_hash,
                 "integrity_hash": integrity_hash,
                 "layer_statuses": layer_statuses,
@@ -1013,58 +1013,56 @@ class IntegrityPipeline:
             verified=True,
             plan_id=payload.plan_id,
             wallet_address=payload.wallet_address,
-            amount_ya=payload.amount_ya,
+            amount_og=str(payload.amount_og),
             tx_hash=tx_hash,
-            token_address=self.settings.ya_token_address,
-            treasury_address=self.settings.ya_treasury_address,
+            asset_symbol="0G",
+            network="mainnet",
+            treasury_address=self.settings.og_treasury_address,
             proof_type=str(envelope.get("proof_type", "zk-ready-integrity-envelope")),
             integrity_hash=integrity_hash,
             explorer_url=explorer_url,
             layer_statuses=layer_statuses,
         )
 
-    async def _verify_ya_transfer_receipt(
+    async def _verify_native_og_transfer_receipt(
         self,
         *,
         tx_hash: str,
         wallet_address: str,
-        amount_ya: int,
+        amount_og: Decimal,
     ) -> int:
         from web3 import Web3
 
-        rpc_url = self.settings.zg_testnet_rpc_url
+        rpc_url = self.settings.zg_mainnet_rpc_url
         if not rpc_url:
-            raise IntegrityError("0G testnet RPC is not configured.", status_code=503, layer="L7")
+            raise IntegrityError("0G mainnet RPC is not configured.", status_code=503, layer="L7")
 
         web3 = Web3(Web3.HTTPProvider(rpc_url))
         receipt = await asyncio.to_thread(web3.eth.get_transaction_receipt, tx_hash)
         if not receipt:
-            raise IntegrityError("YA payment transaction is not confirmed yet.", status_code=422, layer="L7")
+            raise IntegrityError("0G payment transaction is not confirmed yet.", status_code=422, layer="L7")
         if int(receipt.get("status", 0)) != 1:
-            raise IntegrityError("YA payment transaction failed on-chain.", status_code=422, layer="L7")
+            raise IntegrityError("0G payment transaction failed on-chain.", status_code=422, layer="L7")
 
-        token_address = Web3.to_checksum_address(self.settings.ya_token_address)
+        transaction = await asyncio.to_thread(web3.eth.get_transaction, tx_hash)
         payer_address = Web3.to_checksum_address(wallet_address)
-        treasury_address = Web3.to_checksum_address(self.settings.ya_treasury_address)
-        transfer_topic = Web3.keccak(text="Transfer(address,address,uint256)").hex()
-        required_amount = int(Decimal(amount_ya) * (Decimal(10) ** self.settings.ya_token_decimals))
+        treasury_address = Web3.to_checksum_address(self.settings.og_treasury_address)
+        from_address = Web3.to_checksum_address(str(transaction.get("from")))
+        to_address = transaction.get("to")
+        if not to_address:
+            raise IntegrityError("0G payment transaction is missing a recipient.", status_code=422, layer="L7")
+        to_address = Web3.to_checksum_address(str(to_address))
+        required_amount = int(amount_og * (Decimal(10) ** 18))
+        value = int(transaction.get("value", 0))
 
-        for log in receipt.get("logs", []):
-            if Web3.to_checksum_address(log.get("address")) != token_address:
-                continue
-            topics = log.get("topics", [])
-            if len(topics) < 3 or topics[0].hex().lower() != transfer_topic.lower():
-                continue
+        if from_address != payer_address:
+            raise IntegrityError("0G receipt sender does not match the developer wallet.", status_code=422, layer="L7")
+        if to_address != treasury_address:
+            raise IntegrityError("0G receipt recipient does not match the treasury wallet.", status_code=422, layer="L7")
+        if value < required_amount:
+            raise IntegrityError("0G receipt value is below the required payment amount.", status_code=422, layer="L7")
 
-            from_address = Web3.to_checksum_address(f"0x{topics[1].hex()[-40:]}")
-            to_address = Web3.to_checksum_address(f"0x{topics[2].hex()[-40:]}")
-            data = log.get("data", "0x0")
-            value = int(data.hex() if hasattr(data, "hex") else str(data), 16)
-
-            if from_address == payer_address and to_address == treasury_address and value >= required_amount:
-                return int(receipt.get("blockNumber") or 0)
-
-        raise IntegrityError("YA receipt does not contain the required token transfer.", status_code=422, layer="L7")
+        return int(receipt.get("blockNumber") or 0)
 
     def _extract_payload(self, payload: SealRequest) -> bytes:
         if payload.plaintext is not None:

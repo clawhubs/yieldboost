@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { createManagedApiKey, revokeManagedApiKey, verifyYaCheckout } from "@/lib/dev-portal";
+import { createManagedApiKey, revokeManagedApiKey, verify0GCheckout } from "@/lib/dev-portal";
 import { getPortalSession } from "@/lib/dev-portal-auth";
 import { getYaApiPlan } from "@/lib/ya-api-plans";
 
@@ -20,16 +20,17 @@ function compactTx(value: string) {
 function appendPaymentNote(input: {
   notes: string;
   planName: string;
-  priceYa: number;
+  checkoutPrice0g: string;
+  listPrice0g?: string | null;
   txHash: string;
   integrityHash?: string;
   adminBypass?: boolean;
 }) {
   const planNote = input.adminBypass
-    ? `YA plan ${input.planName}: owner console bypass`
-    : input.priceYa
-      ? `YA plan ${input.planName}: ${input.priceYa.toLocaleString("en-US")} YA; tx ${compactTx(input.txHash)}; proof ${input.integrityHash ? compactTx(`0x${input.integrityHash}`) : "pending"}`
-      : `YA plan ${input.planName}: free trial`;
+    ? `0G plan ${input.planName}: owner console bypass`
+    : input.checkoutPrice0g !== "0"
+      ? `0G plan ${input.planName}: ${input.checkoutPrice0g} 0G${input.listPrice0g ? ` (list ${input.listPrice0g} 0G)` : ""}; tx ${compactTx(input.txHash)}; proof ${input.integrityHash ? compactTx(`0x${input.integrityHash}`) : "pending"}`
+      : `0G plan ${input.planName}: free trial`;
   return [planNote, input.notes].filter(Boolean).join(" | ").slice(0, 240);
 }
 
@@ -45,7 +46,7 @@ export async function createApiKeyAction(
   const appName = String(formData.get("app_name") || "").trim();
   const ownerLabel = String(formData.get("owner_label") || "").trim();
   const submittedOwnerWalletAddress = String(formData.get("owner_wallet_address") || "").trim();
-  const environment = String(formData.get("environment") || "testnet").trim() as
+  const environment = String(formData.get("environment") || "mainnet").trim() as
     | "testnet"
     | "mainnet"
     | "multi";
@@ -79,10 +80,10 @@ export async function createApiKeyAction(
     let checkoutProofHash: string | undefined;
 
     if (session.role !== "owner") {
-      const checkout = await verifyYaCheckout({
+      const checkout = await verify0GCheckout({
         walletAddress: ownerWalletAddress,
         planId: plan.id,
-        amountYa: plan.priceYa,
+        amountOg: plan.checkoutPrice0g,
         txHash: paymentTxHash || undefined,
       });
       checkoutProofHash = checkout.integrity_hash;
@@ -96,7 +97,8 @@ export async function createApiKeyAction(
       notes: appendPaymentNote({
         notes,
         planName: plan.name,
-        priceYa: plan.priceYa,
+        checkoutPrice0g: plan.checkoutPrice0g,
+        listPrice0g: plan.listPrice0g,
         txHash: paymentTxHash,
         integrityHash: checkoutProofHash,
         adminBypass: session.role === "owner",
@@ -104,7 +106,7 @@ export async function createApiKeyAction(
       scopes: plan.scopes,
       planId: plan.id,
       planName: plan.name,
-      planPriceYa: plan.priceYa,
+      planPriceOg: plan.checkoutPrice0g,
       planMaxKeys: plan.apiKeys,
       planQuotaMonthly: plan.monthlyQuota,
       planExpiresAt: planExpiryIso(plan.expiresInDays),

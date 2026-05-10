@@ -96,7 +96,7 @@ export default function DeveloperLandingView({
       {/* ── VALUE PROPS ROW ───────────────────────────────── */}
       <section className="fade-in-up fade-in-up-2 grid gap-4 sm:grid-cols-3">
         {[
-          { icon: KeyRound, label: "Token Gated", text: "Each paid plan maps one on-chain YA payment to scoped API access.", accent: "#72f3c7" },
+          { icon: KeyRound, label: "Wallet Gated", text: "Each paid plan maps one native 0G mainnet payment to scoped API access.", accent: "#72f3c7" },
           { icon: Gauge, label: "Quota Aware", text: "Plans control request volume, number of keys, and support level.", accent: "#63d8ff" },
           { icon: ShieldCheck, label: "Proof Native", text: "Every API key issuance goes through the full 9-layer integrity stack.", accent: "#72f3c7" },
         ].map((item) => (
@@ -125,7 +125,7 @@ export default function DeveloperLandingView({
               {[
                 "Connect a 0G wallet",
                 "Choose an API package",
-                "Pay with YA on testnet",
+                "Pay with 0G on mainnet",
                 "Receive a scoped API key",
               ].map((step, index) => (
                 <div
@@ -163,7 +163,7 @@ export default function DeveloperLandingView({
         <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-[13px] font-bold uppercase tracking-[0.18em] text-[#72f3c7]">API Packages</p>
-            <h2 className="mt-2 text-[30px] font-extrabold tracking-tight text-white md:text-[38px]">Simple YA pricing.</h2>
+            <h2 className="mt-2 text-[30px] font-extrabold tracking-tight text-white md:text-[38px]">Mainnet 0G pricing.</h2>
             <p className="mt-2 max-w-2xl text-[14px] leading-6 text-[#c8dae6]">
               Pick a package first. If your wallet is not connected yet, the package button will connect it and open the checkout with that plan selected.
             </p>
@@ -189,8 +189,14 @@ export default function DeveloperLandingView({
                 ) : null}
               </div>
               <div className="mt-4">
-                <span className="text-[36px] font-bold leading-none text-white">{plan.priceYa.toLocaleString("en-US")}</span>
-                <span className="ml-1.5 text-[13px] font-medium text-[#96b0c2]">YA{plan.priceYa ? ` / ${plan.renewalLabel}` : ""}</span>
+                {plan.listPrice0g ? (
+                  <div className="text-[13px] font-medium text-[#96b0c2]">
+                    <span className="line-through">{plan.listPrice0g} 0G</span>
+                    {plan.promoLabel ? <span className="ml-2 text-[#72f3c7]">{plan.promoLabel}</span> : null}
+                  </div>
+                ) : null}
+                <span className="text-[36px] font-bold leading-none text-white">{plan.checkoutPrice0g}</span>
+                <span className="ml-1.5 text-[13px] font-medium text-[#96b0c2]">0G{plan.checkoutPrice0g !== "0" ? ` / ${plan.renewalLabel}` : ""}</span>
               </div>
               <p className="mt-2 text-[13px] text-[#b8cfde]">
                 {plan.apiKeys} key{plan.apiKeys > 1 ? "s" : ""} · {plan.quotaLabel}
@@ -236,8 +242,8 @@ export default function DeveloperLandingView({
             </div>
             <div className="bunker-inner-card rounded-xl p-4">
               <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#96b0c2]">Network</p>
-              <p className="mt-2 text-[22px] font-bold text-[#72f3c7]">Testnet</p>
-              <p className="mt-1 text-[13px] leading-5 text-[#a0b8ca]">Symmetric with mainnet — cutover is validation.</p>
+              <p className="mt-2 text-[22px] font-bold text-[#72f3c7]">Mainnet</p>
+              <p className="mt-1 text-[13px] leading-5 text-[#a0b8ca]">Developer checkout now verifies native 0G on mainnet.</p>
             </div>
             <div className="bunker-inner-card rounded-xl p-4">
               <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#96b0c2]">Auth</p>

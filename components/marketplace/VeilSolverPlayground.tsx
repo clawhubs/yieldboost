@@ -9,7 +9,7 @@ const product = getApiMarketplaceProduct("veilsolver");
 
 const defaultPayload = {
   action: "SWAP",
-  chainId: 16602,
+  chainId: 16661,
   tokenIn: "0x0000000000000000000000000000000000000000",
   tokenOut: "0x0000000000000000000000000000000000000000",
   amountIn: "1.0",
@@ -83,10 +83,17 @@ export default function VeilSolverPlayground() {
               {product.plans.map((plan) => (
                 <div key={plan.id} className="rounded-[16px] border border-[rgba(255,255,255,0.08)] bg-white/[0.035] p-4">
                   <div className="text-[13px] font-semibold">{plan.name}</div>
-                  <div className="mt-2 flex items-center gap-2 text-[22px] font-semibold text-[#68ff7a]">
-                    <Image src="/ya-icon.png" alt="YA" width={22} height={22} />
-                    {plan.priceYa} YA
+                  {plan.listPrice0g ? (
+                    <div className="mt-2 text-[12px] text-[#96b0c2]">
+                      <span className="line-through">{plan.listPrice0g} 0G</span>
+                    </div>
+                  ) : null}
+                  <div className="mt-1 text-[22px] font-semibold text-[#68ff7a]">
+                    {plan.checkoutPrice0g} 0G
                   </div>
+                  {plan.promoLabel ? (
+                    <div className="mt-1 text-[11px] text-[#9ff7f0]">{plan.promoLabel}</div>
+                  ) : null}
                   <div className="mt-1 text-[12px] text-[#9fb0be]">{plan.quota}</div>
                 </div>
               ))}

@@ -85,6 +85,10 @@ class Settings(BaseSettings):
         default="https://chainscan-galileo.0g.ai",
         alias="NEXT_PUBLIC_0G_TESTNET_EXPLORER_BASE_URL",
     )
+    og_treasury_address: str = Field(
+        default="0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+        alias="OG_TREASURY_ADDRESS",
+    )
     ya_token_address: str = Field(
         default="0xa8018A4920ecA7AF0Df88caCFD5E21b939A678b5",
         alias="YA_TOKEN_ADDRESS",
