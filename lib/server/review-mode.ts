@@ -1,5 +1,7 @@
 import "server-only";
 
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { cookies } from "next/headers";
 import { ethers } from "ethers";
 import {
@@ -55,6 +57,16 @@ import {
 
 type BadgeTone = "teal" | "green" | "amber" | "white";
 type HealthStatus = "live" | "configured" | "partial" | "pending";
+
+const INFT_BLOCK_SCAN_CHUNK = 50_000;
+const KNOWN_INFT_DEPLOYMENT_BLOCKS: Record<WalletNetworkKey, Record<string, number>> = {
+  testnet: {
+    "0x9776982bbbf1495ca9ae036775b23d1a2795bb74": 30288484,
+  },
+  mainnet: {
+    "0xb264d861264b0e4f8fb98a61b7694ba8a3b6bbe3": 31888431,
+  },
+};
 
 export interface JudgeStatusCard {
   label: string;
@@ -263,6 +275,26 @@ function readEnv(name: string) {
   return process.env[name];
 }
 
+function getInftDeploymentBlock(
+  networkKey: WalletNetworkKey,
+  inftAddress?: string,
+) {
+  try {
+    const artifactFile =
+      networkKey === "mainnet"
+        ? path.join(process.cwd(), ".artifacts", "yield-strategy-inft-deployment-mainnet.json")
+        : path.join(process.cwd(), ".artifacts", "yield-strategy-inft-deployment.json");
+    const raw = JSON.parse(readFileSync(artifactFile, "utf8")) as { blockNumber?: number | null };
+    return typeof raw.blockNumber === "number" && raw.blockNumber > 0 ? raw.blockNumber : 0;
+  } catch {
+    const normalizedAddress = inftAddress?.toLowerCase();
+    if (!normalizedAddress) {
+      return 0;
+    }
+    return KNOWN_INFT_DEPLOYMENT_BLOCKS[networkKey][normalizedAddress] ?? 0;
+  }
+}
+
 function buildExplorerTxHref(networkKey: string, txHash: string | undefined) {
   if (!txHash) return undefined;
   return `${getServer0GNetworkConfig(networkKey).explorerBase.replace(/\/$/, "")}/tx/${txHash}`;
@@ -303,6 +335,7 @@ async function resolveLatestAgentMintArtifact(
     const totalSupply = Number(await inft.totalSupply());
     const zeroAddress = ethers.ZeroAddress;
     const latestBlock = await provider.getBlockNumber();
+    const deploymentBlock = getInftDeploymentBlock(networkKey as WalletNetworkKey, inftAddress);
 
     for (let tokenId = totalSupply; tokenId >= 1; tokenId -= 1) {
       try {
@@ -312,8 +345,24 @@ async function resolveLatestAgentMintArtifact(
         }
 
         const filter = inft.filters.Transfer(zeroAddress, owner, BigInt(tokenId));
-        const fromBlock = Math.max(0, latestBlock - 500_000);
-        const logs = await inft.queryFilter(filter, fromBlock, latestBlock);
+        const minBlock = Math.max(0, deploymentBlock);
+        const logs: Awaited<ReturnType<typeof inft.queryFilter>> = [];
+
+        for (
+          let toBlock = latestBlock;
+          toBlock >= minBlock;
+          toBlock -= INFT_BLOCK_SCAN_CHUNK
+        ) {
+          const fromBlock = Math.max(minBlock, toBlock - INFT_BLOCK_SCAN_CHUNK + 1);
+          const chunkLogs = await inft.queryFilter(filter, fromBlock, toBlock);
+          if (chunkLogs.length > 0) {
+            logs.push(...chunkLogs);
+            break;
+          }
+          if (fromBlock === minBlock) {
+            break;
+          }
+        }
         const latestLog = logs.at(-1);
         const txHash = latestLog?.transactionHash;
 
