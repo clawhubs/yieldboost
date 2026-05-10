@@ -58,6 +58,16 @@ class ApiKeyCreateResponse(BaseModel):
     item: ApiKeyListItem
 
 
+class ApiKeyIntrospectRequest(BaseModel):
+    api_key: str = Field(min_length=8, max_length=160)
+
+
+class ApiKeyIntrospectResponse(BaseModel):
+    success: bool = True
+    request_id: str
+    item: ApiKeyListItem
+
+
 class ApiKeyListResponse(BaseModel):
     success: bool = True
     request_id: str

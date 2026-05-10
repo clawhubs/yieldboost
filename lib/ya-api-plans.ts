@@ -30,7 +30,7 @@ export interface YaApiPlan {
 export const YA_API_PLANS: YaApiPlan[] = [
   {
     id: "free",
-    name: "Free Trial",
+    name: "Free",
     listPrice0g: null,
     checkoutPrice0g: "0",
     priceLabel: "0 0G",
@@ -44,8 +44,9 @@ export const YA_API_PLANS: YaApiPlan[] = [
     features: [
       "1 test API key",
       "100 requests per day",
-      "Basic optimizer endpoint",
-      "Proof lookup preview",
+      "Non-AI verification modules only",
+      "ZK proof + proof lookup preview",
+      "No TEE, no partner SDK, no Alibaba fingerprinting",
     ],
   },
   {
@@ -60,12 +61,22 @@ export const YA_API_PLANS: YaApiPlan[] = [
     expiresInDays: 30,
     quotaLabel: "10,000 requests/month",
     environment: "mainnet",
-    scopes: ["status:read", "blacklist:check", "audit:run", "proof:run"],
+    scopes: [
+      "status:read",
+      "blacklist:check",
+      "audit:run",
+      "proof:run",
+      "governance:evaluate",
+      "handshake:write",
+      "integrity:read",
+    ],
     features: [
       "1 production API key",
       "10,000 requests per month",
-      "Yield optimizer API",
-      "Basic proof lookup",
+      "Deterministic verification modules",
+      "Alibaba anti-sybil marketplace module",
+      "Governance + handshake APIs",
+      "No full 9-layer compute or partner SDK",
     ],
   },
   {
@@ -85,8 +96,6 @@ export const YA_API_PLANS: YaApiPlan[] = [
       "blacklist:check",
       "audit:run",
       "proof:run",
-      "integrity:seal",
-      "integrity:unseal",
       "integrity:read",
       "governance:evaluate",
       "handshake:write",
@@ -94,8 +103,9 @@ export const YA_API_PLANS: YaApiPlan[] = [
     features: [
       "3 production API keys",
       "150,000 requests per month",
-      "Proof-backed optimization",
-      "Vault and governance endpoints",
+      "Extended non-AI verification modules",
+      "Vault metadata read + governance APIs",
+      "No TEE, no partner SDK, no Alibaba fingerprinting",
       "Webhook-ready integration",
     ],
     promoLabel: "30-day trial",
@@ -127,9 +137,10 @@ export const YA_API_PLANS: YaApiPlan[] = [
     features: [
       "10 production API keys",
       "2M requests per month",
+      "Full 9-layer compute and TEE access",
+      "Alibaba anti-sybil + VeilSolver partner SDK",
+      "Vault seal, unseal, delete, and white-label path",
       "Custom rate limit",
-      "Partner SDK support",
-      "White-label integration path",
     ],
   },
 ];

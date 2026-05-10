@@ -178,7 +178,7 @@ async def ensure_api_access(
         except ValueError:
             parsed_expires_at = None
         if parsed_expires_at and datetime.now(timezone.utc) > parsed_expires_at:
-            raise IntegrityError("API key plan has expired. Renew with YA to continue.", status_code=403, layer="L8")
+            raise IntegrityError("API key plan has expired. Renew the 0G package to continue.", status_code=403, layer="L8")
 
     quota_monthly = int(matched.get("plan_quota_monthly") or 0)
     if quota_monthly > 0:

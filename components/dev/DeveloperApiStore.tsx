@@ -8,6 +8,7 @@ import { API_MARKETPLACE_PRODUCTS } from "@/lib/military-grade-api-marketplace";
 
 function categoryLabel(category: string, layerId?: string) {
   if (category === "full-stack") return "Full 9-layer";
+  if (category === "security-module") return "Mainnet module";
   if (category === "partner-sdk") return "Partner SDK";
   return `Layer ${layerId}`;
 }
@@ -26,13 +27,13 @@ export default function DeveloperApiStore() {
         <div>
           <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(0,201,177,0.22)] bg-[rgba(0,201,177,0.08)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-[#9ff7f0]">
             <Layers3 className="h-3.5 w-3.5" />
-            API Store
+            Modular Immunity Armory
           </div>
           <h2 className="mt-3 text-[30px] font-extrabold tracking-tight text-white md:text-[38px]">
             API products for every verification path.
           </h2>
           <p className="mt-2 max-w-3xl text-[14px] leading-6 text-[#c8dae6]">
-            A developer store with 11 endpoints: the complete 9-layer military-grade API, 9 single-layer verification APIs, and one secure proxy product ready for playground testing and API-key integration.
+            A developer store with a full military-grade stack, a dedicated anti-sybil mainnet module, single-layer verification APIs, and secure proxy products ready for playground testing and API-key integration.
           </p>
         </div>
         <div className="rounded-xl border border-[rgba(0,201,177,0.18)] bg-[rgba(0,201,177,0.06)] px-4 py-3 text-[13px] font-bold text-[#dfffe4]">
@@ -92,11 +93,11 @@ export default function DeveloperApiStore() {
                 ))
               ) : (
                 product.layers
-                  .slice(0, product.category === "single-layer" ? 1 : 9)
+                  .slice(0, product.category === "single-layer" ? 1 : product.category === "security-module" ? 4 : 9)
                   .map((layer) => (
                   <div key={layer.id} className="flex items-start gap-2 text-[11px] leading-5 text-[#b7c7d2]">
                     <span className="rounded-full border border-[#72f3c7]/20 bg-[#72f3c7]/10 px-2 py-0.5 font-bold text-[#9ff7f0]">
-                      L{layer.id}
+                      {product.category === "security-module" ? layer.id : `L${layer.id}`}
                     </span>
                     <span>{layer.label}</span>
                   </div>

@@ -9,6 +9,10 @@ import {
   type TradingIntent,
 } from "veilsolver-sdk";
 import { getApiMarketplaceProduct } from "@/lib/military-grade-api-marketplace";
+import {
+  ensureMarketplacePlanAccess,
+  validateMarketplaceApiKey,
+} from "@/lib/server/dev-marketplace-auth";
 
 const product = getApiMarketplaceProduct("veilsolver");
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
@@ -17,48 +21,6 @@ function sha256Hex(value: unknown) {
   return createHash("sha256")
     .update(typeof value === "string" ? value : JSON.stringify(value))
     .digest("hex");
-}
-
-function getRequestApiKey(headers: Headers) {
-  const bearer = headers.get("authorization")?.match(/^Bearer\s+(.+)$/i)?.[1];
-  return bearer ?? headers.get("x-yieldboost-api-key") ?? "";
-}
-
-function validateApiKey(headers: Headers) {
-  const apiKey = getRequestApiKey(headers).trim();
-  const freeTierKey = process.env.YB_MARKETPLACE_FREE_TIER_KEY ?? "yb_free_tier_local";
-  const configuredKeys = [
-    freeTierKey,
-    ...(process.env.YB_MARKETPLACE_API_KEYS ?? "")
-      .split(",")
-      .map((value) => value.trim())
-      .filter(Boolean),
-  ];
-
-  if (!apiKey) {
-    return {
-      ok: false,
-      plan: "none",
-      keyPreview: null,
-      error: "Missing YieldBoost API key. Use Authorization: Bearer <key>.",
-    };
-  }
-
-  if (!configuredKeys.includes(apiKey) && !apiKey.startsWith("yb_live_")) {
-    return {
-      ok: false,
-      plan: "invalid",
-      keyPreview: `${apiKey.slice(0, 6)}...${apiKey.slice(-4)}`,
-      error: "Invalid or inactive YieldBoost API key.",
-    };
-  }
-
-  return {
-    ok: true,
-    plan: apiKey === freeTierKey ? "free" : "subscriber",
-    keyPreview: `${apiKey.slice(0, 6)}...${apiKey.slice(-4)}`,
-    error: null,
-  };
 }
 
 function asString(value: unknown, fallback: string) {
@@ -272,7 +234,7 @@ function normalizeVeilSolverResponse(data: unknown, intent?: TradingIntent) {
 export async function runVeilSolverSecureProxy(headers: Headers, payload: Record<string, unknown>) {
   if (!product) throw new Error("VeilSolver product is not registered.");
 
-  const auth = validateApiKey(headers);
+  const auth = await validateMarketplaceApiKey(headers);
   if (!auth.ok) {
     return {
       statusCode: 401,
@@ -283,6 +245,11 @@ export async function runVeilSolverSecureProxy(headers: Headers, payload: Record
         marketplace_product: product.id,
       },
     };
+  }
+
+  const access = ensureMarketplacePlanAccess(auth, product.id);
+  if (!access.ok) {
+    return access;
   }
 
   const requestId = `yb-vs-${randomUUID()}`;

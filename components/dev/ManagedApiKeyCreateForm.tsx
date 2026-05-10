@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BrowserProvider, parseEther } from "ethers";
+import { BrowserProvider } from "ethers";
 
 import {
   createApiKeyAction,
@@ -11,12 +11,10 @@ import {
 import CreatedApiKeyCard from "@/components/dev/CreatedApiKeyCard";
 import type { InjectedProvider } from "@/lib/browser-wallet";
 import {
-  get0GTreasuryAddress,
-  O_G_MAINNET_CHAIN_ID_HEX,
-  O_G_MAINNET_RPC_URL,
   YA_API_PLANS,
   type YaApiPlan,
 } from "@/lib/ya-api-plans";
+import { buildPlanActivationMessage, DEV_PLAN_ACTIVATION_TTL_MS } from "@/lib/dev-plan-activation";
 
 const initialCreateApiKeyActionState: CreateApiKeyActionState = {
   success: false,
@@ -30,10 +28,6 @@ interface ManagedApiKeyCreateFormProps {
   paymentMode?: "required" | "admin";
   submitLabel?: string;
   initialPlanId?: YaApiPlan["id"];
-}
-
-interface ProviderError extends Error {
-  code?: number;
 }
 
 const CHECKOUT_LAYERS = [
@@ -62,9 +56,11 @@ export default function ManagedApiKeyCreateForm({
   const createdCardRef = useRef<HTMLDivElement | null>(null);
   const [acknowledged, setAcknowledged] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState<YaApiPlan["id"]>(initialPlanId);
-  const [paymentTxHash, setPaymentTxHash] = useState("");
-  const [paymentStatus, setPaymentStatus] = useState("");
-  const [paymentError, setPaymentError] = useState("");
+  const [checkoutReviewReady, setCheckoutReviewReady] = useState(false);
+  const [activationSignature, setActivationSignature] = useState("");
+  const [activationExpiresAt, setActivationExpiresAt] = useState("");
+  const [activationStatus, setActivationStatus] = useState("");
+  const [activationError, setActivationError] = useState("");
   const [activeLayerIndex, setActiveLayerIndex] = useState(-1);
   const [checkoutGuardComplete, setCheckoutGuardComplete] = useState(false);
   const [state, formAction, pending] = useActionState<CreateApiKeyActionState, FormData>(
@@ -74,7 +70,7 @@ export default function ManagedApiKeyCreateForm({
   const selectedPlan = YA_API_PLANS.find((plan) => plan.id === selectedPlanId) ?? YA_API_PLANS[0];
   const paymentRequired = paymentMode !== "admin" && selectedPlan.checkoutPrice0g !== "0";
   const canSubmit =
-    acknowledged && !pending && (!paymentRequired || (Boolean(paymentTxHash) && checkoutGuardComplete));
+    acknowledged && !pending && (!paymentRequired || (Boolean(activationSignature) && checkoutGuardComplete));
 
   useEffect(() => {
     if (state.success) {
@@ -84,11 +80,13 @@ export default function ManagedApiKeyCreateForm({
   }, [router, state.success]);
 
   useEffect(() => {
-    setPaymentTxHash("");
-    setPaymentStatus("");
-    setPaymentError("");
+    setActivationSignature("");
+    setActivationExpiresAt("");
+    setActivationStatus("");
+    setActivationError("");
     setActiveLayerIndex(-1);
     setCheckoutGuardComplete(false);
+    setCheckoutReviewReady(false);
   }, [selectedPlanId]);
 
   useEffect(() => {
@@ -104,52 +102,15 @@ export default function ManagedApiKeyCreateForm({
     setCheckoutGuardComplete(true);
   }
 
-  async function switchTo0GMainnet() {
-    const provider = window.ethereum;
-    if (!provider) {
-      throw new Error("Wallet extension not detected. Install MetaMask or another EVM wallet first.");
-    }
-
-    try {
-      await provider.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: O_G_MAINNET_CHAIN_ID_HEX }],
-      });
-    } catch (error) {
-      const providerError = error as ProviderError;
-      if (providerError.code !== 4902) {
-        throw error;
-      }
-
-      await provider.request({
-        method: "wallet_addEthereumChain",
-        params: [
-          {
-            chainId: O_G_MAINNET_CHAIN_ID_HEX,
-            chainName: "0G Mainnet",
-            nativeCurrency: {
-              name: "0G",
-              symbol: "OG",
-              decimals: 18,
-            },
-            rpcUrls: [O_G_MAINNET_RPC_URL],
-            blockExplorerUrls: ["https://chainscan.0g.ai"],
-          },
-        ],
-      });
-    }
-  }
-
-  async function payWith0G() {
-    setPaymentError("");
-    setPaymentStatus("Opening wallet...");
+  async function signPackageActivation() {
+    setActivationError("");
+    setActivationStatus("Opening wallet...");
     try {
       if (!window.ethereum) {
         throw new Error("Wallet extension not detected. Install MetaMask or another EVM wallet first.");
       }
 
       await window.ethereum.request({ method: "eth_requestAccounts" });
-      await switchTo0GMainnet();
 
       const provider = new BrowserProvider(window.ethereum as InjectedProvider);
       const signer = await provider.getSigner();
@@ -160,30 +121,32 @@ export default function ManagedApiKeyCreateForm({
       ) {
         throw new Error("The paying wallet must match the wallet signed into the developer portal.");
       }
-      const amount = parseEther(selectedPlan.checkoutPrice0g);
-      const treasuryAddress = get0GTreasuryAddress();
-
-      setPaymentStatus(`Sending ${selectedPlan.priceLabel}...`);
-      const transaction = await signer.sendTransaction({
-        to: treasuryAddress,
-        value: amount,
+      const expiresAt = Date.now() + DEV_PLAN_ACTIVATION_TTL_MS;
+      const message = buildPlanActivationMessage({
+        walletAddress: payerAddress,
+        planId: selectedPlan.id,
+        planName: selectedPlan.name,
+        priceLabel: selectedPlan.priceLabel,
+        expiresAt,
       });
-      setPaymentStatus("Waiting for 0G confirmation...");
-      const receipt = await transaction.wait();
-      const receiptHash = receipt?.hash || transaction.hash;
 
-      if (!receiptHash) {
-        throw new Error("Payment transaction did not return a receipt hash.");
-      }
-
-      setPaymentTxHash(receiptHash);
-      setPaymentStatus("Running 9-layer checkout guard...");
+      setActivationStatus("Waiting for wallet signature...");
+      const signature = await signer.signMessage(message);
+      setActivationSignature(signature);
+      setActivationExpiresAt(String(expiresAt));
+      setActivationStatus("Running 9-layer checkout guard...");
       await runCheckoutLayerPreview();
-      setPaymentStatus(`Payment confirmed: ${receiptHash.slice(0, 10)}...${receiptHash.slice(-6)}`);
+      setActivationStatus("Package activation signed and verified.");
     } catch (error) {
-      setPaymentStatus("");
-      setPaymentError(error instanceof Error ? error.message : "0G payment failed.");
+      setActivationStatus("");
+      setActivationError(error instanceof Error ? error.message : "Package activation failed.");
     }
+  }
+
+  function beginCheckoutReview() {
+    setActivationError("");
+    setActivationStatus("");
+    setCheckoutReviewReady(true);
   }
 
   return (
@@ -199,8 +162,8 @@ export default function ManagedApiKeyCreateForm({
           <input type="hidden" name="owner_wallet_address" value={ownerWalletAddress} />
         ) : null}
         <input type="hidden" name="plan_id" value={selectedPlan.id} />
-        <input type="hidden" name="payment_tx_hash" value={paymentTxHash} />
-        <input type="hidden" name="payment_amount_og" value={selectedPlan.checkoutPrice0g} />
+        <input type="hidden" name="activation_signature" value={activationSignature} />
+        <input type="hidden" name="activation_expires_at" value={activationExpiresAt} />
 
         <div className="grid gap-3">
           <div>
@@ -208,7 +171,7 @@ export default function ManagedApiKeyCreateForm({
               API package
             </span>
             <p className="mt-1.5 text-[14px] leading-6 text-[#e0eaf2]">
-              Paid developer keys are unlocked by a verified native 0G transfer on 0G Mainnet.
+              Developer packages are activated by a wallet signature tied to the connected portal identity.
             </p>
           </div>
           <div className="grid gap-2 md:grid-cols-2">
@@ -262,14 +225,17 @@ export default function ManagedApiKeyCreateForm({
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#72f3c7]">
-                  0G Checkout
+                  Package activation
                 </p>
                 <p className="mt-1.5 text-[14px] font-medium leading-6 text-[#d4f6f1]">
-                  Pay {selectedPlan.priceLabel} to unlock the {selectedPlan.name} API package.
+                  Activate the {selectedPlan.name} API package with a wallet signature.
                 </p>
                 <p className="mt-1.5 text-[12px] leading-5 text-[#b8ece5]">
-                  The paying wallet must match the wallet signed into this developer portal, so a
-                  payment receipt cannot be reused by another account.
+                  The signing wallet must match the wallet signed into this developer portal, so a
+                  package activation cannot be reused by another account.
+                </p>
+                <p className="mt-1.5 text-[12px] leading-5 text-[#9cf3e8]">
+                  Step 1 reviews the package and wallet match. Step 2 opens a wallet signature confirmation for package activation.
                 </p>
                 {selectedPlan.listPrice0g ? (
                   <p className="mt-1 text-[12px] leading-5 text-[#9cf3e8]">
@@ -278,17 +244,46 @@ export default function ManagedApiKeyCreateForm({
                   </p>
                 ) : null}
               </div>
-              <button
-                type="button"
-                onClick={payWith0G}
-                disabled={pending || Boolean(paymentStatus && !paymentTxHash)}
-                className="yb-teal-button shrink-0 rounded-xl px-5 py-2.5 text-[13px] font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {paymentTxHash ? "Paid" : "Pay with 0G"}
-              </button>
+              {checkoutReviewReady ? (
+                <button
+                  type="button"
+                  onClick={signPackageActivation}
+                  disabled={pending || Boolean(activationStatus && !activationSignature)}
+                  className="yb-teal-button shrink-0 rounded-xl px-5 py-2.5 text-[13px] font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {activationSignature ? "Signed" : "Open wallet signature"}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={beginCheckoutReview}
+                  disabled={pending}
+                  className="yb-teal-button shrink-0 rounded-xl px-5 py-2.5 text-[13px] font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  Review package
+                </button>
+              )}
             </div>
-            {paymentStatus ? (
-              <p className="mt-3 break-all font-mono text-[12px] leading-6 text-[#9cf3e8]">{paymentStatus}</p>
+            {checkoutReviewReady && !activationSignature ? (
+              <div className="mt-3 rounded-xl border border-[rgba(255,255,255,0.1)] bg-[rgba(2,10,18,0.48)] px-4 py-4 text-[13px] leading-6 text-[#d7e7f2]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#72f3c7]">
+                  Checkout review
+                </p>
+                <div className="mt-2 grid gap-1">
+                  <p>Package: <span className="font-semibold text-white">{selectedPlan.name}</span></p>
+                  <p>Reference price: <span className="font-semibold text-white">{selectedPlan.priceLabel}</span></p>
+                  <p>Action: <span className="font-semibold text-white">Wallet signature</span></p>
+                  {ownerWalletAddress ? (
+                    <p>Signed-in wallet: <span className="break-all font-mono text-[12px] text-[#9cf3e8]">{ownerWalletAddress}</span></p>
+                  ) : null}
+                </div>
+                <p className="mt-2 text-[12px] leading-5 text-[#a9c9d7]">
+                  The next button will open the wallet popup. The app will not activate the package before that signature step.
+                </p>
+              </div>
+            ) : null}
+            {activationStatus ? (
+              <p className="mt-3 break-all font-mono text-[12px] leading-6 text-[#9cf3e8]">{activationStatus}</p>
             ) : null}
             {paymentRequired ? (
               <div className="mt-3 grid gap-1.5 sm:grid-cols-3">
@@ -315,8 +310,8 @@ export default function ManagedApiKeyCreateForm({
                 })}
               </div>
             ) : null}
-            {paymentError ? (
-              <p className="mt-3 break-words text-[13px] leading-6 text-[#ffb3b3]">{paymentError}</p>
+            {activationError ? (
+              <p className="mt-3 break-words text-[13px] leading-6 text-[#ffb3b3]">{activationError}</p>
             ) : null}
           </div>
         ) : paymentMode === "admin" ? (
@@ -347,19 +342,30 @@ export default function ManagedApiKeyCreateForm({
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="grid gap-1.5">
-            <span className="text-[12px] font-medium uppercase tracking-[0.16em] text-[#d0e0ec]">Environment</span>
-            <select
-              name="environment"
-              defaultValue="mainnet"
-              className="glass-inset rounded-xl border border-white/10 px-3.5 py-2.5 text-[14px] text-white placeholder:text-[#7a95a8] outline-none transition focus:border-[rgba(0,201,177,0.35)]"
-            >
-              <option value="mainnet">mainnet</option>
-              <option value="multi">multi</option>
-              <option value="testnet">testnet</option>
-            </select>
-          </label>
-
+          {paymentMode === "required" ? (
+            <>
+              <input type="hidden" name="environment" value="mainnet" />
+              <div className="grid gap-1.5">
+                <span className="text-[12px] font-medium uppercase tracking-[0.16em] text-[#d0e0ec]">Environment</span>
+                <div className="glass-inset rounded-xl border border-[rgba(0,201,177,0.16)] px-3.5 py-2.5 text-[14px] font-semibold text-[#72f3c7]">
+                  mainnet
+                </div>
+              </div>
+            </>
+          ) : (
+            <label className="grid gap-1.5">
+              <span className="text-[12px] font-medium uppercase tracking-[0.16em] text-[#d0e0ec]">Environment</span>
+              <select
+                name="environment"
+                defaultValue="mainnet"
+                className="glass-inset rounded-xl border border-white/10 px-3.5 py-2.5 text-[14px] text-white placeholder:text-[#7a95a8] outline-none transition focus:border-[rgba(0,201,177,0.35)]"
+              >
+                <option value="mainnet">mainnet</option>
+                <option value="multi">multi</option>
+                <option value="testnet">testnet</option>
+              </select>
+            </label>
+          )}
           <label className="grid gap-1.5">
             <span className="text-[12px] font-medium uppercase tracking-[0.16em] text-[#d0e0ec]">Notes</span>
             <textarea

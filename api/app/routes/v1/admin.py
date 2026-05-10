@@ -1,8 +1,16 @@
 from fastapi import APIRouter, Header, Request
 
-from ...core.api_keys import build_api_key_record, ensure_admin_access
+from ...core.api_keys import build_api_key_record, ensure_admin_access, hash_api_key
 from ...core.exceptions import IntegrityError
-from ...schemas.admin import ApiKeyCreateRequest, ApiKeyCreateResponse, ApiKeyListItem, ApiKeyListResponse, DeveloperDashboardResponse
+from ...schemas.admin import (
+    ApiKeyCreateRequest,
+    ApiKeyCreateResponse,
+    ApiKeyIntrospectRequest,
+    ApiKeyIntrospectResponse,
+    ApiKeyListItem,
+    ApiKeyListResponse,
+    DeveloperDashboardResponse,
+)
 from ...schemas.common import ErrorResponse, RequestStatus
 from ...schemas.vault import AdminStatsResponse
 
@@ -141,6 +149,40 @@ async def list_api_keys(
         request_id=request.state.request_id,
         items=normalized,
         total=len(normalized),
+    )
+
+
+@router.post(
+    "/api-keys/introspect",
+    response_model=ApiKeyIntrospectResponse,
+    responses={401: {"model": ErrorResponse}, 403: {"model": ErrorResponse}, 404: {"model": ErrorResponse}},
+    summary="Resolve a managed API key into plan metadata",
+    include_in_schema=False,
+)
+async def introspect_api_key(
+    payload: ApiKeyIntrospectRequest,
+    request: Request,
+    x_wallet_address: str | None = Header(default=None),
+    x_api_key: str | None = Header(default=None),
+    x_master_key: str | None = Header(default=None),
+) -> ApiKeyIntrospectResponse:
+    _authorize(
+        request,
+        wallet_address=x_wallet_address,
+        api_key=x_api_key,
+        master_key=x_master_key,
+    )
+    matched = await request.app.state.integrity_pipeline.store.get_api_key_by_hash(
+        hash_api_key(
+            request.app.state.integrity_pipeline.settings.master_key,
+            payload.api_key,
+        )
+    )
+    if not matched or matched.get("status") != "active":
+        raise IntegrityError("Managed API key was not found.", status_code=404, layer="admin")
+    return ApiKeyIntrospectResponse(
+        request_id=request.state.request_id,
+        item=_api_key_item_from_record(matched),
     )
 
 

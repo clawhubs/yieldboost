@@ -193,7 +193,7 @@ export default function DeveloperDocsView() {
           <div className="mt-6 rounded-[20px] border border-[rgba(143,247,234,0.14)] bg-[rgba(7,22,26,0.7)] p-5">
             <p className="text-[12px] uppercase tracking-[0.18em] text-[#8ff7ea]">API Key Rule</p>
             <p className="mt-3 text-[14px] leading-7 text-[#d4f6f1]">
-              Raw API keys are shown once at creation time. YieldBoost stores only a hashed representation after that. New keys default to broad platform scopes so one partner app can call integrity, audit, proof, governance, handshake, and status services. If a partner loses the raw key, the secure path is to revoke and mint a new one, not to reveal it again from the server.
+              Raw API keys are shown once at creation time. YieldBoost stores only a hashed representation after that. New keys are package-scoped: Free and Pro trial stay on non-AI verification modules, Builder adds the Alibaba anti-sybil module, and Protocol unlocks full compute, partner SDKs, and all marketplace surfaces. If a partner loses the raw key, the secure path is to revoke and mint a new one, not to reveal it again from the server.
             </p>
           </div>
 
@@ -202,10 +202,10 @@ export default function DeveloperDocsView() {
               <div>
                 <div className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.18em] text-[#dfffe4]">
                   <Store className="h-4 w-4" />
-                  API Store
+                  Modular Immunity Armory
                 </div>
                 <p className="mt-3 text-[14px] leading-7 text-[#dfffe4]">
-                  For productized endpoints, open the API Store. Each card has its own playground and docs for plugging a YieldBoost API key into another developer&apos;s web app.
+                  For productized endpoints, open the Modular Immunity Armory. Each card has its own playground and docs for plugging a YieldBoost API key into another developer&apos;s web app.
                 </p>
                 <p className="mt-2 text-[13px] leading-6 text-[#c8f7d0]">
                   Public base: <span className="font-mono text-white">https://dev.yieldboostai.xyz</span>. Local base: <span className="font-mono text-white">http://127.0.0.1:3030</span>.
@@ -215,7 +215,7 @@ export default function DeveloperDocsView() {
                 href="/dev/marketplace"
                 className="yb-teal-button inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-4 py-3 text-[13px] font-bold text-slate-950"
               >
-                Open API Store
+                Open Modular Immunity Armory
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
@@ -238,7 +238,7 @@ export default function DeveloperDocsView() {
             <h2 className="text-[20px] font-semibold text-white">Recommended Login Stance</h2>
             <div className="mt-4 space-y-3 text-[14px] leading-6 text-[#c8dae6]">
               <p><span className="text-white">Developer portal:</span> wallet-first login is the right model because this product is ownership-native.</p>
-              <p><span className="text-white">Mainnet-first:</span> start with a 0G mainnet wallet so the payment, explorer, and API-key path stay submission-ready.</p>
+              <p><span className="text-white">Mainnet-first:</span> start with a 0G wallet, sign package activation, and keep issued API keys scoped to the connected developer account.</p>
               <p><span className="text-white">Testnet fallback:</span> the request shape stays compatible, but the public developer portal now treats mainnet as the source of truth.</p>
             </div>
           </div>

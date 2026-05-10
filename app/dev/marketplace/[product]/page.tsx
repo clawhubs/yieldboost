@@ -9,7 +9,7 @@ import {
 
 export const metadata: Metadata = {
   title: "API Playground - YieldBoost Developer Portal",
-  description: "Run a YieldBoost API Store endpoint from its own playground.",
+  description: "Run a YieldBoost Modular Immunity Armory endpoint from its own playground.",
 };
 
 export default async function DevApiProductPlaygroundPage({

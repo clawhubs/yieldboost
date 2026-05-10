@@ -6,6 +6,10 @@ import {
   getApiMarketplaceProduct,
   MILITARY_GRADE_API_LAYERS,
 } from "@/lib/military-grade-api-marketplace";
+import {
+  ensureMarketplacePlanAccess,
+  validateMarketplaceApiKey,
+} from "@/lib/server/dev-marketplace-auth";
 
 function sha256Hex(value: unknown) {
   return createHash("sha256")
@@ -13,44 +17,12 @@ function sha256Hex(value: unknown) {
     .digest("hex");
 }
 
-function getRequestApiKey(headers: Headers) {
-  return (
-    headers.get("authorization")?.match(/^Bearer\s+(.+)$/i)?.[1] ??
-    headers.get("x-yieldboost-api-key") ??
-    ""
-  ).trim();
-}
-
-function validateApiKey(headers: Headers) {
-  const apiKey = getRequestApiKey(headers);
-  const freeTierKey = process.env.YB_MARKETPLACE_FREE_TIER_KEY ?? "yb_free_tier_local";
-  const extraKeys = (process.env.YB_MARKETPLACE_API_KEYS ?? "")
-    .split(",")
-    .map((value) => value.trim())
-    .filter(Boolean);
-
-  if (!apiKey) {
-    return { ok: false, plan: "none", keyPreview: null, error: "Missing YieldBoost API key." };
-  }
-
-  if (apiKey !== freeTierKey && !apiKey.startsWith("yb_live_") && !extraKeys.includes(apiKey)) {
-    return { ok: false, plan: "invalid", keyPreview: `${apiKey.slice(0, 6)}...`, error: "Invalid YieldBoost API key." };
-  }
-
-  return {
-    ok: true,
-    plan: apiKey === freeTierKey ? "free" : "subscriber",
-    keyPreview: `${apiKey.slice(0, 6)}...${apiKey.slice(-4)}`,
-    error: null,
-  };
-}
-
 export async function runMilitaryGradeLayerEndpoint(
   headers: Headers,
   layerSlug: string,
   payload: Record<string, unknown>,
 ) {
-  const auth = validateApiKey(headers);
+  const auth = await validateMarketplaceApiKey(headers);
   if (!auth.ok) {
     return {
       statusCode: 401,
@@ -72,6 +44,11 @@ export async function runMilitaryGradeLayerEndpoint(
         available_layers: MILITARY_GRADE_API_LAYERS.map((item) => item.slug),
       },
     };
+  }
+
+  const access = ensureMarketplacePlanAccess(auth, layer.slug);
+  if (!access.ok) {
+    return access;
   }
 
   const requestId = `yb-layer-${randomUUID()}`;
@@ -114,7 +91,7 @@ export async function runMilitaryGradeFullEndpoint(
   headers: Headers,
   payload: Record<string, unknown>,
 ) {
-  const auth = validateApiKey(headers);
+  const auth = await validateMarketplaceApiKey(headers);
   if (!auth.ok) {
     return {
       statusCode: 401,
@@ -124,6 +101,11 @@ export async function runMilitaryGradeFullEndpoint(
         subscribe_url: "/dev",
       },
     };
+  }
+
+  const access = ensureMarketplacePlanAccess(auth, "military-grade-full");
+  if (!access.ok) {
+    return access;
   }
 
   const product = getApiMarketplaceProduct("military-grade-full");

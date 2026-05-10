@@ -2,6 +2,7 @@ import { YA_API_PLANS, type YaApiPlan } from "@/lib/ya-api-plans";
 
 export type ApiMarketplaceProductId =
   | "military-grade-full"
+  | "anti-sybil-zk-fingerprint"
   | "hallucination-blacklist"
   | "integrity-auditor"
   | "secure-compute-tee"
@@ -15,7 +16,7 @@ export type ApiMarketplaceProductId =
 
 export interface ApiMarketplaceLayer {
   id: string;
-  slug: Exclude<ApiMarketplaceProductId, "military-grade-full" | "veilsolver">;
+  slug: string;
   label: string;
   proof: string;
   endpoint: string;
@@ -46,7 +47,7 @@ export interface ApiMarketplaceProduct {
   contractAddress?: string;
   solverPublicKey?: string;
   status: "live-local" | "testnet-live" | "mainnet-live";
-  category: "full-stack" | "single-layer" | "partner-sdk";
+  category: "full-stack" | "single-layer" | "partner-sdk" | "security-module";
   layerId?: string;
   layers: ApiMarketplaceLayer[];
   plans: ApiMarketplacePlan[];
@@ -148,8 +149,39 @@ function buildLayerSdkSnippet(endpoint: string) {
 const verified = await response.json();`;
 }
 
+const antiSybilFingerprintLayers: ApiMarketplaceLayer[] = [
+  {
+    id: "AS1",
+    slug: "anti-sybil-zk-fingerprint",
+    label: "Wallet-bound screening",
+    proof: "Mainnet wallet address is bound to the request before a key or session is issued.",
+    endpoint: "/api/dev/store/anti-sybil-zk-fingerprint",
+  },
+  {
+    id: "AS2",
+    slug: "anti-sybil-zk-fingerprint",
+    label: "Deterministic anti-sybil throttle",
+    proof: "IP and wallet attempt windows are scored to flag repeated or bursty request patterns.",
+    endpoint: "/api/dev/store/anti-sybil-zk-fingerprint",
+  },
+  {
+    id: "AS3",
+    slug: "anti-sybil-zk-fingerprint",
+    label: "Alibaba behavior fingerprinting",
+    proof: "Behavior text is hashed and optionally embedding-checked through the Alibaba fingerprint path.",
+    endpoint: "/api/dev/store/anti-sybil-zk-fingerprint",
+  },
+  {
+    id: "AS4",
+    slug: "anti-sybil-zk-fingerprint",
+    label: "ZK proof envelope",
+    proof: "The verification verdict is sealed into a mainnet-ready ZK envelope with an anchor reference.",
+    endpoint: "/api/dev/store/anti-sybil-zk-fingerprint",
+  },
+];
+
 const layerProducts: ApiMarketplaceProduct[] = MILITARY_GRADE_API_LAYERS.map((layer) => ({
-  id: layer.slug,
+  id: layer.slug as ApiMarketplaceProductId,
   name: layer.label,
   partner: "YieldBoost 0G",
   tagline: `Layer ${layer.id} endpoint`,
@@ -183,6 +215,39 @@ export const API_MARKETPLACE_PRODUCTS: ApiMarketplaceProduct[] = [
     layers: MILITARY_GRADE_API_LAYERS,
     plans: API_MARKETPLACE_PLANS,
     sdkSnippet: buildLayerSdkSnippet("/api/dev/store/military-grade"),
+  },
+  {
+    id: "anti-sybil-zk-fingerprint",
+    name: "Anti-Sybil + ZK Proof + Alibaba Fingerprinting",
+    partner: "YieldBoost 0G",
+    tagline: "Mainnet screening module for wallets, sessions, and API access",
+    description:
+      "A mainnet verification module derived from the faucet defense path: wallet-bound screening, deterministic anti-sybil throttles, Alibaba behavior fingerprinting, and a ZK proof envelope ready for API issuance and risk review.",
+    logoPath: "/marketplace/ya-9-layer-logo.png",
+    endpoint: "/api/dev/store/anti-sybil-zk-fingerprint",
+    playgroundPath: "/dev/marketplace/anti-sybil-zk-fingerprint",
+    docsPath: "/dev/marketplace/anti-sybil-zk-fingerprint/docs",
+    status: "mainnet-live",
+    category: "security-module",
+    layers: antiSybilFingerprintLayers,
+    plans: API_MARKETPLACE_PLANS,
+    sdkSnippet: `const response = await fetch("https://dev.yieldboostai.xyz/api/dev/store/anti-sybil-zk-fingerprint", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: \`Bearer \${process.env.YIELDBOOST_API_KEY}\`,
+  },
+  body: JSON.stringify({
+    requestId: "anti-sybil-demo-001",
+    walletAddress: "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+    network: "mainnet",
+    intent: "screen a wallet before issuing a high-value API key",
+    sessionId: "sess_live_01",
+    deviceLabel: "chrome-macbook-pro",
+  }),
+});
+
+const result = await response.json();`,
   },
   ...layerProducts,
   {

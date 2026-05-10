@@ -100,14 +100,18 @@ export interface SetupState {
 }
 
 export function getDevPortalSetupState(): SetupState {
+  const resolvedMasterKey =
+    process.env.INTEGRITY_DEV_PORTAL_MASTER_KEY?.trim() ||
+    process.env.INTEGRITY_MASTER_KEY?.trim() ||
+    "";
   const apiBaseUrl =
     process.env.INTEGRITY_DEV_PORTAL_API_BASE_URL?.trim() ||
     process.env.NEXT_PUBLIC_INTEGRITY_API_BASE_URL?.trim() ||
     DEFAULT_API_BASE_URL;
 
   const missing: string[] = [];
-  if (!process.env.INTEGRITY_DEV_PORTAL_MASTER_KEY?.trim()) {
-    missing.push("INTEGRITY_DEV_PORTAL_MASTER_KEY");
+  if (!resolvedMasterKey) {
+    missing.push("INTEGRITY_DEV_PORTAL_MASTER_KEY or INTEGRITY_MASTER_KEY");
   }
 
   return {
@@ -125,7 +129,11 @@ async function portalFetch<T>(path: string, init?: RequestInit): Promise<T> {
       "Content-Type": "application/json",
       ...(init?.headers ?? {}),
       ...(setup.adminEnabled
-        ? { "X-Master-Key": process.env.INTEGRITY_DEV_PORTAL_MASTER_KEY!.trim() }
+        ? {
+            "X-Master-Key":
+              process.env.INTEGRITY_DEV_PORTAL_MASTER_KEY?.trim() ||
+              process.env.INTEGRITY_MASTER_KEY!.trim(),
+          }
         : {}),
     },
     cache: "no-store",

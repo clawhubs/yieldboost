@@ -9,7 +9,7 @@ import {
 
 export const metadata: Metadata = {
   title: "API Docs - YieldBoost Developer Portal",
-  description: "Per-endpoint integration docs for YieldBoost API Store products.",
+  description: "Per-endpoint integration docs for YieldBoost Modular Immunity Armory products.",
 };
 
 export default async function DevApiProductDocsPage({

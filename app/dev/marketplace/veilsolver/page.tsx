@@ -5,7 +5,7 @@ import { getApiMarketplaceProduct } from "@/lib/military-grade-api-marketplace";
 
 export const metadata: Metadata = {
   title: "VeilSolver Playground - YieldBoost Developer Portal",
-  description: "Run the VeilSolver secure proxy endpoint from its own API Store playground.",
+  description: "Run the VeilSolver secure proxy endpoint from its own Modular Immunity Armory playground.",
 };
 
 export default function VeilSolverApiPlaygroundPage() {

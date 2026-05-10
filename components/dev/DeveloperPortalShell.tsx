@@ -11,7 +11,7 @@ interface DeveloperPortalShellProps {
 
 const navigation = [
   { href: "/dev", label: "Overview", icon: Shield },
-  { href: "/dev/marketplace", label: "API Store", icon: Layers3 },
+  { href: "/dev/marketplace", label: "Modular Immunity Armory", icon: Layers3 },
   { href: "/dev/docs", label: "Docs", icon: Code2 },
   { href: "/dev/apps", label: "Dashboard", icon: KeyRound },
   { href: "https://api.yieldboostai.xyz/docs", label: "OpenAPI", icon: TerminalSquare },

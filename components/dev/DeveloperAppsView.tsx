@@ -49,12 +49,17 @@ export default function DeveloperAppsView({
   const totalRequests = apiKeys.reduce((sum, item) => sum + item.total_requests, 0);
   const blockedRequests = apiKeys.reduce((sum, item) => sum + item.blocked_requests, 0);
   const initialPlan = getYaApiPlan(initialPlanId || "builder");
+  const checkoutFocused = Boolean(initialPlanId);
 
   return (
     <DeveloperPortalShell
-      eyebrow="Developer Dashboard"
-      title="Your wallet is your developer identity."
-      description="Create project keys, rotate them, and monitor your API surface — scoped to the connected wallet."
+      eyebrow={checkoutFocused ? "Checkout" : "Developer Dashboard"}
+      title={checkoutFocused ? `Activate the ${initialPlan.name} package.` : "Your wallet is your developer identity."}
+      description={
+        checkoutFocused
+          ? "Review the package, sign the wallet activation, then mint the scoped API key for this package."
+          : "Create project keys, rotate them, and monitor your API surface — scoped to the connected wallet."
+      }
     >
       {/* ── Stats row ────────────────────────────────────── */}
       <section className="fade-in-up fade-in-up-1 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
@@ -67,15 +72,21 @@ export default function DeveloperAppsView({
       </section>
 
       {/* ── Create key + key list ────────────────────────── */}
-      <section className="fade-in-up fade-in-up-2 grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+      <section id="checkout" className="fade-in-up fade-in-up-2 grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
         <div className="yb-card rounded-2xl p-6">
-          <h2 className="text-[20px] font-semibold text-white">Buy API access with 0G</h2>
+          <h2 className="text-[20px] font-semibold text-white">Activate API access</h2>
           <p className="mt-2 text-[13px] leading-6 text-[#c8dae6]">
-            Choose a package, pay with native 0G on mainnet, then generate a scoped API key.
+            Choose a package, sign the wallet activation, then generate a scoped API key.
           </p>
+          {checkoutFocused ? (
+            <div className="mt-4 rounded-xl border border-[rgba(0,201,177,0.24)] bg-[rgba(0,201,177,0.07)] px-4 py-3 text-[13px] leading-6 text-[#d4f6f1]">
+              Selected package: <span className="font-semibold text-white">{initialPlan.name}</span>.
+              Finish wallet activation first, then the package becomes active when the API key is generated. Package access is enforced at request time, so non-AI plans cannot call full compute or partner SDK products.
+            </div>
+          ) : null}
           <ManagedApiKeyCreateForm
             ownerWalletAddress={session.walletAddress}
-            submitLabel="Generate API key"
+            submitLabel={checkoutFocused ? "Activate package & generate API key" : "Generate API key"}
             initialPlanId={initialPlan.id}
           />
         </div>
@@ -136,7 +147,7 @@ export default function DeveloperAppsView({
                         type="submit"
                         className="revoke-btn w-full rounded-lg border border-[rgba(255,112,112,0.18)] bg-[rgba(255,112,112,0.06)] px-3 py-2 text-[12px] font-semibold text-[#ff9090]"
                       >
-                        Revoke key
+                        Delete API key
                       </button>
                     </form>
                   ) : (

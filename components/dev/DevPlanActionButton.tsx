@@ -13,7 +13,7 @@ interface DevPlanActionButtonProps {
 }
 
 function planUrl(planId: YaApiPlan["id"]) {
-  return `/dev/apps?plan=${encodeURIComponent(planId)}`;
+  return `/dev/apps?plan=${encodeURIComponent(planId)}#checkout`;
 }
 
 export default function DevPlanActionButton({
@@ -23,7 +23,7 @@ export default function DevPlanActionButton({
 }: DevPlanActionButtonProps) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const label = plan.checkoutPrice0g !== "0" ? `Buy ${plan.name} with 0G` : "Start free";
+  const checkoutLabel = plan.checkoutPrice0g !== "0" ? `Open ${plan.name} checkout` : "Start free";
   const className = `mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-[13px] font-semibold transition ${
     prominent
       ? "yb-teal-button text-slate-950"
@@ -99,7 +99,7 @@ export default function DevPlanActionButton({
   if (hasSession) {
     return (
       <a href={planUrl(plan.id)} className={className}>
-        {label}
+        {checkoutLabel}
         <ArrowRight className="h-4 w-4" />
       </a>
     );
@@ -113,7 +113,7 @@ export default function DevPlanActionButton({
         disabled={busy}
         className={className}
       >
-        {busy ? "Connecting wallet..." : label}
+        {busy ? "Connecting wallet..." : "Connect wallet to continue"}
         <ArrowRight className="h-4 w-4" />
       </button>
       {error ? (

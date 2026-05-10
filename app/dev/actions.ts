@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 
-import { createManagedApiKey, revokeManagedApiKey, verify0GCheckout } from "@/lib/dev-portal";
+import { createManagedApiKey, getManagedApiKeys, revokeManagedApiKey } from "@/lib/dev-portal";
+import { verifyPlanActivationSignature } from "@/lib/dev-plan-activation";
 import { getPortalSession } from "@/lib/dev-portal-auth";
 import { getYaApiPlan } from "@/lib/ya-api-plans";
 
@@ -13,24 +14,23 @@ export interface CreateApiKeyActionState {
   error: string | null;
 }
 
-function compactTx(value: string) {
+function compactHash(value: string) {
   return `${value.slice(0, 10)}...${value.slice(-6)}`;
 }
 
-function appendPaymentNote(input: {
+function appendActivationNote(input: {
   notes: string;
   planName: string;
-  checkoutPrice0g: string;
+  priceLabel: string;
   listPrice0g?: string | null;
-  txHash: string;
-  integrityHash?: string;
+  activationSignature?: string;
   adminBypass?: boolean;
 }) {
   const planNote = input.adminBypass
     ? `0G plan ${input.planName}: owner console bypass`
-    : input.checkoutPrice0g !== "0"
-      ? `0G plan ${input.planName}: ${input.checkoutPrice0g} 0G${input.listPrice0g ? ` (list ${input.listPrice0g} 0G)` : ""}; tx ${compactTx(input.txHash)}; proof ${input.integrityHash ? compactTx(`0x${input.integrityHash}`) : "pending"}`
-      : `0G plan ${input.planName}: free trial`;
+    : input.activationSignature
+      ? `0G plan ${input.planName}: wallet-signed activation ${input.priceLabel}${input.listPrice0g ? ` (list ${input.listPrice0g} 0G)` : ""}; sig ${compactHash(input.activationSignature)}`
+      : `0G plan ${input.planName}: free`;
   return [planNote, input.notes].filter(Boolean).join(" | ").slice(0, 240);
 }
 
@@ -52,7 +52,8 @@ export async function createApiKeyAction(
     | "multi";
   const notes = String(formData.get("notes") || "").trim();
   const plan = getYaApiPlan(String(formData.get("plan_id") || "builder").trim());
-  const paymentTxHash = String(formData.get("payment_tx_hash") || "").trim();
+  const activationSignature = String(formData.get("activation_signature") || "").trim();
+  const activationExpiresAt = Number(formData.get("activation_expires_at") || 0);
 
   if (!session) {
     return {
@@ -77,16 +78,19 @@ export async function createApiKeyAction(
       session.role === "owner" && submittedOwnerWalletAddress
         ? submittedOwnerWalletAddress
         : session.walletAddress;
-    let checkoutProofHash: string | undefined;
 
-    if (session.role !== "owner") {
-      const checkout = await verify0GCheckout({
+    if (session.role !== "owner" && plan.checkoutPrice0g !== "0") {
+      if (!activationSignature || !activationExpiresAt) {
+        throw new Error("Package activation signature is required.");
+      }
+      verifyPlanActivationSignature({
         walletAddress: ownerWalletAddress,
         planId: plan.id,
-        amountOg: plan.checkoutPrice0g,
-        txHash: paymentTxHash || undefined,
+        planName: plan.name,
+        priceLabel: plan.priceLabel,
+        expiresAt: activationExpiresAt,
+        signature: activationSignature,
       });
-      checkoutProofHash = checkout.integrity_hash;
     }
 
     const created = await createManagedApiKey({
@@ -94,13 +98,12 @@ export async function createApiKeyAction(
       ownerLabel: ownerLabel || undefined,
       ownerWalletAddress,
       environment,
-      notes: appendPaymentNote({
+      notes: appendActivationNote({
         notes,
         planName: plan.name,
-        checkoutPrice0g: plan.checkoutPrice0g,
+        priceLabel: plan.priceLabel,
         listPrice0g: plan.listPrice0g,
-        txHash: paymentTxHash,
-        integrityHash: checkoutProofHash,
+        activationSignature: activationSignature || undefined,
         adminBypass: session.role === "owner",
       }),
       scopes: plan.scopes,
@@ -110,8 +113,8 @@ export async function createApiKeyAction(
       planMaxKeys: plan.apiKeys,
       planQuotaMonthly: plan.monthlyQuota,
       planExpiresAt: planExpiryIso(plan.expiresInDays),
-      checkoutTxHash: paymentTxHash || undefined,
-      checkoutIntegrityHash: checkoutProofHash,
+      checkoutTxHash: undefined,
+      checkoutIntegrityHash: undefined,
     });
 
     revalidatePath("/dev");
@@ -135,10 +138,24 @@ export async function createApiKeyAction(
 }
 
 export async function revokeApiKeyAction(formData: FormData) {
+  const session = await getPortalSession();
+  if (!session) {
+    throw new Error("Connect your developer wallet before deleting an API key.");
+  }
+
   const keyId = String(formData.get("key_id") || "").trim();
   if (!keyId) {
     throw new Error("Key ID is required.");
   }
+
+  if (session.role !== "owner") {
+    const payload = await getManagedApiKeys();
+    const item = payload?.items.find((candidate) => candidate.key_id === keyId);
+    if (!item || item.owner_wallet_address?.toLowerCase() !== session.walletAddress.toLowerCase()) {
+      throw new Error("This API key does not belong to the connected wallet.");
+    }
+  }
+
   await revokeManagedApiKey(keyId);
   revalidatePath("/dev");
   revalidatePath("/dev/apps");

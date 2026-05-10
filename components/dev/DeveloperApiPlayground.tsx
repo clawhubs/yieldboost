@@ -31,6 +31,17 @@ const veilSolverPath = [
 ];
 
 function buildDefaultPayload(product: ApiMarketplaceProduct) {
+  if (product.id === "anti-sybil-zk-fingerprint") {
+    return {
+      requestId: "anti-sybil-demo-001",
+      walletAddress: "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+      network: "mainnet",
+      intent: "screen a wallet before issuing a high-value API key",
+      sessionId: "sess_live_01",
+      deviceLabel: "chrome-macbook-pro",
+    };
+  }
+
   if (product.id === "veilsolver") {
     return {
       action: "SWAP",
@@ -126,7 +137,7 @@ export default function DeveloperApiPlayground({
             className="inline-flex items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-[12px] font-semibold text-[#cfe7e3] transition hover:border-[#22ddd0]/30"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            API Store
+            Modular Immunity Armory
           </Link>
           <div className="rounded-xl border border-[#68ff7a]/20 bg-[#68ff7a]/10 px-3 py-2 text-[12px] font-bold text-[#dfffe4]">
             {product.category === "single-layer" ? `Layer ${product.layerId}` : product.category === "partner-sdk" ? "Partner SDK" : "Full 9-layer"}
@@ -152,14 +163,20 @@ export default function DeveloperApiPlayground({
               <div className="flex items-center gap-2 text-[#9ff7f0]">
                 <ShieldCheck className="h-4 w-4" />
                 <span className="text-[11px] font-semibold uppercase tracking-[0.16em]">
-                  {product.id === "veilsolver" ? "ZK Secure Proxy Path" : `${product.layers.length}-Layer Coverage`}
+                  {product.id === "veilsolver"
+                    ? "ZK Secure Proxy Path"
+                    : product.id === "anti-sybil-zk-fingerprint"
+                      ? "Anti-Sybil Verification Path"
+                      : `${product.layers.length}-Layer Coverage`}
                 </span>
               </div>
               <div className="mt-3 grid gap-2">
                 {(product.id === "veilsolver" ? veilSolverPath : product.layers).map((layer) => (
                   <div key={layer.id} className="flex items-start gap-3 rounded-[12px] border border-white/[0.06] bg-white/[0.025] px-3 py-2">
                     <span className="mt-0.5 rounded-full border border-[#22ddd0]/25 bg-[#22ddd0]/10 px-2 py-0.5 text-[10px] font-semibold text-[#9ff7f0]">
-                      {product.id === "veilsolver" ? layer.id : `L${layer.id}`}
+                      {product.id === "veilsolver" || product.id === "anti-sybil-zk-fingerprint"
+                        ? layer.id
+                        : `L${layer.id}`}
                     </span>
                     <div>
                       <div className="text-[13px] font-semibold text-white">{layer.label}</div>

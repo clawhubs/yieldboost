@@ -5,6 +5,17 @@ import { ArrowLeft, ArrowRight, BookOpen, Code2, KeyRound, ServerCog, ShieldChec
 import type { ApiMarketplaceProduct } from "@/lib/military-grade-api-marketplace";
 
 function productPayload(product: ApiMarketplaceProduct) {
+  if (product.id === "anti-sybil-zk-fingerprint") {
+    return `{
+  "requestId": "anti-sybil-demo-001",
+  "walletAddress": "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+  "network": "mainnet",
+  "intent": "screen a wallet before issuing a high-value API key",
+  "sessionId": "sess_live_01",
+  "deviceLabel": "chrome-macbook-pro"
+}`;
+  }
+
   if (product.id === "veilsolver") {
     return `{
   "action": "SWAP",
@@ -45,6 +56,28 @@ function productPayload(product: ApiMarketplaceProduct) {
 }
 
 function responseShape(product: ApiMarketplaceProduct) {
+  if (product.id === "anti-sybil-zk-fingerprint") {
+    return `{
+  "status": "success",
+  "security": "Anti-Sybil + ZK Verified",
+  "network": "mainnet",
+  "anti_sybil": {
+    "wallet_bound": true,
+    "alibaba_behavior_fingerprint": "checked",
+    "risk_level": "low",
+    "review_status": "verified"
+  },
+  "data": {
+    "accepted": true
+  },
+  "zk_proof": "0x...",
+  "zk_envelope": {
+    "proof_type": "anti-sybil-mainnet-envelope"
+  },
+  "0g_storage_url": "0g://..."
+}`;
+  }
+
   if (product.id === "veilsolver") {
     return `{
   "status": "success",
@@ -153,7 +186,7 @@ export default function DeveloperApiProductDocs({
             className="inline-flex items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-[12px] font-semibold text-[#cfe7e3] transition hover:border-[#22ddd0]/30"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            API Store
+            Modular Immunity Armory
           </Link>
           <Link
             href={product.playgroundPath ?? "/dev/marketplace"}

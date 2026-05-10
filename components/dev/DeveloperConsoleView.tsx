@@ -145,7 +145,7 @@ export default function DeveloperConsoleView({
                             type="submit"
                             className="revoke-btn w-full rounded-lg border border-[rgba(255,112,112,0.18)] bg-[rgba(255,112,112,0.06)] px-3 py-2 text-[12px] font-semibold text-[#ff9090]"
                           >
-                            Revoke key
+                        Delete API key
                           </button>
                         </form>
                       ) : (
@@ -197,7 +197,7 @@ export default function DeveloperConsoleView({
             <div className="yb-card rounded-2xl p-6">
               <h2 className="text-[18px] font-semibold text-white">Login stance</h2>
               <p className="mt-3 text-[13px] leading-7 text-[#c8dae6]">
-                The developer portal is now mainnet-first: wallet login can stay lightweight, but checkout, explorer receipts, and issued API keys should reflect the real 0G mainnet path.
+                The developer portal is now mainnet-first: wallet login and package activation stay lightweight, while issued API keys reflect the real 0G mainnet path.
               </p>
             </div>
           </section>

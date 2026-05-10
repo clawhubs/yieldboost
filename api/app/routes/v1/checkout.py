@@ -17,6 +17,7 @@ router = APIRouter(prefix="/v1/checkout", tags=["platform-checkout"])
         "Validates a native 0G mainnet payment receipt, binds it to the developer wallet, and records "
         "a 9-layer integrity envelope before API access is issued."
     ),
+    include_in_schema=False,
 )
 async def verify_ya_checkout(
     payload: YaCheckoutVerifyRequest,
