@@ -346,7 +346,7 @@ async function anchorProofWithConnectedWallet({
 
   await switchOrAddNetwork(selectedWallet.provider, networkConfig);
 
-  const { BrowserProvider, Contract } = await import("ethers");
+  const { BrowserProvider, Contract, JsonRpcProvider } = await import("ethers");
   const provider = new BrowserProvider(
     selectedWallet.provider as {
       request: (request: {
@@ -376,13 +376,33 @@ async function anchorProofWithConnectedWallet({
     proofRegistryAbi,
     signer,
   );
-  const tx = await proofRegistry.recordProof(
-    storageData.cid,
-    storageData.cid,
-    storageData.txHash,
-    toBasisPoints(currentApy),
-    toBasisPoints(optimizedApy),
-  );
+  const rpcProvider = networkConfig.rpcUrl
+    ? new JsonRpcProvider(networkConfig.rpcUrl)
+    : provider;
+
+  const sendRecordProof = async () => {
+    const nonce = await rpcProvider.getTransactionCount(signerAddress, "pending");
+    return proofRegistry.recordProof(
+      storageData.cid,
+      storageData.cid,
+      storageData.txHash,
+      toBasisPoints(currentApy),
+      toBasisPoints(optimizedApy),
+      { nonce },
+    );
+  };
+
+  let tx;
+  try {
+    tx = await sendRecordProof();
+  } catch (error) {
+    const message = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+    if (message.includes("nonce too low") || message.includes("nonce has already been used")) {
+      tx = await sendRecordProof();
+    } else {
+      throw error;
+    }
+  }
   await tx.wait();
 
   const response = await fetch("/api/0g/anchor", {

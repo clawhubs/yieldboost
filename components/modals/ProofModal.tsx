@@ -5,6 +5,8 @@ import { Copy, ExternalLink, X, ShieldCheck } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { IntegrityAudit } from "@/lib/integrity-audit";
 import {
+  getDefaultWalletNetworkKey,
+  getWalletNetworkConfig,
   isWalletAddress,
   sameWalletAddress,
   type WalletNetworkKey,
@@ -363,7 +365,7 @@ export default function ProofModal({
     setRegistryAnchoring(true);
 
     try {
-      const { BrowserProvider, Contract } = await import("ethers");
+      const { BrowserProvider, Contract, JsonRpcProvider } = await import("ethers");
       const provider = new BrowserProvider(
         ethereum as {
           request: (request: {
@@ -384,13 +386,36 @@ export default function ProofModal({
         proofRegistryAbi,
         signer,
       );
-      const tx = await proofRegistry.recordProof(
-        activeProof.cid,
-        activeProof.cid,
-        activeProof.txHash,
-        toBasisPoints(decision.current_apy),
-        toBasisPoints(decision.optimized_apy),
+      const networkConfig = getWalletNetworkConfig(
+        networkKey ?? getDefaultWalletNetworkKey(),
       );
+      const rpcProvider = networkConfig.rpcUrl
+        ? new JsonRpcProvider(networkConfig.rpcUrl)
+        : provider;
+
+      const sendRecordProof = async () => {
+        const nonce = await rpcProvider.getTransactionCount(signerAddress, "pending");
+        return proofRegistry.recordProof(
+          activeProof.cid,
+          activeProof.cid,
+          activeProof.txHash,
+          toBasisPoints(decision.current_apy),
+          toBasisPoints(decision.optimized_apy),
+          { nonce },
+        );
+      };
+
+      let tx;
+      try {
+        tx = await sendRecordProof();
+      } catch (error) {
+        const message = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+        if (message.includes("nonce too low") || message.includes("nonce has already been used")) {
+          tx = await sendRecordProof();
+        } else {
+          throw error;
+        }
+      }
       await tx.wait();
 
       const response = await fetch("/api/0g/anchor", {
