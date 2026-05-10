@@ -523,6 +523,16 @@ export default function DashboardView() {
   }, [latestResult, networkKey, portfolio?.walletAddress]);
   const hasOptimizationProgress =
     isOptimizing || progress === "done" || pendingRegistryAnchorRequired;
+  const proofSyncInProgress = Boolean(
+    latestResult &&
+      !hasProofReceipt &&
+      (hasOptimizationProgress || latestResult.proofStatus === "pending"),
+  );
+  const proofSyncBlocked = Boolean(
+    latestResult &&
+      !hasProofReceipt &&
+      latestResult.proofStatus === "error",
+  );
   const showOptimizationModal =
     hasOptimizationProgress && !optimizationModalDismissed && !optimizationModalMinimized;
   const showOptimizationProgressChip =
@@ -1388,7 +1398,9 @@ export default function DashboardView() {
               className="mt-4 rounded-[16px] border border-[#1b242d] bg-[radial-gradient(circle_at_top_right,rgba(57,235,169,0.16),transparent_35%),linear-gradient(180deg,#0b1117_0%,#081015_100%)] px-4 py-5"
             >
               <div className="text-[15px] text-[#22ddd0]">
-                Optimization Complete! 🎉
+                {proofSyncInProgress || proofSyncBlocked
+                  ? "Optimization Result Ready"
+                  : "Optimization Complete! 🎉"}
               </div>
               <div className="mt-3 text-[14px] text-[#ebf2f8]">Your new APY is now</div>
               <div className="mt-2 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -1400,20 +1412,42 @@ export default function DashboardView() {
               <div className="mt-2 text-[13px] text-[#dbe4ec]">
                 {latestResult?.storageProof
                   ? `Proof stored as ${latestResult.storageProof.slice(0, 12)}...`
-                  : "Run the optimizer to create the first proof-backed result."}
+                  : proofSyncInProgress
+                    ? "0G accepted the optimization result. The proof receipt is still syncing."
+                    : proofSyncBlocked
+                      ? latestResult?.proofStatusDetail ?? "The proof receipt did not finish syncing."
+                      : "Run the optimizer to create the first proof-backed result."}
               </div>
               <button
                 type="button"
                 data-testid="agent-card-proof"
-                onClick={() => setProofOpen(true)}
-                disabled={!hasProofReceipt}
+                onClick={() => {
+                  if (hasProofReceipt) {
+                    setProofOpen(true);
+                    return;
+                  }
+
+                  if (proofSyncInProgress || proofSyncBlocked) {
+                    setOptimizationModalDismissed(false);
+                    setOptimizationModalMinimized(false);
+                  }
+                }}
+                disabled={!hasProofReceipt && !proofSyncInProgress && !proofSyncBlocked}
                 className={
                   hasProofReceipt
                     ? "mt-5 flex w-full items-center justify-center gap-2 rounded-[12px] border border-[#1a5b56] px-4 py-3 text-[14px] font-medium text-[#22ddd0]"
-                    : "mt-5 flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-[12px] border border-white/10 bg-white/[0.04] px-4 py-3 text-[14px] font-medium text-[#7c8a96]"
+                    : proofSyncInProgress || proofSyncBlocked
+                      ? "mt-5 flex w-full items-center justify-center gap-2 rounded-[12px] border border-[rgba(255,255,255,0.12)] bg-white/[0.04] px-4 py-3 text-[14px] font-medium text-[#d7e0e8]"
+                      : "mt-5 flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-[12px] border border-white/10 bg-white/[0.04] px-4 py-3 text-[14px] font-medium text-[#7c8a96]"
                 }
               >
-                {hasProofReceipt ? "Open proof details" : "Proof sync pending"}
+                {hasProofReceipt
+                  ? "Open proof details"
+                  : proofSyncInProgress
+                    ? "Open sync status"
+                    : proofSyncBlocked
+                      ? "Review proof status"
+                      : "No proof yet"}
               </button>
               <div className="mt-4 flex items-center justify-end gap-2 text-[11px] text-[#a4b0bc]">
                 <span>{statusTimeLabel}</span>
