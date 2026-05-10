@@ -384,14 +384,12 @@ export default function ProofModal({
         proofRegistryAbi,
         signer,
       );
-      const nonce = await provider.getTransactionCount(signerAddress, "pending");
       const tx = await proofRegistry.recordProof(
         activeProof.cid,
         activeProof.cid,
         activeProof.txHash,
         toBasisPoints(decision.current_apy),
         toBasisPoints(decision.optimized_apy),
-        { nonce },
       );
       await tx.wait();
 
