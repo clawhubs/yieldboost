@@ -166,7 +166,7 @@ export function ensureMarketplacePlanAccess(
       : auth.plan === "builder"
         ? deterministicOnly.has(productId) || builderExtended.has(productId)
         : auth.plan === "pro"
-          ? deterministicOnly.has(productId)
+          ? deterministicOnly.has(productId) || builderExtended.has(productId)
           : auth.plan === "free"
             ? deterministicOnly.has(productId)
             : false;
@@ -182,7 +182,9 @@ export function ensureMarketplacePlanAccess(
             ? "Marketplace access denied."
             : auth.plan === "builder"
               ? "This package does not include full 9-layer compute, TEE, or partner SDK access."
-              : "This package is limited to non-AI verification modules. Upgrade to Protocol for full compute and partner access.",
+              : auth.plan === "pro"
+                ? "This package includes Alibaba fingerprinting and verification modules, but it does not include TEE or partner SDK access."
+                : "This package is limited to non-AI verification modules. Upgrade to Protocol for full compute and partner access.",
         plan: auth.plan,
         requested_product: productId,
         subscribe_url: "/dev",

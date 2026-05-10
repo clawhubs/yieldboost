@@ -168,7 +168,7 @@ export default function DeveloperLandingView({
               Pick a package first. The landing page only routes you into the dev checkout. The wallet signature happens inside the dashboard after you review the package summary.
             </p>
             <p className="mt-2 max-w-2xl text-[13px] leading-6 text-[#9ff7f0]">
-              Free and Pro trial stay on non-AI verification modules. Protocol unlocks full compute, TEE, partner SDKs, and all marketplace modules.
+              Free stays on non-AI verification modules. Pro adds Alibaba fingerprinting without TEE, and Protocol unlocks full compute, TEE, partner SDKs, and all marketplace modules.
             </p>
           </div>
         </div>

@@ -1,12 +1,22 @@
 # Military-Grade API Marketplace
 
-This folder isolates YieldBoost API Store products from the UI and core optimizer.
+This directory contains the product definitions, partner wrappers, and delivery
+logic for the YieldBoost developer marketplace. It is intentionally separated
+from the main UI and optimizer runtime so marketplace products can evolve as a
+modular surface without changing the core proof engine.
 
-## YieldBoost 9-Layer Stack
+## Purpose
 
-The 9-layer military-grade stack is YieldBoost-owned infrastructure. Partner SDKs can be wrapped by it, while the verification layer itself remains standalone.
+The marketplace exposes YieldBoost verification products in two forms:
 
-The marketplace can expose the complete stack as one endpoint or expose each layer individually, but the core verification path remains independent:
+- the complete 9-layer military-grade verification stack
+- individual verification modules that can be consumed one layer at a time
+- partner SDK wrappers that are secured by the same YieldBoost proof envelope
+
+This keeps the core YieldBoost security architecture independent while still
+allowing external developer products to plug into the same trust model.
+
+## YieldBoost 9-Layer Verification Stack
 
 1. Hallucination Blacklist
 2. Integrity Auditor
@@ -18,21 +28,42 @@ The marketplace can expose the complete stack as one endpoint or expose each lay
 8. Programmable Governance
 9. Cross-Agent Neural Handshake
 
+The marketplace may expose the full stack as one endpoint or expose each layer
+as a separate API product. In both cases, the underlying verification system
+remains YieldBoost-native infrastructure.
+
+## Partner Wrappers
+
+Partner SDKs are treated as wrapped products, not as the core system itself.
+When a partner integration is listed in the marketplace, YieldBoost applies its
+own execution controls, proof packaging, and 0G anchoring around the partner
+request before returning the final response to the subscriber.
+
 ## VeilSolver Secure Proxy
 
-VeilSolver Secure Proxy is a partner SDK example. YieldBoost wraps the partner solver with isolated execution, ZK proof packaging, and 0G anchoring so developers can call it through the same security envelope used by the API Store.
+VeilSolver Secure Proxy is the reference partner wrapper in this directory. It
+demonstrates how a third-party solver can be routed through isolated execution,
+wrapped in a ZK-backed response envelope, and returned through the same
+verification-oriented developer surface used by native YieldBoost products.
 
-The standalone YieldBoost 9-layer stack powers Judge Mode, 1-click optimize, vault proofs, and Strategy Agent NFT proofs; VeilSolver shows how a partner solver can plug into that protection model.
+Reference delivery path:
 
-Developer flow:
+1. The subscriber calls the YieldBoost marketplace endpoint with a valid API key.
+2. YieldBoost validates package scope and access tier.
+3. If isolated execution is enabled, the request is forwarded through the
+   configured secure execution layer.
+4. The partner response is wrapped with YieldBoost proof metadata and 0G anchor
+   references.
+5. The subscriber receives one response envelope with security status, proof
+   metadata, and the partner result payload.
 
-1. Subscriber calls `POST /api/marketplace/veilsolver` with a YieldBoost API key.
-2. YieldBoost validates the key and subscription tier.
-3. If `E2B_API_KEY` is configured, the request is proxied from inside an E2B sandbox.
-4. The sandbox forwards the payload to `https://veilresolver.onrender.com`.
-5. YieldBoost stamps a Layer-9 ZK proof digest and returns a 0G anchor URL.
-6. Developer receives a single response envelope with `security: "9-Layer Verified"`.
+## Repository Scope
 
-Local playground: `/veilsolver`
+This directory is intended to hold:
 
-Production alias target: `/v1/agent/veilsolver`
+- marketplace product manifests
+- partner SDK client wrappers
+- product-specific docs and examples
+- marketplace-facing verification delivery logic
+
+It should not be used for unrelated UI-only experiments or ad hoc test notes.
