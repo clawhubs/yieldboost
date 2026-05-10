@@ -1422,14 +1422,12 @@ export default function DashboardView() {
                 type="button"
                 data-testid="agent-card-proof"
                 onClick={() => {
-                  if (hasProofReceipt) {
+                  if (hasProofReceipt || proofSyncInProgress || proofSyncBlocked) {
                     setProofOpen(true);
-                    return;
-                  }
-
-                  if (proofSyncInProgress || proofSyncBlocked) {
-                    setOptimizationModalDismissed(false);
-                    setOptimizationModalMinimized(false);
+                    if (hasOptimizationProgress) {
+                      setOptimizationModalDismissed(false);
+                      setOptimizationModalMinimized(false);
+                    }
                   }
                 }}
                 disabled={!hasProofReceipt && !proofSyncInProgress && !proofSyncBlocked}
