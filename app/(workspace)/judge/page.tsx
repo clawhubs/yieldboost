@@ -240,6 +240,14 @@ export default async function JudgePage() {
       external: true,
     },
     {
+      label: "Judge Brief",
+      href: "/judge/project",
+      sublabel: "30-second read",
+      icon: FileText,
+      download: false,
+      external: false,
+    },
+    {
       label: "Roadmap",
       href: "/judge/roadmap",
       sublabel: "2026-2027 plan",

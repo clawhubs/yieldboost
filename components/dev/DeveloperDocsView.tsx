@@ -193,7 +193,7 @@ export default function DeveloperDocsView() {
           <div className="mt-6 rounded-[20px] border border-[rgba(143,247,234,0.14)] bg-[rgba(7,22,26,0.7)] p-5">
             <p className="text-[12px] uppercase tracking-[0.18em] text-[#8ff7ea]">API Key Rule</p>
             <p className="mt-3 text-[14px] leading-7 text-[#d4f6f1]">
-              Raw API keys are shown once at creation time. YieldBoost stores only a hashed representation after that. New keys are package-scoped: Free stays on non-AI verification modules, Builder and Pro can use the Alibaba anti-sybil module, and Protocol unlocks full compute, partner SDKs, and all marketplace surfaces. If a partner loses the raw key, the secure path is to revoke and mint a new one, not to reveal it again from the server.
+              Raw API keys are shown once at creation time. YieldBoost stores only a hashed representation after that. New keys are package-scoped: Free stays on non-AI verification modules, Builder and Pro can use the Alibaba anti-sybil module, and Protocol unlocks full compute, selected partner SDK wrappers, and all marketplace surfaces. If a partner loses the raw key, the secure path is to revoke and mint a new one, not to reveal it again from the server.
             </p>
           </div>
 

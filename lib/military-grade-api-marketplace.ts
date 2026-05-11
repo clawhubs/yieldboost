@@ -180,6 +180,37 @@ const antiSybilFingerprintLayers: ApiMarketplaceLayer[] = [
   },
 ];
 
+const veilSolverWrapperLayers: ApiMarketplaceLayer[] = [
+  {
+    id: "ZK1",
+    slug: "veilsolver",
+    label: "Isolated secure execution",
+    proof: "Developer payload is processed through the YieldBoost secure proxy before the partner solver is called.",
+    endpoint: "/api/dev/store/veilsolver",
+  },
+  {
+    id: "ZK2",
+    slug: "veilsolver",
+    label: "Partner solver response",
+    proof: "The response comes from the VeilSolver partner solver and is returned through the YieldBoost wrapper.",
+    endpoint: "/api/dev/store/veilsolver",
+  },
+  {
+    id: "ZK3",
+    slug: "veilsolver",
+    label: "ZK proof envelope",
+    proof: "Request and response digests are sealed into a verification envelope for developer audit trails.",
+    endpoint: "/api/dev/store/veilsolver",
+  },
+  {
+    id: "ZK4",
+    slug: "veilsolver",
+    label: "0G response anchor",
+    proof: "The wrapped response includes an anchor reference for 0G-based verification records.",
+    endpoint: "/api/dev/store/veilsolver",
+  },
+];
+
 const layerProducts: ApiMarketplaceProduct[] = MILITARY_GRADE_API_LAYERS.map((layer) => ({
   id: layer.slug as ApiMarketplaceProductId,
   name: layer.label,
@@ -256,7 +287,7 @@ const result = await response.json();`,
     partner: "Shlok / VeilSolver",
     tagline: "Private Intent Solver on 0G",
     description:
-      "Partner SDK: the VeilSolver SDK is wrapped and secured by YieldBoost Secure Proxy. Developers call the partner solver through isolated secure execution and receive a ZK proof envelope.",
+      "Partner SDK: the VeilSolver SDK is wrapped by selected YieldBoost protections: isolated execution, partner solver response handling, a ZK proof envelope, and a 0G response anchor. The full 9-layer stack is a separate YieldBoost-native product.",
     logoPath: "/marketplace/veilsolver-logo.svg",
     endpoint: "/api/dev/store/veilsolver",
     playgroundPath: "/dev/marketplace/veilsolver",
@@ -267,7 +298,7 @@ const result = await response.json();`,
       "0x039a5b81f4b2bc0c181b1292f3aeb55721de43dc7e3d07c6c44ba3aa087ecaae04",
     status: "mainnet-live",
     category: "partner-sdk",
-    layers: MILITARY_GRADE_API_LAYERS,
+    layers: veilSolverWrapperLayers,
     plans: API_MARKETPLACE_PLANS,
     sdkSnippet: `// YieldBoost Secure Proxy wraps VeilSolver SDK encrypted intents
 // with API-key gating, isolated execution, and a ZK response envelope.

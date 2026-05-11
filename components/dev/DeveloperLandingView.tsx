@@ -98,7 +98,7 @@ export default function DeveloperLandingView({
         {[
           { icon: KeyRound, label: "Wallet Gated", text: "Each package is activated by the same wallet that owns the developer session.", accent: "#72f3c7" },
           { icon: Gauge, label: "Quota Aware", text: "Plans control request volume, number of keys, and support level.", accent: "#63d8ff" },
-          { icon: ShieldCheck, label: "Proof Native", text: "Every API key issuance goes through the full 9-layer integrity stack.", accent: "#72f3c7" },
+          { icon: ShieldCheck, label: "Proof Native", text: "API keys are package-scoped and checked by the YieldBoost integrity layer.", accent: "#72f3c7" },
         ].map((item) => (
           <div key={item.label} className="glow-card p-5">
             <div className="flex items-center gap-2.5">
@@ -168,7 +168,7 @@ export default function DeveloperLandingView({
               Pick a package first. The landing page only routes you into the dev checkout. The wallet signature happens inside the dashboard after you review the package summary.
             </p>
             <p className="mt-2 max-w-2xl text-[13px] leading-6 text-[#9ff7f0]">
-              Free stays on non-AI verification modules. Pro adds Alibaba fingerprinting without TEE, and Protocol unlocks full compute, TEE, partner SDKs, and all marketplace modules.
+              Free stays on non-AI verification modules. Pro adds Alibaba fingerprinting without TEE, and Protocol unlocks full compute, TEE, selected partner SDK wrappers, and all marketplace modules.
             </p>
           </div>
         </div>

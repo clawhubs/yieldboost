@@ -52,10 +52,10 @@
 YieldBoost AI has three clear product surfaces built on one 9-layer stack:
 
 - **1-click optimize for users:** idle crypto balances are turned into proof-backed yield routes.
-- **API marketplace for developers:** the same stack is sold as modular APIs and wrapped SDKs.
+- **API marketplace for developers:** the full stack is sold as a complete endpoint, single layers are sold individually, and partner SDKs can use selected YieldBoost protections.
 - **Vault and anti-sybil example for public testing:** the security model is exposed to attackers, claim abuse, and repeated public challenge traffic.
 
-Under the hood, those surfaces share the same proof path: 0G compute, ZK evidence, 0G Storage, ProofRegistry anchoring, and integrity memory.
+Under the hood, the YieldBoost-native surfaces share the same proof path: 0G compute, ZK evidence, 0G Storage, ProofRegistry anchoring, and integrity memory. Partner wrappers use selected pieces of that protection model, not the full path by default.
 
 The active implementation in this repository is now centered on a **mainnet-first** review path across the core 0G stack plus an integrity memory layer:
 
@@ -86,7 +86,7 @@ On top of that proof path, YieldBoost AI also ships a **Strategy Agent NFT layer
 
 ## 9-Layer Independence and Partner SDK Scope
 
-The YieldBoost AI 9-layer military-grade stack is built as a standalone verification system. Partner integrations such as VeilSolver can be wrapped by this stack, while the core YieldBoost proof flow remains self-contained.
+The YieldBoost AI 9-layer military-grade stack is built as a standalone verification system. Partner integrations such as VeilSolver are wrapped with selected YieldBoost protections, while the core full-stack proof flow remains self-contained.
 
 The standalone YieldBoost stack includes:
 
@@ -100,7 +100,7 @@ The standalone YieldBoost stack includes:
 8. Programmable Governance
 9. Cross-Agent Neural Handshake
 
-VeilSolver Secure Proxy is a partner SDK example in the developer marketplace: YieldBoost wraps the partner solver with isolated execution, ZK proof packaging, and 0G anchoring so external developers can call a secured endpoint. The 9-layer military-grade stack remains YieldBoost's own verification layer, and partner SDKs can plug into it as secured modules.
+VeilSolver Secure Proxy is a partner SDK example in the developer marketplace: YieldBoost wraps the partner solver with isolated execution, ZK proof packaging, and 0G anchoring so external developers can call a secured endpoint. It is not presented as the full 9-layer stack. The complete 9-layer product remains YieldBoost's own standalone verification layer.
 
 ## Founder Grade Snapshot
 
@@ -145,7 +145,7 @@ The core of the repo is not only the optimizer UI. It is the **standalone YieldB
 That same stack is exposed through three different product surfaces:
 
 - **1-click optimize for users:** one wallet action turns idle balances into a proof-backed yield route.
-- **Marketplace APIs and SDK wrappers for developers and companies:** the same 9-layer stack can be bought as infrastructure, one layer at a time or as the full military-grade package.
+- **Marketplace APIs for developers and companies:** the YieldBoost-native 9-layer stack can be bought as infrastructure, one layer at a time or as the full military-grade package. Partner SDK wrappers are narrower selected-protection products.
 - **Vault and anti-sybil faucet for public testing:** the security model is challenged in public, while the faucet acts as a real anti-sybil airdrop-style example using the same broader verification family.
 
 Each approved optimization becomes a stored and reviewable finance artifact:
@@ -155,7 +155,7 @@ Each approved optimization becomes a stored and reviewable finance artifact:
 - Zero-Knowledge Proof Layer, Programmable Governance, and Cross-Agent Neural Handshake evidence are persisted as reviewable control-plane artifacts.
 - Rejected results are indexed into a hallucination blacklist and checked before future inference.
 - Strategy Agent NFTs can promote verified optimization results into portable on-chain strategy artifacts.
-- Marketplace endpoints let outside teams call the full stack or one layer at a time, including partner wrappers like VeilSolver Secure Proxy.
+- Marketplace endpoints let outside teams call the full stack, one layer at a time, or partner wrappers with selected protections such as the VeilSolver Secure Proxy.
 
 The product story becomes simple: **users optimize, developers buy the stack, the public attacks the challenge surface, and judges inspect live proof.**
 
@@ -318,12 +318,12 @@ Track 2 is where the core product lands hardest: YieldBoost is not just recommen
 
 **Repo infrastructure:**
 
-- **Developer API Store & Marketplace** at [`/marketplace`](https://dev.yieldboostai.xyz/marketplace), exposing the full 9-layer API, individual layer APIs, and partner SDK wrappers.
+- **Developer API Store & Marketplace** at [`/marketplace`](https://dev.yieldboostai.xyz/marketplace), exposing the full 9-layer API, individual layer APIs, anti-sybil modules, and partner SDK wrappers with narrower selected protections.
 - **Anti-sybil + ZK + Alibaba module** in the marketplace proves the stack can be sold as a reusable security product, not only as one internal app path.
 - **Anti-sybil faucet** at [`/faucet`](https://yieldboostai.xyz/faucet), giving the public a claim-flow example for testing access logic and abuse resistance before teams move into the mainnet marketplace.
 - **API key playground and package tiers** connect developer usage, subscription intent, and security-layer access.
-- **Partner SDK wrapper model** proves that external agent services can be wrapped and sold through the same security envelope.
-- **VeilSolver Secure Proxy** is the live partner example: a third-party solver is exposed through YieldBoost isolated execution, ZK envelope, and 0G anchor semantics.
+- **Partner SDK wrapper model** proves that external agent services can be wrapped and sold without pretending every partner endpoint uses the complete 9-layer stack.
+- **VeilSolver Secure Proxy** is the live partner example: a third-party solver is exposed through YieldBoost isolated execution, ZK envelope, and 0G anchor semantics. The full 9-layer API is a separate YieldBoost-native product.
 
 Track 3 is the business surface: YieldBoost turns agent security into something other builders can subscribe to, test, and integrate.
 
@@ -339,9 +339,9 @@ Track 3 is the business surface: YieldBoost turns agent security into something 
 - **Vault sealing** through [`/vault`](https://yieldboostai.xyz/vault) gives users wallet-scoped private records with separated user tx, storage tx, and proof tx visibility.
 - **Sovereign Memory** persists agent state without reducing the strategy to a temporary browser session.
 - **Zero-Knowledge Proof Layer** creates reviewable proof envelopes for reasoning and policy evidence.
-- **Partner SDK wrapper architecture** shows how YieldBoost can secure third-party systems like VeilSolver without making that partner the source of the core 9-layer stack.
+- **Partner SDK wrapper architecture** shows how YieldBoost can apply selected protections to third-party systems like VeilSolver without making that partner the source of, or equivalent to, the core 9-layer stack.
 
-Track 5 is where the 9-layer stack becomes the moat: private execution, memory, ZK evidence, and partner wrapping all share one sovereign verification core. `/vault` strengthens the privacy story, but the core Track 5 claim already lives inside the main 1-click optimizer path.
+Track 5 is where the 9-layer stack becomes the moat: private execution, memory, ZK evidence, and proof anchoring share one sovereign verification core. Partner wrappers can use selected protections from that core without being presented as full-stack equivalents. `/vault` strengthens the privacy story, but the core Track 5 claim already lives inside the main 1-click optimizer path.
 
 The clearest submission sentence is: **YieldBoost AI is a full-stack agentic ecosystem on 0G: Track 1 infrastructure, Track 2 verifiable trading, Track 3 autonomous API economy, and Track 5 sovereign privacy, all powered by one native 9-layer military-grade stack.**
 
@@ -512,7 +512,7 @@ flowchart TD
     CLAIM --> ABUSE[Anti-sybil checks + Alibaba fingerprinting]
     ABUSE --> VOUCHER[Testnet airdrop-style voucher / claim state]
     VOUCHER --> EXAMPLE[Public anti-sybil example]
-    DEVPORTAL[dev.yieldboostai.xyz] --> MARKET[/dev/marketplace/]
+    DEVPORTAL[dev.yieldboostai.xyz] --> MARKET[/marketplace/]
     MARKET --> DOCS[Docs + playgrounds]
     MARKET --> APIKEY[0G-priced API access]
 ```
@@ -521,16 +521,19 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    APP[Partner or developer app] --> STOREUI[/dev/marketplace/]
+    APP[Partner or developer app] --> STOREUI[/marketplace/]
     STOREUI --> FULL[Full 9-layer API]
     STOREUI --> SINGLE[Single-layer APIs]
     STOREUI --> VEIL[VeilSolver Secure Proxy]
     FULL --> YBPIPE[YieldBoost standalone 9-layer stack]
     SINGLE --> YBPIPE
-    VEIL --> WRAP[YieldBoost isolated ZK wrapper]
+    YBPIPE --> YBOUT[9-layer verification response + 0G anchor]
+    VEIL --> WRAP[Selected YieldBoost protections]
+    WRAP --> ISO[Isolated execution]
+    WRAP --> ZKWRAP[ZK response envelope]
+    WRAP --> ANCHOR[0G response anchor]
     WRAP --> PARTNER[VeilSolver partner solver]
-    PARTNER --> ENVELOPE[ZK response envelope + 0G anchor]
-    YBPIPE --> ENVELOPE
+    PARTNER --> PARTNEROUT[Partner solver result + selected proof wrapper]
 ```
 
 ### Stress Replay Flow
@@ -947,7 +950,7 @@ npm run setup:tee-broker:mainnet
 | [`app/api/agents/handshake/route.ts`](app/api/agents/handshake/route.ts) | Cross-Agent Neural Handshake transcript API. |
 | [`app/faucet/page.tsx`](app/faucet/page.tsx) | Public anti-sybil faucet page for the airdrop-style example flow. |
 | [`app/api/ya/faucet/claim`](app/api/ya/faucet/claim/route.ts) | Faucet claim endpoint for the public anti-sybil airdrop example. |
-| [`app/dev/marketplace/page.tsx`](app/dev/marketplace/page.tsx) | Developer API Store for the 9-layer stack and partner SDK wrappers. |
+| [`app/dev/marketplace/page.tsx`](app/dev/marketplace/page.tsx) | Developer API Store for the full 9-layer stack, single-layer APIs, and selected partner SDK wrappers. |
 | [`lib/server/runtime-store.ts`](lib/server/runtime-store.ts) | Proof persistence layer. |
 | [`app/(workspace)/judge/page.tsx`](<app/(workspace)/judge/page.tsx>) | Main judge review surface. |
 | [`app/(workspace)/judge/roadmap/page.tsx`](<app/(workspace)/judge/roadmap/page.tsx>) | Judge-adjacent roadmap and value-capture surface. |
@@ -965,7 +968,7 @@ The public developer access layer is live, and it should be read with network ho
 | --- | --- | --- |
 | Anti-sybil faucet | [`yieldboostai.xyz/faucet`](https://yieldboostai.xyz/faucet) | Testnet airdrop-style example for public claims, anti-sybil checks, and Alibaba fingerprinting. |
 | Developer portal | [`dev.yieldboostai.xyz`](https://dev.yieldboostai.xyz/) | Hosts docs, marketplace, playgrounds, and API integration surfaces. |
-| API marketplace | [`dev.yieldboostai.xyz/marketplace`](https://dev.yieldboostai.xyz/marketplace) | Mainnet-first security store for the full 9-layer endpoint, single layers, anti-sybil modules, and partner SDK wrappers. |
+| API marketplace | [`dev.yieldboostai.xyz/marketplace`](https://dev.yieldboostai.xyz/marketplace) | Mainnet-first security store for the full 9-layer endpoint, single layers, anti-sybil modules, and selected partner SDK wrappers. |
 | Public vault | [`yieldboostai.xyz/vault`](https://yieldboostai.xyz/vault) | Testnet public challenge surface for the YieldBoost protection model. |
 
 Current shipped base:
