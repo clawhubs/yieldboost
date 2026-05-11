@@ -27,6 +27,7 @@ import {
   Boxes,
   Zap,
   Bot,
+  ArrowLeftRight,
   Lock,
 } from "lucide-react";
 import BrandLogo from "@/components/ui/BrandLogo";
@@ -78,6 +79,7 @@ const navigation: NavigationItem[] = [
   { href: "/", label: "Dashboard", icon: House },
   { href: "/agent", label: "Boost", icon: Zap, badge: "HOT" },
   { href: "/vault", label: "Vault", icon: Lock, badge: "LIVE" },
+  { href: "/swap", label: "Vault Swap", icon: ArrowLeftRight, badge: "SOON" },
   { href: "/portfolio", label: "Portfolio", icon: BriefcaseBusiness },
   { href: "/strategies", label: "Strategies", icon: Boxes },
   { href: "/opportunities", label: "Opportunities", icon: Package2 },
@@ -949,7 +951,11 @@ export default function Sidebar() {
                 }`}
               />
               <span>{label}</span>
-              {badge ? (
+              {badge === "SOON" ? (
+                <span className="flag-ribbon">
+                  COMING SOON
+                </span>
+              ) : badge ? (
                 <span
                   className={`ml-auto rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] ${
                     isJudgeEntry

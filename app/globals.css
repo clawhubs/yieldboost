@@ -820,6 +820,56 @@ select {
   background: rgba(0, 201, 177, 0.03);
 }
 
+/* ── Waving Flag Animation ───────────────────────────────── */
+@keyframes flag-wave {
+  0%, 100% { transform: rotate(-2deg) scaleX(1); }
+  25% { transform: rotate(1deg) scaleX(0.97); }
+  50% { transform: rotate(-1deg) scaleX(1.02); }
+  75% { transform: rotate(2deg) scaleX(0.98); }
+}
+
+.flag-ribbon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  padding: 2px 8px 2px 6px;
+  border-radius: 3px 8px 8px 3px;
+  background: linear-gradient(135deg, #ffd56b, #e8a520);
+  color: #1a1000;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(255, 213, 107, 0.3);
+  transform-origin: left center;
+  animation: flag-wave 2.4s ease-in-out infinite;
+}
+
+.flag-ribbon::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: 50%;
+  translate: 0 -50%;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #c8860f, #a06a00);
+  border-radius: 2px 0 0 2px;
+}
+
+.flag-ribbon::after {
+  content: '';
+  position: absolute;
+  right: -5px;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  background: linear-gradient(180deg, transparent 40%, #ffd56b 40%, #ffd56b 60%, transparent 60%);
+  clip-path: polygon(0 0, 0 100%, 100% 50%);
+}
+
 /* ── Scrollbar ───────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 6px;
