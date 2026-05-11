@@ -6,26 +6,23 @@
     <title>YieldBoost AI Pitch Deck</title>
     <style>
       @page {
-        size: A4 landscape;
+        size: 338.67mm 190.5mm;
         margin: 0;
       }
 
       :root {
         --bg: #02070a;
-        --panel: #071017;
-        --panel-2: #0a151e;
-        --line: rgba(82, 255, 239, 0.18);
-        --line-strong: rgba(82, 255, 239, 0.42);
-        --cyan: #22d3ee;
-        --mint: #31f5c8;
-        --green: #4dff8f;
-        --text: #f4f7fb;
-        --muted: #9fb1bd;
-        --soft: rgba(244, 247, 251, 0.07);
-        --danger: #ff7d9d;
-        --shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
-        --slide-w: 297mm;
-        --slide-h: 210mm;
+        --panel: #071018;
+        --panel-2: #0b1721;
+        --line: rgba(45, 245, 213, 0.22);
+        --line-strong: rgba(45, 245, 213, 0.54);
+        --mint: #55ffd0;
+        --cyan: #19d5df;
+        --green: #58ff8d;
+        --gold: #ffd56b;
+        --text: #f7fafc;
+        --muted: #c4d3de;
+        --soft: rgba(255, 255, 255, 0.07);
       }
 
       * {
@@ -36,115 +33,140 @@
 
       html,
       body {
-        min-height: 100%;
         margin: 0;
-        background: var(--bg);
+        min-height: 100%;
+        background: #010508;
         color: var(--text);
         font-family:
-          "Space Grotesk",
+          Inter,
           "Plus Jakarta Sans",
-          "Satoshi",
           "Segoe UI",
           system-ui,
           sans-serif;
       }
 
       body {
-        overflow: hidden;
+        overflow: auto;
       }
 
       a {
         color: inherit;
+        text-decoration: none;
       }
 
       .deck {
-        display: flex;
-        height: 100vh;
-        overflow-x: auto;
-        overflow-y: hidden;
-        scroll-snap-type: x mandatory;
-        scroll-behavior: smooth;
-      }
-
-      .deck::-webkit-scrollbar {
-        height: 10px;
-      }
-
-      .deck::-webkit-scrollbar-track {
-        background: #03080c;
-      }
-
-      .deck::-webkit-scrollbar-thumb {
-        background: linear-gradient(90deg, var(--cyan), var(--mint));
-        border-radius: 999px;
+        display: grid;
+        gap: 28px;
+        padding: 28px 0;
       }
 
       .slide {
+        container-type: inline-size;
         position: relative;
-        flex: 0 0 100vw;
-        height: 100vh;
-        min-width: 100vw;
-        scroll-snap-align: start;
-        display: grid;
-        place-items: center;
-        padding: 22px;
+        width: min(1120px, calc(100vw - 24px));
+        aspect-ratio: 16 / 9;
+        margin: 0 auto;
         overflow: hidden;
-      }
-
-      .sheet {
-        position: relative;
-        width: min(var(--slide-w), calc(100vw - 44px));
-        aspect-ratio: 297 / 210;
-        max-height: calc(100vh - 44px);
+        border: 1px solid var(--line);
+        border-radius: 20px;
         background:
-          linear-gradient(135deg, rgba(34, 211, 238, 0.12), transparent 36%),
-          radial-gradient(circle at 88% 18%, rgba(49, 245, 200, 0.12), transparent 24%),
-          linear-gradient(180deg, #071017 0%, #03080c 100%);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: var(--shadow);
-        overflow: hidden;
+          radial-gradient(circle at 82% 18%, rgba(25, 213, 223, 0.16), transparent 30%),
+          radial-gradient(circle at 16% 84%, rgba(85, 255, 208, 0.12), transparent 30%),
+          linear-gradient(135deg, #02070a 0%, #071018 54%, #02070a 100%);
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
       }
 
-      .sheet::before {
+      .slide::before {
         content: "";
         position: absolute;
         inset: 0;
+        background:
+          linear-gradient(rgba(45, 245, 213, 0.055) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(45, 245, 213, 0.05) 1px, transparent 1px);
+        background-size: 3.8cqw 3.8cqw;
+        mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.75), transparent 90%);
         pointer-events: none;
-        background-image:
-          linear-gradient(120deg, transparent 0 25%, rgba(82, 255, 239, 0.14) 25.2%, transparent 25.6% 100%),
-          linear-gradient(300deg, transparent 0 67%, rgba(82, 255, 239, 0.1) 67.2%, transparent 67.6% 100%);
-        opacity: 0.9;
       }
 
-      .inner {
+      .slide::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: var(--progress, 0%);
+        height: 3px;
+        background: linear-gradient(90deg, var(--mint), var(--cyan));
+        border-radius: 0 0 2px 0;
+        z-index: 10;
+      }
+
+      .content {
         position: relative;
-        z-index: 2;
+        z-index: 1;
         height: 100%;
-        padding: 38px 44px;
+        padding: 4cqw 5.4cqw 3.6cqw;
+        display: flex;
+        flex-direction: column;
       }
 
-      .kicker {
+      .footer {
+        position: absolute;
+        left: 5.4cqw;
+        right: 5.4cqw;
+        bottom: 1.8cqw;
+        z-index: 2;
+        display: flex;
+        justify-content: space-between;
+        color: var(--muted);
+        font-size: 1.05cqw;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .brand {
         display: inline-flex;
         align-items: center;
-        gap: 10px;
-        min-height: 28px;
-        padding: 6px 12px;
+        gap: 1cqw;
+        color: var(--mint);
+        font-size: 1.1cqw;
+        font-weight: 900;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+      }
+
+      .mark {
+        display: grid;
+        width: 3.1cqw;
+        height: 3.1cqw;
+        place-items: center;
+        border: 1px solid var(--line-strong);
+        border-radius: 0.85cqw;
+        background: rgba(25, 213, 223, 0.12);
+        color: var(--text);
+        font-size: 1.3cqw;
+        letter-spacing: 0;
+      }
+
+      .eyebrow,
+      .tag {
+        display: inline-flex;
+        width: max-content;
+        align-items: center;
         border: 1px solid var(--line);
         border-radius: 999px;
-        color: #9ff7f0;
-        background: rgba(13, 30, 38, 0.68);
-        font-size: 10px;
-        font-weight: 700;
+        background: rgba(85, 255, 208, 0.08);
+        color: var(--mint);
+        padding: 0.7cqw 1.05cqw;
+        font-size: 0.95cqw;
+        font-weight: 900;
         letter-spacing: 0.18em;
         text-transform: uppercase;
       }
 
-      .dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 999px;
-        background: var(--mint);
-        box-shadow: 0 0 20px rgba(49, 245, 200, 0.85);
+      .tag.gold {
+        color: var(--gold);
+        border-color: rgba(255, 213, 107, 0.44);
+        background: rgba(255, 213, 107, 0.08);
       }
 
       h1,
@@ -155,1345 +177,900 @@
       }
 
       h1 {
-        max-width: 760px;
-        margin-top: 24px;
-        font-size: clamp(48px, 5vw, 76px);
-        line-height: 0.94;
-        letter-spacing: 0;
+        max-width: 72cqw;
+        margin-top: 2cqw;
+        font-size: 6.4cqw;
+        line-height: 0.95;
+        letter-spacing: -0.04em;
       }
 
       h2 {
-        max-width: 760px;
-        margin-top: 18px;
-        font-size: clamp(36px, 4vw, 58px);
-        line-height: 1;
-        letter-spacing: 0;
+        max-width: 74cqw;
+        margin-top: 1.8cqw;
+        font-size: 4.4cqw;
+        line-height: 1.02;
+        letter-spacing: -0.03em;
       }
 
       h3 {
-        font-size: 18px;
-        line-height: 1.2;
+        font-size: 1.85cqw;
+        line-height: 1.12;
       }
 
       .lead {
-        max-width: 720px;
-        margin-top: 18px;
-        color: #c7d5dc;
-        font-size: 19px;
-        line-height: 1.55;
+        max-width: 68cqw;
+        margin-top: 1.2cqw;
+        color: #dce7ee;
+        font-size: 1.85cqw;
+        line-height: 1.4;
       }
 
-      .cyan {
-        color: var(--cyan);
+      .body {
+        color: #d4e0e9;
+        font-size: 1.34cqw;
+        line-height: 1.52;
       }
 
-      .mint {
+      .muted {
+        color: var(--muted);
+      }
+
+      .accent {
         color: var(--mint);
       }
 
-      .green {
-        color: var(--green);
-      }
-
-      .grid {
+      .cover {
         display: grid;
-        gap: 14px;
+        grid-template-columns: 1fr 39cqw;
+        gap: 3cqw;
+        align-items: center;
+        height: 100%;
       }
 
-      .two {
-        grid-template-columns: 1.05fr 0.95fr;
+      .cover-art,
+      .visual {
+        border: 1px solid var(--line);
+        border-radius: 2cqw;
+        background:
+          linear-gradient(145deg, rgba(14, 28, 38, 0.9), rgba(4, 9, 13, 0.88)),
+          var(--panel);
+        box-shadow: 0 2.2cqw 6cqw rgba(0, 0, 0, 0.35);
       }
 
-      .three {
-        grid-template-columns: repeat(3, 1fr);
+      .cover-art {
+        padding: 1.4cqw;
       }
 
-      .four {
-        grid-template-columns: repeat(4, 1fr);
+      .cover-art img,
+      .visual img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 1.4cqw;
+        background: #02070a;
+      }
+
+      .cover-art img {
+        aspect-ratio: 1817 / 606;
+      }
+
+      .quick-row,
+      .cards,
+      .metrics,
+      .pricing,
+      .timeline {
+        display: grid;
+        gap: 1.3cqw;
+        margin-top: 1.8cqw;
+      }
+
+      .quick-row {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .cards.two {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .cards.three,
+      .metrics {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .pricing,
+      .timeline {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .card,
+      .metric,
+      .price,
+      .phase {
+        border: 1px solid var(--line);
+        border-radius: 1.55cqw;
+        background:
+          linear-gradient(145deg, rgba(11, 23, 33, 0.9), rgba(4, 10, 14, 0.86)),
+          var(--panel);
       }
 
       .card {
-        min-height: 118px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 8px;
-        background:
-          linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.025)),
-          rgba(7, 16, 23, 0.78);
-        padding: 18px;
+        min-height: 10.8cqw;
+        padding: 1.55cqw;
       }
 
-      .card strong {
+      .metric,
+      .price,
+      .phase {
+        padding: 1.45cqw;
+      }
+
+      .label {
         display: block;
-        color: #fff;
-        font-size: 18px;
-        line-height: 1.25;
+        color: var(--mint);
+        font-size: 0.88cqw;
+        font-weight: 900;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
       }
 
-      .card span,
-      .mini,
-      .muted {
-        color: var(--muted);
-        font-size: 13px;
-        line-height: 1.55;
+      .card h3,
+      .phase h3 {
+        margin-top: 0.9cqw;
       }
 
-      .metric {
-        border-left: 3px solid var(--cyan);
+      .card p,
+      .phase p,
+      .price p {
+        margin-top: 0.9cqw;
       }
 
-      .metric .value {
+      .metric strong,
+      .price strong {
         display: block;
-        margin: 6px 0 4px;
-        color: #fff;
-        font-size: 34px;
-        font-weight: 800;
+        margin-top: 0.8cqw;
+        font-size: 2.55cqw;
         line-height: 1;
       }
 
-      .hero {
-        padding: 0;
-      }
-
-      .hero .banner {
-        position: absolute;
-        inset: 0 0 auto 0;
-        width: 100%;
-        height: 45%;
-        object-fit: cover;
-        opacity: 0.96;
-      }
-
-      .hero .shade {
-        position: absolute;
-        inset: 0;
-        background:
-          linear-gradient(180deg, rgba(2, 7, 10, 0) 0%, rgba(2, 7, 10, 0) 38%, rgba(2, 7, 10, 0.9) 49%, rgba(2, 7, 10, 0.98) 100%),
-          linear-gradient(90deg, rgba(2, 7, 10, 0.16), transparent 60%);
-      }
-
-      .hero .inner {
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        padding: 330px 48px 48px;
-      }
-
-      .hero h1 {
-        font-size: clamp(44px, 4.8vw, 68px);
-      }
-
-      .hero-row {
-        display: flex;
-        justify-content: space-between;
-        gap: 24px;
-        align-items: flex-end;
-        margin-top: 34px;
-      }
-
-      .pill-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-      }
-
-      .pill {
-        padding: 9px 12px;
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        color: #dffdf9;
-        background: rgba(4, 16, 21, 0.76);
-        font-size: 12px;
-        font-weight: 700;
-      }
-
-      .flow {
-        position: relative;
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 16px;
-        margin-top: 30px;
-      }
-
-      .flow::before {
-        content: "";
-        position: absolute;
-        left: 10%;
-        right: 10%;
-        top: 52px;
-        height: 2px;
-        background: linear-gradient(90deg, var(--cyan), var(--mint), var(--green));
-        opacity: 0.8;
-      }
-
-      .node {
-        position: relative;
-        min-height: 132px;
-        padding: 18px;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: rgba(5, 14, 20, 0.86);
-      }
-
-      .node strong {
+      .metric span:last-child,
+      .price span:last-child {
         display: block;
-        margin-bottom: 5px;
-        color: #fff;
-        font-size: 17px;
-        line-height: 1.25;
-      }
-
-      .node .mini {
-        display: block;
-      }
-
-      .node::before {
-        content: attr(data-step);
-        display: grid;
-        place-items: center;
-        width: 42px;
-        height: 42px;
-        margin-bottom: 14px;
-        border-radius: 999px;
-        color: #00100e;
-        background: linear-gradient(135deg, var(--cyan), var(--mint));
-        font-weight: 900;
-      }
-
-      .flow-wide {
-        grid-template-columns: repeat(7, minmax(0, 1fr));
-        gap: 10px;
-      }
-
-      .flow-wide::before {
-        left: 6%;
-        right: 6%;
-      }
-
-      .flow-wide .node {
-        min-height: 156px;
-        padding: 14px;
-      }
-
-      .flow-wide .node strong {
-        font-size: 14px;
+        margin-top: 0.8cqw;
+        color: var(--muted);
+        font-size: 1.08cqw;
+        line-height: 1.35;
       }
 
       .split {
         display: grid;
-        grid-template-columns: 0.92fr 1.08fr;
-        gap: 24px;
-        align-items: center;
-        margin-top: 24px;
-      }
-
-      .screen {
-        position: relative;
-        overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-        background: #040b10;
-        min-height: 405px;
-      }
-
-      .screen img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-        opacity: 0.9;
-      }
-
-      .browser-bar {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        height: 34px;
-        padding: 0 12px;
-        background: rgba(255, 255, 255, 0.05);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      }
-
-      .browser-bar i {
-        width: 8px;
-        height: 8px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.18);
-      }
-
-      .mock-ui {
-        padding: 18px;
-      }
-
-      .mock-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-      }
-
-      .mock-line {
-        height: 10px;
-        margin-top: 10px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.08);
-      }
-
-      .mock-hero {
-        min-height: 140px;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background:
-          linear-gradient(135deg, rgba(34, 211, 238, 0.18), transparent),
-          rgba(255, 255, 255, 0.03);
-        padding: 18px;
-      }
-
-      .address {
-        display: block;
-        margin-top: 8px;
-        color: #dbeafe;
-        font-family: "SFMono-Regular", "Cascadia Mono", Consolas, monospace;
-        font-size: 11px;
-        line-height: 1.55;
-        word-break: break-all;
-      }
-
-      .chart {
-        position: relative;
-        height: 156px;
-        margin-top: 18px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 8px;
-        background:
-          linear-gradient(180deg, transparent 24%, rgba(255, 255, 255, 0.055) 24.4%, transparent 25%),
-          linear-gradient(180deg, transparent 49%, rgba(255, 255, 255, 0.055) 49.4%, transparent 50%),
-          linear-gradient(180deg, transparent 74%, rgba(255, 255, 255, 0.055) 74.4%, transparent 75%);
-      }
-
-      .chart svg {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-      }
-
-      .pulse {
-        animation: pulse 2.4s ease-in-out infinite;
-      }
-
-      .compact-grid {
-        gap: 12px;
-      }
-
-      .card.compact {
+        grid-template-columns: 1fr 42cqw;
+        gap: 2cqw;
+        align-items: stretch;
+        margin-top: 1.8cqw;
+        flex: 1;
         min-height: 0;
-        padding: 16px;
       }
 
-      .card.compact strong {
-        font-size: 16px;
+      .visual {
+        padding: 1.2cqw;
+        min-height: 0;
       }
 
-      .card.compact .address {
-        font-size: 10px;
-        line-height: 1.45;
+      .steps {
+        display: grid;
+        gap: 1.05cqw;
       }
 
-      .callout {
-        margin-top: 22px;
-        padding: 18px 20px;
-        border: 1px solid var(--line-strong);
-        border-radius: 8px;
-        background:
-          linear-gradient(135deg, rgba(34, 211, 238, 0.14), rgba(49, 245, 200, 0.05)),
-          rgba(4, 14, 20, 0.88);
+      .step {
+        display: grid;
+        grid-template-columns: 3.1cqw 1fr;
+        gap: 1.05cqw;
+        align-items: start;
+        border: 1px solid var(--line);
+        border-radius: 1.25cqw;
+        background: rgba(2, 7, 10, 0.56);
+        padding: 1.15cqw;
       }
 
-      .callout strong {
+      .step b {
+        display: grid;
+        width: 3.1cqw;
+        height: 3.1cqw;
+        place-items: center;
+        border-radius: 1cqw;
+        background: rgba(85, 255, 208, 0.11);
+        color: var(--mint);
+        font-size: 1.25cqw;
+      }
+
+      .step strong {
         display: block;
-        color: #fff;
-        font-size: 18px;
+        font-size: 1.5cqw;
+      }
+
+      .step span {
+        display: block;
+        margin-top: 0.45cqw;
+        color: var(--muted);
+        font-size: 1.08cqw;
+        line-height: 1.34;
+      }
+
+      .stack {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1cqw;
+        margin-top: 1.6cqw;
+      }
+
+      .layer {
+        min-height: 6.2cqw;
+        border: 1px solid var(--line);
+        border-radius: 1.2cqw;
+        background: rgba(4, 12, 17, 0.74);
+        padding: 1.05cqw;
+      }
+
+      .layer b {
+        color: var(--mint);
+        font-size: 0.95cqw;
+        letter-spacing: 0.16em;
+      }
+
+      .layer strong {
+        display: block;
+        margin-top: 0.45cqw;
+        font-size: 1.25cqw;
+      }
+
+      .layer span {
+        display: block;
+        margin-top: 0.35cqw;
+        color: var(--muted);
+        font-size: 0.95cqw;
         line-height: 1.25;
       }
 
-      .callout span {
-        display: block;
-        margin-top: 8px;
-        color: #cfe3e8;
-        font-size: 13px;
-        line-height: 1.55;
+      .price {
+        min-height: 12cqw;
       }
 
-      .chip-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-top: 14px;
+      .price ul,
+      .phase ul,
+      .card ul {
+        margin: 1.05cqw 0 0;
+        padding: 0;
+        list-style: none;
       }
 
-      .chip {
-        padding: 6px 10px;
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.04);
-        color: #dffdf9;
-        font-size: 11px;
-        font-weight: 700;
+      .price li,
+      .phase li,
+      .card li {
+        margin-top: 0.65cqw;
+        color: #d6e2ea;
+        font-size: 1.05cqw;
+        line-height: 1.35;
       }
 
-      .ledger {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 12px;
-        margin-top: 26px;
+      .price li::before,
+      .phase li::before,
+      .card li::before {
+        content: "+";
+        margin-right: 0.6cqw;
+        color: var(--mint);
+        font-weight: 900;
       }
 
-      .ledger .card {
-        min-height: 0;
+      .phase {
+        min-height: 17cqw;
       }
 
-      .ledger .address {
-        margin-top: 10px;
-      }
-
-      .phase-row {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 12px;
-        margin-top: 22px;
-      }
-
-      .phase-card {
-        min-height: 245px;
-        padding: 16px;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background:
-          linear-gradient(180deg, rgba(49, 245, 200, 0.08), rgba(255, 255, 255, 0.025)),
-          rgba(5, 14, 20, 0.86);
-      }
-
-      .phase-card .tag {
-        display: inline-flex;
-        margin-bottom: 12px;
-        padding: 5px 9px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 999px;
-        color: #b8ffc8;
-        font-size: 10px;
-        font-weight: 800;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-      }
-
-      .phase-card strong {
-        display: block;
-        color: #fff;
-        font-size: 18px;
-        line-height: 1.2;
-      }
-
-      .phase-card span,
-      .phase-card li {
-        color: var(--muted);
-        font-size: 12px;
-        line-height: 1.42;
-      }
-
-      .phase-card ul {
-        margin: 12px 0 0;
-        padding-left: 17px;
-      }
-
-      .money-grid {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 12px;
-        margin-top: 20px;
-      }
-
-      .money-card {
-        min-height: 190px;
-        padding: 15px;
-        border: 1px solid rgba(77, 255, 143, 0.18);
-        border-radius: 8px;
-        background:
-          linear-gradient(180deg, rgba(77, 255, 143, 0.075), rgba(255, 255, 255, 0.025)),
-          rgba(5, 14, 20, 0.86);
-      }
-
-      .money-card strong {
-        display: block;
-        color: #fff;
-        font-size: 16px;
-        line-height: 1.2;
-      }
-
-      .money-card span {
-        display: block;
-        margin-top: 8px;
-        color: var(--muted);
-        font-size: 12px;
-        line-height: 1.45;
-      }
-
-      @keyframes pulse {
-        0%,
-        100% {
-          opacity: 0.65;
-        }
-        50% {
-          opacity: 1;
-        }
-      }
-
-      .footer {
-        position: absolute;
-        left: 44px;
-        right: 44px;
-        bottom: 28px;
+      .phase-top {
         display: flex;
         justify-content: space-between;
-        gap: 20px;
-        color: rgba(199, 213, 220, 0.72);
-        font-size: 11px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
+        align-items: center;
+        gap: 1cqw;
       }
 
-      .nav {
-        position: fixed;
-        left: 50%;
-        bottom: 18px;
-        z-index: 10;
-        display: flex;
-        gap: 10px;
-        transform: translateX(-50%);
-        padding: 8px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 999px;
-        background: rgba(3, 8, 12, 0.78);
-        backdrop-filter: blur(14px);
+      .quote {
+        margin-top: auto;
+        border-left: 0.35cqw solid var(--mint);
+        background: rgba(85, 255, 208, 0.08);
+        padding: 1.4cqw 1.6cqw;
+        color: #d8fff4;
+        font-size: 1.7cqw;
+        line-height: 1.34;
       }
 
-      .nav button {
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        background: rgba(7, 16, 23, 0.9);
-        color: #dffdf9;
-        cursor: pointer;
-        font: inherit;
-        font-size: 12px;
-        font-weight: 800;
-        padding: 10px 14px;
+      code {
+        color: var(--mint);
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 0.94em;
       }
 
-      .nav button:hover {
-        border-color: var(--line-strong);
-        color: #fff;
-      }
-
-      .slide-no {
-        color: var(--cyan);
-      }
-
-      @media print {
-        html,
-        body {
-          overflow: visible;
-          background: #000;
-        }
-
-        .deck {
-          display: block;
-          height: auto;
-          overflow: visible;
-        }
-
+      @media (max-width: 960px) {
         .slide {
-          width: 297mm;
-          height: 210mm;
-          min-width: 297mm;
-          padding: 0;
-          page-break-after: always;
-        }
-
-        .sheet {
-          width: 297mm;
-          height: 210mm;
-          max-height: none;
-          border: 0;
-          box-shadow: none;
-          background: linear-gradient(180deg, #071017 0%, #03080c 100%);
-        }
-
-        .sheet::before {
-          display: none;
-        }
-
-        .card,
-        .node,
-        .screen,
-        .mock-hero {
-          background: #071017;
-        }
-
-        .kicker,
-        .pill,
-        .nav button {
-          background: #071017;
-        }
-
-        .hero .banner {
-          height: 45%;
-          opacity: 1;
-        }
-
-        .hero .shade {
-          background: linear-gradient(180deg, transparent 0 40%, #02070a 54%, #02070a 100%);
-        }
-
-        .inner {
-          padding: 10mm 12mm;
-        }
-
-        h1 {
-          font-size: 44pt;
-          line-height: 0.98;
-        }
-
-        h2 {
-          font-size: 34pt;
-          line-height: 1.02;
-        }
-
-        .hero .inner {
-          padding: 92mm 12mm 14mm;
-        }
-
-        .hero h1 {
-          font-size: 38pt;
-          max-width: 170mm;
-        }
-
-        .lead {
-          font-size: 13pt;
-          line-height: 1.42;
-        }
-
-        .card {
-          padding: 11pt;
-          min-height: 26mm;
-        }
-
-        .card strong {
-          font-size: 12pt;
-        }
-
-        .card span,
-        .mini,
-        .muted {
-          font-size: 8.5pt;
-        }
-
-        .metric .value {
-          font-size: 22pt;
-        }
-
-        .node {
-          min-height: 29mm;
-          padding: 10pt;
-        }
-
-        .flow-wide .node {
-          min-height: 34mm;
-        }
-
-        .screen {
-          min-height: 86mm;
-        }
-
-        .nav {
-          display: none;
-        }
-      }
-
-      @media (max-width: 760px) {
-        body {
-          overflow: auto;
-        }
-
-        .deck {
-          display: block;
-          height: auto;
-          overflow: visible;
-          scroll-snap-type: none;
-        }
-
-        .slide {
-          display: block;
-          width: 100%;
-          min-width: 0;
-          height: auto;
-          min-height: 0;
-          padding: 12px;
-          overflow: visible;
-        }
-
-        .sheet {
-          width: 100%;
-          max-height: none;
-          min-height: 0;
+          width: calc(100vw - 16px);
           aspect-ratio: auto;
-          overflow: visible;
+          border-radius: 16px;
         }
 
-        .inner {
-          height: auto;
-          padding: 22px 18px 28px;
+        .content {
+          padding: 28px 24px 22px;
         }
 
         h1 {
-          font-size: 36px;
-          line-height: 1.02;
+          font-size: max(28px, 5.5cqw);
+          max-width: 100%;
         }
 
         h2 {
-          font-size: 30px;
-          line-height: 1.08;
+          font-size: max(22px, 4cqw);
+          max-width: 100%;
+        }
+
+        h3 {
+          font-size: max(15px, 1.7cqw);
         }
 
         .lead {
-          font-size: 15px;
-          line-height: 1.5;
+          font-size: max(14px, 1.6cqw);
+          max-width: 100%;
         }
 
-        .hero .banner {
-          position: relative;
-          height: auto;
-          aspect-ratio: 1817 / 606;
-          display: block;
+        .body {
+          font-size: max(13px, 1.2cqw);
         }
 
-        .hero .shade {
-          display: none;
+        .label {
+          font-size: max(10px, 0.8cqw);
         }
 
-        .hero .inner {
-          display: block;
-          padding: 22px 18px 28px;
+        .cover {
+          grid-template-columns: 1fr;
+          gap: 20px;
         }
 
-        .hero h1 {
-          font-size: 34px;
+        .cover-art {
+          order: -1;
         }
 
-        .hero-row,
         .split {
-          display: block;
+          grid-template-columns: 1fr;
+          gap: 20px;
         }
 
-        .grid,
-        .two,
-        .three,
-        .four,
-        .flow,
-        .flow-wide,
-        .phase-row,
-        .money-grid,
-        .mock-grid,
-        .ledger {
+        .quick-row,
+        .cards.three,
+        .metrics {
           grid-template-columns: 1fr;
         }
 
-        .flow::before {
-          display: none;
+        .cards.two {
+          grid-template-columns: 1fr;
         }
 
-        .card,
-        .node,
-        .flow-wide .node {
-          min-height: 0;
+        .pricing,
+        .timeline {
+          grid-template-columns: repeat(2, 1fr);
         }
 
-        .screen {
-          min-height: 0;
-          margin-top: 16px;
+        .stack {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .card {
+          min-height: auto;
+          padding: 16px;
+        }
+
+        .card p,
+        .card li,
+        .phase p,
+        .phase li,
+        .price p,
+        .price li {
+          font-size: max(12px, 1cqw);
+        }
+
+        .metric,
+        .price,
+        .phase {
+          padding: 16px;
+        }
+
+        .metric strong,
+        .price strong {
+          font-size: max(20px, 2.2cqw);
+        }
+
+        .metric span:last-child,
+        .price span:last-child {
+          font-size: max(11px, 0.95cqw);
+        }
+
+        .price {
+          min-height: auto;
+        }
+
+        .phase {
+          min-height: auto;
+        }
+
+        .step {
+          padding: 12px;
+        }
+
+        .step strong {
+          font-size: max(14px, 1.3cqw);
+        }
+
+        .step span {
+          font-size: max(12px, 0.95cqw);
+        }
+
+        .layer {
+          min-height: auto;
+          padding: 12px;
+        }
+
+        .layer strong {
+          font-size: max(13px, 1.1cqw);
+        }
+
+        .layer span {
+          font-size: max(11px, 0.88cqw);
+        }
+
+        .quote {
+          font-size: max(14px, 1.4cqw);
+          padding: 14px 16px;
         }
 
         .footer {
-          position: static;
-          margin-top: 24px;
-          padding: 0 18px 18px;
+          position: relative;
+          left: auto;
+          right: auto;
+          bottom: auto;
+          padding: 12px 24px 20px;
+          font-size: max(10px, 0.9cqw);
         }
 
-        .nav {
-          display: none;
+        .eyebrow,
+        .tag {
+          font-size: max(10px, 0.85cqw);
+          padding: 6px 10px;
+        }
+
+        .brand {
+          font-size: max(11px, 1cqw);
+        }
+      }
+
+      @media (max-width: 520px) {
+        .deck {
+          gap: 12px;
+          padding: 12px 0;
+        }
+
+        .slide {
+          width: calc(100vw - 8px);
+          border-radius: 12px;
+        }
+
+        .content {
+          padding: 20px 16px 16px;
+        }
+
+        .pricing,
+        .timeline {
+          grid-template-columns: 1fr;
+        }
+
+        .stack {
+          grid-template-columns: 1fr;
+        }
+
+        .quick-row {
+          grid-template-columns: 1fr;
+        }
+
+        h1 {
+          font-size: 24px;
+          line-height: 1.1;
+        }
+
+        h2 {
+          font-size: 20px;
+          line-height: 1.12;
+        }
+      }
+
+      @media print {
+        body {
+          background: var(--bg);
+        }
+
+        .deck {
+          display: block;
+          padding: 0;
+          gap: 0;
+        }
+
+        .slide {
+          width: 338.67mm;
+          height: 190.5mm;
+          margin: 0;
+          border: 0;
+          border-radius: 0;
+          box-shadow: none;
+          page-break-after: always;
+          break-after: page;
+        }
+
+        .slide:last-child {
+          page-break-after: auto;
+          break-after: auto;
         }
       }
     </style>
   </head>
   <body>
-    <main class="deck" id="deck" aria-label="YieldBoost AI pitch deck">
-      <section class="slide">
-        <article class="sheet hero">
-          <img class="banner" src="./yieldboost-pitchdeck-assets/banner-lite.jpg" alt="YieldBoost AI banner" />
-          <div class="shade"></div>
-          <div class="inner">
-            <div class="kicker"><span class="dot"></span>0G mainnet live product</div>
-            <h1>Verifiable yield optimization for AI-native finance.</h1>
+    <main class="deck">
+      <section class="slide" style="--progress:8%">
+        <div class="content cover">
+          <div>
+            <div class="brand"><span class="mark">YA</span> YieldBoost AI</div>
+            <h1>One click. Nine layers. Verifiable yield.</h1>
             <p class="lead">
-              YieldBoost AI turns an AI yield recommendation into a reviewable asset: wallet-scoped reasoning, integrity guardrails, 0G Storage, ProofRegistry anchoring, Strategy Agent NFTs, and a judge-ready evidence trail investors can inspect without rerunning the product.
+              A consumer yield product on top of a security stack that can also be sold as API infrastructure.
             </p>
-            <div class="hero-row">
-              <div class="pill-row">
-                <span class="pill">0G Mainnet proof trail</span>
-                <span class="pill">Audit-first AI decisions</span>
-                <span class="pill">Integrity memory stack</span>
-                <span class="pill">Agent NFT marketplace</span>
-                <span class="pill">VC-ready verification surface</span>
-              </div>
-              <p class="mini">Live app: yieldboostai.xyz/judge</p>
+            <div class="quick-row">
+              <div class="metric"><span class="label">For users</span><strong>1-click</strong><span>For idle assets and cautious DeFi users.</span></div>
+              <div class="metric"><span class="label">For builders</span><strong>API store</strong><span>Buy the full stack or one exact security layer.</span></div>
+              <div class="metric"><span class="label">For the market</span><strong>Public proof</strong><span>Vault and faucet surfaces make the security testable.</span></div>
             </div>
           </div>
-          <div class="footer"><span>YieldBoost AI</span><span class="slide-no">01 / 12</span></div>
-        </article>
+          <div class="cover-art">
+            <img src="../readme/branding/banner.png" alt="YieldBoost AI banner" />
+          </div>
+        </div>
+        <div class="footer"><span>Pitch deck</span><span>01 / 12</span></div>
       </section>
 
-      <section class="slide">
-        <article class="sheet">
-          <div class="inner">
-            <div class="kicker"><span class="dot"></span>The DeFi AI trust gap</div>
-            <h2>AI yield advice is abundant. Verifiable AI yield execution is scarce.</h2>
-            <div class="grid three" style="margin-top: 34px">
-              <div class="card">
-                <strong>Trust bottleneck</strong>
-                <span>Funds, protocols, and users cannot scale black-box recommendations without proof of input facts, reasoning, and guardrail checks.</span>
-              </div>
-              <div class="card">
-                <strong>Idle capital leak</strong>
-                <span>Wallet balances sit underused because moving capital manually across fragmented DeFi opportunities is slow and risky.</span>
-              </div>
-              <div class="card">
-                <strong>No durable strategy asset</strong>
-                <span>Most AI strategy outputs disappear as UI state instead of becoming reusable, ownable, and externally auditable artifacts.</span>
-              </div>
+      <section class="slide" style="--progress:17%">
+        <div class="content">
+          <span class="eyebrow">The problem</span>
+          <h2>Crypto has idle capital, but AI recommendations still lack trust.</h2>
+          <p class="lead">
+            Users want yield without reading a maze of protocols. Developers want security modules without building a full proof stack. Protocols want fair access without bot farms.
+          </p>
+          <div class="cards three">
+            <div class="card">
+              <span class="label">User pain</span>
+              <h3>Idle balances stay idle</h3>
+              <p class="body">Most users do not know where to route capital or how to verify the recommendation after it appears.</p>
             </div>
-            <div class="split">
-              <div>
-                <p class="lead">
-                  The wedge is not "another yield dashboard." It is a trust layer for AI-generated financial decisions: propose, audit, store, anchor, own, and adopt.
-                </p>
-              </div>
-              <div class="chart">
-                <svg viewBox="0 0 600 180" role="img" aria-label="Trust curve">
-                  <path d="M28 136 C118 124 138 84 205 102 C260 116 288 44 345 60 C426 82 444 30 572 28" fill="none" stroke="#31f5c8" stroke-width="5" stroke-linecap="round" />
-                  <path d="M28 136 C118 124 138 84 205 102 C260 116 288 44 345 60 C426 82 444 30 572 28 L572 180 L28 180 Z" fill="rgba(49,245,200,0.12)" />
-                </svg>
-              </div>
+            <div class="card">
+              <span class="label">AI pain</span>
+              <h3>Outputs are easy to fake</h3>
+              <p class="body">A financial answer needs memory, risk checks, storage proof, and a receipt, not just confident text.</p>
+            </div>
+            <div class="card">
+              <span class="label">Protocol pain</span>
+              <h3>Growth invites abuse</h3>
+              <p class="body">Airdrops, API keys, partner SDKs, and vaults all need anti-sybil and proof-aware access control.</p>
             </div>
           </div>
-          <div class="footer"><span>Problem</span><span class="slide-no">02 / 12</span></div>
-        </article>
+          <div class="quote">The bottleneck is trust. YieldBoost makes trust usable, sellable, and externally reviewable.</div>
+        </div>
+        <div class="footer"><span>Why it matters</span><span>02 / 12</span></div>
       </section>
 
-      <section class="slide">
-        <article class="sheet">
-          <div class="inner">
-            <div class="kicker"><span class="dot"></span>Product wedge</div>
-            <h2>One click turns idle wallet context into a proof-backed strategy.</h2>
-            <div class="flow">
-              <div class="node" data-step="1">
-                <strong>Read wallet</strong>
-                <span class="mini">Capture the active portfolio facts and current yield baseline.</span>
-              </div>
-              <div class="node" data-step="2">
-                <strong>Generate route</strong>
-                <span class="mini">Compression, cache, embeddings, compute, and auditor checks produce a decision.</span>
-              </div>
-              <div class="node" data-step="3">
-                <strong>Anchor evidence</strong>
-                <span class="mini">Decision payload is stored through 0G and anchored in ProofRegistry.</span>
-              </div>
-              <div class="node" data-step="4">
-                <strong>Own or adopt</strong>
-                <span class="mini">Users mint Strategy Agent NFTs; reviewers inspect Judge Mode evidence.</span>
-              </div>
+      <section class="slide" style="--progress:25%">
+        <div class="content">
+          <span class="eyebrow">User product</span>
+          <h2>1-click optimize serves two types of crypto users.</h2>
+          <p class="lead">
+            One group wants yield without DeFi homework. The other wants proof before trusting the route.
+          </p>
+          <div class="cards two">
+            <div class="card">
+              <span class="label">Segment 1</span>
+              <h3>Lazy Degens</h3>
+              <p class="body">Users with idle coins who do not want to compare pools, routes, slippage, and DeFi steps manually. They use YieldBoost because one click turns the mess into a route.</p>
             </div>
-            <div class="grid four" style="margin-top: 28px">
-              <div class="card metric">
-                <span class="mini">Latest APY lift</span>
-                <span class="value" style="font-size: 26px">12.38 -> 16.48%</span>
-                <span>proof-backed snapshot</span>
-              </div>
-              <div class="card metric">
-                <span class="mini">Proof history</span>
-                <span class="value">8</span>
-                <span>recorded review runs</span>
-              </div>
-              <div class="card metric">
-                <span class="mini">Integrity artifacts</span>
-                <span class="value">7</span>
-                <span>memory, ZKR, governance, compliance</span>
-              </div>
-              <div class="card metric">
-                <span class="mini">Agent NFTs</span>
-                <span class="value">4</span>
-                <span>mainnet minted strategies</span>
-              </div>
+            <div class="card">
+              <span class="label">Segment 2</span>
+              <h3>Paranoid Investors</h3>
+              <p class="body">Users who want yield, but only when the route has 9-layer checks and a proof receipt behind it. They use YieldBoost because the security trail is visible.</p>
             </div>
           </div>
-          <div class="footer"><span>Solution</span><span class="slide-no">03 / 12</span></div>
-        </article>
+          <div class="quote">YieldBoost gives both groups a simple button with a visible security trail.</div>
+        </div>
+        <div class="footer"><span>Who uses it</span><span>03 / 12</span></div>
       </section>
 
-      <section class="slide">
-        <article class="sheet">
-          <div class="inner">
-            <div class="kicker"><span class="dot"></span>0G-native architecture</div>
-            <h2>The moat is the chain of custody around every AI decision.</h2>
-            <div class="flow flow-wide">
-              <div class="node" data-step="A">
-                <strong>User input</strong>
-                <span class="mini">Wallet + portfolio snapshot</span>
-              </div>
-              <div class="node" data-step="B">
-                <strong>Prompt compression</strong>
-                <span class="mini">Compact intent and constraints</span>
-              </div>
-              <div class="node" data-step="C">
-                <strong>Semantic cache</strong>
-                <span class="mini">Reuse exact wallet/network state</span>
-              </div>
-              <div class="node" data-step="D">
-                <strong>Embedding reuse</strong>
-                <span class="mini">Alibaba text-embedding-v4</span>
-              </div>
-              <div class="node" data-step="E">
-                <strong>Compute + Auditor</strong>
-                <span class="mini">Inference output checked against portfolio facts</span>
-              </div>
-              <div class="node" data-step="F">
-                <strong>0G Storage</strong>
-                <span class="mini">Persist proof payload</span>
-              </div>
-              <div class="node" data-step="G">
-                <strong>ProofRegistry</strong>
-                <span class="mini">On-chain anchor for review</span>
-              </div>
+      <section class="slide" style="--progress:33%">
+        <div class="content">
+          <span class="eyebrow">How it works</span>
+          <h2>Connect, click, see the proof.</h2>
+          <p class="lead">The user journey is three steps with one visible proof path behind them.</p>
+          <div class="split">
+            <div class="steps">
+              <div class="step"><b>1</b><div><strong>One button</strong><span>Connect wallet, click optimize, receive a route, and open the proof status.</span></div></div>
+              <div class="step"><b>2</b><div><strong>One receipt</strong><span>0G Storage, ProofRegistry, ZK evidence, and optional Agent NFT make the result reviewable.</span></div></div>
+              <div class="step"><b>3</b><div><strong>One proof path</strong><span>The 9-layer stack runs behind the click: blacklist, auditor, TEE, memory, storage, ZK, registry, governance, handshake.</span></div></div>
             </div>
-            <p class="lead">
-              AI output is treated as a proposal until it passes guardrails and becomes a durable, wallet-scoped proof artifact.
-            </p>
-            <div class="grid three" style="margin-top: 24px">
-              <div class="card">
-                <strong>Sovereign Memory</strong>
-                <span>Agent state snapshots are persisted on 0G Storage so the strategy context can be rehydrated across sessions.</span>
-              </div>
-              <div class="card">
-                <strong>Hallucination Blacklist</strong>
-                <span>Rejected input and output pairs are indexed before future inference, turning repeated failure modes into pre-inference blocks.</span>
-              </div>
-              <div class="card">
-                <strong>Multiverse Stress Test</strong>
-                <span>Historical replay turns market slices into Integrity Report Cards backed by 0G Storage and on-chain validation evidence.</span>
-              </div>
+            <div class="visual">
+              <img src="../readme/dashboard.png" alt="YieldBoost dashboard screenshot" />
             </div>
           </div>
-          <div class="footer"><span>System flow</span><span class="slide-no">04 / 12</span></div>
-        </article>
+        </div>
+        <div class="footer"><span>1-click optimize</span><span>04 / 12</span></div>
       </section>
 
-      <section class="slide">
-        <article class="sheet">
-          <div class="inner">
-            <div class="kicker"><span class="dot"></span>Integrity control plane</div>
-            <h2>Every run leaves behind machine-readable evidence, not just a recommendation.</h2>
-            <div class="grid three compact-grid" style="margin-top: 28px">
-              <div class="card compact">
-                <strong>Sovereign Memory</strong>
-                <span>Latest agent context is pinned to 0G Storage so the proof-backed state can be rehydrated across sessions.</span>
-              </div>
-              <div class="card compact">
-                <strong>Hallucination Blacklist</strong>
-                <span>Known-bad input and output pairs become pre-inference rejection signals instead of repeated failure modes.</span>
-              </div>
-              <div class="card compact">
-                <strong>Multiverse Stress Test</strong>
-                <span>Historical replay stores an Integrity Report Card so the strategy can be checked outside the latest market moment.</span>
-              </div>
-              <div class="card compact">
-                <strong>Zero-Knowledge Reasoning</strong>
-                <span>TEE/ZK-ready reasoning envelope is written to 0G and anchored on-chain with an honest tee-envelope-recorded status.</span>
-              </div>
-              <div class="card compact">
-                <strong>Programmable AI Governance</strong>
-                <span>Deterministic risk policy can keep a run active, warn, throttle, or halt before the next state transition.</span>
-              </div>
-              <div class="card compact">
-                <strong>Cross-Agent Neural Handshake</strong>
-                <span>Optimizer and Integrity Auditor leave behind a persisted transcript envelope so the handoff is reviewable.</span>
-              </div>
-            </div>
-            <div class="chip-row">
-              <span class="chip">ZKR status: tee-envelope-recorded</span>
-              <span class="chip">Governance: active, low risk 12/100</span>
-              <span class="chip">Handshake: completed</span>
-              <span class="chip">ZK-Compliance: verified, 100%</span>
-            </div>
-            <div class="callout">
-              <strong>Investor takeaway</strong>
-              <span>The proof stack compounds: each accepted or rejected strategy improves reviewability, repeatability, and defensibility for downstream users and partners.</span>
-            </div>
+      <section class="slide" style="--progress:42%">
+        <div class="content">
+          <span class="eyebrow">The moat</span>
+          <h2>The 9-layer military-grade stack is the product engine.</h2>
+          <p class="lead">
+            It protects user optimization, powers paid APIs, and gives the public vault/faucet a real security model to test.
+          </p>
+          <div class="stack">
+            <div class="layer"><b>01</b><strong>Hallucination Blacklist</strong><span>Reject unsafe patterns.</span></div>
+            <div class="layer"><b>02</b><strong>Integrity Auditor</strong><span>Check output before storage.</span></div>
+            <div class="layer"><b>03</b><strong>Secure Compute / TEE</strong><span>Model execution evidence.</span></div>
+            <div class="layer"><b>04</b><strong>Sovereign Memory</strong><span>Persist reviewable state.</span></div>
+            <div class="layer"><b>05</b><strong>0G Storage Proof Layer</strong><span>Store proof artifacts.</span></div>
+            <div class="layer"><b>06</b><strong>Zero-Knowledge Proof Layer</strong><span>Noir and ZK envelopes.</span></div>
+            <div class="layer"><b>07</b><strong>ProofRegistry Anchor</strong><span>On-chain receipt path.</span></div>
+            <div class="layer"><b>08</b><strong>Programmable Governance</strong><span>Policy and risk scoring.</span></div>
+            <div class="layer"><b>09</b><strong>Cross-Agent Neural Handshake</strong><span>Agent-to-agent transcript.</span></div>
           </div>
-          <div class="footer"><span>Control plane</span><span class="slide-no">05 / 12</span></div>
-        </article>
+        </div>
+        <div class="footer"><span>Security moat</span><span>05 / 12</span></div>
       </section>
 
-      <section class="slide">
-        <article class="sheet">
-          <div class="inner">
-            <div class="kicker"><span class="dot"></span>Due diligence mode</div>
-            <h2>Audit-first UX: no wallet, no faucet, no rerun.</h2>
-            <div class="split">
-              <div>
-                <div class="grid" style="gap: 12px">
-                  <div class="card">
-                    <strong>Hard-locked demo wallet</strong>
-                    <span class="address">0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D</span>
-                  </div>
-                  <div class="card">
-                    <strong>Mainnet-first, testnet switchable</strong>
-                    <span>Reviewers can compare networks without leaving the audit page.</span>
-                  </div>
-                  <div class="card">
-                    <strong>Evidence directly under deployment</strong>
-                    <span>0G Mainnet contracts appear first, followed immediately by the Integrity memory stack and Evidence anchors as one review package.</span>
-                  </div>
-                </div>
-              </div>
-              <div class="screen">
-                <div class="browser-bar"><i></i><i></i><i></i><span class="mini">/judge</span></div>
-                <div class="mock-ui">
-                  <div class="mock-hero">
-                    <div class="kicker"><span class="dot"></span>Mainnet review</div>
-                    <h3 style="margin-top: 14px">Mainnet review starts here.</h3>
-                    <p class="mini" style="margin-top: 8px">Latest proof-backed snapshot, APY lift, and verification payload.</p>
-                  </div>
-                  <div class="mock-grid" style="margin-top: 12px">
-                    <div class="card metric">
-                      <span class="mini">APY lift</span>
-                      <span class="value" style="font-size: 26px">12.38 -> 16.48%</span>
-                    </div>
-                    <div class="card metric">
-                      <span class="mini">Proof history</span>
-                      <span class="value" style="font-size: 26px">8 runs</span>
-                    </div>
-                  </div>
-                  <div class="mock-line"></div>
-                  <div class="mock-line" style="width: 78%"></div>
-                  <p class="mini" style="margin-top: 12px">Deployment artifacts -> Integrity stack -> Evidence anchors -> Reasoning brief</p>
-                </div>
-              </div>
+      <section class="slide" style="--progress:50%">
+        <div class="content">
+          <span class="eyebrow">Live proof</span>
+          <h2>Mainnet evidence is visible from Judge Mode.</h2>
+          <p class="lead">
+            The demo is not just a dashboard. YieldBoost exposes CIDs, explorer links, ProofRegistry records, ZK artifacts, TEE evidence, and Strategy Agent NFTs.
+          </p>
+          <div class="split">
+            <div class="metrics">
+              <div class="metric"><span class="label">ProofRegistry</span><strong>#36</strong><span>Mainnet review record.</span></div>
+              <div class="metric"><span class="label">0G Storage</span><strong>CID</strong><span>Proof payload and memory artifacts.</span></div>
+              <div class="metric"><span class="label">Agent NFT</span><strong>#5</strong><span>Verified strategy artifact.</span></div>
+              <div class="metric"><span class="label">ZK proof</span><strong>Noir</strong><span>Agent identity and ZK envelope path.</span></div>
+              <div class="metric"><span class="label">TEE</span><strong>0G Compute</strong><span>Model evidence when compute path is enabled.</span></div>
+              <div class="metric"><span class="label">Explorer</span><strong>Open</strong><span>External receipts, not private claims.</span></div>
+            </div>
+            <div class="visual">
+              <img src="../readme/judge-mode.png" alt="YieldBoost judge mode screenshot" />
             </div>
           </div>
-          <div class="footer"><span>Frictionless audit</span><span class="slide-no">06 / 12</span></div>
-        </article>
+        </div>
+        <div class="footer"><span>0G evidence</span><span>06 / 12</span></div>
       </section>
 
-      <section class="slide">
-        <article class="sheet">
-          <div class="inner">
-            <div class="kicker"><span class="dot"></span>Mainnet evidence</div>
-            <h2 style="max-width: 760px; font-size: clamp(31px, 3.4vw, 52px); line-height: 1.02;">This is not a roadmap slide: the core verification contracts are already on 0G mainnet.</h2>
-            <div class="grid two compact-grid" style="margin-top: 20px">
-              <div class="card compact">
-                <strong>ProofRegistry</strong>
-                <span class="address">0x8e63e117E71A80Cfc10fDF375F079e2e29cd7D7D</span>
-                <span class="mini">Anchors proof metadata and emits the reviewable proof event.</span>
-              </div>
-              <div class="card compact">
-                <strong>GlobalBlacklistRegistry</strong>
-                <span class="address">0xbc576EA5a68ED9d217299c107C801445e9A5a7BE</span>
-                <span class="mini">Mainnet registry for public rejection anchors from the Hallucination Blacklist layer.</span>
-              </div>
-              <div class="card compact">
-                <strong>ValidationRegistry</strong>
-                <span class="address">0x62aa83b0A610BE298dF08004d764229B8f2aC219</span>
-                <span class="mini">Mainnet registry for Multiverse Stress Test report anchors and integrity validation evidence.</span>
-              </div>
-              <div class="card compact">
-                <strong>YieldStrategyINFT</strong>
-                <span class="address">0xb264D861264B0e4f8fb98A61B7694BA8a3B6BBe3</span>
-                <span class="mini">Mainnet Agent NFT contract for strategy ownership.</span>
-              </div>
-              <div class="card compact">
-                <strong>Attestation Oracle</strong>
-                <span class="address">0x216E7880D64D94335B583c539802d3e61958d4A2</span>
-                <span class="mini">Registers verified attestation hashes before INFT verification is marked on-chain.</span>
-              </div>
-              <div class="card compact">
-                <strong>Strategy Marketplace</strong>
-                <span class="address">0x48F989C7f41056509980731C1b4D59164C0C1A40</span>
-                <span class="mini">Mainnet adoption contract for listed proof-backed Strategy NFTs.</span>
-              </div>
-              <div class="card compact">
-                <strong>Latest ProofRegistry tx</strong>
-                <span class="address">0xbe37a19217edd77026eaf659127ea8838d84fbc149a10e3f21ee0585dded99fb</span>
-                <span class="mini">Latest tested mainnet proof anchor from the product flow.</span>
-              </div>
-              <div class="card compact">
-                <strong>Latest Agent NFT mint tx</strong>
-                <span class="address">0x2d4e074e9239f17db837fdfcc5ffa77393f292b7699836a79da260aefdddcb18</span>
-                <span class="mini">Token #4 minted to the connected demo wallet during live validation.</span>
-              </div>
+      <section class="slide" style="--progress:58%">
+        <div class="content">
+          <span class="eyebrow">Business model</span>
+          <h2>Modular Immunity Armory sells the security stack as API inventory.</h2>
+          <p class="lead">
+            Developers do not need to buy the whole system. They can subscribe to the complete 9-layer API, one exact layer, anti-sybil protection, or selected partner wrappers.
+          </p>
+          <div class="pricing">
+            <div class="price">
+              <span class="label">Free</span>
+              <strong>0 0G</strong>
+              <ul>
+                <li>Non-AI modules</li>
+                <li>ZK proof preview</li>
+                <li>No TEE or partner SDK</li>
+              </ul>
+            </div>
+            <div class="price">
+              <span class="label">Builder</span>
+              <strong>88 0G</strong>
+              <ul>
+                <li>Verification modules</li>
+                <li>Anti-sybil module</li>
+                <li>Governance APIs</li>
+              </ul>
+            </div>
+            <div class="price">
+              <span class="label">Pro trial</span>
+              <strong>0.00001 0G</strong>
+              <ul>
+                <li>Alibaba fingerprinting</li>
+                <li>ZK and proof access</li>
+                <li>No TEE</li>
+              </ul>
+            </div>
+            <div class="price">
+              <span class="label">Protocol</span>
+              <strong>8888 0G</strong>
+              <ul>
+                <li>Full 9-layer compute</li>
+                <li>TEE access</li>
+                <li>Partner SDK support</li>
+              </ul>
             </div>
           </div>
-          <div class="footer"><span>0G mainnet verification</span><span class="slide-no">07 / 12</span></div>
-        </article>
+          <div class="quote">Consumer product creates demand. API subscriptions turn the trust layer into recurring infrastructure revenue.</div>
+        </div>
+        <div class="footer"><span>API revenue</span><span>07 / 12</span></div>
       </section>
 
-      <section class="slide">
-        <article class="sheet">
-          <div class="inner">
-            <div class="kicker"><span class="dot"></span>Live artifact ledger</div>
-            <h2>The newest tx and anchor trail is readable from Judge Mode in seconds.</h2>
-            <div class="ledger">
-              <div class="card compact">
-                <strong>Latest proof write</strong>
-                <span>Main proof CID `0x0658...3050`</span>
-                <span class="address">0x763c992d35b36dcdf66fa1e6e4cda1675d84eeffd698e60b4cefd64b3745073d</span>
-              </div>
-              <div class="card compact">
-                <strong>Proof anchor</strong>
-                <span>ProofRegistry proof ID 7</span>
-                <span class="address">0xbe37a19217edd77026eaf659127ea8838d84fbc149a10e3f21ee0585dded99fb</span>
-              </div>
-              <div class="card compact">
-                <strong>ZKR envelope</strong>
-                <span>CID `0x7c91...ad82` with proof ID 8</span>
-                <span class="address">0xa074e7f74aad61ece0be54766116cffc544e4a5eda96189bbc136ce14af6cd02</span>
-              </div>
-              <div class="card compact">
-                <strong>ZK-Compliance proof</strong>
-                <span>100% policy compliant, proof ID 9</span>
-                <span class="address">0xd5c33366a40960c1e2903b47f1fa699f39ffbb1ab7532fc544b53571bd7e2be7</span>
-              </div>
-              <div class="card compact">
-                <strong>Governance decision</strong>
-                <span>Active with low risk 12/100</span>
-                <span class="address">0xf7672e2367a880e57961ece7621138c3be870ef8541affdd28c657b5654e620e</span>
-              </div>
-              <div class="card compact">
-                <strong>Neural handshake</strong>
-                <span>Completed optimizer to auditor transcript</span>
-                <span class="address">0x91c94588d6729e8550bf782e99166151afbd15bd69bd3aec67dd76a72b155676</span>
-              </div>
+      <section class="slide" style="--progress:67%">
+        <div class="content">
+          <span class="eyebrow">Public security</span>
+          <h2>Vault and faucet prove the stack outside the happy path.</h2>
+          <p class="lead">
+            The security story becomes stronger when people can attack it, farm it, and test it with real wallets.
+          </p>
+          <div class="cards two">
+            <div class="card">
+              <span class="label">Live Challenge Vault</span>
+              <h3>Public target for attackers</h3>
+              <p class="body">The vault is a challenge surface: if someone can break the protection model, they prove it against a live target instead of a slide.</p>
+              <ul>
+                <li>Testnet-friendly so many wallets can try</li>
+                <li>Attempts are visible and repeatable</li>
+                <li>Designed as a trust-building security demo</li>
+              </ul>
+            </div>
+            <div class="card">
+              <span class="label">Anti-sybil faucet</span>
+              <h3>Airdrop defense example</h3>
+              <p class="body">The faucet shows how a crypto company could protect public claims with deterministic checks, ZK proof, and Alibaba fingerprinting.</p>
+              <ul>
+                <li>Mainnet-ready protection modules</li>
+                <li>Commercialized inside the API store</li>
+                <li>Useful for campaigns, access, and onboarding</li>
+              </ul>
             </div>
           </div>
-          <div class="footer"><span>Latest tx trail</span><span class="slide-no">08 / 12</span></div>
-        </article>
+        </div>
+        <div class="footer"><span>Vault and faucet</span><span>08 / 12</span></div>
       </section>
 
-      <section class="slide">
-        <article class="sheet">
-          <div class="inner">
-            <div class="kicker"><span class="dot"></span>Investment thesis</div>
-            <h2>YieldBoost can become the verification layer for AI-managed DeFi strategies.</h2>
-            <div class="grid four" style="margin-top: 32px">
-              <div class="card">
-                <strong>Wedge</strong>
-                <span>Start with one painful action: make idle wallet capital easier to route into proof-backed yield opportunities.</span>
-              </div>
-              <div class="card">
-                <strong>Moat</strong>
-                <span>The Integrity memory stack turns strategy history, rejections, reasoning envelopes, and governance into compounding evidence.</span>
-              </div>
-              <div class="card">
-                <strong>Distribution</strong>
-                <span>Strategy Agent NFTs create portable, inspectable assets that can move through marketplaces, protocols, and partner dashboards.</span>
-              </div>
-              <div class="card">
-                <strong>Business model</strong>
-                <span>Take-rate on adopted strategies, premium automation, protocol integrations, and API access to proof-backed strategy intelligence.</span>
-              </div>
+      <section class="slide" style="--progress:75%">
+        <div class="content">
+          <span class="eyebrow">Who pays</span>
+          <h2>Three buyer segments, one security core.</h2>
+          <p class="lead">
+            YieldBoost sells to users first, then to developers and protocols that need the same trust layer.
+          </p>
+          <div class="cards three">
+            <div class="card">
+              <span class="label">DeFi users</span>
+              <h3>Make idle balances work</h3>
+              <p class="body">Users want a simple optimizer that explains the route and leaves proof behind.</p>
             </div>
-            <div class="flow" style="grid-template-columns: repeat(4, 1fr)">
-              <div class="node" data-step="1"><strong>Acquire</strong><span class="mini">Wallet users and hackathon judges verify the live product</span></div>
-              <div class="node" data-step="2"><strong>Retain</strong><span class="mini">Memory and proofs create a durable strategy history</span></div>
-              <div class="node" data-step="3"><strong>Monetize</strong><span class="mini">Automation, adoption, marketplace, and API surfaces</span></div>
-              <div class="node" data-step="4"><strong>Scale</strong><span class="mini">Protocols and agents consume trusted strategy artifacts</span></div>
+            <div class="card">
+              <span class="label">Developers</span>
+              <h3>Rent security layers</h3>
+              <p class="body">Builders can plug in ZK, proof lookup, governance, storage, or full 9-layer verification.</p>
+            </div>
+            <div class="card">
+              <span class="label">Protocols</span>
+              <h3>Protect growth</h3>
+              <p class="body">Airdrops, vaults, and partner SDKs need anti-sybil checks and proof-aware execution.</p>
             </div>
           </div>
-          <div class="footer"><span>Company thesis</span><span class="slide-no">09 / 12</span></div>
-        </article>
+        </div>
+        <div class="footer"><span>Market</span><span>09 / 12</span></div>
       </section>
 
-      <section class="slide">
-        <article class="sheet">
-          <div class="inner">
-            <div class="kicker"><span class="dot"></span>Strategy Agent NFT</div>
-            <h2 style="max-width: 740px; font-size: clamp(31px, 3.4vw, 52px); line-height: 1.03;">Optimization results become ownable, distributable strategy assets.</h2>
-            <div class="split" style="margin-top: 18px">
-              <div>
-                <p class="lead">
-                  After a proof-backed optimization, the user can mint the strategy through YieldStrategyINFT. The NFT is not the proof itself; it is the portable commercial wrapper linked to verified runtime output.
-                </p>
-                <div class="grid compact-grid" style="margin-top: 18px">
-                  <div class="card compact">
-                    <strong>Minted to the connected wallet</strong>
-                    <span>Agent ownership follows the user wallet, not the server signer.</span>
-                  </div>
-                  <div class="card compact">
-                    <strong>Marketplace adoption</strong>
-                    <span>Listed strategy NFTs can be inspected through proof metadata before adoption or downstream integration.</span>
-                  </div>
-                  <div class="card compact">
-                    <strong>Auditor-gated mint</strong>
-                    <span>Rejected recommendations do not enter the proof-to-NFT path.</span>
-                  </div>
-                </div>
-              </div>
-              <div class="screen" style="min-height: 360px">
-                <div class="browser-bar"><i></i><i></i><i></i><span class="mini">/agents</span></div>
-                <div class="mock-ui">
-                  <div class="card compact" style="min-height: 290px">
-                    <div class="kicker"><span class="dot"></span>Agent NFT</div>
-                    <h3 style="margin-top: 18px">SaucerSwap LP Strategy Agent</h3>
-                    <p class="mini" style="margin-top: 10px">Confidence 91% | APY 16.48% | Proof-linked mint | Listed strategy-ready</p>
-                    <div class="chart">
-                      <svg viewBox="0 0 600 180">
-                        <path d="M36 132 C108 88 158 118 220 74 C286 28 332 88 398 48 C462 12 504 46 568 22" fill="none" stroke="#22d3ee" stroke-width="5" stroke-linecap="round" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              </div>
+      <section class="slide" style="--progress:83%">
+        <div class="content">
+          <span class="eyebrow">Scale</span>
+          <h2>One moat creates many revenue lines.</h2>
+          <p class="lead">
+            The same security core supports yield optimization, API subscriptions, anti-sybil access, and partner integrations.
+          </p>
+          <div class="cards two">
+            <div class="card">
+              <span class="label">Selected wrapper example</span>
+              <h3>VeilSolver Secure Proxy</h3>
+              <p class="body">A partner SDK can be wrapped with selected protections such as isolated execution, ZK envelope, and 0G anchoring. This is not represented as the full 9-layer product.</p>
+            </div>
+            <div class="card">
+              <span class="label">Why this scales</span>
+              <h3>One moat, many products</h3>
+              <p class="body">The same security core supports yield optimization, API subscriptions, anti-sybil access, vault challenges, and future partner integrations.</p>
             </div>
           </div>
-          <div class="footer"><span>NFT layer</span><span class="slide-no">10 / 12</span></div>
-        </article>
+          <div class="quote">Consumer product creates demand. The moat becomes recurring revenue through API, partner, and enterprise channels.</div>
+        </div>
+        <div class="footer"><span>Scalability</span><span>10 / 12</span></div>
       </section>
 
-      <section class="slide">
-        <article class="sheet">
-          <div class="inner">
-            <div class="kicker"><span class="dot"></span>Sovereign roadmap</div>
-            <h2 style="max-width: 850px">From mainnet proof product to the 0G trust economy.</h2>
-            <div class="phase-row">
-              <div class="phase-card">
-                <span class="tag">Q3 - Q4 2026</span>
-                <strong>Integrity Genesis</strong>
-                <span>Turn today's Judge proof trail into a rewardable integrity network for AI decisions.</span>
-                <ul>
-                  <li>Neural Handshake mainnet expansion</li>
-                  <li>$YA0G Proof of Integrity incentives</li>
-                  <li>Sovereign Memory V3 anomaly context</li>
-                </ul>
-              </div>
-              <div class="phase-card">
-                <span class="tag">Q1 - Q2 2027</span>
-                <strong>Quantum Liquidity Layer</strong>
-                <span>Use 0G Compute for private intent routing and programmable governance around capital movement.</span>
-                <ul>
-                  <li>Sovereign ZK-DEX and intent routing</li>
-                  <li>Institutional Guardian controls</li>
-                  <li>Trinity Vault exploit-aware automation</li>
-                </ul>
-              </div>
-              <div class="phase-card">
-                <span class="tag">Q3 2027+</span>
-                <strong>Omniscient Orchestration</strong>
-                <span>Expand the proof graph across chains, assets, and real-world markets with 0G as source of truth.</span>
-                <ul>
-                  <li>Cross-chain intelligence bridge</li>
-                  <li>$YA governance and agent reputation</li>
-                  <li>RWA Sovereign Bridge strategy rails</li>
-                </ul>
-              </div>
+      <section class="slide" style="--progress:92%">
+        <div class="content">
+          <span class="eyebrow">Roadmap</span>
+          <h2>Phase 1 is live. The next phases scale distribution and trust.</h2>
+          <p class="lead">Each phase builds on top of the previous one, so security and revenue compound together.</p>
+          <div class="timeline">
+            <div class="phase">
+              <div class="phase-top"><span class="tag">Live</span><span class="muted">Now</span></div>
+              <h3>Core Fortress</h3>
+              <ul>
+                <li>9-layer stack</li>
+                <li>1-click optimize</li>
+                <li>0G Storage + ProofRegistry</li>
+                <li>Native 0G API pricing</li>
+                <li>Vault and faucet surfaces</li>
+              </ul>
             </div>
-            <div class="callout">
-              <strong>Roadmap discipline</strong>
-              <span>Every phase starts from live evidence: 0G Storage, ProofRegistry, Judge Mode, Integrity memory stack, and Strategy Agent NFTs.</span>
+            <div class="phase">
+              <div class="phase-top"><span class="tag gold">Next</span><span class="muted">Q3/Q4</span></div>
+              <h3>Liquidity Hub</h3>
+              <ul>
+                <li>YieldSwap DEX</li>
+                <li>High-performance AI gateway</li>
+                <li>Autonomous optimizer agents</li>
+              </ul>
+            </div>
+            <div class="phase">
+              <div class="phase-top"><span class="tag gold">Next</span><span class="muted">2027</span></div>
+              <h3>Enterprise Trust</h3>
+              <ul>
+                <li>Formal verification audit</li>
+                <li>ISO/IEC 42001 path</li>
+                <li>SOC 2 Type II path</li>
+              </ul>
+            </div>
+            <div class="phase">
+              <div class="phase-top"><span class="tag gold">Next</span><span class="muted">Beyond</span></div>
+              <h3>Global Standard</h3>
+              <ul>
+                <li>Omni-chain deployment</li>
+                <li>Autonomous red-teaming</li>
+                <li>AI security marketplace standard</li>
+              </ul>
             </div>
           </div>
-          <div class="footer"><span>Roadmap</span><span class="slide-no">11 / 12</span></div>
-        </article>
+        </div>
+        <div class="footer"><span>Roadmap</span><span>11 / 12</span></div>
       </section>
 
-      <section class="slide">
-        <article class="sheet">
-          <div class="inner">
-            <div class="kicker"><span class="dot"></span>Value capture layer</div>
-            <h2 style="max-width: 860px">A protocol that does not just work, but lasts.</h2>
-            <div class="money-grid">
-              <div class="money-card">
-                <strong>Performance-based incentives</strong>
-                <span>Target 5% performance fee only on measured APY Lift. Zero-cost entry keeps retail adoption open; YieldBoost earns when users see additional upside.</span>
-              </div>
-              <div class="money-card">
-                <strong>B2B Integrity-as-a-Service</strong>
-                <span>ZK-Reasoning, Sovereign Memory, blacklist checks, stress reports, and governance artifacts become API modules for 0G ecosystem dApps.</span>
-              </div>
-              <div class="money-card">
-                <strong>Premium NFT and $YA utility</strong>
-                <span>Strategy Agent NFTs become access passes for advanced models and Guardian controls. $YA can reduce fees and govern strategy policy.</span>
-              </div>
-              <div class="money-card">
-                <strong>0G Exchange and Intent Network</strong>
-                <span>Future exchange layer where 0G Compute routes private intents, 0G Storage records proofs, and 0G Chain anchors settlement receipts.</span>
-              </div>
+      <section class="slide" style="--progress:100%">
+        <div class="content">
+          <span class="eyebrow">Why YieldBoost wins</span>
+          <h2>A trust business wrapped around a usable DeFi product.</h2>
+          <p class="lead">Not a demo button. A real user product, security stack, and revenue model — all on 0G.</p>
+          <div class="cards two">
+            <div class="card">
+              <span class="label">Simple enough for users</span>
+              <h3>One click creates the first proof</h3>
+              <p class="body">The user sees a route, a receipt, and a path to mint a strategy artifact.</p>
             </div>
-            <div class="grid three compact-grid" style="margin-top: 18px">
-              <div class="card compact">
-                <strong>Why it can scale</strong>
-                <span>Proof-backed strategies create repeatable data, not one-off recommendations.</span>
-              </div>
-              <div class="card compact">
-                <strong>Why 0G matters</strong>
-                <span>Storage, compute, and chain anchors turn AI output into a monetizable verification layer.</span>
-              </div>
-              <div class="card compact">
-                <strong>Why now</strong>
-                <span>AI finance needs auditability before capital allocators trust autonomous strategy execution.</span>
-              </div>
+            <div class="card">
+              <span class="label">Useful enough for developers</span>
+              <h3>The moat is sold as APIs</h3>
+              <p class="body">Teams can buy full-stack verification, exact layers, anti-sybil protection, or selected wrappers.</p>
+            </div>
+            <div class="card">
+              <span class="label">Visible enough for reviewers</span>
+              <h3>Receipts are external</h3>
+              <p class="body">0G Storage, ProofRegistry, ZK evidence, TEE evidence, and NFTs are exposed through Judge Mode.</p>
+            </div>
+            <div class="card">
+              <span class="label">Hard enough to matter</span>
+              <h3>Public challenge surfaces</h3>
+              <p class="body">Vault and faucet flows force the security model to face real wallets and repeated attempts.</p>
             </div>
           </div>
-          <div class="footer"><span>Revenue model</span><span class="slide-no">12 / 12</span></div>
-        </article>
+        </div>
+        <div class="footer"><span>yieldboostai.xyz/judge/project&ensp;·&ensp;dev.yieldboostai.xyz/marketplace&ensp;·&ensp;api.yieldboostai.xyz/docs</span><span>Built on 0G&ensp;—&ensp;12 / 12</span></div>
       </section>
     </main>
-
-    <nav class="nav" aria-label="Pitch deck navigation">
-      <button type="button" id="prev">Previous</button>
-      <button type="button" id="next">Next</button>
-      <button type="button" id="print">Print A4</button>
-    </nav>
-
-    <script>
-      const deck = document.getElementById("deck");
-      const slides = Array.from(document.querySelectorAll(".slide"));
-      let index = 0;
-
-      function go(delta) {
-        index = Math.max(0, Math.min(slides.length - 1, index + delta));
-        slides[index].scrollIntoView({ behavior: "smooth", inline: "start" });
-      }
-
-      document.getElementById("prev").addEventListener("click", () => go(-1));
-      document.getElementById("next").addEventListener("click", () => go(1));
-      document.getElementById("print").addEventListener("click", () => window.print());
-      document.addEventListener("keydown", (event) => {
-        if (event.key === "ArrowRight" || event.key === "PageDown") go(1);
-        if (event.key === "ArrowLeft" || event.key === "PageUp") go(-1);
-      });
-      deck.addEventListener(
-        "scroll",
-        () => {
-          const nearest = Math.round(deck.scrollLeft / window.innerWidth);
-          index = Math.max(0, Math.min(slides.length - 1, nearest));
-        },
-        { passive: true },
-      );
-    </script>
   </body>
 </html>

@@ -55,6 +55,11 @@ YieldBoost AI has three clear product surfaces built on one 9-layer stack:
 - **API marketplace for developers:** the full stack is sold as a complete endpoint, single layers are sold individually, and partner SDKs can use selected YieldBoost protections.
 - **Vault and anti-sybil example for public testing:** the security model is exposed to attackers, claim abuse, and repeated public challenge traffic.
 
+The 1-click optimizer is designed for two simple user groups:
+
+- **Lazy Degens:** crypto users with idle assets who do not want to manually choose liquidity pools, compare routes, calculate slippage, or move through a confusing DeFi workflow.
+- **Paranoid Investors:** users who want DeFi yield, but only after the route is protected by visible 9-layer checks, proof receipts, and reviewable 0G evidence.
+
 Under the hood, the YieldBoost-native surfaces share the same proof path: 0G compute, ZK evidence, 0G Storage, ProofRegistry anchoring, and integrity memory. Partner wrappers use selected pieces of that protection model, not the full path by default.
 
 The active implementation in this repository is now centered on a **mainnet-first** review path across the core 0G stack plus an integrity memory layer:

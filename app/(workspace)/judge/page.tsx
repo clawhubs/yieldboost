@@ -315,7 +315,7 @@ export default async function JudgePage() {
   ];
 
   const eyebrowClass =
-    "text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7e8d99]";
+    "text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ea1af]";
   const cardTitleClass = "text-[15px] font-semibold leading-tight text-white";
   const monoValueClass =
     "font-mono break-all text-[12px] leading-6 text-[#d8e4ee]";
@@ -327,7 +327,7 @@ export default async function JudgePage() {
   const sectionHeaderRowClass = "flex flex-wrap items-start justify-between gap-3";
   const sectionTitleClass =
     "font-[family-name:var(--font-display)] text-[22px] font-semibold leading-tight text-white";
-  const sectionHelperClass = "mt-1 text-[13px] leading-6 text-[#9faab6]";
+  const sectionHelperClass = "mt-1 text-[13px] leading-6 text-[#b3c0cc]";
   const subCardClass =
     "rounded-[14px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.025)] px-4 py-4";
 
@@ -335,79 +335,86 @@ export default async function JudgePage() {
     <section data-testid="judge-page" className="space-y-3 p-[10px] md:space-y-4">
       <JudgeModeBootstrap />
       <JudgeSnapshotAutoRefresh />
-      <header className="yb-card rounded-[20px] px-5 py-6">
+      <header className="fade-in-up relative overflow-hidden yb-card rounded-[20px] px-5 py-6">
+        <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(34,221,208,0.85),transparent)]" />
         <div className="mx-auto max-w-5xl">
           <div className="flex flex-col items-center text-center">
             <div className="glass-accent inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-[#22ddd0]">
               <ShieldCheck className="h-3.5 w-3.5" />
               Judge Mode
             </div>
-            <h1 className="mt-3 font-[family-name:var(--font-display)] text-[30px] font-semibold leading-[1.08] text-white md:text-[40px]">
+            <h1 className="mt-3 font-[family-name:var(--font-display)] text-[28px] font-semibold leading-[1.08] text-white md:text-[40px]">
               {reviewingMainnet ? "Mainnet review starts here." : "Testnet comparison snapshot."}
             </h1>
-            <p className="mt-3 max-w-3xl text-[15px] leading-7 text-[#9daab6]">
+            <p className="mt-3 max-w-3xl text-[15px] leading-7 text-[#b8c6d2]">
               {reviewingMainnet
                 ? "YieldBoost AI turns idle crypto balances into a better low-risk yield route, shows the decision clearly, and keeps the latest wallet proof ready for external verification. This page stays read-only so a judge can inspect the current result without rerunning the flow."
                 : "This secondary view scopes the same judge wallet to the testnet proof ledger, so reviewers can compare build history without leaving the read-only audit surface."}
             </p>
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-5">
+              {[
+                { v: "9", l: "Layers", c: "text-[#22ddd0]" },
+                { v: String(data.proofCount || (data.latestProof ? 1 : 0)), l: "Proofs", c: "text-[#68ff7a]" },
+                { v: reviewingMainnet ? "MAINNET" : "TESTNET", l: "Network", c: "text-[#f6c166]" },
+                { v: "0G", l: "Native", c: "text-[#63d8ff]" },
+              ].map((m) => (
+                <div key={m.l} className="text-center">
+                  <div className={`text-[24px] font-bold leading-none ${m.c}`}>{m.v}</div>
+                  <div className="mt-1 text-[10px] font-medium uppercase tracking-[0.14em] text-[#8ea1af]">{m.l}</div>
+                </div>
+              ))}
+            </div>
             <div className="mt-5 grid w-full gap-[10px] md:grid-cols-3">
               {[
                 {
                   title: "What it solves",
-                  body: "Idle or underused wallet balances are routed into a clearer yield opportunity instead of sitting unproductive.",
+                  body: "Idle wallet balances routed into better yield with proof behind the route.",
                 },
                 {
                   title: "What to audit",
-                  body: "Latest route, APY lift, snapshot value, and the proof receipt tied to the current judge wallet.",
+                  body: "Latest route, APY lift, snapshot value, and the proof receipt tied to the judge wallet.",
                 },
                 {
                   title: "What is live",
                   body: reviewingMainnet
-                    ? "0G Mainnet proof data, explorer links, and ProofRegistry anchoring from the latest recorded run."
-                    : "0G Testnet proof data, explorer links, and ProofRegistry anchoring from the latest recorded testnet run.",
+                    ? "0G Mainnet proof data, explorer links, and ProofRegistry anchoring."
+                    : "0G Testnet proof data, explorer links, and ProofRegistry anchoring.",
                 },
               ].map((item) => (
-                <div key={item.title} className="glass-inset rounded-[14px] px-4 py-4">
+                <div key={item.title} className="glass-inset rounded-[14px] px-4 py-3">
                   <div className="text-[14px] font-semibold text-white">{item.title}</div>
-                  <div className="mt-2 text-[13px] leading-6 text-[#d6dee6]">{item.body}</div>
+                  <div className="mt-1.5 text-[13px] leading-6 text-[#dce5ec]">{item.body}</div>
                 </div>
               ))}
             </div>
-            <div className="mt-5 w-full max-w-3xl rounded-[20px] border border-[rgba(34,221,208,0.18)] bg-[linear-gradient(180deg,rgba(34,221,208,0.10)_0%,rgba(255,255,255,0.02)_100%)] px-4 py-5 shadow-[0_22px_48px_rgba(0,0,0,0.26)]">
-              <div className="text-[11px] uppercase tracking-[0.18em] text-[#9ff7f0]">Submission entry point</div>
-              <div className="mt-2 text-[24px] font-semibold text-white">Open `/judge` first</div>
-              <div className="mt-2 text-[13px] leading-6 text-[#d9eef0]">
-                This is the direct review route for judges. The normal user flow stays available, and `Exit judge mode` remains in the sidebar.
-              </div>
-              <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                <Link
-                  href="/"
-                  className="yb-teal-button inline-flex items-center justify-center gap-2 rounded-[12px] px-4 py-3 text-[14px] font-semibold text-[#071217]"
-                >
-                  Open dashboard
-                </Link>
-                <Link
-                  href="/history"
-                  className="glass-inset inline-flex items-center justify-center gap-2 rounded-[12px] px-4 py-3 text-[14px] font-medium text-[#d8e1e8]"
-                >
-                  Open history
-                </Link>
-                <Link
-                  href="/agent"
-                  className="glass-inset inline-flex items-center justify-center gap-2 rounded-[12px] px-4 py-3 text-[14px] font-medium text-[#d8e1e8]"
-                >
-                  Open boost flow
-                </Link>
-                <Link
-                  href="/agents"
-                  className="glass-inset inline-flex items-center justify-center gap-2 rounded-[12px] px-4 py-3 text-[14px] font-medium text-[#d8e1e8]"
-                >
-                  Open agents
-                </Link>
-              </div>
+            <div className="mt-4 flex w-full max-w-3xl flex-wrap items-center justify-center gap-2">
+              <Link
+                href="/"
+                className="yb-teal-button inline-flex items-center justify-center gap-2 rounded-[12px] px-4 py-2.5 text-[13px] font-semibold text-[#071217]"
+              >
+                Open dashboard
+              </Link>
+              <Link
+                href="/history"
+                className="glass-inset inline-flex items-center justify-center gap-2 rounded-[12px] px-4 py-2.5 text-[13px] font-medium text-[#d8e1e8]"
+              >
+                History
+              </Link>
+              <Link
+                href="/agent"
+                className="glass-inset inline-flex items-center justify-center gap-2 rounded-[12px] px-4 py-2.5 text-[13px] font-medium text-[#d8e1e8]"
+              >
+                Boost flow
+              </Link>
+              <Link
+                href="/agents"
+                className="glass-inset inline-flex items-center justify-center gap-2 rounded-[12px] px-4 py-2.5 text-[13px] font-medium text-[#d8e1e8]"
+              >
+                Agents
+              </Link>
             </div>
             <JudgeNetworkSwitcher reviewNetworkKey={data.reviewNetwork} />
-            <div className="mt-4 flex w-full max-w-3xl flex-wrap items-center justify-center gap-3">
+            <div className="mt-3 flex w-full max-w-3xl flex-wrap items-center justify-center gap-3">
               {projectProfiles.map((profile) => {
                 const Icon = profile.icon;
                 return (
@@ -427,7 +434,7 @@ export default async function JudgePage() {
                 );
               })}
             </div>
-            <p className="mt-5 text-[13px] text-[#d8e1e8]">
+            <p className="mt-4 text-[13px] text-[#d8e1e8]">
               Reviewing {data.reviewNetworkLabel} snapshot for the active judge wallet.
             </p>
           </div>
@@ -435,7 +442,7 @@ export default async function JudgePage() {
       </header>
 
       <div className="space-y-3 md:space-y-4">
-        <details className="yb-card group rounded-[20px] px-5 py-5 [&_summary::-webkit-details-marker]:hidden">
+        <details className="fade-in-up fade-in-up-1 yb-card group rounded-[20px] px-5 py-5 [&_summary::-webkit-details-marker]:hidden">
           <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-3">
             <div className="flex items-start gap-3">
               <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
@@ -466,7 +473,7 @@ export default async function JudgePage() {
           </div>
         </details>
 
-        <section className={sectionShellClass}>
+        <section className={`fade-in-up fade-in-up-2 ${sectionShellClass}`}>
           <div className={sectionHeaderRowClass}>
             <div className="flex items-start gap-3">
               <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
@@ -496,7 +503,7 @@ export default async function JudgePage() {
                 <div className={`mt-2 text-[22px] font-semibold leading-tight ${toneClass(card.tone)}`}>
                   {card.value}
                 </div>
-                <div className="mt-3 text-[12px] leading-6 text-[#cdd7e0]">
+                <div className="mt-3 text-[12px] leading-6 text-[#d6e2ea]">
                   {card.label === "Proof History" && data.latestProof?.timestamp ? (
                     <BrowserTimeLabel
                       value={data.latestProof.timestamp}
@@ -513,7 +520,7 @@ export default async function JudgePage() {
 
         <section
           data-testid="judge-network-sentinel-tee-stack"
-          className={sectionShellClass}
+          className={`fade-in-up fade-in-up-3 ${sectionShellClass}`}
         >
           <div className={sectionHeaderRowClass}>
             <div className="flex items-start gap-3">
@@ -547,13 +554,13 @@ export default async function JudgePage() {
                 <div className={`mt-2 text-[18px] font-semibold leading-tight ${toneClass(card.tone)}`}>
                   {card.value}
                 </div>
-                <div className="mt-2 text-[12px] leading-6 text-[#cdd7e0]">{card.helper}</div>
+                <div className="mt-2 text-[12px] leading-6 text-[#d6e2ea]">{card.helper}</div>
               </div>
             ))}
           </div>
         </section>
 
-        <section className={sectionShellClass}>
+        <section className={`fade-in-up fade-in-up-4 ${sectionShellClass}`}>
           <div className={sectionHeaderRowClass}>
             <div className="flex items-start gap-3">
               <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
@@ -601,7 +608,7 @@ export default async function JudgePage() {
                 <FileText className="h-3.5 w-3.5 text-[#9ff7f0]" />
                 <div className={eyebrowClass}>ProofRegistry contract</div>
               </div>
-              <div className={`mt-2 ${monoValueClass}`}>{proofRegistryValue}</div>
+              <div className={`mt-2 ${monoValueClass}`} style={{ wordBreak: "break-all" }}>{proofRegistryValue}</div>
             </div>
             <div className={subCardClass}>
               <div className="flex items-center gap-2">
@@ -644,7 +651,7 @@ export default async function JudgePage() {
           </div>
         </section>
 
-        <section className={sectionShellClass}>
+        <section className={`fade-in-up fade-in-up-5 ${sectionShellClass}`}>
           <div className="flex items-start gap-3">
             <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
               <Wallet className="h-5 w-5" />
@@ -662,7 +669,7 @@ export default async function JudgePage() {
               <div className={`mt-2 ${monoValueClass} text-[13px] text-white`}>
                 {reviewWalletCard?.value ?? "Pending wallet"}
               </div>
-              <div className="mt-2 text-[12px] leading-6 text-[#cdd7e0]">
+              <div className="mt-2 text-[12px] leading-6 text-[#d6e2ea]">
                 {reviewWalletCard?.helper ?? "Judge mode follows the wallet active in this browser session."}
               </div>
             </div>
@@ -671,14 +678,14 @@ export default async function JudgePage() {
               <div className={`mt-2 text-[14px] font-semibold ${toneClass(proofStoreCard?.tone)}`}>
                 {proofStoreValue}
               </div>
-              <div className="mt-2 text-[12px] leading-6 text-[#cdd7e0]">{proofStoreCard?.helper}</div>
+              <div className="mt-2 text-[12px] leading-6 text-[#d6e2ea]">{proofStoreCard?.helper}</div>
             </div>
             <div className={subCardClass}>
               <div className={eyebrowClass}>Pinned wallet</div>
               <div className={`mt-2 ${monoValueClass} text-[13px] text-white`}>
                 Judge wallet: {reviewWalletCard?.value ?? "Pending wallet"}
               </div>
-              <div className="mt-2 text-[12px] leading-6 text-[#cdd7e0]">
+              <div className="mt-2 text-[12px] leading-6 text-[#d6e2ea]">
                 <BrowserTimeLabel
                   value={data.latestProof?.timestamp}
                   prefix="Latest proof recorded"
@@ -692,7 +699,7 @@ export default async function JudgePage() {
                 <div className={`mt-2 ${monoValueClass} text-[13px] text-white`}>
                   {inftComponent.address}
                 </div>
-                <div className="mt-2 text-[12px] leading-6 text-[#cdd7e0]">
+                <div className="mt-2 text-[12px] leading-6 text-[#d6e2ea]">
                   {data.reviewNetworkLabel} Agent NFT contract address used by the app.
                 </div>
               </div>
@@ -700,7 +707,7 @@ export default async function JudgePage() {
           </div>
         </section>
 
-        <section className={sectionShellClass}>
+        <section className={`fade-in-up ${sectionShellClass}`}>
           <div className={sectionHeaderRowClass}>
             <div className="flex items-start gap-3">
               <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
@@ -737,7 +744,7 @@ export default async function JudgePage() {
                 <div className={`mt-2 ${monoValueClass} text-[14px] font-semibold text-white`}>
                   {artifact.value}
                 </div>
-                <div className="mt-2 text-[12px] leading-6 text-[#cdd7e0]">{artifact.helper}</div>
+                <div className="mt-2 text-[12px] leading-6 text-[#d6e2ea]">{artifact.helper}</div>
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-[rgba(255,255,255,0.05)] pt-3">
                   <span className="text-[11px] text-[#8ea1af]">{artifact.meta}</span>
                   {artifact.href ? (
@@ -757,7 +764,7 @@ export default async function JudgePage() {
           </div>
         </section>
 
-        <section data-testid="judge-integrity-evidence-package" className={sectionShellClass}>
+        <section data-testid="judge-integrity-evidence-package" className={`fade-in-up ${sectionShellClass}`}>
           <div className={sectionHeaderRowClass}>
             <div className="flex items-start gap-3">
               <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
@@ -802,7 +809,7 @@ export default async function JudgePage() {
                 <div className={`mt-3 text-[20px] font-semibold leading-tight ${toneClass(card.tone)}`}>
                   {card.value}
                 </div>
-                <div className="mt-2 text-[12px] leading-6 text-[#cdd7e0]">{card.helper}</div>
+                <div className="mt-2 text-[12px] leading-6 text-[#d6e2ea]">{card.helper}</div>
               </div>
             ))}
           </div>
@@ -846,7 +853,7 @@ export default async function JudgePage() {
           </div>
         </section>
 
-        <section className={sectionShellClass}>
+        <section className={`fade-in-up ${sectionShellClass}`}>
           <div className="flex items-start gap-3">
             <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
               <Network className="h-5 w-5" />
@@ -872,7 +879,7 @@ export default async function JudgePage() {
                     {component.status}
                   </span>
                 </div>
-                <div className="mt-3 text-[12px] leading-6 text-[#cdd7e0]">{component.detail}</div>
+                <div className="mt-3 text-[12px] leading-6 text-[#d6e2ea]">{component.detail}</div>
                 {component.address ? (
                   <div className={`mt-3 ${monoValueClass}`}>{component.address}</div>
                 ) : null}
@@ -895,7 +902,7 @@ export default async function JudgePage() {
           </div>
         </section>
 
-        <div className="grid gap-3 md:gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,0.75fr)]">
+        <div className="fade-in-up grid gap-3 md:gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,0.75fr)]">
           <section data-testid="judge-reasoning-snapshot" className={sectionShellClass}>
             <div className={sectionHeaderRowClass}>
               <div className="flex items-start gap-3">
@@ -929,7 +936,7 @@ export default async function JudgePage() {
                   <div className={`mt-2 text-[18px] font-semibold leading-tight ${toneClass(card.tone)}`}>
                     {card.value}
                   </div>
-                  <div className="mt-2 text-[12px] leading-6 text-[#cdd7e0]">{card.helper}</div>
+                  <div className="mt-2 text-[12px] leading-6 text-[#d6e2ea]">{card.helper}</div>
                 </div>
               ))}
             </div>
@@ -966,14 +973,14 @@ export default async function JudgePage() {
                     <div className={eyebrowClass}>{card.label}</div>
                     <span className={`text-[12px] font-semibold ${toneClass(card.tone)}`}>{card.value}</span>
                   </div>
-                  <div className="mt-2 text-[12px] leading-6 text-[#cdd7e0]">{card.helper}</div>
+                  <div className="mt-2 text-[12px] leading-6 text-[#d6e2ea]">{card.helper}</div>
                 </div>
               ))}
             </div>
           </section>
         </div>
 
-        <section className={sectionShellClass}>
+        <section className={`fade-in-up ${sectionShellClass}`}>
           <div className="flex items-start gap-3">
             <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
               <ShieldCheck className="h-5 w-5" />
@@ -1003,11 +1010,57 @@ export default async function JudgePage() {
             ].map((item) => (
               <div key={item.title} className={subCardClass}>
                 <div className={cardTitleClass}>{item.title}</div>
-                <div className="mt-2 text-[13px] leading-6 text-[#cdd7e0]">{item.body}</div>
+                <div className="mt-2 text-[13px] leading-6 text-[#d6e2ea]">{item.body}</div>
               </div>
             ))}
           </div>
         </section>
+
+        <footer className="fade-in-up relative overflow-hidden yb-card rounded-[20px] px-5 py-8 text-center">
+          <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(34,221,208,0.7),transparent)]" />
+          <div className="mx-auto max-w-2xl">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8ea1af]">Continue review</p>
+            <h2 className="mt-2 font-[family-name:var(--font-display)] text-[22px] font-semibold leading-tight text-white md:text-[28px]">
+              Proof-first. User product second. All on 0G.
+            </h2>
+            <p className="mx-auto mt-3 max-w-lg text-[13px] leading-6 text-[#b3c0cc]">
+              Open the project brief for a 30-second overview, the roadmap for timeline context, or the pitch deck for the full story.
+            </p>
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href="/judge/project"
+                className={linkPillClass}
+              >
+                <FileText className="h-3.5 w-3.5" />
+                Project brief
+              </Link>
+              <Link
+                href="/judge/roadmap"
+                className={linkPillClass}
+              >
+                <Map className="h-3.5 w-3.5" />
+                Roadmap
+              </Link>
+              <a
+                href="/pitchdeck/yieldboost-pitchdeck.html"
+                target="_blank"
+                rel="noreferrer"
+                className={linkPillClass}
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                Pitch deck
+              </a>
+              <a
+                href="/pitchdeck/yieldboost-pitchdeck.pdf"
+                download=""
+                className={linkPillNeutralClass}
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                Download PDF
+              </a>
+            </div>
+          </div>
+        </footer>
       </div>
     </section>
   );

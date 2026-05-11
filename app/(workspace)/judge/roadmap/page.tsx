@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -6,19 +7,17 @@ import {
   BrainCircuit,
   Building2,
   CircleDollarSign,
-  Coins,
   Database,
   ExternalLink,
+  Fingerprint,
   Globe2,
-  GitBranch,
-  Landmark,
   Layers,
   LockKeyhole,
   Network,
-  Orbit,
   Rocket,
-  Scale,
   ShieldCheck,
+  Store,
+  Sword,
   TrendingUp,
   Vault,
 } from "lucide-react";
@@ -30,297 +29,169 @@ import { getJudgePageData } from "@/lib/server/review-mode";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-function toneClass(tone: "teal" | "green" | "amber" | "white" = "white") {
-  if (tone === "green") return "text-[#68ff7a]";
-  if (tone === "amber") return "text-[#f6c166]";
-  if (tone === "teal") return "text-[#22ddd0]";
-  return "text-white";
-}
-
 function formatPercent(value: number | undefined) {
   return typeof value === "number" ? `${value.toFixed(2)}%` : "Pending";
 }
 
-const shippedCapabilities = [
-  "0G Mainnet proof storage and ProofRegistry anchor path",
-  "Judge Mode read-only wallet review with network switching",
-  "Integrity memory stack: Sovereign Memory, blacklist, stress report, Zero-Knowledge Proof Layer, Programmable Governance, policy seal, and Cross-Agent Neural Handshake",
-  "Yield Strategy INFT and marketplace contracts surfaced for review",
-  "Pitch deck, proof links, and evidence anchors available without wallet setup",
-];
-
-const roadmapPhases = [
+const phaseCards = [
   {
-    phase: "Phase 1",
-    date: "Q3 - Q4 2026",
-    title: "The Integrity Genesis",
-    quote: "Anchoring truth in the machine",
+    id: "01",
+    status: "LIVE",
+    window: "Now / Q2 2026",
+    title: "Core Fortress",
+    focus: "The product is already live: user optimizer, 9-layer proof stack, API store, vault challenge, and anti-sybil example.",
     icon: ShieldCheck,
-    headline:
-      "Turn today's proof trail into a rewardable integrity network for AI decisions.",
-    items: [
-      {
-        title: "Cross-Agent Neural Handshake mainnet expansion",
-        body:
-          "Move optimizer-auditor coordination from recorded artifacts into a permanent 0G Compute and 0G Storage coordination layer.",
-      },
-      {
-        title: "$YA0G genesis incentives",
-        body:
-          "Launch an internal utility and reputation layer where approved Judge validations earn Proof of Integrity points before broader token mechanics.",
-      },
-      {
-        title: "Sovereign Memory V3",
-        body:
-          "Upgrade memory from transaction recall into market-anomaly context that can rehydrate strategy decisions across sessions.",
-      },
+    color: "teal",
+    checkpoints: [
+      "Mainnet 9-layer core for proof-backed optimization",
+      "1-click optimize for idle balances",
+      "0G Storage + ProofRegistry anchor path",
+      "Native 0G-priced API tiers in Modular Immunity Armory",
+      "Selected partner SDK wrapper model",
+      "Anti-sybil + Alibaba fingerprinting module",
+      "Secure Vault challenge surface",
+      "Public faucet as an anti-sybil airdrop example",
     ],
-    money:
-      "First revenue wedge: proof API access, audit dashboards for teams, and premium strategy-history exports.",
+    money: "This is the current business base: users get yield routes, builders buy security modules, and public testers challenge the defense model.",
   },
   {
-    phase: "Phase 2",
-    date: "Q1 - Q2 2027",
-    title: "The Quantum Liquidity Layer",
-    quote: "Privacy is the ultimate alpha",
-    icon: LockKeyhole,
-    headline:
-      "Use 0G Compute for private intent routing and programmable governance around capital movement.",
-    items: [
-      {
-        title: "Sovereign ZK-DEX integration",
-        body:
-          "Prototype private, MEV-resistant intent routing with ZK-reasoning envelopes and slippage-aware execution controls.",
-      },
-      {
-        title: "Institutional Guardian",
-        body:
-          "Open DAO and fund risk modules where risk bands, policy thresholds, and emergency actions are voted and verified on-chain.",
-      },
-      {
-        title: "The Trinity Vaults",
-        body:
-          "Automated vaults that combine Memory, ZK, and Governance to detect exploit patterns, pause risky flows, and preserve capital discipline.",
-      },
+    id: "02",
+    status: "NEXT",
+    window: "Q3/Q4 2026",
+    title: "Liquidity Hub",
+    focus: "Scale the live product into stronger liquidity, automation, and partner distribution.",
+    icon: TrendingUp,
+    color: "green",
+    checkpoints: [
+      "YieldSwap liquidity hub for ecosystem routing",
+      "High-performance AI gateway with protected access",
+      "Multi-agent planner, actor, and critic loop",
+      "More partner modules added to the armory",
     ],
-    money:
-      "Second revenue wedge: Guardian subscriptions, vault management fees, and partner integrations for wallets and protocols.",
+    money: "Next scale comes from protected AI access, routing, and more partner integrations on top of the live API business.",
   },
   {
-    phase: "Phase 3",
-    date: "Q3 2027+",
-    title: "Omniscient Orchestration",
-    quote: "The rise of agent-led finance",
-    icon: Orbit,
-    headline:
-      "Expand the proof graph across chains, assets, and real-world markets while keeping 0G as the source of truth.",
-    items: [
-      {
-        title: "Cross-chain intelligence bridge",
-        body:
-          "Extend Sovereign Memory across Ethereum, Solana, Monad, and future 0G-native ecosystems with one reviewable strategy graph.",
-      },
-      {
-        title: "$YA token generation event",
-        body:
-          "Graduate the internal incentive layer into governance for network economics, agent reputation, and protocol evolution.",
-      },
-      {
-        title: "RWA Sovereign Bridge",
-        body:
-          "Bring real-world assets into AI yield strategies through mathematically verified collateral, pricing, and policy seal artifacts.",
-      },
-    ],
-    money:
-      "Third revenue wedge: cross-chain proof licensing, RWA onboarding fees, and strategy adoption take-rates.",
-  },
-];
-
-const revenueEngines = [
-  {
-    label: "Proof API",
-    icon: Database,
-    body:
-      "Protocols pay to query verified strategy output, proof history, policy seal status, and agent reputation.",
-  },
-  {
-    label: "Guardian Enterprise",
+    id: "03",
+    status: "NEXT",
+    window: "Q4 2026 - 2027",
+    title: "Elite Audit Layer",
+    focus: "Harden the system for companies, funds, and serious protocols.",
     icon: Building2,
-    body:
-      "DAOs, funds, and treasuries subscribe to policy controls, audit trails, and governance modules.",
+    color: "amber",
+    checkpoints: [
+      "Formal verification for core contracts",
+      "ISO/IEC 42001 AI governance readiness",
+      "SOC 2 Type II operational controls",
+      "FIPS 140-3 cryptography alignment",
+      "Common Criteria CC EAL4+ security target",
+    ],
+    money: "Enterprise trust unlocks higher-value API contracts, compliance budgets, and white-label deployments.",
   },
   {
-    label: "Strategy Marketplace",
-    icon: TrendingUp,
-    body:
-      "YieldBoost takes a marketplace fee when proof-backed Strategy Agent NFTs are adopted or licensed.",
-  },
-  {
-    label: "Trinity Vaults",
-    icon: Vault,
-    body:
-      "Automated vault products can monetize through management, performance, or protocol integration fees.",
-  },
-  {
-    label: "0G Compute Workflows",
-    icon: BrainCircuit,
-    body:
-      "Premium private inference and ZK-reasoning runs become high-value compute jobs with durable storage output.",
-  },
-  {
-    label: "RWA Bridge Fees",
-    icon: Landmark,
-    body:
-      "Verified real-world asset strategy onboarding creates a path to institutional-grade fee capture.",
-  },
-];
-
-const valueCaptureLayers = [
-  {
-    label: "Performance-based incentives",
-    icon: TrendingUp,
-    status: "Strong fit",
-    body:
-      "Yield-share model with a target 5% performance fee only on measured APY Lift, so entry can stay free while revenue aligns with user upside.",
-    proof:
-      "Best when tied to ProofRegistry records, before/after APY, wallet-scoped snapshots, and post-run integrity checks.",
-  },
-  {
-    label: "B2B Integrity-as-a-Service",
-    icon: Database,
-    status: "Strong fit",
-    body:
-      "Package ZK-Reasoning, Sovereign Memory, blacklist checks, stress reports, and governance decisions as APIs for 0G ecosystem dApps.",
-    proof:
-      "This turns the current Judge evidence stack into plug-and-play trust infrastructure for teams that do not want to build it from zero.",
-  },
-  {
-    label: "Premium utility layers",
-    icon: Vault,
-    status: "Fit with governance guardrails",
-    body:
-      "Use Strategy Agent NFTs as access passes for advanced models, curated strategies, Guardian controls, and future $YA fee discounts or voting rights.",
-    proof:
-      "Keep this framed as utility and governance access, not guaranteed yield access, until token and regulatory readiness are complete.",
-  },
-  {
-    label: "0G Exchange and Intent Network",
-    icon: Network,
-    status: "High-upside expansion",
-    body:
-      "Future exchange layer where 0G Compute routes private intents, 0G Storage records execution proofs, and 0G Chain anchors settlement receipts.",
-    proof:
-      "Revenue can come from routing fees, institutional private execution lanes, proofed swap receipts, liquidity partner fees, and white-label exchange modules.",
-  },
-];
-
-const valueCaptureAudit = [
-  {
-    label: "Yield-share model",
-    verdict: "Use it",
-    detail:
-      "The 5% fee on APY Lift is a clean investor story because YieldBoost only earns from additional measured upside. Phrase it as a target model until contracts enforce fee accounting.",
-  },
-  {
-    label: "Integrity API",
-    verdict: "Use it heavily",
-    detail:
-      "This is the most defensible B2B revenue lane because it monetizes what the product already proves: ZKR, Sovereign Memory, audit evidence, and 0G-backed verification.",
-  },
-  {
-    label: "NFT and $YA utility",
-    verdict: "Use with guardrails",
-    detail:
-      "Great for retention and access tiers, but avoid promising high-risk or high-yield outcomes. Position NFTs as access, reputation, and governance utilities.",
-  },
-  {
-    label: "0G exchange",
-    verdict: "Add as Phase 2+",
-    detail:
-      "A private intent exchange fits the roadmap if it is described as slippage-aware, MEV-resistant, and proof-backed rather than zero-slippage or risk-free.",
-  },
-];
-
-const zeroGLeverage = [
-  {
-    label: "0G Storage",
-    icon: Database,
-    body:
-      "Stores proof payloads, memory snapshots, blacklist entries, stress reports, and future strategy graph state.",
-  },
-  {
-    label: "0G Compute",
-    icon: BrainCircuit,
-    body:
-      "Runs optimizer, auditor, private intent routing, exchange quote checks, governance, and future Guardian workflows with verifiable envelopes.",
-  },
-  {
-    label: "0G Chain",
-    icon: Network,
-    body:
-      "Anchors ProofRegistry, INFT, marketplace, blacklist, validation, and governance contracts into one audit path.",
-  },
-  {
-    label: "0G as source of truth",
+    id: "04",
+    status: "NEXT",
+    window: "Beyond 2027",
+    title: "Multi-Chain Sovereignty",
+    focus: "Make YieldBoost's 9-layer security model portable across the AI economy.",
     icon: Globe2,
-    body:
-      "Keeps cross-chain decisions reviewable through a common proof layer instead of scattered dashboard state.",
+    color: "blue",
+    checkpoints: [
+      "Omni-chain deployment for AI agents",
+      "Autonomous red-teaming against marketplace modules",
+      "Cross-chain proof memory and strategy graph",
+      "RWA and institutional strategy verification",
+      "Security standard for agentic finance products",
+    ],
+    money: "YieldBoost becomes infrastructure that other chains, agents, and markets can license.",
   },
+];
+
+const livePillars = [
+  {
+    label: "1-click optimize",
+    icon: Rocket,
+    text: "Idle balances become proof-backed yield routes.",
+  },
+  {
+    label: "9-layer core",
+    icon: Layers,
+    text: "TEE, ZK, memory, storage, governance, and ProofRegistry work together.",
+  },
+  {
+    label: "API marketplace",
+    icon: Store,
+    text: "The protection stack is sold as full-stack, single-layer, and selected wrapper APIs.",
+  },
+  {
+    label: "Vault + faucet",
+    icon: Vault,
+    text: "Public challenge and anti-sybil surfaces prove the system can be tested.",
+  },
+];
+
+const productLines = [
+  {
+    label: "User revenue",
+    icon: CircleDollarSign,
+    text: "1-click optimize creates the consumer entry point: more usable idle capital with proof behind the route.",
+  },
+  {
+    label: "Developer revenue",
+    icon: Database,
+    text: "Modular Immunity Armory sells the 9-layer stack, single-layer endpoints, and selected partner wrappers.",
+  },
+  {
+    label: "Security revenue",
+    icon: Sword,
+    text: "Vault, anti-sybil, and fingerprinting modules become reusable protection products for other teams.",
+  },
+  {
+    label: "Enterprise revenue",
+    icon: LockKeyhole,
+    text: "Audit, compliance, and private execution unlock higher-value B2B contracts.",
+  },
+];
+
+const proofRails = [
+  { label: "0G Compute", icon: BrainCircuit, desc: "TEE model evidence" },
+  { label: "0G Storage", icon: Database, desc: "Proof payload anchor" },
+  { label: "ProofRegistry", icon: Network, desc: "On-chain receipt" },
+  { label: "ZK Proof Layer", icon: ShieldCheck, desc: "Agent identity proof" },
+  { label: "Alibaba Fingerprinting", icon: Fingerprint, desc: "Anti-sybil module" },
 ];
 
 export default async function JudgeRoadmapPage() {
   const data = await getJudgePageData();
+  const latestDecision = data.latestProof?.decision;
   const liveIntegrityCount = data.integrityStackCards.filter(
     (card) => !["Pending", "0 entries"].includes(card.value),
   ).length;
-  const latestDecision = data.latestProof?.decision;
 
-  const proofCards = [
+  const proofSnapshot = [
     {
-      label: "Proof history",
-      value: `${data.proofCount || (data.latestProof ? 1 : 0)} run${
-        data.proofCount === 1 ? "" : "s"
-      }`,
-      helper: data.latestProof?.timestamp
-        ? "Latest proof timestamp is browser-localized below."
-        : "No proof timestamp available yet.",
-      tone: data.latestProof ? "green" : "amber",
+      label: "Proof runs",
+      value: `${data.proofCount || (data.latestProof ? 1 : 0)}`,
+      helper: "Live proof history visible from Judge Mode.",
     },
     {
-      label: "APY thesis",
+      label: "APY route",
       value: latestDecision
         ? `${formatPercent(latestDecision.current_apy)} -> ${formatPercent(latestDecision.optimized_apy)}`
-        : "Pending proof",
-      helper: latestDecision?.recommended ?? "Route recommendation will appear after the latest proof.",
-      tone: latestDecision ? "green" : "amber",
+        : "Pending",
+      helper: latestDecision?.recommended ?? "Latest route appears after a stored optimization.",
     },
     {
-      label: "Integrity controls",
+      label: "Integrity modules",
       value: `${liveIntegrityCount}/${data.integrityStackCards.length}`,
-      helper: "Live evidence modules currently visible in Judge Mode.",
-      tone: liveIntegrityCount ? "teal" : "amber",
+      helper: "Active 9-layer evidence modules currently visible.",
     },
     {
-      label: "Mainnet artifacts",
-      value: `${data.deploymentArtifacts.length}`,
-      helper: `${data.reviewNetworkLabel} contract and NFT artifacts are linked from Judge Mode.`,
-      tone: data.deploymentArtifacts.length ? "white" : "amber",
+      label: "Network posture",
+      value: "Mainnet-first",
+      helper: "Vault and faucet remain public testnet challenge surfaces.",
     },
-  ] satisfies Array<{
-    label: string;
-    value: string;
-    helper: string;
-    tone: "teal" | "green" | "amber" | "white";
-  }>;
+  ];
 
-  const eyebrowClass =
-    "text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7e8d99]";
-  const sectionTitleClass =
-    "font-[family-name:var(--font-display)] text-[22px] font-semibold leading-tight text-white";
-  const sectionHelperClass = "mt-1 text-[13px] leading-6 text-[#9faab6]";
-  const sectionShellClass = "yb-card rounded-[20px] px-5 py-6";
-  const subCardClass =
-    "rounded-[14px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.025)] px-4 py-4";
   const linkPillClass =
     "inline-flex items-center gap-1.5 rounded-full border border-[rgba(34,221,208,0.32)] bg-[rgba(34,221,208,0.10)] px-3 py-1.5 text-[11px] font-semibold text-[#9ff7f0] transition hover:border-[rgba(34,221,208,0.55)] hover:bg-[rgba(34,221,208,0.18)] hover:text-white";
 
@@ -329,153 +200,203 @@ export default async function JudgeRoadmapPage() {
       <JudgeModeBootstrap />
       <JudgeSnapshotAutoRefresh />
 
-      <header className="relative overflow-hidden rounded-[20px] border border-[rgba(34,221,208,0.18)] bg-[linear-gradient(135deg,rgba(34,221,208,0.14),rgba(255,255,255,0.03)_42%,rgba(47,224,109,0.08))] px-5 py-7 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
+      <header className="relative overflow-hidden rounded-[22px] border border-[rgba(34,221,208,0.18)] bg-[linear-gradient(135deg,rgba(34,221,208,0.14),rgba(255,255,255,0.03)_44%,rgba(47,224,109,0.08))] px-5 py-6 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
         <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(34,221,208,0.85),transparent)]" />
-        <div className="mx-auto max-w-6xl">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <Link href="/judge" className={linkPillClass}>
-              <ArrowLeft className="h-3.5 w-3.5" />
-              Back to Judge
-            </Link>
-            <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(47,224,109,0.22)] bg-[rgba(47,224,109,0.08)] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#b8ffc8]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#68ff7a] shadow-[0_0_14px_rgba(104,255,122,0.7)]" />
-              Roadmap with proof-first milestones
+        <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[minmax(0,1.04fr)_minmax(300px,0.96fr)] lg:items-center">
+          <div>
+            <div className="flex flex-wrap items-center gap-3">
+              <Link href="/judge" className={linkPillClass}>
+                <ArrowLeft className="h-3.5 w-3.5" />
+                Back to Judge
+              </Link>
+              <span className="inline-flex items-center gap-2 rounded-full border border-[rgba(47,224,109,0.22)] bg-[rgba(47,224,109,0.08)] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#b8ffc8]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#68ff7a] shadow-[0_0_14px_rgba(104,255,122,0.7)]" />
+                Product roadmap
+              </span>
+            </div>
+
+            <div className="mt-7 inline-flex items-center gap-2 rounded-full border border-[rgba(34,221,208,0.22)] bg-[rgba(34,221,208,0.08)] px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-[#22ddd0]">
+              <Rocket className="h-3.5 w-3.5" />
+              One click. Nine layers. Sellable security.
+            </div>
+            <h1 className="mt-4 font-[family-name:var(--font-display)] text-[34px] font-semibold leading-[1.04] text-white md:text-[52px]">
+              From idle crypto to a paid security stack for AI finance.
+            </h1>
+            <p className="mt-4 max-w-3xl text-[15px] leading-7 text-[#d9e7ec]">
+              YieldBoost starts with a simple user promise: click once, find a better yield route, and keep proof behind the recommendation. The same 9-layer protection then becomes API infrastructure that other apps and companies can buy.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-4">
+              {[
+                { v: "9", l: "Layers", c: "text-[#22ddd0]" },
+                { v: "4", l: "Phases", c: "text-[#68ff7a]" },
+                { v: "LIVE", l: "Phase 01", c: "text-[#f6c166]" },
+                { v: "0G", l: "Native", c: "text-[#63d8ff]" },
+              ].map((m) => (
+                <div key={m.l} className="text-center">
+                  <div className={`text-[22px] font-bold leading-none ${m.c}`}>{m.v}</div>
+                  <div className="mt-1 text-[10px] font-medium uppercase tracking-[0.14em] text-[#8ea1af]">{m.l}</div>
+                </div>
+              ))}
             </div>
           </div>
 
-          <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)] lg:items-end">
-            <div>
-              <div className="glass-accent inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-[#22ddd0]">
-                <Rocket className="h-3.5 w-3.5" />
-                YieldBoost AI Sovereign Strategy Roadmap
-              </div>
-              <h1 className="mt-4 font-[family-name:var(--font-display)] text-[34px] font-semibold leading-[1.04] text-white md:text-[52px]">
-                From judge-verifiable AI yield to the 0G trust economy.
-              </h1>
-              <p className="mt-4 max-w-3xl text-[15px] leading-7 text-[#d9e7ec]">
-                This is the 2026-2027 expansion plan: keep the current mainnet proof stack visible, then turn it into incentives, private liquidity, institutional controls, cross-chain memory, and RWA strategy adoption.
-              </p>
-            </div>
-
-            <div className="rounded-[18px] border border-[rgba(255,255,255,0.10)] bg-[rgba(2,8,13,0.42)] px-4 py-4">
-              <div className={eyebrowClass}>Judge lens</div>
-              <div className="mt-3 text-[24px] font-semibold leading-tight text-white">
-                What is live now vs. what becomes monetizable next.
-              </div>
-              <div className="mt-4 grid gap-2">
-                {[
-                  "Live evidence first: every future phase starts from current proof.",
-                  "0G usage stays central: storage, compute, chain, and source-of-truth layer.",
-                  "Revenue path is explicit: API, enterprise, marketplace, vaults, and RWA rails.",
-                ].map((item) => (
-                  <div key={item} className="flex items-start gap-3 text-[12px] leading-6 text-[#d6e2ea]">
-                    <BadgeCheck className="mt-1 h-3.5 w-3.5 flex-none text-[#68ff7a]" />
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+          <div className="relative overflow-hidden rounded-[20px] border border-[rgba(255,255,255,0.10)] bg-[rgba(2,8,13,0.42)] p-3">
+            <Image
+              src="/readme/roadmap.png"
+              alt="YieldBoost AI roadmap visual"
+              width={1200}
+              height={720}
+              className="h-auto w-full rounded-[16px] object-cover"
+              priority
+            />
           </div>
         </div>
       </header>
 
-      <section className={sectionShellClass}>
+      <section className="fade-in-up fade-in-up-1 yb-card rounded-[20px] px-5 py-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 className={sectionTitleClass}>What already exists</h2>
-            <p className={sectionHelperClass}>
-              The roadmap starts from shipped evidence already visible in Judge Mode, then compounds from there.
-            </p>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ea1af]">
+              Live base
+            </div>
+            <h2 className="mt-1 font-[family-name:var(--font-display)] text-[24px] font-semibold leading-tight text-white">
+              What already exists before the roadmap begins
+            </h2>
           </div>
           <BrowserTimeLabel
             value={data.latestProof?.timestamp}
-            prefix="Latest proof recorded"
-            emptyLabel="Latest proof timestamp pending"
+            prefix="Latest proof"
+            emptyLabel="Latest proof pending"
           />
         </div>
 
         <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {proofCards.map((card) => (
+          {proofSnapshot.map((card) => (
             <div
               key={card.label}
-              className="relative overflow-hidden rounded-[16px] border border-[rgba(34,221,208,0.16)] bg-[linear-gradient(180deg,rgba(34,221,208,0.07),rgba(255,255,255,0.02))] px-4 py-5"
+              className="relative overflow-hidden rounded-[16px] border border-[rgba(34,221,208,0.16)] bg-[linear-gradient(180deg,rgba(34,221,208,0.07),rgba(255,255,255,0.02))] px-4 py-4"
             >
-              <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,rgba(34,221,208,0.75),transparent)]" />
-              <div className={eyebrowClass}>{card.label}</div>
-              <div className={`mt-2 text-[24px] font-semibold leading-tight ${toneClass(card.tone)}`}>
+              <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,rgba(34,221,208,0.7),transparent)]" />
+              <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#8ea1af]">
+                {card.label}
+              </div>
+              <div className="mt-2 text-[24px] font-semibold leading-tight text-[#68ff7a]">
                 {card.value}
               </div>
-              <div className="mt-3 text-[12px] leading-6 text-[#cdd7e0]">{card.helper}</div>
+              <p className="mt-2 text-[12px] leading-6 text-[#dce5ec]">{card.helper}</p>
             </div>
           ))}
         </div>
 
-        <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-          {shippedCapabilities.map((item) => (
-            <div key={item} className={`${subCardClass} flex items-start gap-3`}>
-              <ShieldCheck className="mt-0.5 h-4 w-4 flex-none text-[#68ff7a]" />
-              <span className="text-[12px] leading-6 text-[#dce5ec]">{item}</span>
-            </div>
-          ))}
+        <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {livePillars.map((pillar) => {
+            const Icon = pillar.icon;
+
+            return (
+              <div
+                key={pillar.label}
+                className="rounded-[15px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.025)] px-4 py-4"
+              >
+                <Icon className="h-5 w-5 text-[#9ff7f0]" />
+                <h3 className="mt-3 text-[15px] font-semibold text-white">{pillar.label}</h3>
+                <p className="mt-2 text-[12px] leading-6 text-[#dce5ec]">{pillar.text}</p>
+              </div>
+            );
+          })}
         </div>
       </section>
 
-      <section className={sectionShellClass}>
-        <div className="flex items-start gap-3">
-          <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
-            <GitBranch className="h-5 w-5" />
+      <section className="fade-in-up fade-in-up-2 rounded-[18px] border border-[rgba(34,221,208,0.10)] bg-[rgba(34,221,208,0.025)] px-5 py-4">
+        <div className="flex items-center gap-3 overflow-x-auto">
+          {phaseCards.map((phase, i) => {
+            const isLive = phase.status === "LIVE";
+            return (
+              <div key={phase.id} className="flex items-center gap-3">
+                {i > 0 && <div className={`h-px w-8 flex-none md:w-16 ${isLive ? "bg-[rgba(104,255,122,0.3)]" : "bg-[rgba(255,255,255,0.08)]"}`} />}
+                <div className="flex flex-none flex-col items-center gap-1.5">
+                  <div className={`flex h-9 w-9 items-center justify-center rounded-full text-[12px] font-bold ${
+                    isLive
+                      ? "border border-[rgba(47,224,109,0.35)] bg-[rgba(47,224,109,0.15)] text-[#68ff7a] shadow-[0_0_20px_rgba(47,224,109,0.15)]"
+                      : "border border-[rgba(255,255,255,0.10)] bg-[rgba(255,255,255,0.04)] text-[#8ea1af]"
+                  }`}>
+                    {phase.id}
+                  </div>
+                  <span className={`whitespace-nowrap text-[10px] font-semibold ${isLive ? "text-[#68ff7a]" : "text-[#8ea1af]"}`}>{phase.title}</span>
+                  <span className="text-[9px] text-[#6b7a86]">{phase.window}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="fade-in-up fade-in-up-3 yb-card rounded-[20px] px-5 py-5">
+        <div>
+          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ea1af]">
+            Roadmap phases
           </div>
-          <div>
-            <h2 className={sectionTitleClass}>2026-2027 sovereign roadmap</h2>
-            <p className={sectionHelperClass}>
-              Big vision, but staged like a product company: evidence, incentives, liquidity, governance, cross-chain expansion.
-            </p>
-          </div>
+          <h2 className="mt-1 font-[family-name:var(--font-display)] text-[24px] font-semibold leading-tight text-white">
+            Live foundation first, then the next expansion
+          </h2>
         </div>
 
-        <div className="mt-6 grid gap-4">
-          {roadmapPhases.map((phase, index) => {
+        <div className="mt-5 grid gap-4 md:grid-cols-2">
+          {phaseCards.map((phase) => {
             const Icon = phase.icon;
+            const isLive = phase.status === "LIVE";
 
             return (
               <article
-                key={phase.title}
-                className="grid gap-4 rounded-[18px] border border-[rgba(255,255,255,0.08)] bg-[linear-gradient(135deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))] p-4 lg:grid-cols-[minmax(240px,0.72fr)_minmax(0,1.28fr)]"
+                key={phase.id}
+                className={`overflow-hidden rounded-[20px] border bg-[linear-gradient(180deg,rgba(7,16,24,0.96),rgba(4,8,13,0.98))] ${
+                  isLive
+                    ? "border-[rgba(47,224,109,0.22)] shadow-[0_0_40px_rgba(47,224,109,0.06)]"
+                    : "border-[rgba(34,221,208,0.14)]"
+                }`}
               >
-                <div className="rounded-[15px] border border-[rgba(34,221,208,0.18)] bg-[rgba(34,221,208,0.055)] px-4 py-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className={eyebrowClass}>{phase.phase}</span>
-                    <span className="rounded-full border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.04)] px-3 py-1 text-[10px] font-semibold text-[#d8e1e8]">
-                      {phase.date}
-                    </span>
+                <div className="border-b border-[rgba(255,255,255,0.08)] bg-[radial-gradient(circle_at_top_left,rgba(34,221,208,0.16),transparent_32%)] px-5 py-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ea1af]">
+                        Phase {phase.id} / {phase.window}
+                      </div>
+                      <h3 className="mt-2 text-[22px] font-semibold leading-tight text-white">
+                        {phase.title}
+                      </h3>
+                    </div>
+                    <div className="flex h-11 w-11 flex-none items-center justify-center rounded-[14px] border border-[rgba(34,221,208,0.20)] bg-[rgba(34,221,208,0.08)] text-[#9ff7f0]">
+                      <Icon className="h-5 w-5" />
+                    </div>
                   </div>
-                  <div className="mt-4 flex h-12 w-12 items-center justify-center rounded-[14px] bg-[linear-gradient(135deg,rgba(34,221,208,0.24),rgba(47,224,109,0.12))] text-[#9ff7f0]">
-                    <Icon className="h-6 w-6" />
+                  <div className={`mt-3 inline-flex rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${
+                    isLive
+                      ? "border-[rgba(47,224,109,0.28)] bg-[rgba(47,224,109,0.12)] text-[#68ff7a]"
+                      : "border-[rgba(246,193,102,0.22)] bg-[rgba(246,193,102,0.08)] text-[#f6c166]"
+                  }`}>
+                    {phase.status}
                   </div>
-                  <h3 className="mt-4 text-[24px] font-semibold leading-tight text-white">
-                    {phase.title}
-                  </h3>
-                  <p className="mt-2 text-[13px] font-semibold text-[#9ff7f0]">{phase.quote}</p>
-                  <p className="mt-4 text-[13px] leading-6 text-[#d7e0e8]">{phase.headline}</p>
+                  <p className="mt-3 text-[13px] leading-6 text-[#dce7ee]">{phase.focus}</p>
                 </div>
 
-                <div className="grid gap-3">
-                  <div className="grid gap-3 md:grid-cols-3">
-                    {phase.items.map((item) => (
-                      <div key={item.title} className={subCardClass}>
-                        <div className="text-[15px] font-semibold leading-tight text-white">
-                          {item.title}
-                        </div>
-                        <p className="mt-2 text-[12px] leading-6 text-[#cdd7e0]">{item.body}</p>
+                <div className="px-5 py-4">
+                  <div className="grid gap-2">
+                    {phase.checkpoints.map((item) => (
+                      <div key={item} className="flex items-start gap-2.5 text-[12px] leading-6 text-[#dce5ec]">
+                        {isLive ? (
+                          <BadgeCheck className="mt-1 h-3.5 w-3.5 flex-none text-[#68ff7a]" />
+                        ) : (
+                          <ArrowRight className="mt-1 h-3.5 w-3.5 flex-none text-[#f6c166]" />
+                        )}
+                        <span>{item}</span>
                       </div>
                     ))}
                   </div>
-                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-[14px] border border-[rgba(47,224,109,0.18)] bg-[rgba(47,224,109,0.055)] px-4 py-4">
-                    <div>
-                      <div className={eyebrowClass}>Money path {index + 1}</div>
-                      <div className="mt-1 text-[13px] leading-6 text-[#dff8e7]">{phase.money}</div>
+
+                  <div className="mt-4 rounded-[14px] border border-[rgba(246,193,102,0.16)] bg-[rgba(246,193,102,0.04)] px-4 py-3">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#f6c166]">
+                      Revenue path
                     </div>
-                    <CircleDollarSign className="h-5 w-5 text-[#68ff7a]" />
+                    <p className="mt-1.5 text-[12px] leading-6 text-[#e4eff3]">{phase.money}</p>
                   </div>
                 </div>
               </article>
@@ -484,146 +405,86 @@ export default async function JudgeRoadmapPage() {
         </div>
       </section>
 
-      <section className={sectionShellClass}>
-        <div className="flex items-start gap-3">
-          <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
-            <Coins className="h-5 w-5" />
+      <section className="fade-in-up fade-in-up-4 grid gap-3 lg:grid-cols-[minmax(0,1.1fr)_minmax(300px,0.9fr)]">
+        <div className="yb-card rounded-[20px] px-5 py-5">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ea1af]">
+            How it sells
           </div>
-          <div>
-            <h2 className={sectionTitleClass}>Revenue engines</h2>
-            <p className={sectionHelperClass}>
-              Where the roadmap becomes a business, not only a technical showcase.
+          <h2 className="mt-1 font-[family-name:var(--font-display)] text-[24px] font-semibold leading-tight text-white">
+            Revenue is built into the architecture
+          </h2>
+          <div className="mt-5 grid gap-3 md:grid-cols-2">
+            {productLines.map((line) => {
+              const Icon = line.icon;
+
+              return (
+                <div
+                  key={line.label}
+                  className="rounded-[15px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.025)] px-4 py-4"
+                >
+                  <Icon className="h-5 w-5 text-[#9ff7f0]" />
+                  <h3 className="mt-3 text-[15px] font-semibold text-white">{line.label}</h3>
+                  <p className="mt-2 text-[12px] leading-6 text-[#dce5ec]">{line.text}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="yb-card rounded-[20px] px-5 py-5">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ea1af]">
+            0G rails
+          </div>
+          <h2 className="mt-1 font-[family-name:var(--font-display)] text-[24px] font-semibold leading-tight text-white">
+            The proof base layer stays 0G
+          </h2>
+          <div className="mt-5 grid gap-2">
+            {proofRails.map((rail) => {
+              const Icon = rail.icon;
+
+              return (
+                <div
+                  key={rail.label}
+                  className="flex items-center gap-3 rounded-[14px] border border-[rgba(34,221,208,0.12)] bg-[rgba(34,221,208,0.045)] px-4 py-3"
+                >
+                  <Icon className="h-4 w-4 text-[#9ff7f0]" />
+                  <span className="text-[13px] font-semibold text-white">{rail.label}</span>
+                  <span className="ml-auto text-[11px] text-[#8ea1af]">{rail.desc}</span>
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-5 rounded-[15px] border border-[rgba(47,224,109,0.18)] bg-[rgba(47,224,109,0.06)] px-4 py-4">
+            <p className="text-[12px] leading-6 text-[#dff8e7]">
+              Marketplace payments are native 0G. The $YA path is positioned as access, rewards, and future utility, not as a replacement for the current 0G-priced developer store.
             </p>
           </div>
         </div>
-
-        <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {revenueEngines.map((engine) => {
-            const Icon = engine.icon;
-
-            return (
-              <div key={engine.label} className={subCardClass}>
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-[12px] border border-[rgba(34,221,208,0.16)] bg-[rgba(34,221,208,0.07)] text-[#9ff7f0]">
-                    <Icon className="h-4 w-4" />
-                  </div>
-                  <div className="text-[15px] font-semibold text-white">{engine.label}</div>
-                </div>
-                <p className="mt-3 text-[12px] leading-6 text-[#cdd7e0]">{engine.body}</p>
-              </div>
-            );
-          })}
-        </div>
       </section>
 
-      <section data-testid="roadmap-value-capture" className={sectionShellClass}>
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="flex items-start gap-3">
-            <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
-              <CircleDollarSign className="h-5 w-5" />
-            </div>
-            <div>
-              <h2 className={sectionTitleClass}>Value capture layer</h2>
-              <p className={sectionHelperClass}>
-                Sustainability plan for turning proof-backed yield intelligence into durable revenue.
-              </p>
-            </div>
-          </div>
-          <span className="rounded-full border border-[rgba(47,224,109,0.22)] bg-[rgba(47,224,109,0.08)] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#b8ffc8]">
-            Building a protocol that lasts
-          </span>
-        </div>
-
-        <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {valueCaptureLayers.map((layer) => {
-            const Icon = layer.icon;
-
-            return (
-              <div
-                key={layer.label}
-                className="relative overflow-hidden rounded-[16px] border border-[rgba(47,224,109,0.16)] bg-[linear-gradient(180deg,rgba(47,224,109,0.065),rgba(255,255,255,0.02))] px-4 py-4"
-              >
-                <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,rgba(47,224,109,0.68),transparent)]" />
-                <div className="flex items-start justify-between gap-3">
-                  <Icon className="h-5 w-5 flex-none text-[#68ff7a]" />
-                  <span className="rounded-full border border-[rgba(255,255,255,0.10)] bg-[rgba(255,255,255,0.035)] px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-[#d8e1e8]">
-                    {layer.status}
-                  </span>
-                </div>
-                <h3 className="mt-4 text-[16px] font-semibold leading-tight text-white">
-                  {layer.label}
-                </h3>
-                <p className="mt-2 text-[12px] leading-6 text-[#cdd7e0]">{layer.body}</p>
-                <div className="mt-3 rounded-[12px] border border-[rgba(34,221,208,0.12)] bg-[rgba(34,221,208,0.045)] px-3 py-3 text-[11px] leading-5 text-[#d9eef0]">
-                  {layer.proof}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="mt-5 rounded-[18px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.025)] px-4 py-4">
-          <div className="flex items-center gap-2 text-[#9ff7f0]">
-            <Scale className="h-4 w-4" />
-            <span className={eyebrowClass}>Fit audit</span>
-          </div>
-          <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            {valueCaptureAudit.map((item) => (
-              <div key={item.label} className="rounded-[13px] border border-[rgba(255,255,255,0.07)] bg-[rgba(2,8,13,0.32)] px-3 py-3">
-                <div className="text-[14px] font-semibold text-white">{item.label}</div>
-                <div className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#68ff7a]">
-                  {item.verdict}
-                </div>
-                <p className="mt-2 text-[11px] leading-5 text-[#cdd7e0]">{item.detail}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className={sectionShellClass}>
-        <div className="flex items-start gap-3">
-          <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[14px] text-[#22ddd0]">
-            <Layers className="h-5 w-5" />
-          </div>
-          <div>
-            <h2 className={sectionTitleClass}>0G advantage</h2>
-            <p className={sectionHelperClass}>
-              The roadmap keeps 0G as the execution, memory, and verification base layer.
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {zeroGLeverage.map((item) => {
-            const Icon = item.icon;
-
-            return (
-              <div key={item.label} className={subCardClass}>
-                <Icon className="h-5 w-5 text-[#9ff7f0]" />
-                <div className="mt-3 text-[15px] font-semibold text-white">{item.label}</div>
-                <p className="mt-2 text-[12px] leading-6 text-[#cdd7e0]">{item.body}</p>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      <section className="rounded-[20px] border border-[rgba(34,221,208,0.20)] bg-[linear-gradient(135deg,rgba(34,221,208,0.12),rgba(255,255,255,0.03)_48%,rgba(47,224,109,0.08))] px-5 py-6">
+      <section className="fade-in-up fade-in-up-5 rounded-[20px] border border-[rgba(34,221,208,0.20)] bg-[linear-gradient(135deg,rgba(34,221,208,0.12),rgba(255,255,255,0.03)_48%,rgba(47,224,109,0.08))] px-5 py-6">
         <div className="mx-auto max-w-4xl text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(34,221,208,0.24)] bg-[rgba(34,221,208,0.08)] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#9ff7f0]">
-            <Scale className="h-3.5 w-3.5" />
-            Forward-looking, proof-grounded
+            <ShieldCheck className="h-3.5 w-3.5" />
+            Remember
           </div>
           <h2 className="mt-4 font-[family-name:var(--font-display)] text-[28px] font-semibold leading-tight text-white md:text-[38px]">
-            We do not build another app. We build the infrastructure of trust for agent-led finance.
+            User product first. Security business second. All on 0G.
           </h2>
-          <p className="mt-4 text-[13px] leading-7 text-[#cdd7e0]">
-            The roadmap is ambitious by design, but the first proof is already inspectable: Judge Mode, 0G artifacts, storage CIDs, ProofRegistry anchors, and the integrity memory package are live review surfaces today. Building a protocol that does not just work, but lasts.
+          <p className="mt-4 text-[14px] leading-7 text-[#dce5ec]">
+            The roadmap is one path: help users put idle crypto to work, prove the route with 0G, sell the 9-layer protection stack, then scale into liquidity, enterprise compliance, and multi-chain security.
           </p>
           <div className="mt-5 flex flex-wrap justify-center gap-3">
-            <Link href="/judge" className={linkPillClass}>
-              Review live evidence
+            <Link href="/agent" className={linkPillClass}>
+              1-click optimize
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+            <Link href="/dev/marketplace" className={linkPillClass}>
+              API store
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+            <Link href="/judge/project" className={linkPillClass}>
+              Project brief
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
             <a
@@ -632,7 +493,7 @@ export default async function JudgeRoadmapPage() {
               rel="noreferrer"
               className={linkPillClass}
             >
-              Open pitch deck
+              Pitch deck
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
           </div>
