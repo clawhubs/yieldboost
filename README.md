@@ -47,9 +47,9 @@
   <a href="#contributing">Contributing</a>
 </p>
 
-> YieldBoost AI is not just a DApp. It is a full-stack agentic ecosystem: native 9-layer agent infrastructure, verifiable yield execution, YA-powered API commerce, and sovereign privacy rails on 0G.
+> YieldBoost AI is a mainnet-first 9-layer proof and security stack on 0G: users run 1-click optimize, developers buy the stack as APIs, and hackers can challenge the security model through the vault.
 
-YieldBoost AI helps Web3 users, developers, and partner agents turn idle crypto balances and private strategy payloads into proof-backed economic activity. The product starts with one-click yield optimization, but the shipped system is larger: a verifiable agent pipeline, a Strategy Agent NFT layer, a public vault challenge, a YA faucet, and a developer API marketplace where the same 9-layer stack can be consumed as infrastructure.
+YieldBoost AI helps Web3 users, developers, and partner agents turn idle crypto balances and private strategy payloads into proof-backed economic activity. The product starts with one-click yield optimization, but the shipped system is larger: a verifiable agent pipeline, a Strategy Agent NFT layer, a public vault challenge, an anti-sybil faucet, and a developer API marketplace where the same 9-layer stack can be consumed as infrastructure.
 
 The active implementation in this repository is now centered on a **mainnet-first** review path across the core 0G stack plus an integrity memory layer:
 
@@ -69,6 +69,12 @@ On top of that integrity memory stack, the repo now adds three review-grade cont
 - **ZK Policy Seal** as the policy proof tying ZKR and governance back to the latest stored strategy execution.
 
 The result is a product story judges can verify quickly: a user runs an optimization, the app persists the reasoning and decision payload on 0G infrastructure, and `/judge` exposes the latest mainnet review snapshot without requiring wallet connection, faucet setup, or rerunning the flow.
+
+The network split is intentional and should be read honestly:
+
+- **Mainnet-first product surfaces:** 1-click optimize, judge review, API / SDK marketplace, and the anti-sybil + ZK + Alibaba fingerprinting module.
+- **Testnet-only public challenge surfaces:** vault challenge and faucet onboarding.
+- **Why testnet still exists:** those two surfaces benefit from many external testers, and testnet lets people attack, retry, and learn the system without forcing every tester to spend mainnet gas.
 
 On top of that proof path, YieldBoost AI also ships a **Strategy Agent NFT layer** through `YieldStrategyINFT`, so a verified optimization can be elevated into a portable on-chain strategy artifact instead of remaining only as an off-chain UI event.
 
@@ -122,7 +128,7 @@ The live product combines four surfaces that share the same trust layer:
 
 - **One-click optimizer**: converts idle wallet balances into proof-backed yield routes while exercising the same Track 1 infrastructure and Track 5 sovereign privacy stack used by the rest of the product.
 - **Native 9-layer stack**: Hallucination Blacklist, Integrity Auditor, Secure Compute / TEE, Sovereign Memory, 0G Storage Proof Layer, Zero-Knowledge Proof Layer, ProofRegistry Anchor, Programmable Governance, and Cross-Agent Neural Handshake.
-- **Autonomous economy layer**: YA faucet, API packages, developer portal, and marketplace endpoints let other builders consume the stack as a paid security service.
+- **Autonomous economy layer**: anti-sybil onboarding, API packages, developer portal, and marketplace endpoints let other builders consume the stack as a paid security service.
 - **Sovereign privacy layer**: vault sealing, isolated execution, TEE evidence, ZK envelopes, and wallet-scoped records keep private payloads auditable without turning them into public secrets.
 
 Each approved optimization becomes a stored and reviewable finance artifact:
@@ -140,15 +146,35 @@ The product story becomes simple: **AI proposes, 9 layers verify, 0G stores, cha
 
 The current public deployment is now **mainnet-default**.
 
+| Surface | Network | Value |
+| --- | --- | --- |
+| Live app | Mainnet-first | [`yieldboostai.xyz`](https://yieldboostai.xyz/) |
+| Judge entry point | Mainnet-first | [`/judge`](https://yieldboostai.xyz/judge) |
+| Developer portal | Mainnet-first | [`dev.yieldboostai.xyz`](https://dev.yieldboostai.xyz/) |
+| API marketplace | Mainnet-first | [`/dev/marketplace`](https://dev.yieldboostai.xyz/dev/marketplace) |
+| Anti-sybil + ZK + Alibaba module | Mainnet product module | Sold inside the marketplace as a security API. |
+| Public Integrity API | Mainnet-first | [`api.yieldboostai.xyz`](https://api.yieldboostai.xyz/) |
+| Public challenge vault | Testnet challenge | [`/vault`](https://yieldboostai.xyz/vault) |
+| Anti-sybil faucet | Testnet onboarding | [`/faucet`](https://yieldboostai.xyz/faucet) |
+ 
+### What Judges Should Read From This
+
+- **Mainnet is the submission backbone.** The optimizer, proof path, judge snapshot, and developer security store are presented as the core production story.
+- **Testnet is used on purpose, not by accident.** Vault and faucet are the two surfaces where broad public testing matters more than forcing every tester to spend mainnet gas.
+- **Anti-sybil is not just a faucet gimmick.** The same family of controls appears in the marketplace as a sellable module: wallet checks, deterministic anti-sybil logic, Alibaba fingerprinting, and proof-aware abuse resistance.
+
+### 9-Layer Proof Stack Working In The UI
+
+<p align="center">
+  <img src="./public/readme/integrity-stack.png" alt="YieldBoost AI 9-layer stack working in the proof UI" width="78%" />
+</p>
+
+<p align="center"><em>The main proof path shows the 9-layer stack operating together: blacklist, auditor, TEE, sovereign memory, 0G storage, ZK proof, ProofRegistry anchor, governance, and cross-agent handshake.</em></p>
+
+### Mainnet Contract and Proof Evidence
+
 | Artifact | Value |
 | --- | --- |
-| Live app | [`yieldboostai.xyz`](https://yieldboostai.xyz/) |
-| Judge entry point | [`/judge`](https://yieldboostai.xyz/judge) |
-| Public challenge vault | [`/vault`](https://yieldboostai.xyz/vault) |
-| YA faucet | [`/faucet`](https://yieldboostai.xyz/faucet) |
-| Developer portal | [`dev.yieldboostai.xyz`](https://dev.yieldboostai.xyz/) |
-| API marketplace | [`/dev/marketplace`](https://dev.yieldboostai.xyz/dev/marketplace) |
-| Public Integrity API | [`api.yieldboostai.xyz`](https://api.yieldboostai.xyz/) |
 | Mainnet `ProofRegistry` | [`0x8e63e117E71A80Cfc10fDF375F079e2e29cd7D7D`](https://chainscan.0g.ai/address/0x8e63e117E71A80Cfc10fDF375F079e2e29cd7D7D) |
 | Mainnet `YieldStrategyINFT` | [`0xb264D861264B0e4f8fb98A61B7694BA8a3B6BBe3`](https://chainscan.0g.ai/address/0xb264D861264B0e4f8fb98A61B7694BA8a3B6BBe3) |
 | Mainnet attestation oracle | [`0x216E7880D64D94335B583c539802d3e61958d4A2`](https://chainscan.0g.ai/address/0x216E7880D64D94335B583c539802d3e61958d4A2) |
@@ -235,7 +261,7 @@ That combination is the project's strongest differentiator for a hackathon revie
 
 YieldBoost AI spans four 0G hackathon tracks because it is not a single-purpose DApp. It is a full-stack agentic ecosystem where one native 9-layer security core powers agent infrastructure, verifiable trading, developer-facing API commerce, and sovereign privacy.
 
-The mapping is direct: the same repo that runs 1-click optimize also exposes the proof ledger, vault, developer API store, YA faucet, Strategy Agent NFT layer, and partner SDK wrapper surface. The 1-click optimizer is the clearest live demo because one run touches the agent infrastructure path, the verifiable trading path, and the sovereign privacy path at the same time.
+The mapping is direct: the same repo that runs 1-click optimize also exposes the proof ledger, vault, developer API store, anti-sybil faucet, Strategy Agent NFT layer, and partner SDK wrapper surface. The 1-click optimizer is the clearest live demo because one run touches the agent infrastructure path, the verifiable trading path, and the sovereign privacy path at the same time.
 
 ### Track 1: Agentic Infrastructure & OpenClaw Lab
 
@@ -274,7 +300,8 @@ Track 2 is where the core product lands hardest: YieldBoost is not just recommen
 **Repo infrastructure:**
 
 - **Developer API Store & Marketplace** at [`/dev/marketplace`](https://dev.yieldboostai.xyz/dev/marketplace), exposing the full 9-layer API, individual layer APIs, and partner SDK wrappers.
-- **YA faucet** at [`/faucet`](https://yieldboostai.xyz/faucet), giving developers a live access path for testing API packages.
+- **Anti-sybil + ZK + Alibaba module** in the marketplace proves the stack can be sold as a reusable security product, not only as one internal app path.
+- **Anti-sybil faucet** at [`/faucet`](https://yieldboostai.xyz/faucet), giving developers a public onboarding path for testing access logic and abuse resistance before they move into mainnet packages.
 - **API key playground and package tiers** connect developer usage, subscription intent, and security-layer access.
 - **Partner SDK wrapper model** proves that external agent services can be wrapped and sold through the same security envelope.
 - **VeilSolver Secure Proxy** is the live partner example: a third-party solver is exposed through YieldBoost isolated execution, ZK envelope, and 0G anchor semantics.
@@ -341,7 +368,26 @@ The clearest submission sentence is: **YieldBoost AI is a full-stack agentic eco
 
 ## Architecture
 
-The architecture is split into smaller flows so the core proof path, vault challenge, YA faucet, and developer API marketplace stay readable instead of living in one overloaded diagram.
+The architecture is split so judges can understand it fast:
+
+1. **Mainnet production spine**: 1-click optimize, proof storage, ZK layer, ProofRegistry, judge review, and the developer marketplace.
+2. **Testnet public stress surfaces**: vault and faucet, where large numbers of external testers can interact without forcing everyone to spend mainnet gas.
+3. **Shared security design**: anti-sybil checks, Alibaba fingerprinting, ZK packaging, governance, and memory all come from the same broader YieldBoost verification model, even when the public surface is not on the same network.
+
+### Mainnet Production Surfaces
+
+- **1-click optimize** is the shortest live proof of the product.
+- **Judge mode** is the wallet-free audit route.
+- **Developer marketplace** is where the stack becomes revenue: modular APIs, SDK wrappers, and the anti-sybil + ZK + Alibaba fingerprinting module.
+- **Mainnet contracts and proof anchors** make the core path externally reviewable.
+
+### Testnet Challenge and Onboarding Surfaces
+
+- **Vault** stays testnet because it is designed to attract attackers, retries, and repeated public challenge attempts.
+- **Faucet** stays testnet because onboarding and anti-sybil tuning benefit from many testers without burdening them with mainnet cost.
+- **Why this is honest:** these surfaces are labeled testnet in the product and should be read as challenge/onboarding environments, not as the main submission backbone.
+
+### Core Flows
 
 ### Core Optimizer, TEE, and ZK Proof Flow
 
@@ -438,14 +484,15 @@ flowchart TD
     VAULTUI --> BACKENDLINKS[Backend Storage / Proof Tx links]
 ```
 
-### YA Faucet and Developer Access Flow
+### Anti-Sybil Faucet and Developer Access Flow
 
 ```mermaid
 flowchart TD
     DEV[Developer] --> FAUCET[/faucet/]
     FAUCET --> CLAIM[/api/ya/faucet/claim/]
-    CLAIM --> YA[YA access balance / voucher state]
-    YA --> DEVPORTAL[dev.yieldboostai.xyz]
+    CLAIM --> ABUSE[Anti-sybil checks + Alibaba fingerprinting]
+    ABUSE --> VOUCHER[Testnet voucher / claim state]
+    VOUCHER --> DEVPORTAL[dev.yieldboostai.xyz]
     DEVPORTAL --> MARKET[/dev/marketplace/]
     MARKET --> DOCS[Docs + playgrounds]
     MARKET --> APIKEY[Bearer API key usage]
@@ -807,12 +854,26 @@ npm run setup:tee-broker:mainnet
 
 ## Testnet Secondary Path
 
-Testnet is still available, but it is now a secondary path for:
+Testnet is still available, but it is now a **secondary path by design**, not the center of the submission.
 
-- iteration
-- comparison during judging
-- fallback demos
-- isolated testing of provider or wallet flows
+It is used for:
+
+- broad tester onboarding without forcing every tester to spend mainnet gas
+- repeated abuse testing on the faucet and vault challenge
+- iteration on provider, wallet, and anti-sybil edge cases
+- comparison during judging when someone wants to inspect both networks
+
+What stays centered on testnet:
+
+- **Vault challenge** public attack surface
+- **Anti-sybil faucet** public onboarding surface
+
+What should be judged as the main production spine:
+
+- **1-click optimize**
+- **Judge review**
+- **API / SDK marketplace**
+- **Anti-sybil + ZK + Alibaba fingerprinting module**
 
 If you want to run locally against testnet instead:
 
@@ -837,7 +898,7 @@ This repository is no longer in “mainnet prep only” mode. The current live s
 - mainnet `YieldStrategyINFT` deployed
 - mainnet storage tx and registry anchor already recorded
 - live app defaults to mainnet
-- public vault, YA faucet, and developer API marketplace are live
+- public vault, anti-sybil faucet, and developer API marketplace are live
 - judge mode can still switch to testnet when needed
 
 Mainnet-related commands remain available for future redeployments or contract updates:
@@ -865,8 +926,8 @@ npm run setup:tee-broker:mainnet
 | [`app/api/governance/evaluate/route.ts`](app/api/governance/evaluate/route.ts) | Programmable AI Governance evaluator. |
 | [`app/api/zk/compliance/route.ts`](app/api/zk/compliance/route.ts) | Deterministic policy seal builder. |
 | [`app/api/agents/handshake/route.ts`](app/api/agents/handshake/route.ts) | Cross-Agent Neural Handshake transcript API. |
-| [`app/faucet/page.tsx`](app/faucet/page.tsx) | Public YA faucet page for claiming API access tokens. |
-| [`app/api/ya/faucet/claim`](app/api/ya/faucet/claim/route.ts) | Faucet claim endpoint for YA access flow. |
+| [`app/faucet/page.tsx`](app/faucet/page.tsx) | Public anti-sybil faucet page for onboarding and claim flow. |
+| [`app/api/ya/faucet/claim`](app/api/ya/faucet/claim/route.ts) | Faucet claim endpoint for the public anti-sybil onboarding path. |
 | [`app/dev/marketplace/page.tsx`](app/dev/marketplace/page.tsx) | Developer API Store for the 9-layer stack and partner SDK wrappers. |
 | [`lib/server/runtime-store.ts`](lib/server/runtime-store.ts) | Proof persistence layer. |
 | [`app/(workspace)/judge/page.tsx`](<app/(workspace)/judge/page.tsx>) | Main judge review surface. |
@@ -877,29 +938,29 @@ npm run setup:tee-broker:mainnet
 | [`contracts/GlobalBlacklistRegistry.sol`](contracts/GlobalBlacklistRegistry.sol) | Append-only CID registry for rejected hallucination artifacts. |
 | [`contracts/ValidationRegistry.sol`](contracts/ValidationRegistry.sol) | On-chain anchor design for stress-test report cards. |
 
-## Live YA Token Access and Proof-of-Optimization
+## Live Access Layer and Proof-of-Optimization
 
-YA is now part of the live developer access flow, not just a future roadmap item. The public faucet and API marketplace are available from the production deployment:
+The public developer access layer is live, and it now needs to be read with network honesty:
 
 | Surface | Live path | Purpose |
 | --- | --- | --- |
-| YA faucet | [`yieldboostai.xyz/faucet`](https://yieldboostai.xyz/faucet) | Lets developers claim YA access for API testing and marketplace tiers. |
+| Anti-sybil faucet | [`yieldboostai.xyz/faucet`](https://yieldboostai.xyz/faucet) | Testnet onboarding path for public claims, anti-sybil checks, and Alibaba fingerprinting. |
 | Developer portal | [`dev.yieldboostai.xyz`](https://dev.yieldboostai.xyz/) | Hosts docs, marketplace, playgrounds, and API integration surfaces. |
-| API marketplace | [`dev.yieldboostai.xyz/dev/marketplace`](https://dev.yieldboostai.xyz/dev/marketplace) | Exposes the full 9-layer endpoint, individual layer endpoints, and partner SDK wrappers. |
-| Public vault | [`yieldboostai.xyz/vault`](https://yieldboostai.xyz/vault) | Runs the 9-layer integrity challenge with wallet-scoped proof records. |
+| API marketplace | [`dev.yieldboostai.xyz/dev/marketplace`](https://dev.yieldboostai.xyz/dev/marketplace) | Mainnet-first security store for the full 9-layer endpoint, single layers, anti-sybil modules, and partner SDK wrappers. |
+| Public vault | [`yieldboostai.xyz/vault`](https://yieldboostai.xyz/vault) | Testnet public challenge surface for the YieldBoost protection model. |
 
 Current shipped base:
 
 - **Zero-Knowledge Proof Layer** records the reasoning envelope as a reviewable 0G artifact.
 - **Programmable AI Governance** turns strategy policy into deterministic status, risk, and kill-switch output.
 - **Cross-Agent Neural Handshake** records the optimizer-to-auditor coordination transcript for external inspection.
-- **YA faucet and API Store tiers** connect developer access to the marketplace package flow.
+- **Anti-sybil faucet and marketplace tiers** connect developer onboarding to the package flow.
 
-### YA Utility Layer
+### Access Utility Layer
 
 - Reward wallets that submit optimization runs that are successfully stored and externally verifiable.
 - Use proof-backed activity and API subscriptions, not vanity clicks, as the basis for ecosystem participation.
-- Align YA utility with storage-backed execution history, strategy quality, API marketplace access, and long-term protocol usage.
+- Align developer access with storage-backed execution history, strategy quality, API marketplace access, and long-term protocol usage.
 - Give developers a faucet path first, then paid package tiers for higher-volume or partner-grade API usage.
 
 ### Proof-of-Optimization Mining
