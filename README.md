@@ -47,13 +47,13 @@
   <a href="#contributing">Contributing</a>
 </p>
 
-> YieldBoost AI is a mainnet-first 9-layer proof and security stack on 0G: users run 1-click optimize, developers buy the stack as APIs, and hackers can challenge the security model through the vault.
+> YieldBoost AI is a mainnet-first 9-layer proof and security stack on 0G with three separate surfaces: a user optimizer, a developer marketplace, and a public security challenge.
 
 YieldBoost AI has three clear product surfaces built on one 9-layer stack:
 
-- **For users:** 1-click optimize turns idle crypto balances into proof-backed yield routes.
-- **For developers:** the API marketplace sells the same security stack as modular APIs and wrapped SDKs.
-- **For public security testing:** the vault and anti-sybil airdrop example show how the system behaves under attacks, abuse, and high-volume claim flows.
+- **1-click optimize for users:** idle crypto balances are turned into proof-backed yield routes.
+- **API marketplace for developers:** the same stack is sold as modular APIs and wrapped SDKs.
+- **Vault and anti-sybil example for public testing:** the security model is exposed to attackers, claim abuse, and repeated public challenge traffic.
 
 Under the hood, those surfaces share the same proof path: 0G compute, ZK evidence, 0G Storage, ProofRegistry anchoring, and integrity memory.
 
@@ -116,26 +116,37 @@ VeilSolver Secure Proxy is a partner SDK example in the developer marketplace: Y
 
 The next wave of AI x Web3 will not be blocked by another missing chat UI. It will be blocked by trust.
 
-Autonomous agents are starting to recommend trades, move liquidity, sell API services, and coordinate with other agents, but most stacks still fail at the exact moment they need to become economic actors:
+Autonomous agents are starting to recommend trades, move liquidity, sell API services, and coordinate with other agents, but most stacks still break at the moment they need to become real economic actors:
 
 - They generate financial recommendations without a proof trail that ties wallet state, model output, risk checks, and storage evidence together.
 - They expose private strategy intent too early, creating front-running, MEV, copy-trading, and operator-trust risks.
 - They forget state across sessions, so agent memory becomes either fake UX state or an opaque database nobody can audit.
-- They cannot sell agent capabilities cleanly because API keys, usage tiers, partner SDK wrappers, and developer payments are separate from the trust layer.
+- They cannot package trust as a product, because API keys, usage tiers, partner SDK wrappers, enterprise integrations, and billing live outside the verification layer.
 - They make judges and users replay flows manually instead of showing a live, externally verifiable result.
 
-In DeFi, that is not a small product gap. A useful agent must prove what it saw, explain what it chose, preserve memory, reject unsafe output, protect private execution, and expose evidence that another app, judge, or marketplace buyer can verify.
+In DeFi, that is not a small product gap. A useful agent must prove what it saw, explain what it chose, preserve memory, reject unsafe output, protect private execution, and expose evidence that another app, judge, developer, enterprise buyer, or marketplace customer can verify.
 
 ## The Solution
 
-YieldBoost AI turns agentic finance into a verifiable operating system on 0G.
+YieldBoost AI turns that trust problem into a sellable 9-layer security stack on 0G.
 
-The live product combines four surfaces that share the same trust layer:
+The core of the repo is not only the optimizer UI. It is the **standalone YieldBoost 9-layer stack**:
 
-- **One-click optimizer**: converts idle wallet balances into proof-backed yield routes while exercising the same Track 1 infrastructure and Track 5 sovereign privacy stack used by the rest of the product.
-- **Native 9-layer stack**: Hallucination Blacklist, Integrity Auditor, Secure Compute / TEE, Sovereign Memory, 0G Storage Proof Layer, Zero-Knowledge Proof Layer, ProofRegistry Anchor, Programmable Governance, and Cross-Agent Neural Handshake.
-- **Autonomous economy layer**: API packages, developer portal, and marketplace endpoints turn the stack into a paid security service, while the public anti-sybil airdrop example shows one real distribution use case.
-- **Sovereign privacy layer**: vault sealing, isolated execution, TEE evidence, ZK envelopes, and wallet-scoped records keep private payloads auditable without turning them into public secrets.
+- Hallucination Blacklist
+- Integrity Auditor
+- Secure Compute / TEE
+- Sovereign Memory
+- 0G Storage Proof Layer
+- Zero-Knowledge Proof Layer
+- ProofRegistry Anchor
+- Programmable Governance
+- Cross-Agent Neural Handshake
+
+That same stack is exposed through three different product surfaces:
+
+- **1-click optimize for users:** one wallet action turns idle balances into a proof-backed yield route.
+- **Marketplace APIs and SDK wrappers for developers and companies:** the same 9-layer stack can be bought as infrastructure, one layer at a time or as the full military-grade package.
+- **Vault and anti-sybil faucet for public testing:** the security model is challenged in public, while the faucet acts as a real anti-sybil airdrop-style example using the same broader verification family.
 
 Each approved optimization becomes a stored and reviewable finance artifact:
 
@@ -144,9 +155,9 @@ Each approved optimization becomes a stored and reviewable finance artifact:
 - Zero-Knowledge Proof Layer, Programmable Governance, and Cross-Agent Neural Handshake evidence are persisted as reviewable control-plane artifacts.
 - Rejected results are indexed into a hallucination blacklist and checked before future inference.
 - Strategy Agent NFTs can promote verified optimization results into portable on-chain strategy artifacts.
-- Developer endpoints let partner apps call the full stack or one layer at a time, including the VeilSolver Secure Proxy wrapper.
+- Marketplace endpoints let outside teams call the full stack or one layer at a time, including partner wrappers like VeilSolver Secure Proxy.
 
-The product story becomes simple: **AI proposes, 9 layers verify, 0G stores, chain anchors, agents monetize, judges inspect.**
+The product story becomes simple: **users optimize, developers buy the stack, the public attacks the challenge surface, and judges inspect live proof.**
 
 ## Mainnet Live Verification
 
