@@ -13,7 +13,7 @@
   <img src="https://img.shields.io/badge/Sovereign%20Memory-0G%20Storage-18c6ff?style=for-the-badge" alt="Sovereign Memory on 0G Storage" />
   <img src="https://img.shields.io/badge/Hallucination%20Blacklist-Pre--Inference%20Defense-ff5c7a?style=for-the-badge" alt="Hallucination Blacklist" />
   <img src="https://img.shields.io/badge/Stress%20Test-Integrity%20Report%20Card-f6c166?style=for-the-badge" alt="Multiverse Stress Test" />
-  <img src="https://img.shields.io/badge/Zero--Knowledge%20Proof%20Layer-TEE%20%2F%20ZK%20Envelope%20Live-8b5cf6?style=for-the-badge" alt="Zero-Knowledge Proof Layer" />
+  <img src="https://img.shields.io/badge/Zero--Knowledge%20Proof%20Layer-Noir%20Proof%20Envelope%20Live-8b5cf6?style=for-the-badge" alt="Zero-Knowledge Proof Layer" />
   <img src="https://img.shields.io/badge/AI%20Governance-Deterministic%20Policy%20Guard-22c55e?style=for-the-badge" alt="Programmable AI Governance" />
   <img src="https://img.shields.io/badge/Cross--Agent%20Neural%20Handshake-Transcript%20Proof-0ea5e9?style=for-the-badge" alt="Cross-Agent Neural Handshake" />
   <img src="https://img.shields.io/badge/Judge%20Mode-/judge-7c5cff?style=for-the-badge" alt="Judge Mode" />
@@ -49,7 +49,13 @@
 
 > YieldBoost AI is a mainnet-first 9-layer proof and security stack on 0G: users run 1-click optimize, developers buy the stack as APIs, and hackers can challenge the security model through the vault.
 
-YieldBoost AI helps Web3 users, developers, and partner agents turn idle crypto balances and private strategy payloads into proof-backed economic activity. The product starts with one-click yield optimization, but the shipped system is larger: a verifiable agent pipeline, a Strategy Agent NFT layer, a public vault challenge, a public anti-sybil airdrop example, and a developer API marketplace where the same 9-layer stack can be consumed as infrastructure.
+YieldBoost AI has three clear product surfaces built on one 9-layer stack:
+
+- **For users:** 1-click optimize turns idle crypto balances into proof-backed yield routes.
+- **For developers:** the API marketplace sells the same security stack as modular APIs and wrapped SDKs.
+- **For public security testing:** the vault and anti-sybil airdrop example show how the system behaves under attacks, abuse, and high-volume claim flows.
+
+Under the hood, those surfaces share the same proof path: 0G compute, ZK evidence, 0G Storage, ProofRegistry anchoring, and integrity memory.
 
 The active implementation in this repository is now centered on a **mainnet-first** review path across the core 0G stack plus an integrity memory layer:
 
@@ -128,7 +134,7 @@ The live product combines four surfaces that share the same trust layer:
 
 - **One-click optimizer**: converts idle wallet balances into proof-backed yield routes while exercising the same Track 1 infrastructure and Track 5 sovereign privacy stack used by the rest of the product.
 - **Native 9-layer stack**: Hallucination Blacklist, Integrity Auditor, Secure Compute / TEE, Sovereign Memory, 0G Storage Proof Layer, Zero-Knowledge Proof Layer, ProofRegistry Anchor, Programmable Governance, and Cross-Agent Neural Handshake.
-- **Autonomous economy layer**: API packages, developer portal, marketplace endpoints, and a public anti-sybil airdrop example show how the stack can be consumed as a paid security service.
+- **Autonomous economy layer**: API packages, developer portal, and marketplace endpoints turn the stack into a paid security service, while the public anti-sybil airdrop example shows one real distribution use case.
 - **Sovereign privacy layer**: vault sealing, isolated execution, TEE evidence, ZK envelopes, and wallet-scoped records keep private payloads auditable without turning them into public secrets.
 
 Each approved optimization becomes a stored and reviewable finance artifact:
@@ -151,7 +157,7 @@ The live product is now **mainnet-first**.
 | Live app | Mainnet-first | [`yieldboostai.xyz`](https://yieldboostai.xyz/) |
 | Judge entry point | Mainnet-first | [`/judge`](https://yieldboostai.xyz/judge) |
 | Developer portal | Mainnet-first | [`dev.yieldboostai.xyz`](https://dev.yieldboostai.xyz/) |
-| API marketplace | Mainnet-first | [`/dev/marketplace`](https://dev.yieldboostai.xyz/dev/marketplace) |
+| API marketplace | Mainnet-first | [`/marketplace`](https://dev.yieldboostai.xyz/marketplace) |
 | Anti-sybil + ZK + Alibaba module | Mainnet product module | Sold inside the marketplace as a security API. |
 | Public Integrity API | Mainnet-first | [`api.yieldboostai.xyz`](https://api.yieldboostai.xyz/) |
 | Public challenge vault | Testnet challenge | [`/vault`](https://yieldboostai.xyz/vault) |
@@ -181,12 +187,14 @@ The live product is now **mainnet-first**.
 | Mainnet strategy marketplace | [`0x48F989C7f41056509980731C1b4D59164C0C1A40`](https://chainscan.0g.ai/address/0x48F989C7f41056509980731C1b4D59164C0C1A40) |
 | Mainnet `GlobalBlacklistRegistry` | [`0xbc576EA5a68ED9d217299c107C801445e9A5a7BE`](https://chainscan.0g.ai/address/0xbc576EA5a68ED9d217299c107C801445e9A5a7BE) |
 | Mainnet `ValidationRegistry` | [`0x62aa83b0A610BE298dF08004d764229B8f2aC219`](https://chainscan.0g.ai/address/0x62aa83b0A610BE298dF08004d764229B8f2aC219) |
-| Latest proof CID | `0x0658c275b9ea851e01e12a8480501c2c2c153b732d100951e40fdb9ad6b13050` |
-| Latest 0G Storage tx | [`0x763c992d35b36dcdf66fa1e6e4cda1675d84eeffd698e60b4cefd64b3745073d`](https://chainscan.0g.ai/tx/0x763c992d35b36dcdf66fa1e6e4cda1675d84eeffd698e60b4cefd64b3745073d) |
-| Latest `ProofRegistry` anchor tx | [`0xbe37a19217edd77026eaf659127ea8838d84fbc149a10e3f21ee0585dded99fb`](https://chainscan.0g.ai/tx/0xbe37a19217edd77026eaf659127ea8838d84fbc149a10e3f21ee0585dded99fb) |
-| Latest `ProofRegistry` proof ID | `7` |
-| Latest Agent NFT | `Token #4` |
-| Latest Agent NFT mint tx | [`0x2d4e074e9239f17db837fdfcc5ffa77393f292b7699836a79da260aefdddcb18`](https://chainscan.0g.ai/tx/0x2d4e074e9239f17db837fdfcc5ffa77393f292b7699836a79da260aefdddcb18) |
+| Latest proof CID | `0x34591917c809c3c0d00a7c9134b9c7f48bb0be4befba9f59c355499c96fd0b58` |
+| Latest 0G Storage tx | [`0xbd25bad750df808237525b9f5f84200b10bcbbf1cc1b8687c071b291e331a121`](https://chainscan.0g.ai/tx/0xbd25bad750df808237525b9f5f84200b10bcbbf1cc1b8687c071b291e331a121) |
+| Latest `ProofRegistry` anchor tx | [`0x11ca104543d7c6705b4f14d336a2581aa69bfdb819a5c76b7f6e1f71b29eb823`](https://chainscan.0g.ai/tx/0x11ca104543d7c6705b4f14d336a2581aa69bfdb819a5c76b7f6e1f71b29eb823) |
+| Latest `ProofRegistry` proof ID | `36` |
+| Latest TEE model + provider | `openai/gpt-5.4-mini` via `0x25F8f01cA76060ea40895472b1b79f76613Ca497` |
+| Latest ZK `agent_identity` proof digest | `0xe3dda0d378f18d3f47024fb47cd129b82956c9fffe3e6b76e8940608b7c668d8` |
+| Latest Agent NFT | `Token #5` |
+| Latest Agent NFT mint tx | [`0xb113f436944ebb8c50a2b432818673059ddd8f69a497b7fd80407047e8fb1e67`](https://chainscan.0g.ai/tx/0xb113f436944ebb8c50a2b432818673059ddd8f69a497b7fd80407047e8fb1e67) |
 
 ### Latest Integrity Stack Evidence
 
@@ -194,12 +202,12 @@ These mainnet artifacts prove the newly added agent memory, blacklist, and stres
 
 | Artifact | CID / tx |
 | --- | --- |
-| Sovereign Memory CID | `0xfe1444c405b9c65f4489fb66f8e2c919368619425bfb628f47089a9e76755d28` |
-| Sovereign Memory tx | [`0x00d7414c560af3a2d88f32b1b0d5a8dd896dcf6ef821ad877632f5be8d39a07b`](https://chainscan.0g.ai/tx/0x00d7414c560af3a2d88f32b1b0d5a8dd896dcf6ef821ad877632f5be8d39a07b) |
+| Sovereign Memory CID | `0x49d2577755db2f4300ba490c9c825dc0cc1b6d56b97c2f7d589307c31c4770f4` |
+| Sovereign Memory tx | [`0x2c30318e259de1e8abbddc338107a89401200b03a2fa450cd990661e08e69939`](https://chainscan.0g.ai/tx/0x2c30318e259de1e8abbddc338107a89401200b03a2fa450cd990661e08e69939) |
 | Hallucination Blacklist CID | `0xd660cdb9aec29214736fcb5763ba80fe6a5d2dcfd6cc35d68d7a178372b21625` |
 | Hallucination Blacklist tx | [`0x4eaee2337e0ffbec64b43e85c4619768071a0ff11c6a0b6c7a6c65a6a4521cb3`](https://chainscan.0g.ai/tx/0x4eaee2337e0ffbec64b43e85c4619768071a0ff11c6a0b6c7a6c65a6a4521cb3) |
-| Multiverse Stress Report CID | `0xf6fa5153b7df915b06b29e1e713a408ca1a79059a8538f22172bb1ded0f876b7` |
-| Multiverse Stress Report tx | [`0x2626de40d4640e99aef1c72fd7cd3b1eea0952036aefb96e863b25bf86b6f78f`](https://chainscan.0g.ai/tx/0x2626de40d4640e99aef1c72fd7cd3b1eea0952036aefb96e863b25bf86b6f78f) |
+| Multiverse Stress Report CID | `0x6901002bf56949a56fbc97305622e2023db5b833348ed995d7e9b3b2c3f141b9` |
+| Multiverse Stress Report tx | [`0xe76ff5180612b78c6a153b2fc323fbb064237a9050cd20aedb7fbeddb1aa410c`](https://chainscan.0g.ai/tx/0xe76ff5180612b78c6a153b2fc323fbb064237a9050cd20aedb7fbeddb1aa410c) |
 
 What this means in practice:
 
@@ -214,25 +222,25 @@ These newer artifacts extend the original integrity stack without replacing it. 
 
 | Artifact | CID / tx |
 | --- | --- |
-| Zero-Knowledge Proof Layer CID | `0x7c918f1e1bcc383e872eb1606d9ab6a494bf1e15e23d9f19d6127d82100bad82` |
-| Zero-Knowledge Proof Layer storage tx | [`0xd5fa09bdea5adf83f7bd3697d28a97d4d0ed4a9b85d9349951c1586a4a15cf76`](https://chainscan.0g.ai/tx/0xd5fa09bdea5adf83f7bd3697d28a97d4d0ed4a9b85d9349951c1586a4a15cf76) |
-| Zero-Knowledge Proof Layer `ProofRegistry` anchor tx | [`0xa074e7f74aad61ece0be54766116cffc544e4a5eda96189bbc136ce14af6cd02`](https://chainscan.0g.ai/tx/0xa074e7f74aad61ece0be54766116cffc544e4a5eda96189bbc136ce14af6cd02) |
-| Governance artifact CID | `0x2e1363b94f490765bd8841f5eff8d0b31b4f328017fae1920a429ffbd2b964ef` |
-| Governance tx | [`0xf7672e2367a880e57961ece7621138c3be870ef8541affdd28c657b5654e620e`](https://chainscan.0g.ai/tx/0xf7672e2367a880e57961ece7621138c3be870ef8541affdd28c657b5654e620e) |
-| Cross-Agent Neural Handshake CID | `0x64fca7bce74e760b78ce89ffa9f57f8367182f5c3a330609a0d018305e7a2ee7` |
-| Cross-Agent Neural Handshake tx | [`0x91c94588d6729e8550bf782e99166151afbd15bd69bd3aec67dd76a72b155676`](https://chainscan.0g.ai/tx/0x91c94588d6729e8550bf782e99166151afbd15bd69bd3aec67dd76a72b155676) |
-| ZK Policy Seal CID | `0xc8b7e448ef15d2132f0fb4cae9621a68a0ae7450bc6370c3641dc7df64aa00c8` |
-| ZK Policy Seal tx | [`0x3a11e091491d9f77ae37c384c71c905e3d1187078d0f7902281957986d46034b`](https://chainscan.0g.ai/tx/0x3a11e091491d9f77ae37c384c71c905e3d1187078d0f7902281957986d46034b) |
-| ZK Policy Seal `ProofRegistry` anchor tx | [`0xd5c33366a40960c1e2903b47f1fa699f39ffbb1ab7532fc544b53571bd7e2be7`](https://chainscan.0g.ai/tx/0xd5c33366a40960c1e2903b47f1fa699f39ffbb1ab7532fc544b53571bd7e2be7) |
+| Zero-Knowledge Proof Layer CID | `0xe84d0aed1bd1a023ebfa80f75397c1d03f047e4ecd0a90b7b9d729d1b18aaedf` |
+| Zero-Knowledge Proof Layer storage tx | [`0x1039013ad1403ac6d9f69525a9862e4cfab987e0808f53e452dabcaec5c450f2`](https://chainscan.0g.ai/tx/0x1039013ad1403ac6d9f69525a9862e4cfab987e0808f53e452dabcaec5c450f2) |
+| Zero-Knowledge Proof Layer `ProofRegistry` anchor tx | [`0xfc5e71ae4467c4564481556e184c925865d61b2942abace27228e0d285123cdd`](https://chainscan.0g.ai/tx/0xfc5e71ae4467c4564481556e184c925865d61b2942abace27228e0d285123cdd) |
+| Governance artifact CID | `0x3ccf7e94cf5e929035c2f05b26075f68d47dc24069c01c514364168caca4708c` |
+| Governance tx | [`0xa3e4d93c997f1e76747e1787f769c2b1e26351752f5ee48311a02857c4c4e7f3`](https://chainscan.0g.ai/tx/0xa3e4d93c997f1e76747e1787f769c2b1e26351752f5ee48311a02857c4c4e7f3) |
+| Cross-Agent Neural Handshake CID | `0xd1b41c5cca8504b242e55c4c7e032aee69debef5fabe887f759d427c423963d3` |
+| Cross-Agent Neural Handshake tx | [`0x499a6f73c7b9ce0b7f7312713be8daf1dd3324a46129f946cec7d4fb8397a694`](https://chainscan.0g.ai/tx/0x499a6f73c7b9ce0b7f7312713be8daf1dd3324a46129f946cec7d4fb8397a694) |
+| ZK Policy Seal CID | `0x34591917c809c3c0d00a7c9134b9c7f48bb0be4befba9f59c355499c96fd0b58` |
+| ZK Policy Seal tx | [`0xbd25bad750df808237525b9f5f84200b10bcbbf1cc1b8687c071b291e331a121`](https://chainscan.0g.ai/tx/0xbd25bad750df808237525b9f5f84200b10bcbbf1cc1b8687c071b291e331a121) |
+| ZK Policy Seal `ProofRegistry` anchor tx | [`0x11ca104543d7c6705b4f14d336a2581aa69bfdb819a5c76b7f6e1f71b29eb823`](https://chainscan.0g.ai/tx/0x11ca104543d7c6705b4f14d336a2581aa69bfdb819a5c76b7f6e1f71b29eb823) |
 
 ### Zero-Knowledge Proof Layer, Programmable Governance, and Cross-Agent Neural Handshake
 
 The newest control-plane features now surface real mainnet artifacts instead of UI placeholders:
 
-- **Zero-Knowledge Proof Layer** records a live TEE/ZK reasoning proof envelope to 0G Storage and anchors it on-chain. Current mainnet status: `tee-envelope-recorded`.
+- **Zero-Knowledge Proof Layer** records a live reasoning-proof envelope to 0G Storage and anchors it on-chain. Current mainnet status: `tee-envelope-recorded`.
 - **Programmable AI Governance** evaluates the latest strategy output against deterministic risk rules and can return `active`, `warning`, `throttled`, or `halted`. Current mainnet status: `active` with low risk `12/100`.
 - **Cross-Agent Neural Handshake** stores an optimizer-to-auditor coordination transcript so the reasoning handoff is externally inspectable. Current mainnet status: `completed`.
-- **ZK Policy Seal** proves that the last execution stayed `100%` inside the active governance policy and links that result into both the dashboard and `/judge`.
+- **ZK Policy Seal** proves that the last execution stayed `100%` inside the active governance policy and is currently sealed into the same latest proof artifact shown on `/judge`.
 
 ## Why This Matters
 
@@ -299,9 +307,9 @@ Track 2 is where the core product lands hardest: YieldBoost is not just recommen
 
 **Repo infrastructure:**
 
-- **Developer API Store & Marketplace** at [`/dev/marketplace`](https://dev.yieldboostai.xyz/dev/marketplace), exposing the full 9-layer API, individual layer APIs, and partner SDK wrappers.
+- **Developer API Store & Marketplace** at [`/marketplace`](https://dev.yieldboostai.xyz/marketplace), exposing the full 9-layer API, individual layer APIs, and partner SDK wrappers.
 - **Anti-sybil + ZK + Alibaba module** in the marketplace proves the stack can be sold as a reusable security product, not only as one internal app path.
-- **Anti-sybil faucet** at [`/faucet`](https://yieldboostai.xyz/faucet), giving the public a claim-flow example for testing access logic and abuse resistance before teams move into mainnet packages.
+- **Anti-sybil faucet** at [`/faucet`](https://yieldboostai.xyz/faucet), giving the public a claim-flow example for testing access logic and abuse resistance before teams move into the mainnet marketplace.
 - **API key playground and package tiers** connect developer usage, subscription intent, and security-layer access.
 - **Partner SDK wrapper model** proves that external agent services can be wrapped and sold through the same security envelope.
 - **VeilSolver Secure Proxy** is the live partner example: a third-party solver is exposed through YieldBoost isolated execution, ZK envelope, and 0G anchor semantics.
@@ -381,7 +389,7 @@ The architecture is split so judges can understand it fast:
 - **Developer marketplace** is where the stack becomes revenue: modular APIs, SDK wrappers, and the anti-sybil + ZK + Alibaba fingerprinting module.
 - **Mainnet contracts and proof anchors** make the core path externally reviewable.
 
-### Testnet Challenge and Onboarding Surfaces
+### Testnet Challenge and Public Example Surfaces
 
 - **Vault** stays testnet because it is designed to attract attackers, retries, and repeated public challenge attempts.
 - **Faucet** stays testnet because airdrop-style anti-sybil tuning benefits from many testers without burdening them with mainnet cost.
@@ -637,7 +645,6 @@ Why this matters for judging:
 - **No faucet step is required** for the judge to inspect the latest recorded result.
 - **Read-only mode is explicit**: `JudgeModeBootstrap` sets judge mode state, scopes the session to the review wallet, and keeps the main flow non-destructive.
 - **Mainnet is the default review network** while testnet stays available as secondary context from the same page.
-- **The UX is tested** in Playwright, including direct judge entry, cross-page hydration, and judge-mode exit behavior.
 
 ### Agent / INFT Extension Path
 
@@ -764,7 +771,7 @@ That behavior is much better for judge trust than pretending every subsystem is 
 | Solidity contracts in scope | 6: ProofRegistry, YieldStrategyINFT, AttestationRegistryOracle, AdoptionMarket, GlobalBlacklistRegistry, ValidationRegistry |
 | Verifiable artifact types | Proof receipt, memory snapshot, blacklist entry, stress-test report, ZKR envelope, governance decision, ZK policy seal, neural handshake transcript, Agent NFT metadata |
 | Judge proof surfaces | `/judge`, `/judge/roadmap`, proof modal, history, agents, marketplace, pitch deck |
-| Validation commands | `npm run lint`, `npx tsc --noEmit`, `npm run build`, `solcjs`, Playwright |
+| Validation commands | `npm run lint`, `npx tsc --noEmit`, `npm run build`, `solcjs` |
 
 ## Local Installation
 
@@ -898,7 +905,8 @@ This repository is no longer in “mainnet prep only” mode. The current live s
 - mainnet `YieldStrategyINFT` deployed
 - mainnet storage tx and registry anchor already recorded
 - live app defaults to mainnet
-- public vault, anti-sybil faucet, and developer API marketplace are live
+- developer API marketplace is live on the mainnet product path
+- public vault and anti-sybil faucet are live as testnet-facing challenge/example surfaces
 - judge mode can still switch to testnet when needed
 
 Mainnet-related commands remain available for future redeployments or contract updates:
@@ -946,7 +954,7 @@ The public developer access layer is live, and it should be read with network ho
 | --- | --- | --- |
 | Anti-sybil faucet | [`yieldboostai.xyz/faucet`](https://yieldboostai.xyz/faucet) | Testnet airdrop-style example for public claims, anti-sybil checks, and Alibaba fingerprinting. |
 | Developer portal | [`dev.yieldboostai.xyz`](https://dev.yieldboostai.xyz/) | Hosts docs, marketplace, playgrounds, and API integration surfaces. |
-| API marketplace | [`dev.yieldboostai.xyz/dev/marketplace`](https://dev.yieldboostai.xyz/dev/marketplace) | Mainnet-first security store for the full 9-layer endpoint, single layers, anti-sybil modules, and partner SDK wrappers. |
+| API marketplace | [`dev.yieldboostai.xyz/marketplace`](https://dev.yieldboostai.xyz/marketplace) | Mainnet-first security store for the full 9-layer endpoint, single layers, anti-sybil modules, and partner SDK wrappers. |
 | Public vault | [`yieldboostai.xyz/vault`](https://yieldboostai.xyz/vault) | Testnet public challenge surface for the YieldBoost protection model. |
 
 Current shipped base:
