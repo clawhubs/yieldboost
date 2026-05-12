@@ -106,23 +106,20 @@ export default function DeveloperApiStore() {
             </div>
 
             <div className="mt-auto pt-4">
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 py-3">
+                <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#96b0c2]">
+                  Package access
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
                 {product.plans.map((plan) => (
-                  <div key={plan.id} className="rounded-xl border border-white/[0.06] bg-white/[0.03] px-2 py-2">
-                    <div className="text-[10px] text-[#96b0c2]">{plan.name}</div>
-                    {plan.listPrice0g ? (
-                      <div className="mt-1 text-[10px] text-[#96b0c2]">
-                        <span className="line-through">{plan.listPrice0g} 0G</span>
-                      </div>
-                    ) : null}
-                    <div className="mt-1 text-[12px] font-bold text-[#68ff7a]">
-                      {plan.checkoutPrice0g} 0G
-                    </div>
-                    {plan.promoLabel ? (
-                      <div className="mt-1 text-[10px] text-[#9ff7f0]">{plan.promoLabel}</div>
-                    ) : null}
-                  </div>
+                  <span
+                    key={plan.id}
+                    className="rounded-full border border-[rgba(0,201,177,0.18)] bg-[rgba(0,201,177,0.06)] px-3 py-1.5 text-[11px] font-bold text-[#9ff7f0]"
+                  >
+                    {plan.name}
+                  </span>
                 ))}
+                </div>
               </div>
 
               <div className="mt-3 flex flex-wrap gap-2">

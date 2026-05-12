@@ -65,6 +65,12 @@ export const API_MARKETPLACE_PLANS: ApiMarketplacePlan[] = YA_API_PLANS.map((pla
   promoLabel: plan.promoLabel,
 }));
 
+const PROTOCOL_ONLY_PLANS = API_MARKETPLACE_PLANS.filter((plan) => plan.id === "protocol");
+const BUILDER_PRO_PROTOCOL_PLANS = API_MARKETPLACE_PLANS.filter(
+  (plan) => plan.id === "builder" || plan.id === "pro" || plan.id === "protocol",
+);
+const ALL_PACKAGE_PLANS = API_MARKETPLACE_PLANS;
+
 export const MILITARY_GRADE_API_LAYERS: ApiMarketplaceLayer[] = [
   {
     id: "01",
@@ -257,7 +263,7 @@ const layerProducts: ApiMarketplaceProduct[] = MILITARY_GRADE_API_LAYERS.map((la
   category: "single-layer",
   layerId: layer.id,
   layers: [layer],
-  plans: API_MARKETPLACE_PLANS,
+  plans: layer.slug === "secure-compute-tee" ? PROTOCOL_ONLY_PLANS : ALL_PACKAGE_PLANS,
   sdkSnippet: buildLayerSdkSnippet(layer.endpoint),
 }));
 
@@ -276,7 +282,7 @@ export const API_MARKETPLACE_PRODUCTS: ApiMarketplaceProduct[] = [
     status: "mainnet-live",
     category: "full-stack",
     layers: MILITARY_GRADE_API_LAYERS,
-    plans: API_MARKETPLACE_PLANS,
+    plans: PROTOCOL_ONLY_PLANS,
     sdkSnippet: buildLayerSdkSnippet("/api/dev/store/military-grade"),
   },
   {
@@ -293,7 +299,7 @@ export const API_MARKETPLACE_PRODUCTS: ApiMarketplaceProduct[] = [
     status: "mainnet-live",
     category: "security-module",
     layers: awsNitroFortressLayers,
-    plans: API_MARKETPLACE_PLANS,
+    plans: PROTOCOL_ONLY_PLANS,
     sdkSnippet: `const response = await fetch("https://dev.yieldboostai.xyz/api/dev/store/aws-nitro-fortress", {
   method: "POST",
   headers: {
@@ -326,7 +332,7 @@ const result = await response.json();`,
     status: "mainnet-live",
     category: "security-module",
     layers: antiSybilFingerprintLayers,
-    plans: API_MARKETPLACE_PLANS,
+    plans: BUILDER_PRO_PROTOCOL_PLANS,
     sdkSnippet: `const response = await fetch("https://dev.yieldboostai.xyz/api/dev/store/anti-sybil-zk-fingerprint", {
   method: "POST",
   headers: {
@@ -364,7 +370,7 @@ const result = await response.json();`,
     status: "mainnet-live",
     category: "partner-sdk",
     layers: veilSolverWrapperLayers,
-    plans: API_MARKETPLACE_PLANS,
+    plans: PROTOCOL_ONLY_PLANS,
     sdkSnippet: `// YieldBoost Secure Proxy wraps VeilSolver SDK encrypted intents
 // with API-key gating, isolated execution, and a ZK response envelope.
 const response = await fetch("https://dev.yieldboostai.xyz/api/dev/store/veilsolver", {

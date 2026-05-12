@@ -287,17 +287,16 @@ export default function DeveloperApiProductDocs({
 
               <div className="rounded-[16px] border border-[rgba(34,221,208,0.14)] bg-black/20 p-4">
                 <div className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#9ff7f0]">
-                  Packages
+                  Package access
                 </div>
-                <div className="mt-3 grid gap-2">
+                <div className="mt-3 flex flex-wrap gap-2">
                   {product.plans.map((plan) => (
-                    <div key={plan.id} className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 py-2">
-                      <span className="text-[12px] font-semibold text-white">{plan.name}</span>
-                      <span className="text-right text-[12px] text-[#9ff7f0]">
-                        {plan.listPrice0g ? <span className="mr-2 line-through text-[#96b0c2]">{plan.listPrice0g} 0G</span> : null}
-                        {plan.checkoutPrice0g} 0G
-                      </span>
-                    </div>
+                    <span
+                      key={plan.id}
+                      className="rounded-full border border-[rgba(34,221,208,0.18)] bg-[rgba(34,221,208,0.06)] px-3 py-1.5 text-[11px] font-bold text-[#9ff7f0]"
+                    >
+                      {plan.name}
+                    </span>
                   ))}
                 </div>
               </div>

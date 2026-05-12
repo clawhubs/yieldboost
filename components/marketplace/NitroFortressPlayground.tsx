@@ -241,13 +241,13 @@ export default function NitroFortressPlayground() {
                 <div>Anti-Sybil throttle active</div>
                 <div>Alibaba behavior fingerprint active when configured</div>
                 <div>Visitor/IP abuse checks active before enclave entry</div>
-                <div>Protocol SDK remains available for unrestricted store access</div>
+                <div>Protocol package is required for unrestricted Nitro SDK access</div>
               </div>
               <div className="mt-3 text-[11px] leading-5 text-[#96b0c2]">
                 Visitor lane: <span className="font-mono text-[#dce7ef]">{visitorId}</span>
               </div>
               <div className="mt-2 text-[11px] leading-5 text-[#96b0c2]">
-                Public requests use the live demo lane. The paid SDK endpoint stays at{" "}
+                Public requests use the live demo lane. Free, Builder, and Pro do not unlock the Nitro SDK endpoint. The paid Protocol SDK stays at{" "}
                 <span className="font-mono text-[#dce7ef]">{endpoint}</span>.
               </div>
             </div>

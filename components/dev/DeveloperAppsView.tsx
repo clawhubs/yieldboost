@@ -81,7 +81,7 @@ export default function DeveloperAppsView({
           {checkoutFocused ? (
             <div className="mt-4 rounded-xl border border-[rgba(0,201,177,0.24)] bg-[rgba(0,201,177,0.07)] px-4 py-3 text-[13px] leading-6 text-[#d4f6f1]">
               Selected package: <span className="font-semibold text-white">{initialPlan.name}</span>.
-              Finish wallet activation first, then the package becomes active when the API key is generated. Package access is enforced at request time, so Free stays on non-AI verification modules, Pro adds Alibaba fingerprinting, and only Protocol can call full compute or selected partner SDK products.
+              Finish wallet activation first, then the package becomes active when the API key is generated. Package access is enforced at request time, so Free stays on non-AI verification modules, Pro adds Alibaba fingerprinting, and only Protocol can call full compute, AWS Nitro Fortress, or selected partner SDK products.
             </div>
           ) : null}
           <ManagedApiKeyCreateForm

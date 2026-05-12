@@ -3,18 +3,25 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BrowserProvider } from "ethers";
+import { Copy, ExternalLink, Wallet2 } from "lucide-react";
 
 import {
   createApiKeyAction,
   type CreateApiKeyActionState,
 } from "@/app/dev/actions";
 import CreatedApiKeyCard from "@/components/dev/CreatedApiKeyCard";
-import type { InjectedProvider } from "@/lib/browser-wallet";
 import {
+  getDefaultInjectedWallet,
+  switchOrAddNetwork,
+  type InjectedProvider,
+} from "@/lib/browser-wallet";
+import {
+  get0GTreasuryAddress,
   YA_API_PLANS,
   type YaApiPlan,
 } from "@/lib/ya-api-plans";
 import { buildPlanActivationMessage, DEV_PLAN_ACTIVATION_TTL_MS } from "@/lib/dev-plan-activation";
+import { getWalletNetworkConfig } from "@/lib/wallet";
 
 const initialCreateApiKeyActionState: CreateApiKeyActionState = {
   success: false,
@@ -41,6 +48,8 @@ const CHECKOUT_LAYERS = [
   "L8 Programmable Governance",
   "L9 Cross-Agent Neural Handshake",
 ];
+const mainnetNetwork = getWalletNetworkConfig("mainnet");
+const fundingAddress = get0GTreasuryAddress();
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -63,6 +72,8 @@ export default function ManagedApiKeyCreateForm({
   const [activationError, setActivationError] = useState("");
   const [activeLayerIndex, setActiveLayerIndex] = useState(-1);
   const [checkoutGuardComplete, setCheckoutGuardComplete] = useState(false);
+  const [walletHelperStatus, setWalletHelperStatus] = useState("");
+  const [walletHelperError, setWalletHelperError] = useState("");
   const [state, formAction, pending] = useActionState<CreateApiKeyActionState, FormData>(
     createApiKeyAction,
     initialCreateApiKeyActionState,
@@ -143,6 +154,34 @@ export default function ManagedApiKeyCreateForm({
     }
   }
 
+  async function add0GMainnetToWallet() {
+    setWalletHelperError("");
+    setWalletHelperStatus("Opening wallet network setup...");
+    try {
+      const wallet = getDefaultInjectedWallet();
+      if (!wallet) {
+        throw new Error("Install or unlock a browser wallet first.");
+      }
+      await switchOrAddNetwork(wallet.provider, mainnetNetwork);
+      setWalletHelperStatus("0G Mainnet is now available in your wallet.");
+    } catch (error) {
+      setWalletHelperStatus("");
+      setWalletHelperError(
+        error instanceof Error ? error.message : "Unable to add 0G Mainnet to wallet.",
+      );
+    }
+  }
+
+  async function copyFundingAddress() {
+    try {
+      await navigator.clipboard.writeText(fundingAddress);
+      setWalletHelperError("");
+      setWalletHelperStatus("0G funding address copied.");
+    } catch {
+      setWalletHelperError("Unable to copy the 0G funding address.");
+    }
+  }
+
   function beginCheckoutReview() {
     setActivationError("");
     setActivationStatus("");
@@ -173,6 +212,63 @@ export default function ManagedApiKeyCreateForm({
             <p className="mt-1.5 text-[14px] leading-6 text-[#e0eaf2]">
               Developer packages are activated by a wallet signature tied to the connected portal identity.
             </p>
+          </div>
+          <div className="rounded-xl border border-[rgba(0,201,177,0.18)] bg-[rgba(0,201,177,0.05)] px-4 py-4">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <div className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.16em] text-[#9ff7f0]">
+                  <Wallet2 className="h-4 w-4" />
+                  0G Mainnet wallet helper
+                </div>
+                <p className="mt-2 text-[13px] leading-6 text-[#d7e7ef]">
+                  If the customer wallet does not have the 0G network yet, add 0G Mainnet first, then fund the wallet with 0G before package checkout.
+                </p>
+                <div className="mt-3 grid gap-1 text-[12px] leading-6 text-[#c8dae6]">
+                  <div>
+                    RPC: <span className="font-mono text-white">{mainnetNetwork.rpcUrl}</span>
+                  </div>
+                  <div>
+                    Chain ID: <span className="font-mono text-white">{mainnetNetwork.chainId}</span>
+                  </div>
+                  <div>
+                    Funding wallet: <span className="font-mono break-all text-white">{fundingAddress}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={add0GMainnetToWallet}
+                  className="inline-flex items-center gap-2 rounded-xl border border-[rgba(0,201,177,0.20)] bg-[rgba(0,201,177,0.08)] px-3 py-2 text-[12px] font-semibold text-[#9ff7f0] transition hover:border-[rgba(0,201,177,0.35)]"
+                >
+                  <Wallet2 className="h-3.5 w-3.5" />
+                  Add 0G to wallet
+                </button>
+                <button
+                  type="button"
+                  onClick={copyFundingAddress}
+                  className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-[12px] font-semibold text-white transition hover:border-[rgba(0,201,177,0.20)]"
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                  Copy address
+                </button>
+                <a
+                  href={mainnetNetwork.explorerBase}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-[12px] font-semibold text-white transition hover:border-[rgba(0,201,177,0.20)]"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  0G explorer
+                </a>
+              </div>
+            </div>
+            {walletHelperStatus ? (
+              <p className="mt-3 text-[12px] leading-5 text-[#9ff7f0]">{walletHelperStatus}</p>
+            ) : null}
+            {walletHelperError ? (
+              <p className="mt-2 text-[12px] leading-5 text-[#ffb3b3]">{walletHelperError}</p>
+            ) : null}
           </div>
           <div className="grid gap-2 md:grid-cols-2">
             {YA_API_PLANS.map((plan) => (
