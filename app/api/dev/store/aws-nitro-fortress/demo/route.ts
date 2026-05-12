@@ -22,8 +22,8 @@ export async function GET() {
     protections: [
       "Anti-sybil throttle",
       "Alibaba behavior fingerprinting",
-      "Visitor-bound demo quota",
-      "Cooldown on repeated attack patterns",
+      "One successful run for each action per IP in every 24h window",
+      "One successful run for each action per visitor in every 24h window",
     ],
   });
 }
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
       mode: "live-demo",
       canonical_sdk_endpoint: "/api/dev/store/aws-nitro-fortress",
       public_demo_note:
-        "This public lane is live but capped. Anti-sybil throttle and Alibaba fingerprinting protect the Nitro playground before the enclave path opens.",
+        "This public lane is live but capped. Each Nitro action can succeed once per IP and once per visitor in each rolling 24h window.",
     },
     { status: result.statusCode },
   );

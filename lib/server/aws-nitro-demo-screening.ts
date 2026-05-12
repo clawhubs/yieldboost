@@ -27,9 +27,9 @@ interface NitroDemoStore {
 const DEFAULT_STORE_PATH = ".artifacts/aws-nitro-demo-screening.local.json";
 const WINDOW_MS = 24 * 60 * 60 * 1000;
 const MAX_STORE_RECORDS = 1500;
-const MAX_ATTEMPTS_PER_IP_PER_DAY = 18;
-const MAX_ATTEMPTS_PER_VISITOR_PER_DAY = 9;
-const COOLDOWN_ACTION_WINDOW_MS = 90 * 1000;
+const MAX_ATTEMPTS_PER_IP_PER_DAY = 9;
+const MAX_SUCCESSFUL_RUNS_PER_IP_PER_ACTION_PER_DAY = 1;
+const MAX_SUCCESSFUL_RUNS_PER_VISITOR_PER_ACTION_PER_DAY = 1;
 
 let storeMutationQueue: Promise<void> = Promise.resolve();
 
@@ -165,15 +165,23 @@ export async function screenAwsNitroDemoRequest(input: {
     const ipAttempts24h = ipHash
       ? store.attempts.filter((record) => record.ipHash === ipHash).length
       : 0;
+    const ipSuccessForAction24h = ipHash
+      ? store.attempts.filter(
+          (record) =>
+            record.ipHash === ipHash &&
+            record.action === input.action &&
+            record.status === "allowed",
+        ).length
+      : 0;
     const visitorAttempts24h = store.attempts.filter(
       (record) => record.visitorHash === visitorHash,
     ).length;
-
-    const latestSameAction = store.attempts.find((record) => {
-      if (record.visitorHash !== visitorHash || record.action !== input.action) return false;
-      const timestamp = Date.parse(record.createdAt);
-      return Number.isFinite(timestamp) && Date.now() - timestamp < COOLDOWN_ACTION_WINDOW_MS;
-    });
+    const visitorSuccessForAction24h = store.attempts.filter(
+      (record) =>
+        record.visitorHash === visitorHash &&
+        record.action === input.action &&
+        record.status === "allowed",
+    ).length;
 
     const fingerprint = await buildBehaviorFingerprint({
       action: input.action,
@@ -187,18 +195,18 @@ export async function screenAwsNitroDemoRequest(input: {
 
     const status =
       ipAttempts24h >= MAX_ATTEMPTS_PER_IP_PER_DAY ||
-      visitorAttempts24h >= MAX_ATTEMPTS_PER_VISITOR_PER_DAY ||
-      latestSameAction
+      ipSuccessForAction24h >= MAX_SUCCESSFUL_RUNS_PER_IP_PER_ACTION_PER_DAY ||
+      visitorSuccessForAction24h >= MAX_SUCCESSFUL_RUNS_PER_VISITOR_PER_ACTION_PER_DAY
         ? "blocked"
         : "allowed";
 
     const reason =
       ipAttempts24h >= MAX_ATTEMPTS_PER_IP_PER_DAY
-        ? "Anti-sybil throttle blocked this network for the current window."
-        : visitorAttempts24h >= MAX_ATTEMPTS_PER_VISITOR_PER_DAY
-          ? "Visitor demo quota reached for the current window."
-          : latestSameAction
-            ? "Cooldown active. Wait before repeating the same attack pattern."
+        ? "Nitro public demo lane blocked this network after too many attempts in the current 24h window."
+        : ipSuccessForAction24h >= MAX_SUCCESSFUL_RUNS_PER_IP_PER_ACTION_PER_DAY
+          ? "This network already used this Nitro action in the current 24h window."
+          : visitorSuccessForAction24h >= MAX_SUCCESSFUL_RUNS_PER_VISITOR_PER_ACTION_PER_DAY
+            ? "This visitor already used this Nitro action in the current 24h window."
             : "Protected perimeter passed.";
 
     store.attempts.push({
@@ -219,13 +227,16 @@ export async function screenAwsNitroDemoRequest(input: {
         anti_sybil: status === "allowed" ? "passed" : "blocked",
         wallet_or_visitor_binding: "visitor-bound demo lane",
         ip_attempts_24h: ipAttempts24h + 1,
+        action: input.action,
+        ip_action_success_24h: ipSuccessForAction24h + (status === "allowed" ? 1 : 0),
         visitor_attempts_24h: visitorAttempts24h + 1,
-        cooldown_active: Boolean(latestSameAction),
+        visitor_action_success_24h:
+          visitorSuccessForAction24h + (status === "allowed" ? 1 : 0),
         alibaba_behavior_fingerprint: fingerprint.alibabaChecked ? "checked" : "not-configured",
         alibaba_vector_digest: fingerprint.alibabaVectorDigest,
         behavior_hash: fingerprint.behaviorHash,
         perimeter_note:
-          "Public demo requests are screened by anti-sybil throttle and Alibaba behavior fingerprinting before the Nitro lane opens.",
+          "Public Nitro demo lane allows one successful run for each action per IP and per visitor in each rolling 24h window.",
       },
       error:
         status === "allowed"

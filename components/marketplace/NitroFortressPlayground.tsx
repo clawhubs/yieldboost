@@ -241,6 +241,7 @@ export default function NitroFortressPlayground() {
                 <div>Anti-Sybil throttle active</div>
                 <div>Alibaba behavior fingerprint active when configured</div>
                 <div>Visitor/IP abuse checks active before enclave entry</div>
+                <div>Each Nitro action is allowed once per IP and once per visitor in 24h</div>
                 <div>Protocol package is required for unrestricted Nitro SDK access</div>
               </div>
               <div className="mt-3 text-[11px] leading-5 text-[#96b0c2]">
