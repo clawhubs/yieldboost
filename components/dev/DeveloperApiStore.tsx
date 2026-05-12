@@ -108,7 +108,7 @@ export default function DeveloperApiStore() {
             <div className="mt-auto pt-4">
               <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 py-3">
                 <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#96b0c2]">
-                  Package access
+                  Included in packages
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
                 {product.plans.map((plan) => (

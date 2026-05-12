@@ -9,27 +9,27 @@ import {
   hasAlibabaEmbeddingConfig,
 } from "@/lib/server/alibaba-embeddings";
 
-interface NitroDemoAttemptRecord {
+interface AntiSybilDemoAttemptRecord {
   requestId: string;
+  walletHash: string;
   ipHash?: string;
   userAgentHash?: string;
-  visitorHash: string;
-  action: string;
-  behaviorHash: string;
+  deviceLabel?: string;
+  sessionId?: string;
   status: "allowed" | "blocked";
   createdAt: string;
 }
 
-interface NitroDemoStore {
-  attempts: NitroDemoAttemptRecord[];
+interface AntiSybilDemoStore {
+  attempts: AntiSybilDemoAttemptRecord[];
 }
 
-const DEFAULT_STORE_PATH = ".artifacts/aws-nitro-demo-screening.local.json";
+const DEFAULT_STORE_PATH = ".artifacts/anti-sybil-demo-screening.local.json";
 const WINDOW_MS = 24 * 60 * 60 * 1000;
 const MAX_STORE_RECORDS = 1500;
-const MAX_ATTEMPTS_PER_IP_PER_DAY = 18;
-const MAX_ATTEMPTS_PER_VISITOR_PER_DAY = 9;
-const COOLDOWN_ACTION_WINDOW_MS = 90 * 1000;
+const MAX_ATTEMPTS_PER_IP_PER_DAY = 3;
+const MAX_SUCCESSFUL_SCREENS_PER_IP_PER_DAY = 1;
+const MAX_SUCCESSFUL_SCREENS_PER_WALLET_PER_DAY = 1;
 
 let storeMutationQueue: Promise<void> = Promise.resolve();
 
@@ -57,27 +57,27 @@ function getClientIp(headers: Headers) {
 function getStorePath() {
   return path.resolve(
     process.cwd(),
-    process.env.AWS_NITRO_DEMO_SCREENING_STORE_PATH?.trim() || DEFAULT_STORE_PATH,
+    process.env.ANTI_SYBIL_DEMO_SCREENING_STORE_PATH?.trim() || DEFAULT_STORE_PATH,
   );
 }
 
-async function readStore(): Promise<NitroDemoStore> {
+async function readStore(): Promise<AntiSybilDemoStore> {
   try {
     const raw = await readFile(getStorePath(), "utf8");
-    const parsed = JSON.parse(raw) as Partial<NitroDemoStore>;
+    const parsed = JSON.parse(raw) as Partial<AntiSybilDemoStore>;
     return { attempts: Array.isArray(parsed.attempts) ? parsed.attempts : [] };
   } catch {
     return { attempts: [] };
   }
 }
 
-async function writeStore(payload: NitroDemoStore) {
+async function writeStore(payload: AntiSybilDemoStore) {
   const storePath = getStorePath();
   await mkdir(path.dirname(storePath), { recursive: true });
   await writeFile(storePath, JSON.stringify(payload, null, 2), "utf8");
 }
 
-async function mutateStore<T>(handler: (store: NitroDemoStore) => Promise<T> | T) {
+async function mutateStore<T>(handler: (store: AntiSybilDemoStore) => Promise<T> | T) {
   const run = storeMutationQueue.then(async () => {
     const store = await readStore();
     const cutoff = Date.now() - WINDOW_MS;
@@ -100,22 +100,26 @@ async function mutateStore<T>(handler: (store: NitroDemoStore) => Promise<T> | T
 }
 
 async function buildBehaviorFingerprint(input: {
-  action: string;
-  secretDigest: string;
-  visitorHash: string;
+  walletHash: string;
   ipHash?: string;
   userAgentHash?: string;
+  deviceLabel?: string;
+  sessionId?: string;
+  intent?: string;
   ipAttempts24h: number;
-  visitorAttempts24h: number;
+  ipSuccess24h: number;
+  walletSuccess24h: number;
 }) {
   const behaviorText = [
-    `action=${input.action}`,
-    `secret_digest=${input.secretDigest}`,
-    `visitor_hash=${input.visitorHash}`,
+    `wallet_hash=${input.walletHash}`,
     `ip_hash=${input.ipHash || "none"}`,
     `user_agent_hash=${input.userAgentHash || "none"}`,
+    `device_label=${input.deviceLabel || "none"}`,
+    `session_id=${input.sessionId || "none"}`,
+    `intent=${input.intent || "none"}`,
     `ip_attempts_24h=${input.ipAttempts24h}`,
-    `visitor_attempts_24h=${input.visitorAttempts24h}`,
+    `ip_success_24h=${input.ipSuccess24h}`,
+    `wallet_success_24h=${input.walletSuccess24h}`,
   ].join(" | ");
 
   const behaviorHash = sha256Hex(behaviorText);
@@ -148,68 +152,67 @@ async function buildBehaviorFingerprint(input: {
   }
 }
 
-export async function screenAwsNitroDemoRequest(input: {
+export async function runAntiSybilDemoScreening(input: {
   headers: Headers;
-  action: string;
-  secret: string;
-  visitorId?: string;
+  walletAddress: string;
+  sessionId?: string;
+  deviceLabel?: string;
+  intent?: string;
 }) {
   return mutateStore(async (store) => {
-    const requestId = `nitro-demo-${randomUUID()}`;
+    const requestId = `anti-sybil-demo-${randomUUID()}`;
     const ipHash = hashValue(getClientIp(input.headers));
     const userAgentHash = hashValue(input.headers.get("user-agent"));
-    const visitorId = input.visitorId?.trim() || "anonymous-demo-visitor";
-    const visitorHash = sha256Hex(visitorId);
-    const secretDigest = sha256Hex(input.secret || "");
+    const walletHash = sha256Hex(input.walletAddress.toLowerCase());
+    const now = new Date().toISOString();
 
     const ipAttempts24h = ipHash
       ? store.attempts.filter((record) => record.ipHash === ipHash).length
       : 0;
-    const visitorAttempts24h = store.attempts.filter(
-      (record) => record.visitorHash === visitorHash,
+    const ipSuccess24h = ipHash
+      ? store.attempts.filter(
+          (record) => record.ipHash === ipHash && record.status === "allowed",
+        ).length
+      : 0;
+    const walletSuccess24h = store.attempts.filter(
+      (record) => record.walletHash === walletHash && record.status === "allowed",
     ).length;
 
-    const latestSameAction = store.attempts.find((record) => {
-      if (record.visitorHash !== visitorHash || record.action !== input.action) return false;
-      const timestamp = Date.parse(record.createdAt);
-      return Number.isFinite(timestamp) && Date.now() - timestamp < COOLDOWN_ACTION_WINDOW_MS;
-    });
-
     const fingerprint = await buildBehaviorFingerprint({
-      action: input.action,
-      secretDigest,
-      visitorHash,
+      walletHash,
       ipHash,
       userAgentHash,
+      deviceLabel: input.deviceLabel,
+      sessionId: input.sessionId,
+      intent: input.intent,
       ipAttempts24h,
-      visitorAttempts24h,
+      ipSuccess24h,
+      walletSuccess24h,
     });
 
-    const status =
-      ipAttempts24h >= MAX_ATTEMPTS_PER_IP_PER_DAY ||
-      visitorAttempts24h >= MAX_ATTEMPTS_PER_VISITOR_PER_DAY ||
-      latestSameAction
-        ? "blocked"
-        : "allowed";
+    let reason = "Protected perimeter passed.";
+    let status: "allowed" | "blocked" = "allowed";
 
-    const reason =
-      ipAttempts24h >= MAX_ATTEMPTS_PER_IP_PER_DAY
-        ? "Anti-sybil throttle blocked this network for the current window."
-        : visitorAttempts24h >= MAX_ATTEMPTS_PER_VISITOR_PER_DAY
-          ? "Visitor demo quota reached for the current window."
-          : latestSameAction
-            ? "Cooldown active. Wait before repeating the same attack pattern."
-            : "Protected perimeter passed.";
+    if (ipAttempts24h >= MAX_ATTEMPTS_PER_IP_PER_DAY) {
+      status = "blocked";
+      reason = "Anti-sybil demo lane blocked this network after too many attempts in the current 24h window.";
+    } else if (ipSuccess24h >= MAX_SUCCESSFUL_SCREENS_PER_IP_PER_DAY) {
+      status = "blocked";
+      reason = "Anti-sybil demo lane allows only one successful screen per IP in the current 24h window.";
+    } else if (walletSuccess24h >= MAX_SUCCESSFUL_SCREENS_PER_WALLET_PER_DAY) {
+      status = "blocked";
+      reason = "This wallet already consumed its anti-sybil demo allowance for the current 24h window.";
+    }
 
     store.attempts.push({
       requestId,
+      walletHash,
       ipHash,
       userAgentHash,
-      visitorHash,
-      action: input.action,
-      behaviorHash: fingerprint.behaviorHash,
+      deviceLabel: input.deviceLabel,
+      sessionId: input.sessionId,
       status,
-      createdAt: new Date().toISOString(),
+      createdAt: now,
     });
 
     return {
@@ -217,20 +220,17 @@ export async function screenAwsNitroDemoRequest(input: {
       requestId,
       screening: {
         anti_sybil: status === "allowed" ? "passed" : "blocked",
-        wallet_or_visitor_binding: "visitor-bound demo lane",
+        mode: "public-demo-lane",
         ip_attempts_24h: ipAttempts24h + 1,
-        visitor_attempts_24h: visitorAttempts24h + 1,
-        cooldown_active: Boolean(latestSameAction),
+        ip_success_24h: ipSuccess24h + (status === "allowed" ? 1 : 0),
+        wallet_success_24h: walletSuccess24h + (status === "allowed" ? 1 : 0),
         alibaba_behavior_fingerprint: fingerprint.alibabaChecked ? "checked" : "not-configured",
         alibaba_vector_digest: fingerprint.alibabaVectorDigest,
         behavior_hash: fingerprint.behaviorHash,
         perimeter_note:
-          "Public demo requests are screened by anti-sybil throttle and Alibaba behavior fingerprinting before the Nitro lane opens.",
+          "Public anti-sybil demo lane allows one successful screen per IP and one successful screen per wallet in each rolling 24h window.",
       },
-      error:
-        status === "allowed"
-          ? null
-          : reason,
+      error: status === "allowed" ? null : reason,
     };
   });
 }

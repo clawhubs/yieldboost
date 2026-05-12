@@ -287,7 +287,7 @@ export default function DeveloperApiProductDocs({
 
               <div className="rounded-[16px] border border-[rgba(34,221,208,0.14)] bg-black/20 p-4">
                 <div className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#9ff7f0]">
-                  Package access
+                  Included in packages
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {product.plans.map((plan) => (

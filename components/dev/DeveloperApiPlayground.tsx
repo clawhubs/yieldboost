@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle2, Copy, ExternalLink, Loader2, ShieldCheck } from "lucide-react";
 
 import type { ApiMarketplaceProduct } from "@/lib/military-grade-api-marketplace";
@@ -88,18 +88,44 @@ export default function DeveloperApiPlayground({
 }: {
   product: ApiMarketplaceProduct;
 }) {
+  const isAntiSybilDemo = product.id === "anti-sybil-zk-fingerprint";
+  const [visitorId, setVisitorId] = useState("anti-sybil-demo-visitor");
   const [apiKey, setApiKey] = useState("yb_free_tier_local");
   const [payloadText, setPayloadText] = useState(JSON.stringify(buildDefaultPayload(product), null, 2));
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const endpoint = isAntiSybilDemo
+    ? "/api/dev/store/anti-sybil-zk-fingerprint/demo"
+    : product.endpoint;
+
+  useEffect(() => {
+    if (!isAntiSybilDemo || typeof window === "undefined") return;
+    const existing = window.localStorage.getItem("yieldboost:anti-sybil-demo-visitor");
+    if (existing) {
+      setVisitorId(existing);
+      return;
+    }
+    const nextValue = `anti-sybil-${crypto.randomUUID()}`;
+    window.localStorage.setItem("yieldboost:anti-sybil-demo-visitor", nextValue);
+    setVisitorId(nextValue);
+  }, [isAntiSybilDemo]);
 
   const curlSnippet = useMemo(() => {
-    return `curl -X POST ${product.endpoint} \\
-  -H "Authorization: Bearer ${apiKey || "yb_free_tier_local"}" \\
-  -H "Content-Type: application/json" \\
-  -d '${payloadText.replace(/\n/g, "")}'`;
-  }, [apiKey, payloadText, product.endpoint]);
+    const headers = isAntiSybilDemo
+      ? [`-H "Content-Type: application/json"`]
+      : [
+          `-H "Authorization: Bearer ${apiKey || "yb_free_tier_local"}"`,
+          `-H "Content-Type: application/json"`,
+        ];
+    const payload = isAntiSybilDemo
+      ? payloadText.replace(/\}$/, `,\n  "sessionId":"${visitorId}"\n}`).replace(/\n/g, "")
+      : payloadText.replace(/\n/g, "");
+
+    return `curl -X POST ${endpoint} \\
+  ${headers.join(" \\\n  ")} \\
+  -d '${payload}'`;
+  }, [apiKey, endpoint, isAntiSybilDemo, payloadText, visitorId]);
 
   async function runPlayground() {
     setLoading(true);
@@ -108,13 +134,20 @@ export default function DeveloperApiPlayground({
 
     try {
       const payload = JSON.parse(payloadText) as Record<string, unknown>;
-      const response = await fetch(product.endpoint, {
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
+          ...(isAntiSybilDemo ? {} : { Authorization: `Bearer ${apiKey}` }),
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(
+          isAntiSybilDemo
+            ? {
+                ...payload,
+                sessionId: typeof payload.sessionId === "string" ? payload.sessionId : visitorId,
+              }
+            : payload,
+        ),
       });
       const data = (await response.json()) as Record<string, unknown>;
       if (!response.ok) {
@@ -200,17 +233,34 @@ export default function DeveloperApiPlayground({
           <div className="rounded-[22px] border border-[rgba(255,255,255,0.08)] bg-[#071017] p-4">
             <div>
               <div className="text-[11px] uppercase tracking-[0.16em] text-[#22ddd0]">Playground endpoint</div>
-              <div className="mt-1 break-all font-mono text-[13px] text-[#dce7ef]">{product.endpoint}</div>
+              <div className="mt-1 break-all font-mono text-[13px] text-[#dce7ef]">{endpoint}</div>
             </div>
 
-            <label className="mt-4 block">
-              <span className="text-[12px] font-semibold text-[#dce7ef]">API key</span>
-              <input
-                value={apiKey}
-                onChange={(event) => setApiKey(event.target.value)}
-                className="mt-2 w-full rounded-[12px] border border-white/[0.08] bg-black/30 px-3 py-3 font-mono text-[13px] outline-none focus:border-[#22ddd0]/50"
-              />
-            </label>
+            {isAntiSybilDemo ? (
+              <div className="mt-4 rounded-[14px] border border-[rgba(34,221,208,0.16)] bg-[rgba(34,221,208,0.05)] p-3">
+                <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#9ff7f0]">
+                  Live public demo lane
+                </div>
+                <p className="mt-2 text-[12px] leading-6 text-[#d7e7ef]">
+                  This playground intentionally blocks repeated success from the same IP or wallet inside a rolling 24h window, so the anti-sybil demo cannot be gamed from another phone on the same network.
+                </p>
+                <p className="mt-2 text-[11px] leading-5 text-[#96b0c2]">
+                  Visitor lane: <span className="font-mono text-[#dce7ef]">{visitorId}</span>
+                </p>
+                <p className="mt-1 text-[11px] leading-5 text-[#96b0c2]">
+                  Paid SDK endpoint stays at <span className="font-mono text-[#dce7ef]">{product.endpoint}</span>.
+                </p>
+              </div>
+            ) : (
+              <label className="mt-4 block">
+                <span className="text-[12px] font-semibold text-[#dce7ef]">API key</span>
+                <input
+                  value={apiKey}
+                  onChange={(event) => setApiKey(event.target.value)}
+                  className="mt-2 w-full rounded-[12px] border border-white/[0.08] bg-black/30 px-3 py-3 font-mono text-[13px] outline-none focus:border-[#22ddd0]/50"
+                />
+              </label>
+            )}
 
             <label className="mt-4 block">
               <span className="text-[12px] font-semibold text-[#dce7ef]">Payload</span>

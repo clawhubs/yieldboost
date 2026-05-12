@@ -44,6 +44,16 @@ function hashValue(value?: string | null) {
   return normalized ? sha256Hex(normalized) : undefined;
 }
 
+function getClientIp(headers: Headers) {
+  return (
+    headers.get("cf-connecting-ip")?.trim() ||
+    headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    headers.get("x-real-ip")?.trim() ||
+    headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim() ||
+    undefined
+  );
+}
+
 function getStorePath() {
   return path.resolve(
     process.cwd(),
@@ -204,9 +214,7 @@ export async function runAntiSybilZkFingerprintEndpoint(
     };
   }
 
-  const ipHash = hashValue(
-    headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? headers.get("x-real-ip"),
-  );
+  const ipHash = hashValue(getClientIp(headers));
   const userAgentHash = hashValue(headers.get("user-agent"));
   const deviceLabel =
     typeof payload.deviceLabel === "string" && payload.deviceLabel.trim().length > 0

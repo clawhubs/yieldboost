@@ -11,6 +11,7 @@ export async function GET() {
     product: "Anti-Sybil + ZK Proof + Alibaba Fingerprinting",
     method: "POST",
     endpoint: "/api/dev/store/anti-sybil-zk-fingerprint",
+    public_demo_endpoint: "/api/dev/store/anti-sybil-zk-fingerprint/demo",
     api_key: {
       header: "Authorization: Bearer <key>",
       local_free_tier: process.env.YB_MARKETPLACE_FREE_TIER_KEY ?? "yb_free_tier_local",
@@ -23,6 +24,8 @@ export async function GET() {
       sessionId: "sess_live_01",
       deviceLabel: "chrome-macbook-pro",
     },
+    public_demo_note:
+      "Use the demo endpoint for strict one-success-per-IP testing. Use the SDK endpoint when you need the real package-scoped screening module.",
   });
 }
 
