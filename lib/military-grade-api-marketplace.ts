@@ -2,6 +2,7 @@ import { YA_API_PLANS, type YaApiPlan } from "@/lib/ya-api-plans";
 
 export type ApiMarketplaceProductId =
   | "military-grade-full"
+  | "aws-nitro-fortress"
   | "anti-sybil-zk-fingerprint"
   | "hallucination-blacklist"
   | "integrity-auditor"
@@ -180,6 +181,37 @@ const antiSybilFingerprintLayers: ApiMarketplaceLayer[] = [
   },
 ];
 
+const awsNitroFortressLayers: ApiMarketplaceLayer[] = [
+  {
+    id: "NF1",
+    slug: "aws-nitro-fortress",
+    label: "AWS Nitro Enclave",
+    proof: "The sensitive runtime is framed as an enclave-only execution path that keeps operator access outside the secret boundary.",
+    endpoint: "/api/dev/store/aws-nitro-fortress",
+  },
+  {
+    id: "NF2",
+    slug: "aws-nitro-fortress",
+    label: "0G TEE Badge",
+    proof: "Each response includes a TEE-style badge summary so the caller can inspect enclave identity and verdict metadata.",
+    endpoint: "/api/dev/store/aws-nitro-fortress",
+  },
+  {
+    id: "NF3",
+    slug: "aws-nitro-fortress",
+    label: "0G Storage Incident Journal",
+    proof: "Attack attempts, seal events, and recovery events are written into a persistent incident journal reference.",
+    endpoint: "/api/dev/store/aws-nitro-fortress",
+  },
+  {
+    id: "NF4",
+    slug: "aws-nitro-fortress",
+    label: "Recovery Replay",
+    proof: "The fortress can replay its state after a simulated destruct event and return a recovery message with the incident digest.",
+    endpoint: "/api/dev/store/aws-nitro-fortress",
+  },
+];
+
 const veilSolverWrapperLayers: ApiMarketplaceLayer[] = [
   {
     id: "ZK1",
@@ -246,6 +278,39 @@ export const API_MARKETPLACE_PRODUCTS: ApiMarketplaceProduct[] = [
     layers: MILITARY_GRADE_API_LAYERS,
     plans: API_MARKETPLACE_PLANS,
     sdkSnippet: buildLayerSdkSnippet("/api/dev/store/military-grade"),
+  },
+  {
+    id: "aws-nitro-fortress",
+    name: "AWS Nitro Fortress SDK",
+    partner: "YieldBoost 0G",
+    tagline: "Nitro enclave runtime with 0G storage memory and 0G TEE badge",
+    description:
+      "A modular fortress SDK for secure agent runtimes: AWS Nitro Enclave framing for isolated execution, a 0G TEE badge summary for attestation-style evidence, and a 0G Storage incident journal for sealed secrets, attack logs, and recovery replay history.",
+    logoPath: "/marketplace/ya-9-layer-logo.png",
+    endpoint: "/api/dev/store/aws-nitro-fortress",
+    playgroundPath: "/dev/marketplace/aws-nitro-fortress",
+    docsPath: "/dev/marketplace/aws-nitro-fortress/docs",
+    status: "mainnet-live",
+    category: "security-module",
+    layers: awsNitroFortressLayers,
+    plans: API_MARKETPLACE_PLANS,
+    sdkSnippet: `const response = await fetch("https://dev.yieldboostai.xyz/api/dev/store/aws-nitro-fortress", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: \`Bearer \${process.env.YIELDBOOST_API_KEY}\`,
+  },
+  body: JSON.stringify({
+    requestId: "nitro-demo-001",
+    network: "mainnet",
+    operation: "seal_secret",
+    secret: "arb route alpha",
+    operator: "judge-demo",
+    sdkMode: "marketplace-playground",
+  }),
+});
+
+const result = await response.json();`,
   },
   {
     id: "anti-sybil-zk-fingerprint",

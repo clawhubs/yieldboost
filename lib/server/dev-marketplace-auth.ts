@@ -158,7 +158,12 @@ export function ensureMarketplacePlanAccess(
   ]);
 
   const builderExtended = new Set(["anti-sybil-zk-fingerprint"]);
-  const fullOnly = new Set(["military-grade-full", "secure-compute-tee", "veilsolver"]);
+  const fullOnly = new Set([
+    "military-grade-full",
+    "secure-compute-tee",
+    "veilsolver",
+    "aws-nitro-fortress",
+  ]);
 
   const allowed =
     auth.plan === "protocol"

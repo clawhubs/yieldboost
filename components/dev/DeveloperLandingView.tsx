@@ -29,6 +29,41 @@ const layers = [
   { id: "L9", label: "Cross-Agent Neural Handshake", sub: "Audit-ready closure logs" },
 ];
 
+const productRails = [
+  {
+    title: "Full 9-layer core",
+    status: "Mainnet live",
+    body: "One endpoint for the whole YieldBoost stack: TEE, ZK, 0G Storage, ProofRegistry, governance, and memory.",
+    endpoint: "/api/dev/store/military-grade",
+    href: "/dev/marketplace/military-grade-full",
+    icon: ShieldCheck,
+  },
+  {
+    title: "AWS Nitro Fortress SDK",
+    status: "Mainnet live",
+    body: "Nitro enclave framing, 0G TEE badge evidence, and 0G Storage incident memory in one fortress module.",
+    endpoint: "/api/dev/store/aws-nitro-fortress",
+    href: "/dev/marketplace/aws-nitro-fortress",
+    icon: Lock,
+  },
+  {
+    title: "Partner secure wrapper",
+    status: "Selected wrapper",
+    body: "VeilSolver is sold as a wrapped partner path with isolated execution, response envelope, and 0G anchor.",
+    endpoint: "/api/dev/store/veilsolver",
+    href: "/dev/marketplace/veilsolver",
+    icon: KeyRound,
+  },
+  {
+    title: "Anti-sybil perimeter",
+    status: "Mainnet live",
+    body: "Wallet screening, deterministic throttling, Alibaba fingerprinting, and a ZK verdict path for real abuse defense.",
+    endpoint: "/api/dev/store/anti-sybil-zk-fingerprint",
+    href: "/dev/marketplace/anti-sybil-zk-fingerprint",
+    icon: Fingerprint,
+  },
+];
+
 export default function DeveloperLandingView({
   session,
 }: {
@@ -42,8 +77,8 @@ export default function DeveloperLandingView({
   return (
     <DeveloperPortalShell
       eyebrow="Dev Portal"
-      title="Modular Immunity Armory API access for proof-backed AI finance."
-      description="Integrate the YieldBoost Integrity API. Every request passes through nine autonomous control planes before it earns the right to persist, unseal, or anchor."
+      title="Mainnet API products for proof-backed AI finance."
+      description="Buy the full 9-layer YieldBoost core, selected partner wrappers, anti-sybil gates, and the new AWS Nitro fortress module from one developer armory."
     >
       {/* ── HERO PANEL ────────────────────────────────────── */}
       <section className="hero-panel fade-in-up fade-in-up-1 p-6 md:p-10">
@@ -51,18 +86,21 @@ export default function DeveloperLandingView({
           <div className="flex-1">
             <div className="inline-flex items-center gap-2.5 rounded-full border border-[rgba(0,201,177,0.25)] bg-[rgba(0,201,177,0.08)] px-4 py-1.5">
               <Fingerprint className="h-4 w-4 text-[#72f3c7]" />
-              <span className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#8ff7ea]">Military-Grade Integrity</span>
+              <span className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#8ff7ea]">Mainnet API Armory</span>
             </div>
             <h2 className="shimmer-text mt-6 text-[32px] font-extrabold leading-[1.08] tracking-tight md:text-[46px] lg:text-[54px]">
-              API keys protected by a 9&#8209;layer autonomous integrity&nbsp;bunker.
+              One store for the 9&#8209;layer core, partner wrappers, and enclave&#8209;grade security modules.
             </h2>
             <p className="mt-5 max-w-xl text-[16px] leading-8 text-[#d0dde8] md:text-[17px]">
-              Every vault request passes through nine sequential control planes — from hallucination blacklist to neural handshake — before it earns the right to persist, unseal, or anchor.
+              YieldBoost does not just sell one security rail. Developers can buy the full 9-layer military-grade endpoint, selected partner wrappers like VeilSolver, the anti-sybil screening gate, and the new AWS Nitro fortress SDK with 0G Storage memory and a 0G TEE badge.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Link href="#api-packages" className="yb-teal-button inline-flex items-center gap-2.5 rounded-xl px-7 py-3.5 text-[15px] font-bold text-slate-950">
-                Choose API package
+              <Link href="/dev/marketplace" className="yb-teal-button inline-flex items-center gap-2.5 rounded-xl px-7 py-3.5 text-[15px] font-bold text-slate-950">
+                Open marketplace
                 <ArrowRight className="h-4.5 w-4.5" />
+              </Link>
+              <Link href="#api-packages" className="inline-flex items-center gap-2 rounded-xl border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.05)] px-6 py-3.5 text-[15px] font-bold text-white transition hover:border-[rgba(0,201,177,0.25)] hover:bg-[rgba(0,201,177,0.06)]">
+                Choose package
               </Link>
               <Link href="/dev/docs" className="inline-flex items-center gap-2 rounded-xl border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.05)] px-6 py-3.5 text-[15px] font-bold text-white transition hover:border-[rgba(0,201,177,0.25)] hover:bg-[rgba(0,201,177,0.06)]">
                 Read Docs
@@ -93,11 +131,40 @@ export default function DeveloperLandingView({
         </div>
       </section>
 
+      <section className="fade-in-up fade-in-up-2 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {productRails.map((rail) => (
+          <Link
+            key={rail.title}
+            href={rail.href}
+            className="glow-card group p-5 transition hover:-translate-y-0.5 hover:border-[rgba(0,201,177,0.2)]"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[rgba(0,201,177,0.18)] bg-[rgba(0,201,177,0.06)]">
+                <rail.icon className="h-4.5 w-4.5 text-[#72f3c7]" />
+              </div>
+              <span className="rounded-full border border-[rgba(255,214,102,0.26)] bg-[rgba(255,214,102,0.08)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#ffd666]">
+                {rail.status}
+              </span>
+            </div>
+            <h3 className="mt-4 text-[18px] font-bold text-white">{rail.title}</h3>
+            <p className="mt-2 text-[14px] leading-7 text-[#c8dae6]">{rail.body}</p>
+            <div className="mt-4 rounded-xl border border-[rgba(0,201,177,0.08)] bg-[rgba(0,201,177,0.03)] px-3 py-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#72f3c7]">Endpoint</p>
+              <p className="mt-1 font-mono text-[12px] text-white">{rail.endpoint}</p>
+            </div>
+            <div className="mt-4 inline-flex items-center gap-2 text-[13px] font-semibold text-[#9ff7f0]">
+              Open product
+              <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+            </div>
+          </Link>
+        ))}
+      </section>
+
       {/* ── VALUE PROPS ROW ───────────────────────────────── */}
-      <section className="fade-in-up fade-in-up-2 grid gap-4 sm:grid-cols-3">
+      <section className="fade-in-up fade-in-up-3 grid gap-4 sm:grid-cols-3">
         {[
           { icon: KeyRound, label: "Wallet Gated", text: "Each package is activated by the same wallet that owns the developer session.", accent: "#72f3c7" },
-          { icon: Gauge, label: "Quota Aware", text: "Plans control request volume, number of keys, and support level.", accent: "#63d8ff" },
+          { icon: Gauge, label: "Live Scope", text: "User-facing routes now cover the full 9-layer core, Nitro fortress, partner wrapper, and anti-sybil screening module.", accent: "#63d8ff" },
           { icon: ShieldCheck, label: "Proof Native", text: "API keys are package-scoped and checked by the YieldBoost integrity layer.", accent: "#72f3c7" },
         ].map((item) => (
           <div key={item.label} className="glow-card p-5">
@@ -113,7 +180,7 @@ export default function DeveloperLandingView({
       </section>
 
       {/* ── CHECKOUT FLOW + WALLET RULE ───────────────────── */}
-      <section className="glow-card fade-in-up fade-in-up-3 p-6">
+      <section className="glow-card fade-in-up fade-in-up-4 p-6">
         <div className="flex flex-col gap-6 md:flex-row">
           <div className="flex-1">
             <div className="flex items-center gap-2">
@@ -159,7 +226,7 @@ export default function DeveloperLandingView({
       </section>
 
       {/* ── PRICING CARDS ─────────────────────────────────── */}
-      <section id="api-packages" className="fade-in-up fade-in-up-4 scroll-mt-8">
+      <section id="api-packages" className="fade-in-up fade-in-up-5 scroll-mt-8">
         <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-[13px] font-bold uppercase tracking-[0.18em] text-[#72f3c7]">API Packages</p>
@@ -223,7 +290,7 @@ export default function DeveloperLandingView({
       </section>
 
       {/* ── BOTTOM: positioning + quick access ────────────── */}
-      <section className="fade-in-up fade-in-up-5 grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(280px,0.7fr)]">
+      <section className="fade-in-up fade-in-up-6 grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(280px,0.7fr)]">
         <div className="glow-card p-6">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[rgba(0,201,177,0.22)] bg-[rgba(0,201,177,0.06)]">
@@ -235,13 +302,13 @@ export default function DeveloperLandingView({
             </div>
           </div>
           <p className="mt-4 max-w-2xl text-[15px] leading-7 text-[#c8dae6]">
-            This is not a storage wrapper — it is a hostile-environment integrity pipeline. Every vault request passes through nine sequential control planes.
+            This store now carries three clear business rails: the native 9-layer YieldBoost stack, selected wrapped partner modules, and fortress-grade security products like Nitro and anti-sybil screening.
           </p>
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
             <div className="bunker-inner-card rounded-xl p-4">
               <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#96b0c2]">API Surface</p>
               <p className="mt-2 font-mono text-[22px] font-bold text-white">/v1</p>
-              <p className="mt-1 text-[13px] leading-5 text-[#a0b8ca]">Seal, unseal, metadata, health, per-app access.</p>
+              <p className="mt-1 text-[13px] leading-5 text-[#a0b8ca]">Core endpoint, single layers, Nitro module, anti-sybil gate, and wrapped partner paths.</p>
             </div>
             <div className="bunker-inner-card rounded-xl p-4">
               <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#96b0c2]">Network</p>

@@ -5,6 +5,17 @@ import { ArrowLeft, ArrowRight, BookOpen, Code2, KeyRound, ServerCog, ShieldChec
 import type { ApiMarketplaceProduct } from "@/lib/military-grade-api-marketplace";
 
 function productPayload(product: ApiMarketplaceProduct) {
+  if (product.id === "aws-nitro-fortress") {
+    return `{
+  "requestId": "nitro-demo-001",
+  "network": "mainnet",
+  "operation": "seal_secret",
+  "secret": "arb route alpha",
+  "operator": "judge-demo",
+  "sdkMode": "marketplace-playground"
+}`;
+  }
+
   if (product.id === "anti-sybil-zk-fingerprint") {
     return `{
   "requestId": "anti-sybil-demo-001",
@@ -56,6 +67,36 @@ function productPayload(product: ApiMarketplaceProduct) {
 }
 
 function responseShape(product: ApiMarketplaceProduct) {
+  if (product.id === "aws-nitro-fortress") {
+    return `{
+  "status": "success",
+  "security": "AWS Nitro + 0G Storage + 0G TEE Verified",
+  "network": "mainnet",
+  "mode": "live-demo | protocol-sdk",
+  "fortress": {
+    "host": "nitro.yieldboostai.xyz",
+    "survives_destruct": true
+  },
+  "nitro_enclave": {
+    "attestation_doc_id": "attest-...",
+    "attestation_summary": "Nitro enclave identity locked and sealed."
+  },
+  "tee_badge": {
+    "provider": "0G TEE",
+    "status": "verified"
+  },
+  "screening": {
+    "anti_sybil": "passed",
+    "alibaba_behavior_fingerprint": "checked"
+  },
+  "incident_journal": {
+    "storage_url": "0g://..."
+  },
+  "zk_proof": "0x...",
+  "0g_storage_url": "0g://..."
+}`;
+  }
+
   if (product.id === "anti-sybil-zk-fingerprint") {
     return `{
   "status": "success",
