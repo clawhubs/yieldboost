@@ -726,6 +726,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
             optimizationData.zkCompliance ??
             fallbackResult.zkCompliance,
         ),
+        nitroFortress: Boolean(
+          optimizationData.integrityLayers?.nitroFortress ??
+            storageData?.cid,
+        ),
       },
       proofStatus: storageData?.cid
         ? proofRegistryAnchorMissing

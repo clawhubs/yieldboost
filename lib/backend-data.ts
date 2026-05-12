@@ -313,6 +313,14 @@ export interface StoredProofRecord {
   teeServiceSignerMatched?: boolean;
   teeServiceComposeVerified?: boolean;
   llmProvider?: string;
+  integrityLayers?: {
+    sovereignMemory?: boolean;
+    zkReasoning?: boolean;
+    governance?: boolean;
+    neuralHandshake?: boolean;
+    zkCompliance?: boolean;
+    nitroFortress?: boolean;
+  };
 }
 
 export type ProofStorageMode = "0g" | "local-fallback";

@@ -159,6 +159,13 @@ const layers = [
     icon: Fingerprint,
     desc: "Final audit and handshake log.",
   },
+  {
+    id: 10,
+    key: "L10",
+    name: "AWS Nitro Enclaves",
+    icon: Server,
+    desc: "Nitro continuity rail and enclave witness.",
+  },
 ] as const;
 
 interface ChallengeResponse {
@@ -255,6 +262,27 @@ type SealNotice = {
   title: string;
   message: string;
 };
+
+class VaultApiError extends Error {
+  statusCode?: number;
+  layer?: string | null;
+  detail?: Record<string, unknown> | null;
+
+  constructor(
+    message: string,
+    options?: {
+      statusCode?: number;
+      layer?: string | null;
+      detail?: Record<string, unknown> | null;
+    },
+  ) {
+    super(message);
+    this.name = "VaultApiError";
+    this.statusCode = options?.statusCode;
+    this.layer = options?.layer;
+    this.detail = options?.detail;
+  }
+}
 
 const DEFAULT_CHALLENGE_ANNOUNCEMENT =
   "Founder upload is pending. The public target will appear here after the live recording, and every wallet will be able to attempt an unseal against the same vault.";
@@ -354,7 +382,11 @@ async function fetchJson<T>(
   });
   const data = await response.json().catch(() => null);
   if (!response.ok) {
-    throw new Error(data?.error ?? `Request failed with ${response.status}`);
+    throw new VaultApiError(data?.error ?? `Request failed with ${response.status}`, {
+      statusCode: response.status,
+      layer: data?.layer ?? null,
+      detail: data?.detail ?? null,
+    });
   }
   return data as T;
 }
@@ -414,6 +446,54 @@ function downloadUnsealedFile(data: UnsealResponse) {
   anchor.download = fileName;
   anchor.click();
   window.URL.revokeObjectURL(url);
+}
+
+function mapFailureLayer(layer?: string | null) {
+  switch (layer) {
+    case "request":
+      return 1;
+    case "ownership":
+    case "network":
+      return 2;
+    case "L1":
+      return 1;
+    case "L2":
+      return 2;
+    case "L3":
+      return 3;
+    case "L4":
+      return 4;
+    case "L5":
+      return 5;
+    case "L6":
+      return 6;
+    case "L7":
+      return 7;
+    case "L8":
+      return 8;
+    case "L9":
+    case "pipeline":
+      return 9;
+    case "L10":
+      return 10;
+    default:
+      return 0;
+  }
+}
+
+function buildChallengeBlockedStatuses() {
+  return {
+    L1: "challenge-request-screened",
+    L2: "ownership-blocked-and-recorded",
+    L3: "tee-shield-path-armed",
+    L4: "memory-attempt-log-written",
+    L5: "0g-challenge-journal-stored",
+    L6: "integrity-envelope-ready",
+    L7: "proof-rail-kept-sealed",
+    L8: "public-policy-active",
+    L9: "shield-check-completed",
+    L10: "nitro-continuity-armed",
+  } satisfies Record<string, string>;
 }
 
 export default function VaultDashboard() {
@@ -567,14 +647,24 @@ function VaultDashboardInner() {
     setLayerStatuses({});
     setCurrentLayer(1);
     pipelineTimer.current = window.setInterval(() => {
-      setCurrentLayer((value) => (value >= 9 ? 9 : value + 1));
+      setCurrentLayer((value) => (value >= 10 ? 10 : value + 1));
     }, 520);
   }, [stopPipeline]);
 
   const finishPipeline = useCallback((statuses: Record<string, string>, label: string) => {
     stopPipeline();
-    setCurrentLayer(9);
-    setLayerStatuses(statuses);
+    setCurrentLayer(10);
+    setLayerStatuses({
+      ...statuses,
+      L10: statuses.L10 ?? "nitro-continuity-armed",
+    });
+    setStatusText(label);
+  }, [stopPipeline]);
+
+  const failPipeline = useCallback((label: string, layer?: string | null) => {
+    stopPipeline();
+    setLayerStatuses({});
+    setCurrentLayer(mapFailureLayer(layer));
     setStatusText(label);
   }, [stopPipeline]);
 
@@ -728,10 +818,10 @@ function VaultDashboardInner() {
       });
 
       setSealNotice({
-        title: "9-layer seal pipeline running",
+        title: "10-layer seal pipeline running",
         message: "Your file is being encrypted, audited, uploaded to 0G, and synced into The Vault.",
       });
-      setStatusText("Running 9-layer seal pipeline");
+      setStatusText("Running 10-layer seal pipeline");
       const form = new FormData();
       form.append("network", "testnet");
       form.append("challenge_id", challenge.challenge_id);
@@ -900,10 +990,21 @@ function VaultDashboardInner() {
       await refreshPublicChallenge();
       await refreshCounters();
     } catch (error) {
-      stopPipeline();
       const message = error instanceof Error ? error.message : "Unseal failed.";
+      const failedLayer =
+        error instanceof VaultApiError ? error.layer : undefined;
       if (isChallengeAttempt) {
-        setStatusText("Challenge blocked");
+        const isOwnershipShieldBlock =
+          failedLayer === "ownership" ||
+          message === "Only the sealing wallet can unseal this vault.";
+        if (isOwnershipShieldBlock) {
+          finishPipeline(
+            buildChallengeBlockedStatuses(),
+            "Challenge blocked and recorded",
+          );
+        } else {
+          failPipeline("Challenge blocked", failedLayer);
+        }
         setChallengeFeedback({
           tone: "blocked",
           message:
@@ -912,7 +1013,7 @@ function VaultDashboardInner() {
               : message,
         });
       } else {
-        setStatusText("Unseal blocked");
+        failPipeline("Unseal blocked", failedLayer);
         setErrorText(message);
       }
       await refreshCounters().catch(() => undefined);
@@ -922,6 +1023,7 @@ function VaultDashboardInner() {
   }, [
     address,
     ensureTestnet,
+    failPipeline,
     finishPipeline,
     publicChallenge.storageId,
     refreshCounters,
@@ -929,7 +1031,6 @@ function VaultDashboardInner() {
     refreshVaults,
     signTypedDataAsync,
     startPipeline,
-    stopPipeline,
   ]);
 
   const deleteItem = useCallback(async (item: VaultItem) => {
@@ -988,8 +1089,9 @@ function VaultDashboardInner() {
       await refreshVaults();
       await refreshCounters();
     } catch (error) {
-      stopPipeline();
-      setStatusText("Delete blocked");
+      const failedLayer =
+        error instanceof VaultApiError ? error.layer : undefined;
+      failPipeline("Delete blocked", failedLayer);
       setErrorText(error instanceof Error ? error.message : "Delete failed.");
       await refreshCounters().catch(() => undefined);
     } finally {
@@ -1004,7 +1106,7 @@ function VaultDashboardInner() {
     refreshVaults,
     signTypedDataAsync,
     startPipeline,
-    stopPipeline,
+    failPipeline,
   ]);
 
   const handleDrop = useCallback((event: DragEvent<HTMLDivElement>) => {
@@ -1055,7 +1157,7 @@ function VaultDashboardInner() {
                 YIELDBOOST <span className="font-semibold text-emerald-400">VAULT</span>
               </div>
               <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-emerald-300/65">
-                9-Layer Integrity Protocol
+                10-Layer Integrity Protocol
               </div>
             </div>
           </div>
@@ -1113,7 +1215,7 @@ function VaultDashboardInner() {
                 {activeSealLayer.key}: {activeSealLayer.name}
               </div>
             </div>
-            <div className="mt-3 grid grid-cols-9 gap-1">
+            <div className="mt-3 grid grid-cols-10 gap-1">
               {layers.map((layer) => (
                 <div
                   key={layer.key}
@@ -1253,7 +1355,7 @@ function VaultDashboardInner() {
                           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-70" />
                           <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-300" />
                         </span>
-                        Your file is being sealed by the 9-layer vault pipeline.
+                        Your file is being sealed by the 10-layer vault pipeline.
                       </div>
                       <p className="mt-1 text-xs leading-5 text-emerald-50/70">
                         {sealNotice.message}
@@ -1308,7 +1410,7 @@ function VaultDashboardInner() {
               </div>
               <div className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-black/35 px-3 py-2 text-xs font-bold text-emerald-50/75">
                 <Shield className="h-4 w-4 text-emerald-300" />
-                Military-Grade 9-Layer Protection
+                Military-Grade 10-Layer Protection
               </div>
             </div>
             <AnimatePresence>
@@ -1338,7 +1440,7 @@ function VaultDashboardInner() {
                 </div>
                 <div>
                   <div className="font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-emerald-300">
-                    9-Layer Military-Grade Stack
+                    10-Layer Military-Grade Stack
                   </div>
                   <div className="mt-1 text-lg font-black text-white">
                     Live proof banner
@@ -1347,7 +1449,7 @@ function VaultDashboardInner() {
               </div>
               <div className="flex items-center gap-3">
                 <span className="rounded-lg border border-emerald-300/20 bg-black/35 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-100">
-                  {currentLayer}/9 active
+                  {currentLayer}/{layers.length} active
                 </span>
                 <div className="grid h-9 w-9 place-items-center rounded-lg border border-white/10 bg-black/35 text-emerald-200">
                   {pipelineOpen ? (
@@ -1358,7 +1460,7 @@ function VaultDashboardInner() {
                 </div>
               </div>
             </button>
-            <div className="mt-4 grid grid-cols-9 gap-1.5">
+            <div className="mt-4 grid grid-cols-10 gap-1.5">
               {layers.map((layer) => {
                 const active = currentLayer >= layer.id || Boolean(layerStatuses[layer.key]);
                 return (

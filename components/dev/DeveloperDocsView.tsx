@@ -89,7 +89,7 @@ const endpointTable = [
   {
     method: "POST",
     path: "/v1/integrity/seal",
-    description: "Encrypt and persist plaintext or file through the full 9-layer stack.",
+    description: "Encrypt and persist plaintext or file through the full 10-layer TITAN X PROTOCOL stack.",
   },
   {
     method: "POST",
@@ -161,8 +161,8 @@ export default function DeveloperDocsView() {
   return (
     <DeveloperPortalShell
       eyebrow="Integration Docs"
-      title="Everything a developer needs to integrate the 9-layer Integrity API without guessing."
-      description="This docs surface stays focused on the 9-layer security product itself: integrity seal, integrity unseal, metadata, health, SDK path, and what each request gains from the pipeline."
+      title="Everything a developer needs to integrate the 10-layer TITAN X PROTOCOL API without guessing."
+      description="This docs surface stays focused on the 10-layer security product itself: integrity seal, integrity unseal, metadata, health, SDK path, and what each request gains from the pipeline."
     >
       <section className="fade-in-up fade-in-up-1 grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_360px]">
         <div className="yb-card rounded-[24px] p-6 md:p-7">
@@ -273,7 +273,7 @@ export default function DeveloperDocsView() {
         <div className="yb-card rounded-[24px] p-6 md:p-7">
           <h2 className="text-[24px] font-semibold text-white">Raw REST integration</h2>
           <p className="mt-3 text-[14px] leading-7 text-[#c8dae6]">
-            If you do not want the SDK, keep your integration centered on the platform routes. The lower-level auth handshake exists behind the scenes, but the public story here stays on the 9-layer security surface.
+            If you do not want the SDK, keep your integration centered on the platform routes. The lower-level auth handshake exists behind the scenes, but the public story here stays on the 10-layer security surface.
           </p>
           <div className="mt-5 rounded-[20px] bg-[rgba(5,12,18,0.55)] p-4">
             <p className="text-[12px] uppercase tracking-[0.18em] text-[#8ff7ea]">Core integrity request</p>
@@ -289,7 +289,7 @@ export default function DeveloperDocsView() {
       <section className="fade-in-up fade-in-up-3 yb-card rounded-[24px] p-6 md:p-7">
         <h2 className="text-[24px] font-semibold text-white">Endpoint contract</h2>
         <p className="mt-3 max-w-4xl text-[14px] leading-7 text-[#c8dae6]">
-          This page only shows the public surface that expresses the 9-layer security product. Legacy vault-prefixed transport routes are intentionally left out here so the developer story stays clean and separate from the hacker challenge product. Partner teams can use the full record flow or call individual layers as standalone security services.
+          This page only shows the public surface that expresses the 10-layer security product. Legacy vault-prefixed transport routes are intentionally left out here so the developer story stays clean and separate from the hacker challenge product. Partner teams can use the full record flow or call individual layers as standalone security services.
         </p>
         <div className="mt-5 space-y-3">
           {endpointTable.map((item) => (
@@ -307,7 +307,7 @@ export default function DeveloperDocsView() {
       </section>
 
       <section className="fade-in-up fade-in-up-4 yb-card rounded-[24px] p-6 md:p-7">
-        <h2 className="text-[24px] font-semibold text-white">What every request buys you: the 9-layer stack</h2>
+        <h2 className="text-[24px] font-semibold text-white">What every request buys you: the 10-layer TITAN X PROTOCOL stack</h2>
         <p className="mt-3 max-w-4xl text-[14px] leading-7 text-[#c8dae6]">
           This is the part worth being loud about. Partner apps are not just calling a storage endpoint. Every request enters a layered integrity pipeline designed to filter abuse, isolate sensitive computation, persist proof-backed records, and keep an audit trail that survives beyond a single process.
         </p>

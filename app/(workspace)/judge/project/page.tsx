@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const metrics = [
-  { value: "9", label: "Security layers", accent: "text-[#22ddd0]" },
+  { value: "10", label: "Security layers", accent: "text-[#22ddd0]" },
   { value: "4", label: "Product surfaces", accent: "text-[#68ff7a]" },
   { value: "LIVE", label: "Mainnet first", accent: "text-[#f6c166]" },
   { value: "0G", label: "Native infra", accent: "text-[#63d8ff]" },
@@ -25,14 +25,14 @@ const metrics = [
 
 const scanFlow = [
   { num: "01", title: "Users optimize", body: "1-click turns idle balances into proof-backed yield routes.", accent: "text-[#68ff7a]" },
-  { num: "02", title: "Developers buy", body: "9-layer stack sold as modular APIs — full package or single layers.", accent: "text-[#22ddd0]" },
+  { num: "02", title: "Developers buy", body: "10-layer stack sold as modular APIs — full package or single layers.", accent: "text-[#22ddd0]" },
   { num: "03", title: "Public tests", body: "Vault and faucet let anyone stress-test the protection model.", accent: "text-[#f6c166]" },
 ];
 
 const archFlow = [
   { icon: Wallet, label: "Wallet" },
   { icon: Zap, label: "AI Agent" },
-  { icon: ShieldCheck, label: "9-Layer Stack" },
+  { icon: ShieldCheck, label: "10-Layer Stack" },
   { icon: Boxes, label: "0G Proof" },
   { icon: TrendingUp, label: "Revenue" },
 ];
@@ -46,7 +46,7 @@ const userSegments = [
   {
     title: "Paranoid Investors",
     icon: ShieldCheck,
-    body: "Want yield but need proof it's safe. 9-layer evidence and 0G anchoring make the recommendation feel protected.",
+    body: "Want yield but need proof it's safe. 10-layer evidence and 0G anchoring make the recommendation feel protected.",
   },
 ];
 
@@ -64,7 +64,7 @@ const surfaces = [
     title: "API / SDK Security Store",
     icon: Boxes,
     network: "Mainnet live",
-    body: "Full 9-layer stack, single layers, or partner wrappers like VeilSolver — sold as API products.",
+    body: "Full 10-layer stack, single layers, or partner wrappers like VeilSolver — sold as API products.",
     why: "Same protection securing YieldBoost becomes sellable infrastructure revenue.",
     href: "/dev/marketplace",
     label: "Open marketplace",
@@ -113,7 +113,7 @@ export default function JudgeProjectBriefPage() {
             Idle crypto → protected yield routes → sellable security APIs.
           </h1>
           <p className="mt-3 max-w-3xl text-[15px] leading-7 text-[#d8e5ed] md:text-[16px]">
-            1-click optimizer protected by a 9-layer stack on 0G — TEE, ZK, Storage, ProofRegistry, and integrity memory. The same protection is sold as developer APIs and stress-tested in public.
+            1-click optimizer protected by a 10-layer stack on 0G — TEE, ZK, Storage, ProofRegistry, integrity memory, and AWS Nitro Enclaves. The same protection is sold as developer APIs and stress-tested in public.
           </p>
           <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
             {metrics.map((m) => (
@@ -169,7 +169,7 @@ export default function JudgeProjectBriefPage() {
           <article className="rounded-[22px] border border-[rgba(104,255,122,0.16)] bg-[rgba(104,255,122,0.04)] px-5 py-5">
             <div className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[#68ff7a]">The Solution</div>
             <p className="mt-3 text-[14px] leading-7 text-[#dce5ec]">
-              YieldBoost AI gives users a 1-click optimizer and protects the result with a 9-layer stack on 0G: TEE, ZK proofing, 0G Storage, ProofRegistry anchoring, and integrity memory.
+              YieldBoost AI gives users a 1-click optimizer and protects the result with a 10-layer stack on 0G: TEE, ZK proofing, 0G Storage, ProofRegistry anchoring, integrity memory, and AWS Nitro Enclaves.
             </p>
           </article>
         </section>
@@ -201,7 +201,7 @@ export default function JudgeProjectBriefPage() {
             </div>
             <div>
               <h2 className="text-[22px] font-semibold text-white md:text-[28px]">Four product surfaces</h2>
-              <p className="mt-1 text-[14px] leading-7 text-[#d3dde6]">One 9-layer stack, four ways it reaches the market.</p>
+              <p className="mt-1 text-[14px] leading-7 text-[#d3dde6]">One 10-layer stack, four ways it reaches the market.</p>
             </div>
           </div>
 

@@ -39,11 +39,11 @@ const phaseCards = [
     status: "LIVE",
     window: "Now / Q2 2026",
     title: "Core Fortress",
-    focus: "The product is already live: user optimizer, 9-layer proof stack, API store, vault challenge, and anti-sybil example.",
+    focus: "The product is already live: user optimizer, 10-layer proof stack, API store, vault challenge, and anti-sybil example.",
     icon: ShieldCheck,
     color: "teal",
     checkpoints: [
-      "Mainnet 9-layer core for proof-backed optimization",
+      "Mainnet 10-layer core for proof-backed optimization",
       "1-click optimize for idle balances",
       "0G Storage + ProofRegistry anchor path",
       "Native 0G-priced API tiers in Modular Immunity Armory",
@@ -92,7 +92,7 @@ const phaseCards = [
     status: "NEXT",
     window: "Beyond 2027",
     title: "Multi-Chain Sovereignty",
-    focus: "Make YieldBoost's 9-layer security model portable across the AI economy.",
+    focus: "Make YieldBoost's 10-layer security model portable across the AI economy.",
     icon: Globe2,
     color: "blue",
     checkpoints: [
@@ -113,7 +113,7 @@ const livePillars = [
     text: "Idle balances become proof-backed yield routes.",
   },
   {
-    label: "9-layer core",
+    label: "10-layer core",
     icon: Layers,
     text: "TEE, ZK, memory, storage, governance, and ProofRegistry work together.",
   },
@@ -138,7 +138,7 @@ const productLines = [
   {
     label: "Developer revenue",
     icon: Database,
-    text: "Modular Immunity Armory sells the 9-layer stack, single-layer endpoints, and selected partner wrappers.",
+    text: "Modular Immunity Armory sells the 10-layer stack, single-layer endpoints, and selected partner wrappers.",
   },
   {
     label: "Security revenue",
@@ -183,7 +183,7 @@ export default async function JudgeRoadmapPage() {
     {
       label: "Integrity modules",
       value: `${liveIntegrityCount}/${data.integrityStackCards.length}`,
-      helper: "Active 9-layer evidence modules currently visible.",
+      helper: "Active 10-layer evidence modules currently visible.",
     },
     {
       label: "Network posture",
@@ -217,13 +217,13 @@ export default async function JudgeRoadmapPage() {
 
             <div className="mt-7 inline-flex items-center gap-2 rounded-full border border-[rgba(34,221,208,0.22)] bg-[rgba(34,221,208,0.08)] px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-[#22ddd0]">
               <Rocket className="h-3.5 w-3.5" />
-              One click. Nine layers. Sellable security.
+              One click. Ten layers. Sellable security.
             </div>
             <h1 className="mt-4 font-[family-name:var(--font-display)] text-[34px] font-semibold leading-[1.04] text-white md:text-[52px]">
               From idle crypto to a paid security stack for AI finance.
             </h1>
             <p className="mt-4 max-w-3xl text-[15px] leading-7 text-[#d9e7ec]">
-              YieldBoost starts with a simple user promise: click once, find a better yield route, and keep proof behind the recommendation. The same 9-layer protection then becomes API infrastructure that other apps and companies can buy.
+              YieldBoost starts with a simple user promise: click once, find a better yield route, and keep proof behind the recommendation. The same 10-layer protection then becomes API infrastructure that other apps and companies can buy.
             </p>
             <div className="mt-5 flex flex-wrap gap-4">
               {[
@@ -472,7 +472,7 @@ export default async function JudgeRoadmapPage() {
             User product first. Security business second. All on 0G.
           </h2>
           <p className="mt-4 text-[14px] leading-7 text-[#dce5ec]">
-            The roadmap is one path: help users put idle crypto to work, prove the route with 0G, sell the 9-layer protection stack, then scale into liquidity, enterprise compliance, and multi-chain security.
+            The roadmap is one path: help users put idle crypto to work, prove the route with 0G, sell the 10-layer protection stack, then scale into liquidity, enterprise compliance, and multi-chain security.
           </p>
           <div className="mt-5 flex flex-wrap justify-center gap-3">
             <Link href="/agent" className={linkPillClass}>

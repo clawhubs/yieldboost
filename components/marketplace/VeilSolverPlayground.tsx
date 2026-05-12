@@ -181,7 +181,7 @@ export default function VeilSolverPlayground() {
               <div className="mt-4 rounded-[14px] border border-[#68ff7a]/20 bg-[#68ff7a]/[0.06] p-3">
                 <div className="mb-2 flex items-center gap-2 text-[#68ff7a]">
                   <CheckCircle2 className="h-4 w-4" />
-                  <span className="text-[12px] font-semibold uppercase tracking-[0.14em]">9-layer response verified</span>
+                  <span className="text-[12px] font-semibold uppercase tracking-[0.14em]">10-layer response family verified</span>
                 </div>
                 <pre className="max-h-[420px] overflow-auto whitespace-pre-wrap text-[11px] leading-5 text-[#dcefe0]">
                   {JSON.stringify(result, null, 2)}

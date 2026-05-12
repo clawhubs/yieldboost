@@ -39,7 +39,7 @@
   <a href="#architecture">Architecture</a> •
   <a href="#0g-native-data-flow">0G data flow</a> •
   <a href="#0g-integration-upgrade">0G integration upgrade</a> •
-  <a href="#9-layer-independence-and-partner-sdk-scope">9-layer independence</a> •
+  <a href="#10-layer-independence-and-partner-sdk-scope">10-layer independence</a> •
   <a href="#agent-nft-layer">Agent NFT layer</a> •
   <a href="#readme-stats">Stats</a> •
   <a href="#local-installation">Local setup</a> •
@@ -47,9 +47,9 @@
   <a href="#contributing">Contributing</a>
 </p>
 
-> YieldBoost AI is a mainnet-first 9-layer proof and security stack on 0G with three separate surfaces: a user optimizer, a developer marketplace, and a public security challenge.
+> YieldBoost AI is a mainnet-first **TITAN X PROTOCOL** on 0G: a 10-layer proof and security stack with three separate surfaces, a user optimizer, a developer marketplace, and a public security challenge.
 
-YieldBoost AI has three clear product surfaces built on one 9-layer stack:
+YieldBoost AI has three clear product surfaces built on one **10-layer TITAN X PROTOCOL** stack:
 
 - **1-click optimize for users:** idle crypto balances are turned into proof-backed yield routes.
 - **API marketplace for developers:** the full stack is sold as a complete endpoint, single layers are sold individually, fortress modules such as AWS Nitro are sold with narrower package scope, and partner SDKs can use selected YieldBoost protections.
@@ -58,7 +58,7 @@ YieldBoost AI has three clear product surfaces built on one 9-layer stack:
 The 1-click optimizer is designed for two simple user groups:
 
 - **Lazy Degens:** crypto users with idle assets who do not want to manually choose liquidity pools, compare routes, calculate slippage, or move through a confusing DeFi workflow.
-- **Paranoid Investors:** users who want DeFi yield, but only after the route is protected by visible 9-layer checks, proof receipts, and reviewable 0G evidence.
+- **Paranoid Investors:** users who want DeFi yield, but only after the route is protected by visible 10-layer checks, proof receipts, and reviewable 0G evidence.
 
 Under the hood, the YieldBoost-native surfaces share the same proof path: 0G compute, ZK evidence, 0G Storage, ProofRegistry anchoring, and integrity memory. Partner wrappers use selected pieces of that protection model, not the full path by default.
 
@@ -89,9 +89,9 @@ The network split is intentional and should be read honestly:
 
 On top of that proof path, YieldBoost AI also ships a **Strategy Agent NFT layer** through `YieldStrategyINFT`, so a verified optimization can be elevated into a portable on-chain strategy artifact instead of remaining only as an off-chain UI event.
 
-## 9-Layer Independence and Partner SDK Scope
+## 10-Layer Independence and Partner SDK Scope
 
-The YieldBoost AI 9-layer military-grade stack is built as a standalone verification system. Partner integrations such as VeilSolver are wrapped with selected YieldBoost protections, while the core full-stack proof flow remains self-contained.
+The YieldBoost AI **TITAN X PROTOCOL** is built as a standalone 10-layer verification system. Partner integrations such as VeilSolver are wrapped with selected YieldBoost protections, while the core full-stack proof flow remains self-contained.
 
 The standalone YieldBoost stack includes:
 
@@ -104,8 +104,9 @@ The standalone YieldBoost stack includes:
 7. ProofRegistry Anchor
 8. Programmable Governance
 9. Cross-Agent Neural Handshake
+10. AWS Nitro Enclaves
 
-VeilSolver Secure Proxy is a partner SDK example in the developer marketplace: YieldBoost wraps the partner solver with isolated execution, ZK proof packaging, and 0G anchoring so external developers can call a secured endpoint. It is not presented as the full 9-layer stack. The complete 9-layer product remains YieldBoost's own standalone verification layer.
+VeilSolver Secure Proxy is a partner SDK example in the developer marketplace: YieldBoost wraps the partner solver with isolated execution, ZK proof packaging, and 0G anchoring so external developers can call a secured endpoint. It is not presented as the full 10-layer stack. The complete TITAN X PROTOCOL remains YieldBoost's own standalone verification layer.
 
 ## Founder Grade Snapshot
 
@@ -133,9 +134,9 @@ In DeFi, that is not a small product gap. A useful agent must prove what it saw,
 
 ## The Solution
 
-YieldBoost AI turns that trust problem into a sellable 9-layer security stack on 0G.
+YieldBoost AI turns that trust problem into a sellable **10-layer TITAN X PROTOCOL** on 0G.
 
-The core of the repo is not only the optimizer UI. It is the **standalone YieldBoost 9-layer stack**:
+The core of the repo is not only the optimizer UI. It is the **standalone YieldBoost TITAN X PROTOCOL**:
 
 - Hallucination Blacklist
 - Integrity Auditor
@@ -146,17 +147,18 @@ The core of the repo is not only the optimizer UI. It is the **standalone YieldB
 - ProofRegistry Anchor
 - Programmable Governance
 - Cross-Agent Neural Handshake
+- AWS Nitro Enclaves
 
 That same stack is exposed through three different product surfaces:
 
 - **1-click optimize for users:** one wallet action turns idle balances into a proof-backed yield route.
-- **Marketplace APIs for developers and companies:** the YieldBoost-native 9-layer stack can be bought as infrastructure, one layer at a time or as the full military-grade package. Fortress modules such as AWS Nitro and partner SDK wrappers are narrower selected-protection products.
+- **Marketplace APIs for developers and companies:** the YieldBoost-native 10-layer stack can be bought as infrastructure, one layer at a time or as the full military-grade package. Fortress modules such as AWS Nitro and partner SDK wrappers are narrower selected-protection products.
 - **Vault and anti-sybil faucet for public testing:** the security model is challenged in public, while the faucet acts as a real anti-sybil airdrop-style example using the same broader verification family.
 
 Each approved optimization becomes a stored and reviewable finance artifact:
 
 - The agent creates an optimization result from a wallet snapshot.
-- The 9-layer stack filters hallucination patterns, audits the output, records TEE/compute evidence, stores proof payloads, anchors registry metadata, and syncs memory.
+- The 10-layer TITAN X PROTOCOL filters hallucination patterns, audits the output, records TEE/compute evidence, stores proof payloads, anchors registry metadata, syncs memory, and keeps a Nitro continuity rail in the same proof family.
 - Zero-Knowledge Proof Layer, Programmable Governance, and Cross-Agent Neural Handshake evidence are persisted as reviewable control-plane artifacts.
 - Rejected results are indexed into a hallucination blacklist and checked before future inference.
 - Strategy Agent NFTs can promote verified optimization results into portable on-chain strategy artifacts.
@@ -186,13 +188,13 @@ The live product is now **mainnet-first**.
 - **Testnet is used on purpose, not by accident.** Vault and the public anti-sybil airdrop example are the two surfaces where broad public testing matters more than forcing every tester to spend mainnet gas.
 - **Anti-sybil is not just a faucet gimmick.** The same family of controls appears in the marketplace as a sellable module: wallet checks, deterministic anti-sybil logic, Alibaba fingerprinting, and proof-aware abuse resistance.
 
-### 9-Layer Proof Stack Working In The UI
+### TITAN X PROTOCOL Working In The UI
 
 <p align="center">
-  <img src="./public/readme/integrity-stack.png" alt="YieldBoost AI 9-layer stack working in the proof UI" width="78%" />
+  <img src="./public/readme/integrity-stack.png" alt="YieldBoost AI TITAN X PROTOCOL working in the proof UI" width="78%" />
 </p>
 
-<p align="center"><em>The main proof path shows the 9-layer stack operating together: blacklist, auditor, TEE, sovereign memory, 0G storage, ZK proof, ProofRegistry anchor, governance, and cross-agent handshake.</em></p>
+<p align="center"><em>The main proof path shows the 10-layer TITAN X PROTOCOL operating together: blacklist, auditor, TEE, sovereign memory, 0G storage, ZK proof, ProofRegistry anchor, governance, cross-agent handshake, and AWS Nitro Enclaves.</em></p>
 
 ### Mainnet Contract and Proof Evidence
 
@@ -284,7 +286,7 @@ That combination is the project's strongest differentiator for a hackathon revie
 
 ## Hackathon Track Alignment
 
-YieldBoost AI spans four 0G hackathon tracks because it is not a single-purpose DApp. It is a full-stack agentic ecosystem where one native 9-layer security core powers agent infrastructure, verifiable trading, developer-facing API commerce, and sovereign privacy.
+YieldBoost AI spans four 0G hackathon tracks because it is not a single-purpose DApp. It is a full-stack agentic ecosystem where one native 10-layer security core powers agent infrastructure, verifiable trading, developer-facing API commerce, and sovereign privacy.
 
 The mapping is direct: the same repo that runs 1-click optimize also exposes the proof ledger, vault, developer API store, anti-sybil faucet, Strategy Agent NFT layer, and partner SDK wrapper surface. The 1-click optimizer is the clearest live demo because one run touches the agent infrastructure path, the verifiable trading path, and the sovereign privacy path at the same time.
 
@@ -299,7 +301,7 @@ The mapping is direct: the same repo that runs 1-click optimize also exposes the
 - **Sovereign Memory** through [`app/api/agent/memory`](app/api/agent/memory/route.ts), storing agent state snapshots as 0G-backed memory artifacts.
 - **Runtime proof ledger** through [`lib/server/runtime-store.ts`](lib/server/runtime-store.ts), allowing agents, judges, and API surfaces to rehydrate prior decisions.
 - **Prompt compression, semantic cache, and blacklist pre-checks** before inference, giving the agent a real orchestration path instead of raw prompt forwarding.
-- **Layer-as-a-service endpoints** in the developer marketplace, so the 9-layer stack can be called by external agent apps.
+- **Layer-as-a-service endpoints** in the developer marketplace, so the 10-layer stack can be called by external agent apps.
 
 This makes YieldBoost an agent infrastructure layer first: it gives autonomous finance agents memory, verification, state persistence, and reusable security modules.
 
@@ -310,8 +312,9 @@ This makes YieldBoost an agent infrastructure layer first: it gives autonomous f
 **Repo infrastructure:**
 
 - **1-click optimize** is the trading entry point: it reads wallet state, computes a low-risk yield route, and produces a proof-backed recommendation.
-- **Native 9-layer military-grade stack** is the trading safety core:
+- **TITAN X PROTOCOL** is the trading safety core:
   Hallucination Blacklist, Integrity Auditor, Secure Compute / TEE, Sovereign Memory, 0G Storage Proof Layer, Zero-Knowledge Proof Layer, ProofRegistry Anchor, Programmable Governance, and Cross-Agent Neural Handshake.
+  AWS Nitro Enclaves closes the proof path as Layer 10.
 - **Secure Compute / TEE evidence** protects the execution path and supports sealed-inference style privacy for proprietary strategy logic.
 - **0G Storage + ProofRegistry** turn every approved optimization into an externally reviewable finance artifact.
 - **Strategy Agent NFTs** through `YieldStrategyINFT` promote verified strategies into portable on-chain agent assets.
@@ -324,12 +327,12 @@ Track 2 is where the core product lands hardest: YieldBoost is not just recommen
 
 **Repo infrastructure:**
 
-- **Developer API Store & Marketplace** at [`/marketplace`](https://dev.yieldboostai.xyz/marketplace), exposing the full 9-layer API, individual layer APIs, anti-sybil modules, and partner SDK wrappers with narrower selected protections.
+- **Developer API Store & Marketplace** at [`/marketplace`](https://dev.yieldboostai.xyz/marketplace), exposing the full 10-layer API, individual layer APIs, anti-sybil modules, and partner SDK wrappers with narrower selected protections.
 - **Anti-sybil + ZK + Alibaba module** in the marketplace proves the stack can be sold as a reusable security product, not only as one internal app path.
 - **Anti-sybil faucet** at [`/faucet`](https://yieldboostai.xyz/faucet), giving the public a claim-flow example for testing access logic and abuse resistance before teams move into the mainnet marketplace.
 - **API key playground and package tiers** connect developer usage, subscription intent, and security-layer access.
-- **Partner SDK wrapper model** proves that external agent services can be wrapped and sold without pretending every partner endpoint uses the complete 9-layer stack.
-- **VeilSolver Secure Proxy** is the live partner example: a third-party solver is exposed through YieldBoost isolated execution, ZK envelope, and 0G anchor semantics. The full 9-layer API is a separate YieldBoost-native product.
+- **Partner SDK wrapper model** proves that external agent services can be wrapped and sold without pretending every partner endpoint uses the complete 10-layer stack.
+- **VeilSolver Secure Proxy** is the live partner example: a third-party solver is exposed through YieldBoost isolated execution, ZK envelope, and 0G anchor semantics. The full 10-layer API is a separate YieldBoost-native product.
 
 Track 3 is the business surface: YieldBoost turns agent security into something other builders can subscribe to, test, and integrate.
 
@@ -339,17 +342,17 @@ Track 3 is the business surface: YieldBoost turns agent security into something 
 
 **Repo infrastructure:**
 
-- **Native 9-layer military-grade stack** is the core privacy and sovereignty system, not an add-on.
+- **TITAN X PROTOCOL** is the core privacy and sovereignty system, not an add-on.
 - **1-click optimize** is the live Track 5 surface: the optimizer does not only produce APY output; it routes the decision through Secure Compute / TEE, Sovereign Memory, Zero-Knowledge Proof Layer, ProofRegistry Anchor, and Cross-Agent Neural Handshake.
 - **Secure Compute / TEE** protects sensitive strategy execution and records response evidence.
 - **Vault sealing** through [`/vault`](https://yieldboostai.xyz/vault) gives users wallet-scoped private records with separated user tx, storage tx, and proof tx visibility.
 - **Sovereign Memory** persists agent state without reducing the strategy to a temporary browser session.
 - **Zero-Knowledge Proof Layer** creates reviewable proof envelopes for reasoning and policy evidence.
-- **Partner SDK wrapper architecture** shows how YieldBoost can apply selected protections to third-party systems like VeilSolver without making that partner the source of, or equivalent to, the core 9-layer stack.
+- **Partner SDK wrapper architecture** shows how YieldBoost can apply selected protections to third-party systems like VeilSolver without making that partner the source of, or equivalent to, the core 10-layer stack.
 
-Track 5 is where the 9-layer stack becomes the moat: private execution, memory, ZK evidence, and proof anchoring share one sovereign verification core. Partner wrappers can use selected protections from that core without being presented as full-stack equivalents. `/vault` strengthens the privacy story, but the core Track 5 claim already lives inside the main 1-click optimizer path.
+Track 5 is where the 10-layer stack becomes the moat: private execution, memory, ZK evidence, proof anchoring, and the Nitro continuity rail share one sovereign verification core. Partner wrappers can use selected protections from that core without being presented as full-stack equivalents. `/vault` strengthens the privacy story, but the core Track 5 claim already lives inside the main 1-click optimizer path.
 
-The clearest submission sentence is: **YieldBoost AI is a full-stack agentic ecosystem on 0G: Track 1 infrastructure, Track 2 verifiable trading, Track 3 autonomous API economy, and Track 5 sovereign privacy, all powered by one native 9-layer military-grade stack.**
+The clearest submission sentence is: **YieldBoost AI is a full-stack agentic ecosystem on 0G: Track 1 infrastructure, Track 2 verifiable trading, Track 3 autonomous API economy, and Track 5 sovereign privacy, all powered by one native 10-layer TITAN X PROTOCOL.**
 
 ## Showcase
 
@@ -443,9 +446,10 @@ flowchart TD
     JSON --> ZGS[0G Storage Indexer.upload]
     ZGS --> PROOF[StoredProofRecord]
     PROOF --> REG[ProofRegistry.recordProof]
+    PROOF --> NITRO[AWS Nitro Enclaves continuity rail]
 ```
 
-### Nine-Layer Evidence Pipeline
+### TITAN X PROTOCOL Evidence Pipeline
 
 ```mermaid
 flowchart TD
@@ -458,17 +462,20 @@ flowchart TD
     L6 --> L7[Layer 7: ProofRegistry Anchor]
     L7 --> L8[Layer 8: Programmable Governance]
     L8 --> L9[Layer 9: Cross-Agent Neural Handshake]
+    L9 --> L10[Layer 10: AWS Nitro Enclaves]
 
     L4 --> MEMORY[/api/agent/memory/]
     L6 --> ZKR[/api/zk/verify/]
     L8 --> GOV[/api/governance/evaluate/]
     GOV --> ZKCOMP[/api/zk/compliance/]
     L9 --> HANDSHAKE[/api/agents/handshake/]
+    L10 --> NITROVIEW[Continuity witness in proof UI]
 
     MEMORY --> RUNTIME[Runtime proof ledger]
     ZKR --> RUNTIME
     ZKCOMP --> RUNTIME
     HANDSHAKE --> RUNTIME
+    NITROVIEW --> RUNTIME
 ```
 
 ### Judge Review Flow
@@ -528,12 +535,14 @@ flowchart TD
 ```mermaid
 flowchart TD
     APP[Partner or developer app] --> STOREUI[/marketplace/]
-    STOREUI --> FULL[Full 9-layer API]
+    STOREUI --> FULL[Full 10-layer API]
     STOREUI --> SINGLE[Single-layer APIs]
     STOREUI --> VEIL[VeilSolver Secure Proxy]
-    FULL --> YBPIPE[YieldBoost standalone 9-layer stack]
+    STOREUI --> NITROSDK[AWS Nitro Fortress SDK]
+    FULL --> YBPIPE[TITAN X PROTOCOL]
     SINGLE --> YBPIPE
-    YBPIPE --> YBOUT[9-layer verification response + 0G anchor]
+    YBPIPE --> YBOUT[10-layer verification response + 0G anchor]
+    NITROSDK --> NITROOUT[AWS Nitro Enclaves continuity response]
     VEIL --> WRAP[Selected YieldBoost protections]
     WRAP --> ISO[Isolated execution]
     WRAP --> ZKWRAP[ZK response envelope]
@@ -588,7 +597,7 @@ flowchart TD
 13. [`/api/agents/handshake`](app/api/agents/handshake/route.ts) records the optimizer-to-auditor **Cross-Agent Neural Handshake** transcript digest so the reasoning handoff is inspectable.
 14. [`/api/zk/compliance`](app/api/zk/compliance/route.ts) ties governance and the latest stored proof into a deterministic policy seal artifact.
 15. [`/api/stress-test/run`](app/api/stress-test/run/route.ts) can replay historical OHLCV/oracle slices, produce an Integrity Report Card, and store that report on 0G Storage.
-16. The full proof, Noir Sentinel identity status, TEE response metadata, memory, blacklist, stress-test, ZKR, governance, policy seal, and handshake records are persisted into the runtime ledger managed by [`lib/server/runtime-store.ts`](lib/server/runtime-store.ts), backed by **Vercel KV** when available or `.artifacts/runtime-store.local.json` as a local fallback.
+16. The full proof, Noir Sentinel identity status, TEE response metadata, memory, blacklist, stress-test, ZKR, governance, policy seal, handshake records, and AWS Nitro continuity witness are persisted into the runtime ledger managed by [`lib/server/runtime-store.ts`](lib/server/runtime-store.ts), backed by **Vercel KV** when available or `.artifacts/runtime-store.local.json` as a local fallback.
 17. The proof can then be rehydrated across the product through:
    - [`/api/agent/latest`](app/api/agent/latest/route.ts)
    - [`/api/0g/proof`](app/api/0g/proof/route.ts)
@@ -606,7 +615,7 @@ flowchart TD
 
 ## 0G Integration Upgrade
 
-The repo includes the original integrity memory stack plus three newer control-plane additions: **Zero-Knowledge Proof Layer**, **Programmable Governance**, and **Cross-Agent Neural Handshake**.
+The repo includes the original integrity memory stack plus the extended TITAN X PROTOCOL control-plane additions: **Zero-Knowledge Proof Layer**, **Programmable Governance**, **Cross-Agent Neural Handshake**, and **AWS Nitro Enclaves**.
 
 | Layer | Backend path | Storage artifact | Contract path |
 | --- | --- | --- | --- |
@@ -616,6 +625,7 @@ The repo includes the original integrity memory stack plus three newer control-p
 | Zero-Knowledge Proof Layer | [`/api/zk/verify`](app/api/zk/verify/route.ts), [`lib/server/zk-reasoning.ts`](lib/server/zk-reasoning.ts) | Live TEE/ZK reasoning envelope with public signals and verifier context | Anchored through 0G storage tx metadata and surfaced in Judge Mode |
 | Programmable AI Governance | [`/api/governance/evaluate`](app/api/governance/evaluate/route.ts), [`lib/server/ai-governance.ts`](lib/server/ai-governance.ts) | Deterministic policy decision with risk score, kill switch, and status | Designed to gate future guardian / strategy governance flows |
 | Cross-Agent Neural Handshake | [`/api/agents/handshake`](app/api/agents/handshake/route.ts), [`lib/server/cross-agent-handshake.ts`](lib/server/cross-agent-handshake.ts) | Optimizer-to-auditor transcript digest and coordination envelope | Anchored as an inspectable 0G artifact before downstream review |
+| AWS Nitro Enclaves | [`nitro.yieldboostai.xyz`](https://nitro.yieldboostai.xyz/), [`app/api/dev/store/aws-nitro-fortress/demo`](app/api/dev/store/aws-nitro-fortress/demo/route.ts) | Nitro continuity rail, enclave witness, and incident-journal continuity surface | Exposed in the proof UI as Layer 10 of TITAN X PROTOCOL |
 
 ### Sovereign Memory
 
@@ -956,7 +966,7 @@ npm run setup:tee-broker:mainnet
 | [`app/api/agents/handshake/route.ts`](app/api/agents/handshake/route.ts) | Cross-Agent Neural Handshake transcript API. |
 | [`app/faucet/page.tsx`](app/faucet/page.tsx) | Public anti-sybil faucet page for the airdrop-style example flow. |
 | [`app/api/ya/faucet/claim`](app/api/ya/faucet/claim/route.ts) | Faucet claim endpoint for the public anti-sybil airdrop example. |
-| [`app/dev/marketplace/page.tsx`](app/dev/marketplace/page.tsx) | Developer API Store for the full 9-layer stack, single-layer APIs, and selected partner SDK wrappers. |
+| [`app/dev/marketplace/page.tsx`](app/dev/marketplace/page.tsx) | Developer API Store for the full 10-layer TITAN X PROTOCOL, single-layer APIs, and selected partner SDK wrappers. |
 | [`lib/server/runtime-store.ts`](lib/server/runtime-store.ts) | Proof persistence layer. |
 | [`app/(workspace)/judge/page.tsx`](<app/(workspace)/judge/page.tsx>) | Main judge review surface. |
 | [`app/(workspace)/judge/roadmap/page.tsx`](<app/(workspace)/judge/roadmap/page.tsx>) | Judge-adjacent roadmap and value-capture surface. |
@@ -974,7 +984,7 @@ The public developer access layer is live, and it should be read with network ho
 | --- | --- | --- |
 | Anti-sybil faucet | [`yieldboostai.xyz/faucet`](https://yieldboostai.xyz/faucet) | Testnet airdrop-style example for public claims, anti-sybil checks, and Alibaba fingerprinting. |
 | Developer portal | [`dev.yieldboostai.xyz`](https://dev.yieldboostai.xyz/) | Hosts docs, marketplace, playgrounds, and API integration surfaces. |
-| API marketplace | [`dev.yieldboostai.xyz/marketplace`](https://dev.yieldboostai.xyz/marketplace) | Mainnet-first security store for the full 9-layer endpoint, single layers, anti-sybil modules, and selected partner SDK wrappers. |
+| API marketplace | [`dev.yieldboostai.xyz/marketplace`](https://dev.yieldboostai.xyz/marketplace) | Mainnet-first security store for the full 10-layer TITAN X PROTOCOL endpoint, single layers, anti-sybil modules, and selected partner SDK wrappers. |
 | Public vault | [`yieldboostai.xyz/vault`](https://yieldboostai.xyz/vault) | Testnet public challenge surface for the YieldBoost protection model. |
 
 Current shipped base:

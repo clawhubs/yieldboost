@@ -20,6 +20,7 @@ interface OptimizationLoadingModalProps {
     governance?: boolean;
     neuralHandshake?: boolean;
     zkCompliance?: boolean;
+    nitroFortress?: boolean;
   };
   onConfirmWalletAction?: () => void;
   onClose?: () => void;
@@ -144,6 +145,12 @@ export default function OptimizationLoadingModal({
       : progress === "done"
         ? "active"
         : getChecklistStatus(progress, "anchoring");
+  const nitroStatus =
+    integrityLayers?.nitroFortress
+      ? "done"
+      : progress === "done"
+        ? "active"
+        : getChecklistStatus(progress, "anchoring");
   const proofChecklist = [
     {
       label: "Hallucination Blacklist",
@@ -191,6 +198,11 @@ export default function OptimizationLoadingModal({
       label: "Cross-Agent Neural Handshake",
       detail: "Optimizer-auditor transcript",
       status: getBackgroundStatus(integrityLayers?.neuralHandshake),
+    },
+    {
+      label: "AWS Nitro Enclaves",
+      detail: "Nitro enclave rail for continuity",
+      status: nitroStatus,
     },
   ] as const;
 
@@ -253,7 +265,7 @@ export default function OptimizationLoadingModal({
                   ) : (
                     <CircleDashed className="h-3.5 w-3.5 animate-spin" />
                   )}
-                  1-click optimization
+                  TITAN X Protocol
                 </div>
                 <h2 className="mt-4 font-[family-name:var(--font-display)] text-[28px] font-semibold leading-tight text-white">
                   {copy.title}
@@ -346,10 +358,10 @@ export default function OptimizationLoadingModal({
                 <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <div className="text-[11px] uppercase tracking-[0.14em] text-[#7feee4]">
-                      Proof checklist
+                      TITAN X Protocol
                     </div>
                     <div className="mt-1 text-[13px] text-[#d7e1e9]">
-                      Primary proof first, then the integrity memory stack.
+                      Full 10-layer proof path, including the Nitro fortress rail.
                     </div>
                   </div>
                   <div className="text-[11px] text-[#8fa3b0]">

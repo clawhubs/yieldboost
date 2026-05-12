@@ -173,7 +173,13 @@ export default function DeveloperApiPlayground({
             Modular Immunity Armory
           </Link>
           <div className="rounded-xl border border-[#68ff7a]/20 bg-[#68ff7a]/10 px-3 py-2 text-[12px] font-bold text-[#dfffe4]">
-            {product.category === "single-layer" ? `Layer ${product.layerId}` : product.category === "partner-sdk" ? "Partner SDK" : "Full 9-layer"}
+            {product.category === "single-layer"
+              ? `Layer ${product.layerId}`
+              : product.category === "partner-sdk"
+                ? "Partner SDK"
+                : product.category === "full-stack"
+                  ? "Full 10-layer"
+                  : "Mainnet module"}
           </div>
         </div>
 
@@ -200,7 +206,9 @@ export default function DeveloperApiPlayground({
                     ? "ZK Secure Proxy Path"
                     : product.id === "anti-sybil-zk-fingerprint"
                       ? "Anti-Sybil Verification Path"
-                      : `${product.layers.length}-Layer Coverage`}
+                      : product.category === "full-stack"
+                        ? "10-Layer TITAN X PROTOCOL"
+                        : `${product.layers.length}-Layer Coverage`}
                 </span>
               </div>
               <div className="mt-3 grid gap-2">
@@ -219,6 +227,16 @@ export default function DeveloperApiPlayground({
                 ))}
               </div>
             </div>
+            {product.category === "full-stack" ? (
+              <div className="mt-4 rounded-[18px] border border-[rgba(34,221,208,0.14)] bg-black/20 p-4">
+                <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#9ff7f0]">
+                  TITAN X PROTOCOL
+                </div>
+                <p className="mt-2 text-[12px] leading-6 text-[#c8dae6]">
+                  Full-stack calls return the complete 10-layer proof family, ending with the Layer 10 AWS Nitro Enclaves continuity witness.
+                </p>
+              </div>
+            ) : null}
 
             {product.id === "veilsolver" ? (
               <a

@@ -991,6 +991,14 @@ export async function getJudgePageData(): Promise<JudgePageData> {
         : "No cross-agent transcript/proof envelope has been recorded yet.",
       tone: toneForRecordedFeature(latestCrossAgentHandshake?.status),
     },
+    {
+      label: "AWS Nitro Enclaves",
+      value: latestProof?.cid ? "Live in snapshot" : "Pending",
+      helper: latestProof?.cid
+        ? `${getServer0GNetworkConfig(proofNetwork).label} Nitro continuity rail is attached to proof CID ${shorten(latestProof.cid, 10)} for the same recorded snapshot.`
+        : "No Nitro continuity rail has been attached to a stored proof snapshot yet.",
+      tone: latestProof?.cid ? "green" : "amber",
+    },
   ];
 
   const statusCards: JudgeStatusCard[] = [

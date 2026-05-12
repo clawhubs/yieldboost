@@ -19,7 +19,7 @@ export async function GET() {
       package: "veilsolver-sdk",
       version: "0.1.1",
       upstream_path: "/solve",
-      note: "VeilSolver is a partner integration example. This endpoint wraps the partner SDK with YieldBoost isolated execution and a ZK response envelope; the standalone YieldBoost 9-layer stack is independent.",
+      note: "VeilSolver is a partner integration example. This endpoint wraps the partner SDK with YieldBoost isolated execution and a ZK response envelope; the standalone YieldBoost 10-layer TITAN X PROTOCOL is independent.",
     },
     sample_payload: {
       action: "SWAP",

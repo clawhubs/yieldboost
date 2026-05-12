@@ -126,7 +126,7 @@ const sidebarGroups: Array<{
       {
         slug: "why-yieldboost-ai",
         label: "Why YieldBoost AI",
-        description: "The bot problem, the trust gap, and why the 9-layer stack matters.",
+        description: "The bot problem, the trust gap, and why the 10-layer TITAN X PROTOCOL matters.",
       },
       {
         slug: "getting-started",

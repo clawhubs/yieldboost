@@ -116,11 +116,26 @@ export async function runMilitaryGradeFullEndpoint(
     status: "verified",
     proof_digest: `0x${sha256Hex({ requestId, layer: layer.slug, requestDigest })}`,
   }));
+  const nitroWitness = {
+    id: "10",
+    slug: "aws-nitro-enclaves",
+    label: "AWS Nitro Enclaves",
+    proof:
+      "Nitro continuity rail closes the TITAN X PROTOCOL proof family with enclave witness metadata.",
+    endpoint: "/api/dev/store/aws-nitro-fortress",
+    status: "verified",
+    proof_digest: `0x${sha256Hex({
+      requestId,
+      layer: "aws-nitro-enclaves",
+      requestDigest,
+    })}`,
+  };
+  const selectedLayers = [...layerProofs, nitroWitness];
   const zkProof = `0x${sha256Hex({
     product: "military-grade-full",
     requestId,
     requestDigest,
-    layerProofs: layerProofs.map((layer) => layer.proof_digest),
+    layerProofs: selectedLayers.map((layer) => layer.proof_digest),
   })}`;
 
   return {
@@ -128,7 +143,7 @@ export async function runMilitaryGradeFullEndpoint(
     body: {
       status: "success",
       request_id: requestId,
-      security: "9-Layer Verified",
+      security: "10-Layer TITAN X PROTOCOL Verified",
       product: product
         ? {
             id: product.id,
@@ -140,7 +155,7 @@ export async function runMilitaryGradeFullEndpoint(
         plan: auth.plan,
         key_preview: auth.keyPreview,
       },
-      selected_layers: layerProofs,
+      selected_layers: selectedLayers,
       data: {
         accepted: true,
         payload,

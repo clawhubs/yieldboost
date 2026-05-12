@@ -31,7 +31,7 @@ const layers = [
 
 const productRails = [
   {
-    title: "Full 9-layer core",
+    title: "Full 10-layer core",
     status: "Mainnet live",
     body: "One endpoint for the whole YieldBoost stack: TEE, ZK, 0G Storage, ProofRegistry, governance, and memory.",
     endpoint: "/api/dev/store/military-grade",
@@ -78,7 +78,7 @@ export default function DeveloperLandingView({
     <DeveloperPortalShell
       eyebrow="Dev Portal"
       title="Mainnet API products for proof-backed AI finance."
-      description="Buy the full 9-layer YieldBoost core, selected partner wrappers, anti-sybil gates, and the new AWS Nitro fortress module from one developer armory."
+      description="Buy the full 10-layer TITAN X PROTOCOL core, selected partner wrappers, anti-sybil gates, and the new AWS Nitro fortress module from one developer armory."
     >
       {/* ── HERO PANEL ────────────────────────────────────── */}
       <section className="hero-panel fade-in-up fade-in-up-1 p-6 md:p-10">
@@ -92,7 +92,7 @@ export default function DeveloperLandingView({
               One store for the 9&#8209;layer core, partner wrappers, and enclave&#8209;grade security modules.
             </h2>
             <p className="mt-5 max-w-xl text-[16px] leading-8 text-[#d0dde8] md:text-[17px]">
-              YieldBoost does not just sell one security rail. Developers can buy the full 9-layer military-grade endpoint, selected partner wrappers like VeilSolver, the anti-sybil screening gate, and the new AWS Nitro fortress SDK with 0G Storage memory and a 0G TEE badge.
+              YieldBoost does not just sell one security rail. Developers can buy the full 10-layer TITAN X PROTOCOL endpoint, selected partner wrappers like VeilSolver, the anti-sybil screening gate, and the new AWS Nitro fortress SDK with 0G Storage memory and a 0G TEE badge.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link href="/dev/marketplace" className="yb-teal-button inline-flex items-center gap-2.5 rounded-xl px-7 py-3.5 text-[15px] font-bold text-slate-950">
@@ -108,7 +108,7 @@ export default function DeveloperLandingView({
             </div>
           </div>
 
-          {/* Mini 9-layer vertical rail in hero */}
+          {/* Mini 10-layer vertical rail in hero */}
           <div className="w-full max-w-[320px] shrink-0 rounded-2xl border border-[rgba(0,201,177,0.12)] bg-[rgba(3,8,16,0.50)] p-4 backdrop-blur-xl lg:w-[300px]">
             <div className="mb-3 flex items-center justify-between">
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#72f3c7]">Security Stack</p>
@@ -164,7 +164,7 @@ export default function DeveloperLandingView({
       <section className="fade-in-up fade-in-up-3 grid gap-4 sm:grid-cols-3">
         {[
           { icon: KeyRound, label: "Wallet Gated", text: "Each package is activated by the same wallet that owns the developer session.", accent: "#72f3c7" },
-          { icon: Gauge, label: "Live Scope", text: "User-facing routes now cover the full 9-layer core, Nitro fortress, partner wrapper, and anti-sybil screening module.", accent: "#63d8ff" },
+          { icon: Gauge, label: "Live Scope", text: "User-facing routes now cover the full 10-layer core, Nitro fortress, partner wrapper, and anti-sybil screening module.", accent: "#63d8ff" },
           { icon: ShieldCheck, label: "Proof Native", text: "API keys are package-scoped and checked by the YieldBoost integrity layer.", accent: "#72f3c7" },
         ].map((item) => (
           <div key={item.label} className="glow-card p-5">
@@ -302,7 +302,7 @@ export default function DeveloperLandingView({
             </div>
           </div>
           <p className="mt-4 max-w-2xl text-[15px] leading-7 text-[#c8dae6]">
-            This store now carries three clear business rails: the native 9-layer YieldBoost stack, selected wrapped partner modules, and fortress-grade security products like Nitro and anti-sybil screening.
+            This store now carries three clear business rails: the native 10-layer YieldBoost stack, selected wrapped partner modules, and fortress-grade security products like Nitro and anti-sybil screening.
           </p>
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
             <div className="bunker-inner-card rounded-xl p-4">

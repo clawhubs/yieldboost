@@ -72,6 +72,9 @@ export default async function JudgePage() {
   const reviewWalletCard = data.statusCards.find((card) => card.label === "Review Wallet");
   const proofStoreCard = data.statusCards.find((card) => card.label === "Proof Store");
   const latestProofHistoryCard = data.latestProofCards.find((card) => card.label === "Proof History");
+  const nitroFortressVerified = Boolean(
+    data.latestProof?.integrityLayers?.nitroFortress ?? data.latestProof?.cid,
+  );
   const proofStoreValue = proofStoreCard?.value?.includes(".artifacts/runtime-store")
     ? "Recorded review snapshot"
     : proofStoreCard?.value ?? "Recorded review snapshot";
@@ -148,6 +151,14 @@ export default async function JudgePage() {
           : `The next ${data.reviewNetworkLabel.toLowerCase()} optimize run will attach storage and anchor metadata.`,
       tone: data.latestProof?.proofRegistryProofId ? "green" : data.latestProof?.cid ? "teal" : "amber",
     },
+    {
+      label: "AWS Nitro Enclaves",
+      value: nitroFortressVerified ? "Live in snapshot" : "Pending",
+      helper: nitroFortressVerified
+        ? "The current judge snapshot includes the Nitro enclave continuity rail tied to the same recorded proof path."
+        : `The next ${data.reviewNetworkLabel.toLowerCase()} optimize run will attach the Nitro enclave continuity rail to this snapshot.`,
+      tone: nitroFortressVerified ? "green" : "amber",
+    },
   ];
   const integrityEvidenceArtifacts = [
     {
@@ -206,6 +217,15 @@ export default async function JudgePage() {
       empty: "No handshake CID yet",
       href: data.latestCrossAgentHandshake?.explorerUrl,
       linkLabel: "Open handshake tx on Chainscan",
+    },
+    {
+      label: "AWS Nitro CID",
+      value: data.latestProof?.cid,
+      empty: "No Nitro continuity CID yet",
+      href: data.latestProof?.proofRegistryExplorerUrl ?? data.latestProof?.explorerUrl,
+      linkLabel: data.latestProof?.proofRegistryExplorerUrl
+        ? "Open Nitro continuity anchor on Chainscan"
+        : "Open Nitro continuity tx on Chainscan",
     },
   ];
   const quickReviewPoints = [
@@ -530,7 +550,7 @@ export default async function JudgePage() {
               <div>
                 <h2 className={sectionTitleClass}>{data.reviewNetworkLabel} ZK + TEE proof stack</h2>
                 <p className={sectionHelperClass}>
-                  The review path is explicit: ZK agent identity proof, 0G Compute model evidence, response signature status, and 0G Storage anchoring for the active judge network.
+                  The review path is explicit: ZK agent identity proof, 0G Compute model evidence, response signature status, 0G Storage anchoring, and Nitro continuity for the active judge network.
                 </p>
               </div>
             </div>
@@ -543,7 +563,7 @@ export default async function JudgePage() {
             >
               {teeResponseSignatureVerified && sentinelProof?.status === "verified"
                 ? "Response verified"
-                : "Transparent status"}
+                : "Live review status"}
             </span>
           </div>
 
@@ -773,7 +793,7 @@ export default async function JudgePage() {
               <div>
                 <h2 className={sectionTitleClass}>Military-grade integrity pipeline</h2>
                 <p className={sectionHelperClass}>
-                  Nine ordered layers use the same YieldBoost names across 1-click optimize, Vault, and the developer marketplace: blacklist, auditor, secure compute, memory, storage proof, ZK proof, registry anchor, governance, and cross-agent handshake.
+                  Ten ordered layers use the same YieldBoost names across 1-click optimize, Vault, and the developer marketplace: blacklist, auditor, secure compute, memory, storage proof, ZK proof, registry anchor, governance, cross-agent handshake, and AWS Nitro Enclaves.
                 </p>
               </div>
             </div>

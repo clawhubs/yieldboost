@@ -134,7 +134,7 @@ function responseShape(product: ApiMarketplaceProduct) {
 
   return `{
   "status": "success",
-  "security": "${product.category === "full-stack" ? "9-Layer Verified" : "Single Layer Verified"}",
+  "security": "${product.category === "full-stack" ? "10-Layer TITAN X PROTOCOL Verified" : "Single Layer Verified"}",
   "data": {
     "accepted": true,
     "payload": { "...": "your request" }
@@ -300,6 +300,16 @@ export default function DeveloperApiProductDocs({
                   ))}
                 </div>
               </div>
+              {product.category === "full-stack" ? (
+                <div className="rounded-[16px] border border-[rgba(34,221,208,0.14)] bg-black/20 p-4">
+                  <div className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#9ff7f0]">
+                    TITAN X PROTOCOL
+                  </div>
+                  <p className="mt-2 text-[13px] leading-6 text-[#c8dae6]">
+                    This endpoint returns the complete 10-layer proof family in one response, including Layer 10 AWS Nitro Enclaves continuity metadata.
+                  </p>
+                </div>
+              ) : null}
             </div>
           </aside>
 

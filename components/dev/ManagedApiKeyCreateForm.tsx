@@ -145,7 +145,7 @@ export default function ManagedApiKeyCreateForm({
       const signature = await signer.signMessage(message);
       setActivationSignature(signature);
       setActivationExpiresAt(String(expiresAt));
-      setActivationStatus("Running 9-layer checkout guard...");
+      setActivationStatus("Running 10-layer checkout guard...");
       await runCheckoutLayerPreview();
       setActivationStatus("Package activation signed and verified.");
     } catch (error) {

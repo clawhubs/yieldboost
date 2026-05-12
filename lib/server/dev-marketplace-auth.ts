@@ -186,7 +186,7 @@ export function ensureMarketplacePlanAccess(
           auth.plan === "protocol"
             ? "Marketplace access denied."
             : auth.plan === "builder"
-              ? "This package does not include full 9-layer compute, TEE, AWS Nitro Fortress, or partner SDK access."
+              ? "This package does not include full 10-layer TITAN X PROTOCOL compute, TEE, AWS Nitro Fortress, or partner SDK access."
               : auth.plan === "pro"
                 ? "This package includes Alibaba fingerprinting and verification modules, but it does not include TEE, AWS Nitro Fortress, or partner SDK access."
                 : "This package is limited to non-AI verification modules. Upgrade to Protocol for full compute, Nitro, and partner access.",

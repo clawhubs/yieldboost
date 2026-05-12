@@ -66,6 +66,7 @@ export interface OptimizationResult {
     governance?: boolean;
     neuralHandshake?: boolean;
     zkCompliance?: boolean;
+    nitroFortress?: boolean;
   };
 }
 

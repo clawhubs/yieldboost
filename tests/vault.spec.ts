@@ -6,13 +6,11 @@ test("Vault dashboard loads the forge, pipeline, and vault panels", async ({ pag
   await expect(page.getByText("YIELDBOOST VAULT")).toBeVisible();
   await expect(page.getByRole("heading", { name: "CRACK THE SHIELD: 6-Month Dedicated VPS Prize" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "The Forge" })).toBeVisible();
-  await expect(page.getByText("Integrity Pipeline")).toBeVisible();
+  await expect(page.getByText("10-Layer Integrity Protocol")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Live Challenge Vault" })).toBeVisible();
-  await expect(page.getByText("challenge-vault.enc")).toBeVisible();
-  await expect(page.getByText("Founder Upload Pending").first()).toBeVisible();
   await expect(page.getByRole("heading", { name: "The Vault" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Seal", exact: true })).toBeDisabled();
-  await expect(page.getByRole("button", { name: "Founder Upload Pending" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: /Founder Upload Pending|Attempt Unseal Challenge Vault/ })).toBeVisible();
 
   await page.screenshot({
     path: "test-results/vault-desktop.png",
@@ -26,9 +24,12 @@ test("Vault dashboard keeps primary panels usable on mobile", async ({ page }) =
 
   await expect(page.getByText("YIELDBOOST VAULT")).toBeVisible();
   await expect(page.getByRole("heading", { name: "The Forge" })).toBeVisible();
-  await expect(page.getByText("L1: Hallucination Blacklist")).toBeVisible();
+  await expect(page.getByText("10-Layer Integrity Protocol")).toBeVisible();
+  await page.getByRole("button", { name: /Live proof banner/i }).click();
+  await expect(page.getByText("Hallucination Blacklist").first()).toBeVisible();
+  await expect(page.getByText("AWS Nitro Enclaves").first()).toBeVisible();
   await expect(page.getByRole("heading", { name: "Live Challenge Vault" })).toBeVisible();
-  await expect(page.getByText("challenge-vault.enc")).toBeVisible();
+  await expect(page.getByText("Challenge Target", { exact: true }).first()).toBeVisible();
   await expect(page.getByRole("button", { name: "Connect Wallet" })).toBeVisible();
 
   await page.screenshot({
@@ -37,7 +38,7 @@ test("Vault dashboard keeps primary panels usable on mobile", async ({ page }) =
   });
 });
 
-test("seal flow shows a visible 9-layer progress banner", async ({ page }) => {
+test("seal flow shows a visible 10-layer progress banner", async ({ page }) => {
   await page.addInitScript(() => {
     const listeners = new Map<string, Set<(...args: unknown[]) => void>>();
     const account = "0x5C78269a85Bc1fB36fe31D5aa84ad98E14B95525";
@@ -122,6 +123,7 @@ test("seal flow shows a visible 9-layer progress banner", async ({ page }) => {
           L7: "Passed",
           L8: "Passed",
           L9: "Passed",
+          L10: "Passed",
         },
       }),
     });
@@ -142,9 +144,9 @@ test("seal flow shows a visible 9-layer progress banner", async ({ page }) => {
   const progressBanner = page.getByTestId("vault-seal-progress-banner");
   await expect(progressBanner).toBeVisible();
   await expect(
-    page.getByText(/Waiting for wallet confirmation|9-layer seal pipeline running|Upload accepted|Sync almost complete/),
+    page.getByText(/Waiting for wallet confirmation|10-layer seal pipeline running|Upload accepted|Sync almost complete/),
   ).toBeVisible();
-  await expect(page.getByText("Your file is being sealed by the 9-layer vault pipeline.")).toBeVisible();
+  await expect(page.getByText("Your file is being sealed by the 10-layer vault pipeline.")).toBeVisible();
   await expect(progressBanner.getByText("L1", { exact: true })).toBeVisible();
-  await expect(progressBanner.getByText("L9", { exact: true })).toBeVisible();
+  await expect(progressBanner.getByText("L10", { exact: true })).toBeVisible();
 });

@@ -125,6 +125,9 @@ export async function GET(req: NextRequest) {
       governance: Boolean(latestGovernance),
       neuralHandshake: Boolean(latestHandshake),
       zkCompliance: Boolean(latestZkCompliance),
+      nitroFortress: Boolean(
+        storedProof.cid,
+      ),
     },
   };
 

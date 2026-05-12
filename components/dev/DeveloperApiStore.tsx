@@ -7,7 +7,7 @@ import { ArrowRight, BookOpen, Copy, Layers3, ShieldCheck } from "lucide-react";
 import { API_MARKETPLACE_PRODUCTS } from "@/lib/military-grade-api-marketplace";
 
 function categoryLabel(category: string, layerId?: string) {
-  if (category === "full-stack") return "Full 9-layer";
+  if (category === "full-stack") return "Full 10-layer";
   if (category === "security-module") return "Mainnet module";
   if (category === "partner-sdk") return "Partner SDK";
   return `Layer ${layerId}`;
@@ -33,7 +33,7 @@ export default function DeveloperApiStore() {
             API products for every verification path.
           </h2>
           <p className="mt-2 max-w-3xl text-[14px] leading-6 text-[#c8dae6]">
-            A developer store with a full military-grade stack, a dedicated anti-sybil mainnet module, an AWS Nitro fortress SDK, single-layer verification APIs, and secure proxy products ready for playground testing and API-key integration.
+            A developer store with the full TITAN X PROTOCOL stack, a dedicated anti-sybil mainnet module, an AWS Nitro fortress SDK, single-layer verification APIs, and secure proxy products ready for playground testing and API-key integration.
           </p>
         </div>
         <div className="rounded-xl border border-[rgba(0,201,177,0.18)] bg-[rgba(0,201,177,0.06)] px-4 py-3 text-[13px] font-bold text-[#dfffe4]">
@@ -93,7 +93,7 @@ export default function DeveloperApiStore() {
                 ))
               ) : (
                 product.layers
-                  .slice(0, product.category === "single-layer" ? 1 : product.category === "security-module" ? 4 : 9)
+                  .slice(0, product.category === "single-layer" ? 1 : product.category === "security-module" ? 4 : product.layers.length)
                   .map((layer) => (
                   <div key={layer.id} className="flex items-start gap-2 text-[11px] leading-5 text-[#b7c7d2]">
                     <span className="rounded-full border border-[#72f3c7]/20 bg-[#72f3c7]/10 px-2 py-0.5 font-bold text-[#9ff7f0]">
