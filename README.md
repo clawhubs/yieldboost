@@ -52,7 +52,7 @@
 YieldBoost AI has three clear product surfaces built on one 9-layer stack:
 
 - **1-click optimize for users:** idle crypto balances are turned into proof-backed yield routes.
-- **API marketplace for developers:** the full stack is sold as a complete endpoint, single layers are sold individually, and partner SDKs can use selected YieldBoost protections.
+- **API marketplace for developers:** the full stack is sold as a complete endpoint, single layers are sold individually, fortress modules such as AWS Nitro are sold with narrower package scope, and partner SDKs can use selected YieldBoost protections.
 - **Vault and anti-sybil example for public testing:** the security model is exposed to attackers, claim abuse, and repeated public challenge traffic.
 
 The 1-click optimizer is designed for two simple user groups:
@@ -83,7 +83,7 @@ The result is a product story judges can verify quickly: a user runs an optimiza
 
 The network split is intentional and should be read honestly:
 
-- **Mainnet-first product surfaces:** 1-click optimize, judge review, API / SDK marketplace, and the anti-sybil + ZK + Alibaba fingerprinting module.
+- **Mainnet-first product surfaces:** 1-click optimize, judge review, API / SDK marketplace, the AWS Nitro fortress module, and the anti-sybil + ZK + Alibaba fingerprinting module.
 - **Testnet-only public challenge surfaces:** vault challenge and the public anti-sybil airdrop example.
 - **Why testnet still exists:** those two surfaces benefit from many external testers, and testnet lets people attack, retry, and learn the system without forcing every tester to spend mainnet gas.
 
@@ -150,7 +150,7 @@ The core of the repo is not only the optimizer UI. It is the **standalone YieldB
 That same stack is exposed through three different product surfaces:
 
 - **1-click optimize for users:** one wallet action turns idle balances into a proof-backed yield route.
-- **Marketplace APIs for developers and companies:** the YieldBoost-native 9-layer stack can be bought as infrastructure, one layer at a time or as the full military-grade package. Partner SDK wrappers are narrower selected-protection products.
+- **Marketplace APIs for developers and companies:** the YieldBoost-native 9-layer stack can be bought as infrastructure, one layer at a time or as the full military-grade package. Fortress modules such as AWS Nitro and partner SDK wrappers are narrower selected-protection products.
 - **Vault and anti-sybil faucet for public testing:** the security model is challenged in public, while the faucet acts as a real anti-sybil airdrop-style example using the same broader verification family.
 
 Each approved optimization becomes a stored and reviewable finance artifact:
@@ -174,6 +174,7 @@ The live product is now **mainnet-first**.
 | Judge entry point | Mainnet-first | [`/judge`](https://yieldboostai.xyz/judge) |
 | Developer portal | Mainnet-first | [`dev.yieldboostai.xyz`](https://dev.yieldboostai.xyz/) |
 | API marketplace | Mainnet-first | [`/marketplace`](https://dev.yieldboostai.xyz/marketplace) |
+| AWS Nitro fortress module | Mainnet product module | [`nitro.yieldboostai.xyz`](https://nitro.yieldboostai.xyz/) |
 | Anti-sybil + ZK + Alibaba module | Mainnet product module | Sold inside the marketplace as a security API. |
 | Public Integrity API | Mainnet-first | [`api.yieldboostai.xyz`](https://api.yieldboostai.xyz/) |
 | Public challenge vault | Testnet challenge | [`/vault`](https://yieldboostai.xyz/vault) |

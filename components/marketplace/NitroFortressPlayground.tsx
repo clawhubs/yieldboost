@@ -253,7 +253,7 @@ export default function NitroFortressPlayground() {
             </div>
 
             <label className="mt-4 block">
-              <span className="text-[12px] font-semibold text-[#dce7ef]">Kasih rahasia lu ke prajurit ini</span>
+              <span className="text-[12px] font-semibold text-[#dce7ef]">Hand a secret to the fortress soldier</span>
               <textarea
                 value={secret}
                 onChange={(event) => setSecret(event.target.value)}
