@@ -10,7 +10,6 @@ import {
 
 import DevPortalAccessCard from "@/components/dev/DevPortalAccessCard";
 import DevPlanActionButton from "@/components/dev/DevPlanActionButton";
-import DevCookieBar from "@/components/dev/DevCookieBar";
 import DeveloperPortalShell from "@/components/dev/DeveloperPortalShell";
 import FaqAccordion from "@/components/dev/FaqAccordion";
 import { YA_API_PLANS } from "@/lib/ya-api-plans";
@@ -448,8 +447,6 @@ export default function DeveloperLandingView({
           </div>
         </div>
       </footer>
-
-      <DevCookieBar />
     </DeveloperPortalShell>
   );
 }
