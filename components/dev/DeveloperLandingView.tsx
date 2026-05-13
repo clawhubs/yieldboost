@@ -10,6 +10,7 @@ import {
 
 import DevPortalAccessCard from "@/components/dev/DevPortalAccessCard";
 import DevPlanActionButton from "@/components/dev/DevPlanActionButton";
+import DevCookieBar from "@/components/dev/DevCookieBar";
 import DeveloperPortalShell from "@/components/dev/DeveloperPortalShell";
 import FaqAccordion from "@/components/dev/FaqAccordion";
 import { YA_API_PLANS } from "@/lib/ya-api-plans";
@@ -402,11 +403,27 @@ export default function DeveloperLandingView({
       <footer className="fade-in-up fade-in-up-6 glow-card p-6 md:p-8">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#72f3c7]">Product route</p>
-          <h2 className="mt-2 text-[20px] font-semibold text-white md:text-[22px]">Store first. Keep the story tight.</h2>
-          <p className="mt-2 max-w-2xl text-[14px] leading-7 text-[#c8dae6]">
-              YieldBoost AI Protocol is sold through the store, proven through TITAN X, and explained through the brief and roadmap. This footer keeps only the operational links that still matter at the end of the page.
-          </p>
+            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#72f3c7]">YieldBoost AI Protocol</p>
+            <h2 className="mt-2 text-[20px] font-semibold text-white md:text-[22px]">
+              Commercial infrastructure for secure, proof-backed Web3 AI systems.
+            </h2>
+            <p className="mt-2 max-w-2xl text-[14px] leading-7 text-[#c8dae6]">
+              Sold through the store, demonstrated through TITAN X, and supported by the brief, roadmap, pitch deck, and live proof surfaces.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-[13px] text-[#b8c9d6]">
+              <Link href="/dev/about" className="transition hover:text-[#9ff7f0]">
+                About
+              </Link>
+              <Link href="/dev/refund-policy" className="transition hover:text-[#9ff7f0]">
+                Refund Policy
+              </Link>
+              <Link href="/dev/terms" className="transition hover:text-[#9ff7f0]">
+                Terms of Service
+              </Link>
+              <Link href="/dev/privacy" className="transition hover:text-[#9ff7f0]">
+                Privacy Policy
+              </Link>
+            </div>
           </div>
 
           <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
@@ -431,6 +448,8 @@ export default function DeveloperLandingView({
           </div>
         </div>
       </footer>
+
+      <DevCookieBar />
     </DeveloperPortalShell>
   );
 }
