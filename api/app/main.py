@@ -36,7 +36,7 @@ def create_app() -> FastAPI:
         version=settings.app_version,
         debug=settings.debug,
         description=(
-            "YieldBoost AI 9-Layer Integrity API on 0G. Use the developer portal to create "
+            "YieldBoost AI 10-Layer Integrity API on 0G. Use the developer portal to create "
             "an API key, then send it on every protected request as the `X-API-Key` header. "
             "Public routes expose the integrity pipeline itself: seal/unseal, layer checks, "
             "proof envelopes, governance evaluation, handshake logging, and status."
@@ -44,7 +44,7 @@ def create_app() -> FastAPI:
         openapi_tags=[
             {
                 "name": "integrity",
-                "description": "Public 9-layer integrity surface for seal, unseal, and proof-backed metadata.",
+                "description": "Public 10-layer integrity surface for seal, unseal, and proof-backed metadata.",
             },
             {
                 "name": "health",
@@ -72,7 +72,7 @@ def create_app() -> FastAPI:
             },
             {
                 "name": "platform-status",
-                "description": "Platform-centric status views for the 9-layer stack.",
+                "description": "Platform-centric status views for the 10-layer stack.",
             },
         ],
     )

@@ -1,7 +1,7 @@
 [project]
 name = "yieldboost-integrity-api"
 version = "0.1.0"
-description = "API-first 9-layer Integrity service for YieldBoost AI"
+description = "API-first 10-layer Integrity service for YieldBoost AI"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

@@ -60,8 +60,8 @@ const productRails = [
 const showcaseLinks = [
   { label: "Open 1-Click showcase", href: "https://yieldboostai.xyz/", badge: "DEMO", newTab: true },
   { label: "Open verification console", href: "/dev/audit", badge: "AUDIT PROOF", newTab: false },
-  { label: "Open vault flow", href: "/vault", badge: "DEMO", newTab: true },
-  { label: "Open faucet flow", href: "/faucet", badge: "DEMO", newTab: true },
+  { label: "Open vault flow", href: "https://yieldboostai.xyz/vault", badge: "DEMO", newTab: true },
+  { label: "Open faucet flow", href: "https://yieldboostai.xyz/faucet", badge: "DEMO", newTab: true },
 ];
 
 const footerGroups = [
@@ -219,7 +219,7 @@ export default function DeveloperLandingView({
       </section>
 
       {/* ── CHECKOUT FLOW + WALLET RULE ───────────────────── */}
-      <section className="glow-card fade-in-up fade-in-up-3 p-6">
+      <section id="connect-api" className="glow-card fade-in-up fade-in-up-3 p-6 scroll-mt-8">
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
           <div className="rounded-2xl border border-[rgba(0,201,177,0.08)] bg-[rgba(0,201,177,0.03)] p-5 md:px-6">
             <div className="flex items-center gap-2">

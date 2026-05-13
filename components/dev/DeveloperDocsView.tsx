@@ -134,12 +134,12 @@ const endpointTable = [
   {
     method: "GET",
     path: "/v1/status/layers",
-    description: "Read platform status for each of the 9 layers as its own product surface.",
+    description: "Read platform status for each of the 10 layers as its own product surface.",
   },
   {
     method: "GET",
     path: "/v1/health",
-    description: "Check infra readiness, active network, and live L1-L9 status.",
+    description: "Check infra readiness, active network, and live L1-L10 status.",
   },
 ];
 
@@ -153,6 +153,7 @@ const layerCards = [
   ["L7", "ProofRegistry Anchor", "Storage commitments are anchored to 0G so records become externally inspectable."],
   ["L8", "Programmable Governance", "Policy gates, rate limits, and circuit breakers protect the surface."],
   ["L9", "Cross-Agent Neural Handshake", "Security logs and cross-agent audit traces preserve operational accountability."],
+  ["L10", "AWS Nitro Enclaves", "Continuity rail and enclave witness for the full-stack product surface."],
 ];
 
 export default function DeveloperDocsView() {

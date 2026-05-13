@@ -97,8 +97,8 @@ async def _parse_seal_request(request: Request) -> SealRequest:
     "/seal",
     response_model=SealResponse,
     responses={400: {"model": ErrorResponse}, 401: {"model": ErrorResponse}, 422: {"model": ErrorResponse}, 429: {"model": ErrorResponse}, 500: {"model": ErrorResponse}},
-    summary="Run the 9-layer integrity seal pipeline",
-    description="Accepts plaintext or file input, verifies wallet ownership, executes the full 9-layer integrity stack, encrypts inside isolated compute, and returns proof-backed storage metadata.",
+    summary="Run the 10-layer integrity seal pipeline",
+    description="Accepts plaintext or file input, verifies wallet ownership, executes the full 10-layer integrity stack, encrypts inside isolated compute, and returns proof-backed storage metadata.",
 )
 async def seal_vault(
     request: Request,
@@ -151,7 +151,7 @@ async def list_vaults(
     "/unseal",
     response_model=UnsealResponse,
     responses={400: {"model": ErrorResponse}, 401: {"model": ErrorResponse}, 403: {"model": ErrorResponse}, 404: {"model": ErrorResponse}, 500: {"model": ErrorResponse}},
-    summary="Run the 9-layer integrity unseal pipeline",
+    summary="Run the 10-layer integrity unseal pipeline",
     description="Re-verifies wallet ownership, re-enters isolated compute, enforces owner-only access, and returns raw data only to the authorized requester.",
 )
 async def unseal_vault(

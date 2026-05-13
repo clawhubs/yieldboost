@@ -13,7 +13,7 @@ export default async function DeveloperAppsPage({
 }) {
   const session = await getPortalSession();
   if (!session) {
-    redirect("/dev");
+    redirect("/dev#connect-api");
   }
   const apiKeys = await getManagedApiKeysForWallet(session.walletAddress);
   const resolvedSearchParams = searchParams ? await searchParams : {};

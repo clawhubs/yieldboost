@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Code2, KeyRound, Layers3, Rocket, Shield, ShieldCheck, TerminalSquare } from "lucide-react";
+import { Code2, KeyRound, Layers3, ShieldCheck, TerminalSquare } from "lucide-react";
 import ParticleCanvas from "@/components/dev/ParticleCanvas";
 
 interface DeveloperPortalShellProps {
@@ -10,11 +10,9 @@ interface DeveloperPortalShellProps {
 }
 
 const navigation = [
-  { href: "/dev", label: "Overview", sublabel: "Protocol hub", icon: Shield },
   { href: "/dev/marketplace", label: "Modular Immunity Armory", sublabel: "Store catalog", icon: Layers3 },
   { href: "/dev/docs", label: "Docs", sublabel: "Integration guide", icon: Code2 },
-  { href: "https://yieldboostai.xyz/", label: "1-Click App", sublabel: "Yield showcase", icon: Rocket },
-  { href: "/dev/apps", label: "Dashboard", sublabel: "Wallet checkout", icon: KeyRound },
+  { href: "/dev/apps", label: "Dashboard", sublabel: "Connect wallet / app keys", icon: KeyRound },
   { href: "/dev/audit", label: "Audit", sublabel: "Proof console", icon: ShieldCheck },
   { href: "https://api.yieldboostai.xyz/docs", label: "OpenAPI", sublabel: "Live API ref", icon: TerminalSquare },
 ];

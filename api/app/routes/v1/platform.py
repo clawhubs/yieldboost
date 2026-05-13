@@ -109,7 +109,7 @@ async def handshake_log(
     "/layers",
     response_model=LayerStatusResponse,
     responses={401: {"model": ErrorResponse}},
-    summary="Read detailed 9-layer status",
+    summary="Read detailed 10-layer status",
     description="Read readiness for each security layer and its supporting infrastructure. This is the platform-centric status view above raw health.",
 )
 async def status_layers(

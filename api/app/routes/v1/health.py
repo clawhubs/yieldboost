@@ -12,7 +12,7 @@ router = APIRouter(prefix="/v1", tags=["health"])
     response_model=HealthResponse,
     responses={500: {"model": ErrorResponse}},
     summary="Check integrity API health",
-    description="Returns infrastructure and 9-layer pipeline readiness.",
+    description="Returns infrastructure and 10-layer pipeline readiness.",
 )
 async def get_health(request: Request) -> HealthResponse:
     pipeline = request.app.state.integrity_pipeline
