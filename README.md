@@ -155,13 +155,20 @@ VeilSolver Secure Proxy is a partner SDK example inside the store: YieldBoost wr
 
 ## Early Signals
 
-- **9 unique wallets** recorded in the live proof history.
-- **51 proof-backed compute jobs** processed through the flagship execution path.
-- **$671 tracked portfolio value** passed through the live showcase flow.
-- **93 blocked public challenge attempts** recorded on the vault challenge surface.
-- **2 protocol routes** observed in the current proof-backed recommendation set.
-
 These are early, real usage signals captured from the live public surfaces of YieldBoost AI as of **May 14, 2026**. They reflect the current commercial MVP, flagship product MVP, and public challenge flows, not fabricated growth claims.
+
+| Signal | Snapshot | Evidence |
+| --- | --- | --- |
+| Unique wallets observed | **9 wallets** | [`/api/stats/global`](https://yieldboostai.xyz/api/stats/global) returns `users: 9` |
+| Proof-backed execution jobs | **51 jobs** | [`/api/stats/global`](https://yieldboostai.xyz/api/stats/global) returns `computeJobs: 51` |
+| Tracked portfolio value processed | **$671** | [`/api/stats/global`](https://yieldboostai.xyz/api/stats/global) returns `tvl: 671.39` |
+| Blocked public challenge attempts | **93 deflected attempts** | [`/v1/admin/public-stats`](https://api.yieldboostai.xyz/v1/admin/public-stats) returns `total_deflected_attacks: 93` |
+| Proof-backed recommendation routes visible | **2 routes** | [`/api/stats/global`](https://yieldboostai.xyz/api/stats/global) returns `protocols: 2` |
+
+Supporting live surfaces:
+
+- [`yieldboostai.xyz/api/history`](https://yieldboostai.xyz/api/history) exposes the current proof-backed timeline and verification summary.
+- [`dev.yieldboostai.xyz/audit`](https://dev.yieldboostai.xyz/audit) exposes the live verification console where the latest proof, anchors, and integrity layers can be inspected.
 
 ## The Problem
 
