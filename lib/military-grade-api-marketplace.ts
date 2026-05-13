@@ -257,7 +257,7 @@ const veilSolverWrapperLayers: ApiMarketplaceLayer[] = [
   },
 ];
 
-const TITAN_X_PROTOCOL_LAYERS: ApiMarketplaceLayer[] = [
+const TITAN_PROTOCOL_LAYERS: ApiMarketplaceLayer[] = [
   ...MILITARY_GRADE_API_LAYERS,
   TITAN_X_NITRO_LAYER,
 ];
@@ -283,18 +283,18 @@ const layerProducts: ApiMarketplaceProduct[] = MILITARY_GRADE_API_LAYERS.map((la
 export const API_MARKETPLACE_PRODUCTS: ApiMarketplaceProduct[] = [
   {
     id: "military-grade-full",
-    name: "Full 10-Layer TITAN X PROTOCOL API",
+    name: "Full 10-Layer TITAN PROTOCOL API",
     partner: "YieldBoost 0G",
     tagline: "All ten verification layers in one endpoint",
     description:
-      "One endpoint that runs the complete YieldBoost TITAN X PROTOCOL pipeline: Hallucination Blacklist, Integrity Auditor, Secure Compute / TEE, Sovereign Memory, 0G Storage Proof Layer, Zero-Knowledge Proof Layer, ProofRegistry Anchor, Programmable Governance, Cross-Agent Neural Handshake, and AWS Nitro Enclaves.",
+      "One endpoint that runs the complete YieldBoost TITAN PROTOCOL pipeline: Hallucination Blacklist, Integrity Auditor, Secure Compute / TEE, Sovereign Memory, 0G Storage Proof Layer, Zero-Knowledge Proof Layer, ProofRegistry Anchor, Programmable Governance, Cross-Agent Neural Handshake, and AWS Nitro Enclaves.",
     logoPath: "/marketplace/ya-9-layer-logo.png",
     endpoint: "/api/dev/store/military-grade",
     playgroundPath: "/dev/marketplace/military-grade-full",
     docsPath: "/dev/marketplace/military-grade-full/docs",
     status: "mainnet-live",
     category: "full-stack",
-    layers: TITAN_X_PROTOCOL_LAYERS,
+    layers: TITAN_PROTOCOL_LAYERS,
     plans: PROTOCOL_ONLY_PLANS,
     sdkSnippet: buildLayerSdkSnippet("/api/dev/store/military-grade"),
   },
@@ -371,7 +371,7 @@ const result = await response.json();`,
     partner: "Shlok / VeilSolver",
     tagline: "Private Intent Solver on 0G",
     description:
-      "Partner SDK: the VeilSolver SDK is wrapped by selected YieldBoost protections: isolated execution, partner solver response handling, a ZK proof envelope, and a 0G response anchor. The full 10-layer TITAN X PROTOCOL is a separate YieldBoost-native product.",
+      "Partner SDK: the VeilSolver SDK is wrapped by selected YieldBoost protections: isolated execution, partner solver response handling, a ZK proof envelope, and a 0G response anchor. The full 10-layer TITAN PROTOCOL is a separate YieldBoost-native product.",
     logoPath: "/marketplace/veilsolver-logo.svg",
     endpoint: "/api/dev/store/veilsolver",
     playgroundPath: "/dev/marketplace/veilsolver",

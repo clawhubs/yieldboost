@@ -76,7 +76,7 @@ export const YA_API_PLANS: YaApiPlan[] = [
       "Deterministic verification modules",
       "Alibaba anti-sybil marketplace module",
       "Governance + handshake APIs",
-      "No full 9-layer compute or partner SDK",
+      "No full 10-layer TITAN PROTOCOL compute or partner SDK",
     ],
   },
   {
@@ -138,7 +138,7 @@ export const YA_API_PLANS: YaApiPlan[] = [
     features: [
       "10 production API keys",
       "2M requests per month",
-      "Full 9-layer compute, TEE, and AWS Nitro Fortress access",
+      "Full 10-layer TITAN PROTOCOL compute, TEE, and AWS Nitro Fortress access",
       "Alibaba anti-sybil + VeilSolver partner SDK",
       "Vault seal, unseal, delete, and white-label path",
       "Custom rate limit",

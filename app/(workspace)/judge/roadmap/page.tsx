@@ -17,9 +17,7 @@ import {
   Rocket,
   ShieldCheck,
   Store,
-  Sword,
   TrendingUp,
-  Vault,
 } from "lucide-react";
 import JudgeModeBootstrap from "@/components/judge/JudgeModeBootstrap";
 import JudgeSnapshotAutoRefresh from "@/components/judge/JudgeSnapshotAutoRefresh";
@@ -38,44 +36,44 @@ const phaseCards = [
     id: "01",
     status: "LIVE",
     window: "Now / Q2 2026",
-    title: "Core Fortress",
-    focus: "The product is already live: user optimizer, 10-layer proof stack, API store, vault challenge, and anti-sybil example.",
+    title: "Infrastructure Core",
+    focus: "The product is already live as a B2B infrastructure stack: TITAN PROTOCOL marketplace, flagship showcase, interactive judge terminal, and selected public challenge surfaces.",
     icon: ShieldCheck,
     color: "teal",
     checkpoints: [
-      "Mainnet 10-layer core for proof-backed optimization",
-      "1-click optimize for idle balances",
+      "Mainnet TITAN PROTOCOL marketplace",
+      "Flagship 1-click showcase on 0G Mainnet",
+      "Interactive judge terminal with live audit trail",
       "0G Storage + ProofRegistry anchor path",
       "Native 0G-priced API tiers in Modular Immunity Armory",
       "Selected partner SDK wrapper model",
       "Anti-sybil + Alibaba fingerprinting module",
-      "Secure Vault challenge surface",
-      "Public faucet as an anti-sybil airdrop example",
+      "Public challenge surfaces for hostile testing",
     ],
-    money: "This is the current business base: users get yield routes, builders buy security modules, and public testers challenge the defense model.",
+    money: "This is the current business base: developers buy modular integrity, enterprises buy trust infrastructure, the showcase proves commercial usability, and public testers challenge selected defenses.",
   },
   {
     id: "02",
     status: "NEXT",
     window: "Q3/Q4 2026",
-    title: "Liquidity Hub",
-    focus: "Scale the live product into stronger liquidity, automation, and partner distribution.",
+    title: "Distribution Scale",
+    focus: "Scale the live infrastructure into broader developer adoption, partner distribution, and stronger commercial packaging.",
     icon: TrendingUp,
     color: "green",
     checkpoints: [
-      "YieldSwap liquidity hub for ecosystem routing",
       "High-performance AI gateway with protected access",
+      "Reference implementations built on TITAN PROTOCOL",
       "Multi-agent planner, actor, and critic loop",
       "More partner modules added to the armory",
     ],
-    money: "Next scale comes from protected AI access, routing, and more partner integrations on top of the live API business.",
+    money: "Next scale comes from turning TITAN PROTOCOL into the default trust layer for more teams, more wrappers, and more protected agent products.",
   },
   {
     id: "03",
     status: "NEXT",
     window: "Q4 2026 - 2027",
-    title: "Elite Audit Layer",
-    focus: "Harden the system for companies, funds, and serious protocols.",
+    title: "Enterprise Trust Layer",
+    focus: "Harden the system for companies, funds, exchanges, and serious protocol buyers.",
     icon: Building2,
     color: "amber",
     checkpoints: [
@@ -85,14 +83,14 @@ const phaseCards = [
       "FIPS 140-3 cryptography alignment",
       "Common Criteria CC EAL4+ security target",
     ],
-    money: "Enterprise trust unlocks higher-value API contracts, compliance budgets, and white-label deployments.",
+    money: "Enterprise trust unlocks larger API contracts, security budgets, white-label deployments, and strategic integrations.",
   },
   {
     id: "04",
     status: "NEXT",
     window: "Beyond 2027",
-    title: "Multi-Chain Sovereignty",
-    focus: "Make YieldBoost's 10-layer security model portable across the AI economy.",
+    title: "Multi-Chain Integrity Standard",
+    focus: "Make TITAN PROTOCOL portable across the wider AI economy as a reusable integrity standard.",
     icon: Globe2,
     color: "blue",
     checkpoints: [
@@ -102,15 +100,20 @@ const phaseCards = [
       "RWA and institutional strategy verification",
       "Security standard for agentic finance products",
     ],
-    money: "YieldBoost becomes infrastructure that other chains, agents, and markets can license.",
+    money: "YieldBoost becomes licensable infrastructure that other chains, agents, products, and marketplaces can adopt.",
   },
 ];
 
 const livePillars = [
   {
-    label: "1-click optimize",
+    label: "TITAN PROTOCOL marketplace",
+    icon: Store,
+    text: "The 10-layer stack is sold as modular APIs, SDKs, and fortress modules.",
+  },
+  {
+    label: "Flagship showcase",
     icon: Rocket,
-    text: "Idle balances become proof-backed yield routes.",
+    text: "1-click Optimize proves the stack works as a complete mainnet product shell.",
   },
   {
     label: "10-layer core",
@@ -118,37 +121,32 @@ const livePillars = [
     text: "TEE, ZK, memory, storage, governance, and ProofRegistry work together.",
   },
   {
-    label: "API marketplace",
-    icon: Store,
-    text: "The protection stack is sold as full-stack, single-layer, and selected wrapper APIs.",
-  },
-  {
-    label: "Vault + faucet",
-    icon: Vault,
-    text: "Public challenge and anti-sybil surfaces prove the system can be tested.",
+    label: "Judge terminal",
+    icon: ShieldCheck,
+    text: "The live audit trail proves the stack is on-chain, reviewable, and integration-ready.",
   },
 ];
 
 const productLines = [
   {
-    label: "User revenue",
+    label: "Marketplace revenue",
     icon: CircleDollarSign,
-    text: "1-click optimize creates the consumer entry point: more usable idle capital with proof behind the route.",
+    text: "The API / SDK Marketplace is the core commercial surface: full stack, single layers, anti-sybil modules, and fortress rails.",
   },
   {
     label: "Developer revenue",
     icon: Database,
-    text: "Modular Immunity Armory sells the 10-layer stack, single-layer endpoints, and selected partner wrappers.",
+    text: "Modular Immunity Armory sells TITAN PROTOCOL as reusable developer infrastructure instead of one closed application.",
   },
   {
-    label: "Security revenue",
-    icon: Sword,
-    text: "Vault, anti-sybil, and fingerprinting modules become reusable protection products for other teams.",
+    label: "Proof-led sales",
+    icon: ShieldCheck,
+    text: "Judge Mode reduces adoption friction by proving that every security claim can be reviewed on-chain before purchase.",
   },
   {
     label: "Enterprise revenue",
     icon: LockKeyhole,
-    text: "Audit, compliance, and private execution unlock higher-value B2B contracts.",
+    text: "Auditability, private execution, and modular control planes unlock higher-value B2B contracts.",
   },
 ];
 
@@ -217,20 +215,20 @@ export default async function JudgeRoadmapPage() {
 
             <div className="mt-7 inline-flex items-center gap-2 rounded-full border border-[rgba(34,221,208,0.22)] bg-[rgba(34,221,208,0.08)] px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-[#22ddd0]">
               <Rocket className="h-3.5 w-3.5" />
-              One click. Ten layers. Sellable security.
+              TITAN PROTOCOL first. Showcase second. Proof always on.
             </div>
             <h1 className="mt-4 font-[family-name:var(--font-display)] text-[34px] font-semibold leading-[1.04] text-white md:text-[52px]">
-              From idle crypto to a paid security stack for AI finance.
+              A 10-layer B2B integrity business with a live mainnet showcase.
             </h1>
             <p className="mt-4 max-w-3xl text-[15px] leading-7 text-[#d9e7ec]">
-              YieldBoost starts with a simple user promise: click once, find a better yield route, and keep proof behind the recommendation. The same 10-layer protection then becomes API infrastructure that other apps and companies can buy.
+              YieldBoost sells TITAN PROTOCOL as modular infrastructure for Web3 AI agents. The 1-click dashboard is the flagship showcase proving the stack works on 0G Mainnet. The judge menu is the live audit terminal that turns trust into something buyers can verify.
             </p>
             <div className="mt-5 flex flex-wrap gap-4">
               {[
-                { v: "9", l: "Layers", c: "text-[#22ddd0]" },
+                { v: "10", l: "Layers", c: "text-[#22ddd0]" },
                 { v: "4", l: "Phases", c: "text-[#68ff7a]" },
                 { v: "LIVE", l: "Phase 01", c: "text-[#f6c166]" },
-                { v: "0G", l: "Native", c: "text-[#63d8ff]" },
+                { v: "B2B", l: "Positioning", c: "text-[#63d8ff]" },
               ].map((m) => (
                 <div key={m.l} className="text-center">
                   <div className={`text-[22px] font-bold leading-none ${m.c}`}>{m.v}</div>
@@ -469,18 +467,18 @@ export default async function JudgeRoadmapPage() {
             Remember
           </div>
           <h2 className="mt-4 font-[family-name:var(--font-display)] text-[28px] font-semibold leading-tight text-white md:text-[38px]">
-            User product first. Security business second. All on 0G.
+            Marketplace first. Showcase second. Audit terminal always on.
           </h2>
           <p className="mt-4 text-[14px] leading-7 text-[#dce5ec]">
-            The roadmap is one path: help users put idle crypto to work, prove the route with 0G, sell the 10-layer protection stack, then scale into liquidity, enterprise compliance, and multi-chain security.
+            The roadmap is one path: sell the 10-layer integrity stack, prove it through a live showcase, expose it through a judge-readable audit path, then scale into partner distribution, enterprise trust, and multi-chain adoption.
           </p>
           <div className="mt-5 flex flex-wrap justify-center gap-3">
             <Link href="/agent" className={linkPillClass}>
-              1-click optimize
+              flagship showcase
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
             <Link href="/dev/marketplace" className={linkPillClass}>
-              API store
+              API marketplace
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
             <Link href="/judge/project" className={linkPillClass}>

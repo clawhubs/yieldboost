@@ -11,9 +11,8 @@ interface Particle {
   alpha: number;
 }
 
-const PARTICLE_COUNT = 80;
-const CONNECTION_DISTANCE = 140;
-const PARTICLE_SPEED = 0.3;
+const PARTICLE_COUNT = 20;
+const PARTICLE_SPEED = 0.12;
 
 export default function ParticleCanvas() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -46,8 +45,8 @@ export default function ParticleCanvas() {
           y: Math.random() * h,
           vx: (Math.random() - 0.5) * PARTICLE_SPEED * 2,
           vy: (Math.random() - 0.5) * PARTICLE_SPEED * 2,
-          r: Math.random() * 1.5 + 0.5,
-          alpha: Math.random() * 0.5 + 0.3,
+          r: Math.random() * 0.8 + 0.3,
+          alpha: Math.random() * 0.2 + 0.08,
         });
       }
     }
@@ -70,36 +69,11 @@ export default function ParticleCanvas() {
         if (p.y > h) p.y = 0;
       }
 
-      // Draw connections
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-
-          if (dist < CONNECTION_DISTANCE) {
-            const opacity = (1 - dist / CONNECTION_DISTANCE) * 0.15;
-            ctx.beginPath();
-            ctx.strokeStyle = `rgba(0, 201, 177, ${opacity})`;
-            ctx.lineWidth = 0.5;
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.stroke();
-          }
-        }
-      }
-
-      // Draw particles
+      // Draw particles — subtle dots only, no connections
       for (const p of particles) {
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(0, 201, 177, ${p.alpha})`;
-        ctx.fill();
-
-        // Glow
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r * 3, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(0, 201, 177, ${p.alpha * 0.1})`;
+        ctx.fillStyle = `rgba(148, 180, 200, ${p.alpha})`;
         ctx.fill();
       }
 
@@ -125,7 +99,7 @@ export default function ParticleCanvas() {
     <canvas
       ref={canvasRef}
       className="pointer-events-none absolute inset-0 h-full w-full"
-      style={{ opacity: 0.7 }}
+      style={{ opacity: 0.35 }}
       aria-hidden="true"
     />
   );

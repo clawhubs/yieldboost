@@ -227,6 +227,20 @@
         height: 100%;
       }
 
+      .cover h1 {
+        max-width: 50cqw;
+        margin-top: 1.2cqw;
+        font-size: 5.2cqw;
+        line-height: 0.98;
+      }
+
+      .cover .lead {
+        max-width: 50cqw;
+        margin-top: 1cqw;
+        font-size: 1.55cqw;
+        line-height: 1.42;
+      }
+
       .cover-art,
       .visual {
         border: 1px solid var(--line);
@@ -239,6 +253,9 @@
 
       .cover-art {
         padding: 1.4cqw;
+        aspect-ratio: 16 / 9;
+        min-height: 22cqw;
+        overflow: hidden;
       }
 
       .cover-art img,
@@ -252,7 +269,9 @@
       }
 
       .cover-art img {
-        aspect-ratio: 1817 / 606;
+        aspect-ratio: 16 / 9;
+        object-fit: cover;
+        object-position: center;
       }
 
       .quick-row,
@@ -267,6 +286,11 @@
 
       .quick-row {
         grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .cover .quick-row {
+        gap: 1cqw;
+        margin-top: 1.2cqw;
       }
 
       .cards.two {
@@ -305,6 +329,11 @@
         padding: 1.45cqw;
       }
 
+      .cover .metric {
+        min-height: auto;
+        padding: 1.1cqw;
+      }
+
       .label {
         display: block;
         color: var(--mint);
@@ -333,6 +362,12 @@
         line-height: 1;
       }
 
+      .cover .metric strong {
+        margin-top: 0.55cqw;
+        font-size: 2.05cqw;
+        line-height: 1.04;
+      }
+
       .metric span:last-child,
       .price span:last-child {
         display: block;
@@ -340,6 +375,93 @@
         color: var(--muted);
         font-size: 1.08cqw;
         line-height: 1.35;
+      }
+
+      .cover .metric span:last-child {
+        margin-top: 0.5cqw;
+        font-size: 0.96cqw;
+        line-height: 1.34;
+      }
+
+      .slide-moat h2 {
+        max-width: 58cqw;
+        margin-top: 1.1cqw;
+        font-size: 3.55cqw;
+        line-height: 1.02;
+      }
+
+      .slide-moat .lead {
+        max-width: 60cqw;
+        margin-top: 0.9cqw;
+        font-size: 1.46cqw;
+        line-height: 1.34;
+      }
+
+      .slide-moat .stack {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 0.85cqw;
+        margin-top: 1.15cqw;
+      }
+
+      .slide-moat .layer {
+        min-height: auto;
+        padding: 0.92cqw;
+      }
+
+      .slide-moat .layer strong {
+        font-size: 1.12cqw;
+        line-height: 1.08;
+      }
+
+      .slide-moat .layer span {
+        font-size: 0.78cqw;
+        line-height: 1.2;
+      }
+
+      .slide-proof h2 {
+        max-width: 60cqw;
+        margin-top: 1.1cqw;
+        font-size: 3.7cqw;
+        line-height: 1.02;
+      }
+
+      .slide-proof .lead {
+        max-width: 62cqw;
+        margin-top: 0.9cqw;
+        font-size: 1.46cqw;
+        line-height: 1.34;
+      }
+
+      .slide-proof .split {
+        grid-template-columns: 1fr 34cqw;
+        gap: 1.2cqw;
+        margin-top: 1.15cqw;
+      }
+
+      .slide-proof .metrics {
+        gap: 0.85cqw;
+        margin-top: 0;
+      }
+
+      .slide-proof .metric {
+        min-height: auto;
+        padding: 1cqw;
+      }
+
+      .slide-proof .metric strong {
+        margin-top: 0.55cqw;
+        font-size: 1.95cqw;
+        line-height: 1.04;
+      }
+
+      .slide-proof .metric span:last-child {
+        margin-top: 0.45cqw;
+        font-size: 0.88cqw;
+        line-height: 1.25;
+      }
+
+      .slide-proof .visual {
+        padding: 0.85cqw;
       }
 
       .split {
@@ -722,18 +844,18 @@
         <div class="content cover">
           <div>
             <div class="brand"><span class="mark">YA</span> YieldBoost AI</div>
-            <h1>One click. Nine layers. Verifiable yield.</h1>
+          <h1>YieldBoost AI Protocol. A 10-layer integrity business on 0G.</h1>
             <p class="lead">
-              A consumer yield product on top of a security stack that can also be sold as API infrastructure.
+              YieldBoost AI is a B2B protocol store for Web3 AI-agent trust infrastructure. The 1-click dashboard is the flagship product MVP proving the stack works live on mainnet.
             </p>
             <div class="quick-row">
-              <div class="metric"><span class="label">For users</span><strong>1-click</strong><span>For idle assets and cautious DeFi users.</span></div>
-              <div class="metric"><span class="label">For builders</span><strong>API store</strong><span>Buy the full stack or one exact security layer.</span></div>
-              <div class="metric"><span class="label">For the market</span><strong>Public proof</strong><span>Vault and faucet surfaces make the security testable.</span></div>
+              <div class="metric"><span class="label">Core product</span><strong>YieldBoost AI Protocol Store</strong><span>Buy TITAN X, one exact layer, or fortress modules.</span></div>
+              <div class="metric"><span class="label">Flagship proof</span><strong>1-click showcase</strong><span>A live shell proving the stack works on 0G Mainnet.</span></div>
+              <div class="metric"><span class="label">Audit trust</span><strong>Verification Console</strong><span>Live proof receipts reduce buyer doubt.</span></div>
             </div>
           </div>
           <div class="cover-art">
-            <img src="../readme/branding/banner.png" alt="YieldBoost AI banner" />
+            <img src="./titan-x-banner-16x9.png" alt="YieldBoost AI Protocol banner" />
           </div>
         </div>
         <div class="footer"><span>Pitch deck</span><span>01 / 12</span></div>
@@ -742,52 +864,52 @@
       <section class="slide" style="--progress:17%">
         <div class="content">
           <span class="eyebrow">The problem</span>
-          <h2>Crypto has idle capital, but AI recommendations still lack trust.</h2>
+          <h2>Web3 AI does not just need better UX. It needs a trust infrastructure layer.</h2>
           <p class="lead">
-            Users want yield without reading a maze of protocols. Developers want security modules without building a full proof stack. Protocols want fair access without bot farms.
+            The real gap is not one more dashboard. The gap is reusable infrastructure for secure execution, proof storage, policy control, sovereign memory, and auditability.
           </p>
           <div class="cards three">
             <div class="card">
-              <span class="label">User pain</span>
-              <h3>Idle balances stay idle</h3>
-              <p class="body">Most users do not know where to route capital or how to verify the recommendation after it appears.</p>
+              <span class="label">Developer pain</span>
+              <h3>Trust is rebuilt from scratch</h3>
+              <p class="body">Teams can build AI flows, but most cannot package secure execution, proof, and policy as reusable products.</p>
             </div>
             <div class="card">
-              <span class="label">AI pain</span>
-              <h3>Outputs are easy to fake</h3>
-              <p class="body">A financial answer needs memory, risk checks, storage proof, and a receipt, not just confident text.</p>
+              <span class="label">Buyer pain</span>
+              <h3>Security claims are hard to verify</h3>
+              <p class="body">Most products talk about trust, but do not expose an on-chain review path that enterprise buyers can inspect.</p>
             </div>
             <div class="card">
               <span class="label">Protocol pain</span>
               <h3>Growth invites abuse</h3>
-              <p class="body">Airdrops, API keys, partner SDKs, and vaults all need anti-sybil and proof-aware access control.</p>
+              <p class="body">Airdrops, API keys, partner SDKs, and protected runtimes all need anti-sybil and proof-aware access control.</p>
             </div>
           </div>
-          <div class="quote">The bottleneck is trust. YieldBoost makes trust usable, sellable, and externally reviewable.</div>
+          <div class="quote">The bottleneck is trust. YieldBoost packages trust as modular infrastructure.</div>
         </div>
         <div class="footer"><span>Why it matters</span><span>02 / 12</span></div>
       </section>
 
       <section class="slide" style="--progress:25%">
         <div class="content">
-          <span class="eyebrow">User product</span>
-          <h2>1-click optimize serves two types of crypto users.</h2>
+          <span class="eyebrow">Narrative hierarchy</span>
+          <h2>The store is the product. The dashboard is the proof.</h2>
           <p class="lead">
-            One group wants yield without DeFi homework. The other wants proof before trusting the route.
+            YieldBoost should be read in one order: YieldBoost AI Protocol is the platform, TITAN X is the flagship product, the store is the business surface, and the Verification Console is the audit terminal.
           </p>
           <div class="cards two">
             <div class="card">
-              <span class="label">Segment 1</span>
-              <h3>Lazy Degens</h3>
-              <p class="body">Users with idle coins who do not want to compare pools, routes, slippage, and DeFi steps manually. They use YieldBoost because one click turns the mess into a route.</p>
+              <span class="label">Primary business</span>
+              <h3>B2B modular infrastructure</h3>
+              <p class="body">Developers, protocol teams, and enterprise buyers subscribe to the 10-layer stack as APIs, SDK wrappers, and fortress modules.</p>
             </div>
             <div class="card">
-              <span class="label">Segment 2</span>
-              <h3>Paranoid Investors</h3>
-              <p class="body">Users who want yield, but only when the route has 9-layer checks and a proof receipt behind it. They use YieldBoost because the security trail is visible.</p>
+              <span class="label">Flagship proof</span>
+              <h3>Mainnet product shell</h3>
+              <p class="body">1-click Optimize is the fastest way to prove YieldBoost AI Protocol can secure a real business workflow instead of remaining backend theory.</p>
             </div>
           </div>
-          <div class="quote">YieldBoost gives both groups a simple button with a visible security trail.</div>
+          <div class="quote">This is not “an optimizer with extra security.” It is a security business with a live mainnet showcase.</div>
         </div>
         <div class="footer"><span>Who uses it</span><span>03 / 12</span></div>
       </section>
@@ -795,28 +917,28 @@
       <section class="slide" style="--progress:33%">
         <div class="content">
           <span class="eyebrow">How it works</span>
-          <h2>Connect, click, see the proof.</h2>
-          <p class="lead">The user journey is three steps with one visible proof path behind them.</p>
+          <h2>How the flagship showcase proves the engine.</h2>
+          <p class="lead">The dashboard is valuable because it compresses a large infrastructure story into one visible mainnet flow.</p>
           <div class="split">
             <div class="steps">
-              <div class="step"><b>1</b><div><strong>One button</strong><span>Connect wallet, click optimize, receive a route, and open the proof status.</span></div></div>
-              <div class="step"><b>2</b><div><strong>One receipt</strong><span>0G Storage, ProofRegistry, ZK evidence, and optional Agent NFT make the result reviewable.</span></div></div>
-              <div class="step"><b>3</b><div><strong>One proof path</strong><span>The 9-layer stack runs behind the click: blacklist, auditor, TEE, memory, storage, ZK, registry, governance, handshake.</span></div></div>
+              <div class="step"><b>1</b><div><strong>One shell</strong><span>Connect wallet, click optimize, and watch YieldBoost AI Protocol secure a real product path.</span></div></div>
+              <div class="step"><b>2</b><div><strong>One receipt</strong><span>0G Storage, ProofRegistry, ZK evidence, and the verification console make the run reviewable.</span></div></div>
+              <div class="step"><b>3</b><div><strong>One engine underneath</strong><span>The 10-layer YieldBoost AI Protocol stack runs behind the click: blacklist, auditor, TEE, memory, storage, ZK, registry, governance, handshake, Nitro.</span></div></div>
             </div>
             <div class="visual">
               <img src="../readme/dashboard.png" alt="YieldBoost dashboard screenshot" />
             </div>
           </div>
         </div>
-        <div class="footer"><span>1-click optimize</span><span>04 / 12</span></div>
+        <div class="footer"><span>flagship product MVP</span><span>04 / 12</span></div>
       </section>
 
-      <section class="slide" style="--progress:42%">
+      <section class="slide slide-moat" style="--progress:42%">
         <div class="content">
           <span class="eyebrow">The moat</span>
-          <h2>The 9-layer military-grade stack is the product engine.</h2>
+          <h2>YieldBoost AI Protocol is the product engine.</h2>
           <p class="lead">
-            It protects user optimization, powers paid APIs, and gives the public vault/faucet a real security model to test.
+            It powers the store, secures the flagship product MVP, and gives the verification console a live on-chain proof story.
           </p>
           <div class="stack">
             <div class="layer"><b>01</b><strong>Hallucination Blacklist</strong><span>Reject unsafe patterns.</span></div>
@@ -828,17 +950,18 @@
             <div class="layer"><b>07</b><strong>ProofRegistry Anchor</strong><span>On-chain receipt path.</span></div>
             <div class="layer"><b>08</b><strong>Programmable Governance</strong><span>Policy and risk scoring.</span></div>
             <div class="layer"><b>09</b><strong>Cross-Agent Neural Handshake</strong><span>Agent-to-agent transcript.</span></div>
+            <div class="layer"><b>10</b><strong>AWS Nitro Enclaves</strong><span>Continuity rail and enclave witness.</span></div>
           </div>
         </div>
         <div class="footer"><span>Security moat</span><span>05 / 12</span></div>
       </section>
 
-      <section class="slide" style="--progress:50%">
+      <section class="slide slide-proof" style="--progress:50%">
         <div class="content">
           <span class="eyebrow">Live proof</span>
-          <h2>Mainnet evidence is visible from Judge Mode.</h2>
+          <h2>The Verification Console is the live audit terminal for the store.</h2>
           <p class="lead">
-            The demo is not just a dashboard. YieldBoost exposes CIDs, explorer links, ProofRegistry records, ZK artifacts, TEE evidence, and Strategy Agent NFTs.
+            This is how buyers and judges verify the claim. YieldBoost exposes CIDs, explorer links, ProofRegistry records, ZK artifacts, TEE evidence, and continuity signals in a read-only surface.
           </p>
           <div class="split">
             <div class="metrics">
@@ -850,7 +973,7 @@
               <div class="metric"><span class="label">Explorer</span><strong>Open</strong><span>External receipts, not private claims.</span></div>
             </div>
             <div class="visual">
-              <img src="../readme/judge-mode.png" alt="YieldBoost judge mode screenshot" />
+              <img src="../readme/judge-mode.png" alt="YieldBoost verification console screenshot" />
             </div>
           </div>
         </div>
@@ -860,9 +983,9 @@
       <section class="slide" style="--progress:58%">
         <div class="content">
           <span class="eyebrow">Business model</span>
-          <h2>Modular Immunity Armory sells the security stack as API inventory.</h2>
+          <h2>The store is the business, not an accessory page.</h2>
           <p class="lead">
-            Developers do not need to buy the whole system. They can subscribe to the complete 9-layer API, one exact layer, anti-sybil protection, or selected partner wrappers.
+            Developers do not need to buy the whole system at once. They can subscribe to the complete 10-layer API, one exact layer, anti-sybil protection, fortress modules, or selected partner wrappers.
           </p>
           <div class="pricing">
             <div class="price">
@@ -896,13 +1019,13 @@
               <span class="label">Protocol</span>
               <strong>8888 0G</strong>
               <ul>
-                <li>Full 9-layer compute</li>
-                <li>TEE access</li>
+                <li>Full 10-layer compute</li>
+                <li>TEE + Nitro access</li>
                 <li>Partner SDK support</li>
               </ul>
             </div>
           </div>
-          <div class="quote">Consumer product creates demand. API subscriptions turn the trust layer into recurring infrastructure revenue.</div>
+          <div class="quote">The showcase creates clarity. The store creates recurring infrastructure revenue.</div>
         </div>
         <div class="footer"><span>API revenue</span><span>07 / 12</span></div>
       </section>
@@ -910,9 +1033,9 @@
       <section class="slide" style="--progress:67%">
         <div class="content">
           <span class="eyebrow">Public security</span>
-          <h2>Vault and faucet prove the stack outside the happy path.</h2>
+          <h2>Public challenge surfaces prove selected modules under hostile traffic.</h2>
           <p class="lead">
-            The security story becomes stronger when people can attack it, farm it, and test it with real wallets.
+            Vault and faucet are not the core business. They are public test environments used to stress selected protections without confusing the main B2B narrative.
           </p>
           <div class="cards two">
             <div class="card">
@@ -943,25 +1066,25 @@
       <section class="slide" style="--progress:75%">
         <div class="content">
           <span class="eyebrow">Who pays</span>
-          <h2>Three buyer segments, one security core.</h2>
+          <h2>Three buyer segments, one integrity core.</h2>
           <p class="lead">
-            YieldBoost sells to users first, then to developers and protocols that need the same trust layer.
+            The showcase can attract users, but the real monetization path is developer, protocol, and enterprise adoption.
           </p>
           <div class="cards three">
             <div class="card">
-              <span class="label">DeFi users</span>
-              <h3>Make idle balances work</h3>
-              <p class="body">Users want a simple optimizer that explains the route and leaves proof behind.</p>
-            </div>
-            <div class="card">
               <span class="label">Developers</span>
-              <h3>Rent security layers</h3>
-              <p class="body">Builders can plug in ZK, proof lookup, governance, storage, or full 9-layer verification.</p>
+              <h3>Rent the trust layer</h3>
+              <p class="body">Builders can subscribe to full-stack verification, one exact layer, or specialized protection modules.</p>
             </div>
             <div class="card">
               <span class="label">Protocols</span>
-              <h3>Protect growth</h3>
-              <p class="body">Airdrops, vaults, and partner SDKs need anti-sybil checks and proof-aware execution.</p>
+              <h3>Protect growth surfaces</h3>
+              <p class="body">Airdrops, vaults, partner SDKs, and agent flows need anti-sybil checks, policy controls, and proof-aware execution.</p>
+            </div>
+            <div class="card">
+              <span class="label">Enterprise teams</span>
+              <h3>Buy auditability</h3>
+              <p class="body">Private execution, modular controls, and visible proof trails are what make adoption budgets possible.</p>
             </div>
           </div>
         </div>
@@ -979,7 +1102,7 @@
             <div class="card">
               <span class="label">Selected wrapper example</span>
               <h3>VeilSolver Secure Proxy</h3>
-              <p class="body">A partner SDK can be wrapped with selected protections such as isolated execution, ZK envelope, and 0G anchoring. This is not represented as the full 9-layer product.</p>
+              <p class="body">A partner SDK can be wrapped with selected protections such as isolated execution, ZK envelope, and 0G anchoring. This is not represented as the full YieldBoost AI Protocol product.</p>
             </div>
             <div class="card">
               <span class="label">Why this scales</span>
@@ -995,18 +1118,18 @@
       <section class="slide" style="--progress:92%">
         <div class="content">
           <span class="eyebrow">Roadmap</span>
-          <h2>Phase 1 is live. The next phases scale distribution and trust.</h2>
+          <h2>Phase 1 is live. The next phases scale distribution, trust, and enterprise reach.</h2>
           <p class="lead">Each phase builds on top of the previous one, so security and revenue compound together.</p>
           <div class="timeline">
             <div class="phase">
               <div class="phase-top"><span class="tag">Live</span><span class="muted">Now</span></div>
               <h3>Core Fortress</h3>
               <ul>
-                <li>9-layer stack</li>
-                <li>1-click optimize</li>
+                <li>10-layer YieldBoost AI Protocol</li>
+                <li>Flagship showcase</li>
                 <li>0G Storage + ProofRegistry</li>
                 <li>Native 0G API pricing</li>
-                <li>Vault and faucet surfaces</li>
+                <li>Verification console + challenge surfaces</li>
               </ul>
             </div>
             <div class="phase">
@@ -1015,7 +1138,7 @@
               <ul>
                 <li>YieldSwap DEX</li>
                 <li>High-performance AI gateway</li>
-                <li>Autonomous optimizer agents</li>
+                <li>Reference products built on YieldBoost AI Protocol</li>
               </ul>
             </div>
             <div class="phase">
@@ -1033,7 +1156,7 @@
               <ul>
                 <li>Omni-chain deployment</li>
                 <li>Autonomous red-teaming</li>
-                <li>AI security marketplace standard</li>
+                <li>AI security store standard</li>
               </ul>
             </div>
           </div>
@@ -1044,32 +1167,32 @@
       <section class="slide" style="--progress:100%">
         <div class="content">
           <span class="eyebrow">Why YieldBoost wins</span>
-          <h2>A trust business wrapped around a usable DeFi product.</h2>
-          <p class="lead">Not a demo button. A real user product, security stack, and revenue model — all on 0G.</p>
+          <h2>A B2B infrastructure business with a live proof shell.</h2>
+          <p class="lead">Not just a demo button. A real protocol store, a live flagship product MVP, and a proof terminal — all on 0G.</p>
           <div class="cards two">
             <div class="card">
-              <span class="label">Simple enough for users</span>
-              <h3>One click creates the first proof</h3>
-              <p class="body">The user sees a route, a receipt, and a path to mint a strategy artifact.</p>
+              <span class="label">Simple enough to explain</span>
+              <h3>The showcase compresses the story</h3>
+              <p class="body">The dashboard makes a large infrastructure system understandable in one click and one proof receipt.</p>
             </div>
             <div class="card">
-              <span class="label">Useful enough for developers</span>
-              <h3>The moat is sold as APIs</h3>
-              <p class="body">Teams can buy full-stack verification, exact layers, anti-sybil protection, or selected wrappers.</p>
+              <span class="label">Useful enough to buy</span>
+              <h3>The moat is sold as APIs and SDKs</h3>
+              <p class="body">Teams can buy full-stack verification, exact layers, anti-sybil protection, fortress rails, or selected wrappers.</p>
             </div>
             <div class="card">
               <span class="label">Visible enough for reviewers</span>
               <h3>Receipts are external</h3>
-              <p class="body">0G Storage, ProofRegistry, ZK evidence, TEE evidence, and NFTs are exposed through Judge Mode.</p>
+              <p class="body">0G Storage, ProofRegistry, ZK evidence, TEE evidence, Nitro continuity, and NFTs are exposed through the Verification Console.</p>
             </div>
             <div class="card">
               <span class="label">Hard enough to matter</span>
               <h3>Public challenge surfaces</h3>
-              <p class="body">Vault and faucet flows force the security model to face real wallets and repeated attempts.</p>
+              <p class="body">Vault and faucet flows force selected modules to face real wallets, hostile retries, and repeated abuse attempts.</p>
             </div>
           </div>
         </div>
-        <div class="footer"><span>yieldboostai.xyz/judge/project&ensp;·&ensp;dev.yieldboostai.xyz/marketplace&ensp;·&ensp;api.yieldboostai.xyz/docs</span><span>Built on 0G&ensp;—&ensp;12 / 12</span></div>
+        <div class="footer"><span>dev.yieldboostai.xyz/brief&ensp;·&ensp;dev.yieldboostai.xyz/marketplace&ensp;·&ensp;api.yieldboostai.xyz/docs</span><span>Built on 0G&ensp;—&ensp;12 / 12</span></div>
       </section>
     </main>
   </body>

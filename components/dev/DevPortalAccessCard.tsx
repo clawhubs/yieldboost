@@ -121,7 +121,7 @@ export default function DevPortalAccessCard({ session }: DevPortalAccessCardProp
         <div className="mt-5 flex flex-wrap gap-3">
           <a
             href={session.role === "owner" ? "/dev/console" : "/dev/apps"}
-            className="yb-teal-button rounded-[16px] px-4 py-3 text-[14px] font-semibold text-slate-950"
+            className="yb-teal-button w-full rounded-[16px] px-4 py-3 text-center text-[14px] font-semibold text-slate-950 sm:w-auto"
           >
             {session.role === "owner" ? "Open owner dashboard" : "Open developer dashboard"}
           </a>
@@ -129,7 +129,7 @@ export default function DevPortalAccessCard({ session }: DevPortalAccessCardProp
             type="button"
             onClick={handleLogout}
             disabled={busy}
-            className="yb-soft-card flex items-center gap-2 rounded-[16px] px-4 py-3 text-[14px] font-semibold text-white"
+            className="yb-soft-card flex w-full items-center justify-center gap-2 rounded-[16px] px-4 py-3 text-[14px] font-semibold text-white sm:w-auto"
           >
             <LogOut className="h-4 w-4" />
             Sign out
@@ -145,9 +145,9 @@ export default function DevPortalAccessCard({ session }: DevPortalAccessCardProp
         <div className="glass-accent flex h-11 w-11 items-center justify-center rounded-[16px] text-[#a0b8ca]">
           <Wallet className="h-5 w-5" />
         </div>
-        <div>
+        <div className="min-w-0">
           <p className="text-[12px] uppercase tracking-[0.18em] text-[#c8dae6]">Wallet Login</p>
-          <h2 className="text-[20px] font-semibold text-white">Register or sign in with wallet</h2>
+          <h2 className="break-words text-[20px] font-semibold text-white">Register or sign in with wallet</h2>
         </div>
       </div>
       <p className="mt-4 text-[14px] leading-7 text-[#c8dae6]">
@@ -161,7 +161,7 @@ export default function DevPortalAccessCard({ session }: DevPortalAccessCardProp
         type="button"
         onClick={handleLogin}
         disabled={busy}
-        className="yb-teal-button mt-5 rounded-[16px] px-4 py-3 text-[14px] font-semibold text-slate-950"
+        className="yb-teal-button mt-5 w-full rounded-[16px] px-4 py-3 text-[14px] font-semibold text-slate-950"
       >
         {busy ? "Connecting wallet..." : "Connect wallet to continue"}
       </button>

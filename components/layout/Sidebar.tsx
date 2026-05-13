@@ -75,7 +75,7 @@ interface NavigationItem {
 }
 
 const navigation: NavigationItem[] = [
-  { href: "/judge", label: "Judge", icon: ShieldCheck, badge: "START" },
+  { href: "/judge", label: "Audit", icon: ShieldCheck, badge: "START" },
   { href: "/", label: "Dashboard", icon: House },
   { href: "/agent", label: "Boost", icon: Zap, badge: "HOT" },
   { href: "/vault", label: "Vault", icon: Lock, badge: "LIVE" },
@@ -87,7 +87,7 @@ const navigation: NavigationItem[] = [
   { href: "/analytics", label: "Analytics", icon: ChartNoAxesCombined },
   { href: "/watchlist", label: "Watchlist", icon: Star, badge: "NEW" },
   { href: "/agents", label: "Agents", icon: Bot },
-  { href: "/marketplace", label: "Marketplace", icon: Package2, badge: "NFT" },
+  { href: "/marketplace", label: "Store", icon: Package2, badge: "NFT" },
   { href: "/settings", label: "Settings", icon: Settings2 },
 ];
 
@@ -1001,7 +1001,7 @@ export default function Sidebar() {
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <BrandLogo />
-            <p className="mt-2.5 text-[12px] text-[#c9d2db]">AI Agent for DeFi Growth</p>
+            <p className="mt-2.5 text-[12px] text-[#c9d2db]">Protocol store and flagship proof path</p>
           </div>
           {mode === "mobile" ? (
             <button

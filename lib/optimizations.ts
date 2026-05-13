@@ -143,7 +143,7 @@ export function buildNarrative(result: OptimizationResult, prompt?: string) {
 
   const instruction = prompt ? `Request: ${prompt}. ` : "";
   if (result.top_protocols.every((protocol) => protocol.name.startsWith("0G"))) {
-    return `${instruction}YieldBoost detected native 0G in MetaMask and routed the optimization through 0G-native yield paths: native staking, storage-backed proof execution, and compute-ready reserve. Estimated APY rises to ${result.optimized_apy}% with the strategy kept inside the 9-layer integrity flow.`;
+    return `${instruction}YieldBoost detected native 0G in MetaMask and routed the optimization through 0G-native yield paths: native staking, storage-backed proof execution, and compute-ready reserve. Estimated APY rises to ${result.optimized_apy}% with the strategy kept inside the 10-layer TITAN PROTOCOL integrity flow.`;
   }
 
   return `${instruction}YieldBoost rerouted idle stablecoin and 0G exposure into SaucerSwap LP, high-yield 0G staking, and a safer BONZO rebalance. Estimated APY rises to ${result.optimized_apy}% with moderated slippage, diversified protocol exposure, and proof anchored to 0G Compute plus 0G Storage.`;

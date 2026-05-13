@@ -45,20 +45,20 @@ export default function DocsHomeView() {
                 What YieldBoost AI sells, protects, and proves.
               </h2>
               <p className="mt-3 max-w-2xl text-[15px] leading-7 text-[#9daab6]">
-                This page is the fastest plain-English map of the project. YieldBoost helps users grow idle
-                balances, sells security as APIs and SDK wrappers, and publicly challenges hackers through the
-                vault and anti-sybil surfaces.
+                This page is the fastest plain-English map of the project. YieldBoost AI Protocol is the
+                commercial trust layer, TITAN X is the flagship full-stack product, and the vault, faucet,
+                and verification surfaces prove the stack under live pressure.
               </p>
             </div>
 
             <div className="grid gap-[10px] md:grid-cols-2 xl:w-[420px]">
               <div className="yb-soft-card rounded-[16px] px-4 py-4">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-[#8ea1af]">For Users</p>
-                <p className="mt-2 text-[15px] font-medium text-white">1-click optimize turns idle wallets into proof-backed yield routes.</p>
+                <p className="text-[11px] uppercase tracking-[0.18em] text-[#8ea1af]">Flagship Product MVP</p>
+                <p className="mt-2 text-[15px] font-medium text-white">1-click optimize shows how YieldBoost AI Protocol becomes a secure mainnet product shell.</p>
               </div>
               <div className="yb-soft-card rounded-[16px] px-4 py-4">
                 <p className="text-[11px] uppercase tracking-[0.18em] text-[#8ea1af]">For Builders</p>
-                <p className="mt-2 text-[15px] font-medium text-white">Marketplace APIs and SDK wrappers turn the security stack into revenue products.</p>
+                <p className="mt-2 text-[15px] font-medium text-white">Store APIs and SDK wrappers turn the security stack into ready-to-sell infrastructure products.</p>
               </div>
             </div>
           </div>
@@ -66,13 +66,13 @@ export default function DocsHomeView() {
           <div className="mt-5 grid gap-[10px] md:grid-cols-3">
             <div className="yb-soft-card rounded-[14px] px-4 py-4">
               <p className="text-[11px] uppercase tracking-[0.08em] text-[#8ea1af]">Money Story</p>
-              <p className="mt-2 text-[18px] font-semibold text-white">Yield + API Revenue</p>
-              <p className="mt-2 text-[14px] leading-6 text-[#9daab6]">Users chase yield. Developers buy security modules. Protocol tier unlocks the full stack.</p>
+              <p className="mt-2 text-[18px] font-semibold text-white">Product + API Revenue</p>
+              <p className="mt-2 text-[14px] leading-6 text-[#9daab6]">TITAN X proves the stack in a product shell. Developers buy the modules that power it.</p>
             </div>
             <div className="yb-soft-card rounded-[14px] px-4 py-4">
               <p className="text-[11px] uppercase tracking-[0.08em] text-[#8ea1af]">Trust Story</p>
-              <p className="mt-2 text-[18px] font-semibold text-[#22ddd0]">9-layer proof path</p>
-              <p className="mt-2 text-[14px] leading-6 text-[#9daab6]">TEE, ZK, 0G Storage, and ProofRegistry turn claims into evidence judges can inspect.</p>
+              <p className="mt-2 text-[18px] font-semibold text-[#22ddd0]">10-layer proof path</p>
+              <p className="mt-2 text-[14px] leading-6 text-[#9daab6]">TEE, ZK, 0G Storage, ProofRegistry, and Nitro continuity turn claims into evidence buyers can inspect.</p>
             </div>
             <div className="yb-soft-card rounded-[14px] px-4 py-4">
               <p className="text-[11px] uppercase tracking-[0.08em] text-[#8ea1af]">Attack Story</p>
@@ -85,9 +85,9 @@ export default function DocsHomeView() {
         <section className="grid gap-[10px] md:grid-cols-2 xl:grid-cols-4">
           {[
             {
-              title: "Open Judge Mode",
-              body: "Fastest proof view for jurors. See the latest wallet snapshot, tx trail, and verification status.",
-              href: "/judge",
+              title: "Open Verification Console",
+              body: "Fastest proof view for buyers and reviewers. See the latest wallet snapshot, tx trail, and verification status.",
+              href: "/dev/audit",
               icon: ShieldCheck,
             },
             {
@@ -97,7 +97,7 @@ export default function DocsHomeView() {
               icon: Wallet,
             },
             {
-              title: "Open API Marketplace",
+              title: "Open Protocol Store",
               body: "Best path to show how YieldBoost security is sold as modular APIs and SDK wrappers.",
               href: "/dev/marketplace",
               icon: CircleDollarSign,
@@ -179,7 +179,7 @@ export default function DocsHomeView() {
                 </div>
                 <div>
                   <h2 className="text-[18px] font-semibold text-white">Why this matters</h2>
-                  <p className="mt-1 text-[13px] text-[#8ea1af]">Short version for judges and partners</p>
+                  <p className="mt-1 text-[13px] text-[#8ea1af]">Short version for buyers and partners</p>
                 </div>
               </div>
 

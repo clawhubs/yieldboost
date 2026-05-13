@@ -18,7 +18,7 @@ function resolveMetadataBase() {
 
 const metadataBase = resolveMetadataBase();
 const metadataDescription =
-  "Mainnet-first verifiable AI yield optimization on 0G, with judge-friendly proof review and Agent NFT minting.";
+  "Ready-to-market Web3 AI infrastructure on 0G: YieldBoost AI Protocol, TITAN X, a live verification console, fortress modules, and proof-backed security surfaces.";
 
 const display = Space_Grotesk({
   variable: "--font-display",
@@ -58,9 +58,9 @@ export const metadata: Metadata = {
     images: [
       {
         url: "/readme/branding/banner.png",
-        width: 1817,
-        height: 606,
-        alt: "YieldBoost AI banner",
+        width: 1672,
+        height: 941,
+        alt: "YieldBoost AI Protocol banner",
       },
     ],
     type: "website",

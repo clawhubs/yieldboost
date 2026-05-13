@@ -5,7 +5,6 @@ import {
   Boxes,
   ExternalLink,
   FileText,
-  Flame,
   ShieldCheck,
   Sword,
   TrendingUp,
@@ -18,74 +17,74 @@ export const revalidate = 0;
 
 const metrics = [
   { value: "10", label: "Security layers", accent: "text-[#22ddd0]" },
-  { value: "4", label: "Product surfaces", accent: "text-[#68ff7a]" },
+  { value: "B2B", label: "Primary market", accent: "text-[#68ff7a]" },
   { value: "LIVE", label: "Mainnet first", accent: "text-[#f6c166]" },
-  { value: "0G", label: "Native infra", accent: "text-[#63d8ff]" },
+  { value: "API", label: "Marketplace core", accent: "text-[#63d8ff]" },
 ];
 
 const scanFlow = [
-  { num: "01", title: "Users optimize", body: "1-click turns idle balances into proof-backed yield routes.", accent: "text-[#68ff7a]" },
-  { num: "02", title: "Developers buy", body: "10-layer stack sold as modular APIs — full package or single layers.", accent: "text-[#22ddd0]" },
-  { num: "03", title: "Public tests", body: "Vault and faucet let anyone stress-test the protection model.", accent: "text-[#f6c166]" },
+  { num: "01", title: "Developers buy", body: "TITAN PROTOCOL is sold as modular APIs, SDK wrappers, and fortress modules.", accent: "text-[#22ddd0]" },
+  { num: "02", title: "Showcase proves", body: "1-click Optimize is the flagship shell proving the stack works on 0G Mainnet.", accent: "text-[#68ff7a]" },
+  { num: "03", title: "Judge audits", body: "Interactive Judge Menu exposes the live on-chain proof trail for buyers and reviewers.", accent: "text-[#f6c166]" },
 ];
 
 const archFlow = [
-  { icon: Wallet, label: "Wallet" },
-  { icon: Zap, label: "AI Agent" },
-  { icon: ShieldCheck, label: "10-Layer Stack" },
+  { icon: Boxes, label: "API / SDK" },
+  { icon: Zap, label: "Agent Product" },
+  { icon: ShieldCheck, label: "TITAN" },
   { icon: Boxes, label: "0G Proof" },
   { icon: TrendingUp, label: "Revenue" },
 ];
 
 const userSegments = [
   {
-    title: "Lazy Degens",
-    icon: Zap,
-    body: "Crypto users with idle assets who skip DeFi complexity. One click turns the mess into a route.",
+    title: "Agent Builders",
+    icon: Boxes,
+    body: "Teams that need modular execution security, proof storage, anti-hallucination controls, and enterprise-grade auditability without rebuilding trust rails from scratch.",
   },
   {
-    title: "Paranoid Investors",
+    title: "Enterprise Security Buyers",
     icon: ShieldCheck,
-    body: "Want yield but need proof it's safe. 10-layer evidence and 0G anchoring make the recommendation feel protected.",
+    body: "Companies that need on-chain proof, controlled execution, and developer tooling they can buy as infrastructure instead of trusting opaque AI middleware.",
   },
 ];
 
 const surfaces = [
   {
-    title: "1-Click Optimize",
-    icon: Wallet,
-    network: "Mainnet live",
-    body: "Connect wallet → click optimize → get a proof-backed yield route for idle balances.",
-    why: "Less manual DeFi, more capital at work, proof trail behind every recommendation.",
-    href: "/agent",
-    label: "Open boost flow",
-  },
-  {
     title: "API / SDK Security Store",
     icon: Boxes,
     network: "Mainnet live",
-    body: "Full 10-layer stack, single layers, or partner wrappers like VeilSolver — sold as API products.",
-    why: "Same protection securing YieldBoost becomes sellable infrastructure revenue.",
+    body: "Full TITAN PROTOCOL, single layers, fortress modules, and partner wrappers — sold as modular infrastructure products.",
+    why: "This is the engine and revenue core: the stack is bought by developers, not hidden behind one app.",
     href: "/dev/marketplace",
     label: "Open marketplace",
   },
   {
-    title: "Live Challenge Vault",
-    icon: Sword,
-    network: "Testnet challenge",
-    body: "Security claim turned into a public challenge. Testnet-scoped seal and challenge flow.",
-    why: "Security is stronger when people can try to break it.",
-    href: "/vault",
-    label: "Open vault",
+    title: "1-Click Optimize Showcase",
+    icon: Wallet,
+    network: "Mainnet live",
+    body: "A flagship shell that wraps TITAN PROTOCOL into a working mainnet product with one wallet action.",
+    why: "It proves the SDK can become a usable business surface, not just a backend promise.",
+    href: "/agent",
+    label: "Open flagship showcase",
   },
   {
-    title: "Anti-Sybil Faucet",
-    icon: Flame,
-    network: "Testnet example",
-    body: "Airdrop-style surface with anti-sybil logic, Alibaba fingerprinting, and proof-aware abuse resistance.",
-    why: "Block abuse, keep real users, turn claim logic into a sellable module.",
-    href: "/faucet",
-    label: "Open faucet",
+    title: "Interactive Judge Menu",
+    icon: ShieldCheck,
+    network: "Mainnet live",
+    body: "A live audit terminal exposing proof, storage, policy, registry, and continuity evidence for the latest stack execution.",
+    why: "Developers buy faster when the security claim is independently reviewable on-chain.",
+    href: "/judge",
+    label: "Open judge terminal",
+  },
+  {
+    title: "Public Challenge Vault",
+    icon: Sword,
+    network: "Testnet challenge",
+    body: "Security claim turned into a public challenge where selected protections are attacked and observed in public.",
+    why: "Challenge traffic hardens the story without changing the main B2B narrative.",
+    href: "/vault",
+    label: "Open vault",
   },
 ];
 
@@ -110,10 +109,10 @@ export default function JudgeProjectBriefPage() {
             </span>
           </div>
           <h1 className="mt-5 max-w-4xl text-[28px] font-semibold leading-[1.12] text-white md:text-[44px]">
-            Idle crypto → protected yield routes → sellable security APIs.
+            TITAN PROTOCOL → flagship showcase → live audit terminal.
           </h1>
           <p className="mt-3 max-w-3xl text-[15px] leading-7 text-[#d8e5ed] md:text-[16px]">
-            1-click optimizer protected by a 10-layer stack on 0G — TEE, ZK, Storage, ProofRegistry, integrity memory, and AWS Nitro Enclaves. The same protection is sold as developer APIs and stress-tested in public.
+            YieldBoost AI is a B2B infrastructure company on 0G. Its core product is TITAN PROTOCOL, a 10-layer modular integrity stack sold through an API / SDK marketplace. The 1-click dashboard is the flagship showcase. Judge Mode is the live audit terminal.
           </p>
           <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
             {metrics.map((m) => (
@@ -163,13 +162,13 @@ export default function JudgeProjectBriefPage() {
           <article className="rounded-[22px] border border-[rgba(246,193,102,0.16)] bg-[rgba(246,193,102,0.04)] px-5 py-5">
             <div className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[#f6c166]">The Problem</div>
             <p className="mt-3 text-[14px] leading-7 text-[#dce5ec]">
-              Many wallets hold idle crypto, but DeFi is noisy, risky, and easy to manipulate. The hard part is not only finding yield — it&apos;s making the route safe enough to trust.
+              Web3 AI agents are getting better at generating actions, but not at proving that those actions are trustworthy, policy-safe, and enterprise-ready. Most teams still stitch trust together from too many weak components.
             </p>
           </article>
           <article className="rounded-[22px] border border-[rgba(104,255,122,0.16)] bg-[rgba(104,255,122,0.04)] px-5 py-5">
             <div className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[#68ff7a]">The Solution</div>
             <p className="mt-3 text-[14px] leading-7 text-[#dce5ec]">
-              YieldBoost AI gives users a 1-click optimizer and protects the result with a 10-layer stack on 0G: TEE, ZK proofing, 0G Storage, ProofRegistry anchoring, integrity memory, and AWS Nitro Enclaves.
+              YieldBoost AI solves that by selling TITAN PROTOCOL: a 10-layer modular integrity stack on 0G with secure execution, proof storage, governance, sovereign memory, and AWS Nitro Enclaves continuity. The 1-click dashboard exists to prove the stack works as a real product shell.
             </p>
           </article>
         </section>
@@ -184,7 +183,7 @@ export default function JudgeProjectBriefPage() {
                   <div className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-[rgba(34,221,208,0.18)] bg-[rgba(34,221,208,0.08)] text-[#22ddd0]">
                     <Icon className="h-4 w-4" />
                   </div>
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#9ff7f0]">Who 1-click is for</div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#9ff7f0]">Who buys this infrastructure</div>
                 </div>
                 <h2 className="mt-3 text-[20px] font-semibold text-white">{segment.title}</h2>
                 <p className="mt-2 text-[14px] leading-7 text-[#dce5ec]">{segment.body}</p>
@@ -201,7 +200,7 @@ export default function JudgeProjectBriefPage() {
             </div>
             <div>
               <h2 className="text-[22px] font-semibold text-white md:text-[28px]">Four product surfaces</h2>
-              <p className="mt-1 text-[14px] leading-7 text-[#d3dde6]">One 10-layer stack, four ways it reaches the market.</p>
+              <p className="mt-1 text-[14px] leading-7 text-[#d3dde6]">One 10-layer infrastructure engine, four ways it reaches buyers, builders, and reviewers.</p>
             </div>
           </div>
 
@@ -239,7 +238,7 @@ export default function JudgeProjectBriefPage() {
           <div className="mt-5 rounded-[18px] border border-[rgba(246,193,102,0.18)] bg-[rgba(246,193,102,0.05)] px-4 py-4">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#f6c166]">Network honesty</p>
             <p className="mt-2 text-[14px] leading-7 text-[#dce5ec]">
-              The optimizer and API marketplace are mainnet product surfaces. The vault and faucet remain testnet challenge and example flows, while reusing the same broader security design.
+              The marketplace, flagship showcase, and judge terminal are the real mainnet product story. Public challenge surfaces stay testnet so outside testers can attack the system without distorting the B2B infrastructure narrative.
             </p>
           </div>
         </section>
@@ -251,10 +250,10 @@ export default function JudgeProjectBriefPage() {
             Remember
           </div>
           <h2 className="mt-4 text-[24px] font-semibold leading-tight text-white md:text-[32px]">
-            User product first. Security business second. All on 0G.
+            Infrastructure first. Showcase second. Audit always on.
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-[14px] leading-7 text-[#dce5ec]">
-            0G gives the stack its proof storage, compute path, and anchor surface — turning AI finance into something reviewable, portable, monetizable, and harder to fake.
+            0G gives TITAN PROTOCOL its compute, storage, and proof anchor spine — turning AI-agent trust into a modular B2B product that can be sold, audited, and embedded across many businesses.
           </p>
           <div className="mt-5 flex flex-wrap justify-center gap-3">
             <Link href="/judge" className={linkPill}>

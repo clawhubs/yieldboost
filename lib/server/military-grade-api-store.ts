@@ -121,7 +121,7 @@ export async function runMilitaryGradeFullEndpoint(
     slug: "aws-nitro-enclaves",
     label: "AWS Nitro Enclaves",
     proof:
-      "Nitro continuity rail closes the TITAN X PROTOCOL proof family with enclave witness metadata.",
+      "Nitro continuity rail closes the TITAN PROTOCOL proof family with enclave witness metadata.",
     endpoint: "/api/dev/store/aws-nitro-fortress",
     status: "verified",
     proof_digest: `0x${sha256Hex({
@@ -143,7 +143,7 @@ export async function runMilitaryGradeFullEndpoint(
     body: {
       status: "success",
       request_id: requestId,
-      security: "10-Layer TITAN X PROTOCOL Verified",
+      security: "10-Layer TITAN PROTOCOL Verified",
       product: product
         ? {
             id: product.id,

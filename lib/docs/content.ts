@@ -126,7 +126,7 @@ const sidebarGroups: Array<{
       {
         slug: "why-yieldboost-ai",
         label: "Why YieldBoost AI",
-        description: "The bot problem, the trust gap, and why the 10-layer TITAN X PROTOCOL matters.",
+        description: "The bot problem, the trust gap, and why the 10-layer TITAN PROTOCOL matters.",
       },
       {
         slug: "getting-started",
@@ -267,7 +267,7 @@ export function getDocsRuntimeStatus(): DocsRuntimeStatus {
   const proofMode = mapped.testnet.storageConfigured || mapped.mainnet.storageConfigured
     ? "0G Storage upload path is configured for at least one network"
     : "0G Storage route exists, but upload credentials are still required";
-  const optimizationMode = "Mainnet-first optimizer with Integrity Auditor, proof storage, and Agent NFT minting";
+  const optimizationMode = "Mainnet-first flagship showcase with Integrity Auditor, proof storage, and Agent NFT minting";
   const defaultNetworkKey = getDefaultWalletNetworkKey();
   const defaultNetworkLabel = mapped[defaultNetworkKey]?.label ?? "0G Mainnet";
 
@@ -377,16 +377,17 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           id: "what-is-yieldboost-ai",
           title: "What YieldBoost AI is",
           intro:
-            "YieldBoost AI is a mainnet-first DeFi optimization workspace that turns idle wallet balances into proof-backed yield strategies.",
+            "YieldBoost AI is a mainnet-first B2B infrastructure platform that sells TITAN PROTOCOL, a 10-layer modular integrity stack for Web3 AI agents on 0G.",
           paragraphs: [
-            "The product starts with a wallet or watch-only address, reads the current portfolio snapshot, recommends a low-risk route, checks the output with Integrity Auditor, and stores the resulting proof package through the 0G proof pipeline.",
-            "It is designed for three audiences at once: end users who want a clear action path, judges who need a short mainnet demo they can verify, and developers who need a codebase that shows where optimization, storage, ProofRegistry anchoring, Agent NFT minting, and marketplace adoption happen.",
+            "The primary product is the API / SDK marketplace. Developers and enterprise buyers can consume TITAN PROTOCOL as a full 10-layer package, as individual integrity modules, or as selected wrapper and fortress products.",
+            "The visible 1-click dashboard is a flagship showcase, not the entire company. It exists to prove that the stack can be wrapped into a real mainnet product shell with wallet input, proof storage, policy checks, and an auditable result.",
+            "Judge Mode is the live audit terminal. It is designed to remove ambiguity for developers, buyers, and reviewers by exposing the latest proof-backed snapshot, storage path, registry anchor, and control-plane evidence in one read-only surface.",
           ],
           callout: {
             tone: "teal",
             title: "Current truth",
             body:
-              "The live public story is now mainnet-first: Judge Mode shows the latest proof-backed wallet snapshot, ProofRegistry links, Integrity Auditor status, YieldStrategyINFT artifacts, and marketplace context without requiring a wallet connection.",
+              "The live public story is now marketplace-first: TITAN PROTOCOL is the engine, the 1-click dashboard is the flagship showcase, and Judge Mode is the proof terminal that helps developers trust what they are buying.",
           },
         },
         {
@@ -394,48 +395,53 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           title: "How the workspace flows",
           steps: [
             {
-              title: "Dashboard",
+              title: "Marketplace",
               body:
-                "The dashboard gives the fastest 1-click experience through `Boost My Yield Now`, plus a snapshot of APY lift, portfolio state, and the newest proof receipt.",
+                "The developer marketplace is the commercial core. It shows the full TITAN PROTOCOL package, single layers, anti-sybil modules, fortress modules, and selected partner wrappers.",
             },
             {
-              title: "Boost",
+              title: "Flagship showcase",
               body:
-                "The Boost page exposes the same optimization idea with more room for the prompt, streaming narrative, progress states, and the `Execute Optimization` control.",
+                "The dashboard and Boost pages show the fastest way to demonstrate TITAN PROTOCOL inside a user-facing shell without hiding the proof path.",
             },
             {
-              title: "Proof surfaces",
+              title: "Judge terminal",
               body:
-                "History, the proof modal, Judge Mode, and the latest result cards reveal the tx hash, storage identifier, ProofRegistry transaction, Agent NFT mint reference, and explorer links.",
+                "Judge Mode, the proof modal, and History reveal the tx hash, storage identifier, ProofRegistry transaction, control-plane artifacts, and explorer links.",
+            },
+            {
+              title: "Challenge surfaces",
+              body:
+                "Vault and faucet are not the main business. They exist to show that selected protections survive hostile traffic and public abuse-oriented testing.",
             },
           ],
           table: {
-            caption: "Main menu guide",
+            caption: "Narrative guide",
             columns: ["Menu", "Primary job", "Who uses it most", "Reality check"],
             rows: [
-              ["Dashboard", "Fast overview + 1-click CTA", "Users and judges", "Best place to demo the entire loop quickly"],
-              ["Boost", "Prompted optimization flow", "Power users", "Best place to explain `Execute Optimization`"],
+              ["Dashboard", "Flagship showcase shell", "Judges and first-time viewers", "Best place to show TITAN PROTOCOL inside a usable product"],
+              ["Boost", "Detailed showcase flow", "Power users and reviewers", "Best place to explain `Execute Optimization` as a reference implementation"],
               ["Portfolio", "Current wallet state summary", "Users", "Reflects wallet/RPC availability"],
               ["Strategies", "Strategy framing and ranking", "Users and judges", "Derived from current app state"],
               ["Opportunities", "Ranked opportunities", "Users", "Useful before execution"],
-              ["History", "Proof ledger and verification trail", "Judges and developers", "Most important proof review page"],
+              ["History", "Proof ledger and verification trail", "Judges and developers", "Most important proof review page after a showcase run"],
               ["Agents", "Minted strategy Agent NFTs", "Users and judges", "Shows proof-backed strategies as on-chain artifacts"],
               ["Marketplace", "Strategy adoption listings", "Users and judges", "Shows listed Strategy NFTs and adoption status"],
               ["Analytics", "Performance framing", "Judges and contributors", "Some values are derived from stored proofs"],
               ["Watchlist", "Protocol watchlist", "Users", "State-aware support page"],
               ["Settings", "Workspace controls", "Contributors", "Binds to runtime settings state"],
-              ["Docs", "Truthful product knowledge base", "Everyone", "Use this when you need context before a demo or review"],
+              ["Docs", "Developer-facing knowledge base", "Everyone", "Use this when you need the architecture and business story before a demo or review"],
             ],
           },
         },
         {
           id: "judge-demo",
-          title: "A reliable judge walkthrough",
+          title: "A reliable buyer and judge walkthrough",
           bullets: [
-            "Start on `/judge` when the reviewer wants the fastest proof-backed view without wallet connection.",
-            "Use `/docs` when the reviewer wants architecture, security boundaries, and the plain-English explanation behind the live flow.",
-            "Open the dashboard or `/agent`, run 1-click optimization, then show the proof modal with Integrity Auditor, 0G Storage CID, block number, and ProofRegistry tx.",
-            "Mint the result as an Agent NFT, then open `/agents` or `/marketplace` to show that the strategy becomes an on-chain artifact, not only a UI state.",
+            "Start on `/dev/marketplace` when the reviewer needs to understand the real product surface and package structure.",
+            "Use `/judge` when the reviewer wants the fastest proof-backed view without wallet connection.",
+            "Open the dashboard or `/agent`, run 1-click optimization, then show the proof modal as evidence that TITAN PROTOCOL can secure a real mainnet shell.",
+            "Return to the marketplace and docs to show that the same stack is sold as infrastructure, not only demonstrated through one app screen.",
           ],
         },
       ],
@@ -448,9 +454,9 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
       description:
         "Why the project exists, which problem it tackles, and what trust model it assumes.",
       summary: [
-        { label: "Problem", value: "Idle DeFi capital and hallucination-prone AI output", tone: "amber" },
-        { label: "Target Users", value: "Retail users, judges, and contributors", tone: "white" },
-        { label: "Trust Model", value: "Guardrailed output + proof trail", tone: "green" },
+        { label: "Problem", value: "Web3 AI lacks modular trust infrastructure", tone: "amber" },
+        { label: "Target Buyers", value: "Developers, protocols, enterprise teams", tone: "white" },
+        { label: "Trust Model", value: "Guardrailed execution + on-chain proof trail", tone: "green" },
       ],
       quickLinks: pageQuickLinks("overview", "0g-integration", "roadmap"),
       sections: [
@@ -458,23 +464,23 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           id: "problem-statement",
           title: "Problem statement",
           paragraphs: [
-            "Many DeFi dashboards stop at recommendation cards. They show a higher APY route, but they do not explain how the route was produced, what part is simulated, where proof is stored, or how a reviewer should validate the claim.",
-            "YieldBoost AI exists to reduce that trust gap. The interface is opinionated, the optimization flow is guided, Integrity Auditor checks the recommendation, and the proof surfaces are always close to the main action paths.",
+            "Most Web3 AI stacks still sell an interface before they solve the trust layer underneath it. They can generate recommendations, but they cannot package secure execution, memory, policy enforcement, and proof as reusable infrastructure.",
+            "YieldBoost AI exists to close that gap. TITAN PROTOCOL turns trust, execution integrity, and auditability into modular infrastructure that can be bought through APIs and SDKs instead of rebuilt from scratch by every team.",
           ],
         },
         {
           id: "why-this-shape",
-          title: "Why the product is shaped as a dashboard first",
+          title: "Why the product still includes a dashboard",
           bullets: [
-            "A user should be able to understand the pitch in under a minute.",
-            "A judge should be able to see action, result, and proof without switching tools repeatedly.",
-            "A developer should be able to inspect the actual routes that produce the optimization snapshot, streamed reasoning, storage write, and history ledger.",
+            "A developer or judge should be able to understand the product in under a minute.",
+            "A flagship showcase proves that TITAN PROTOCOL is not only abstract middleware but can secure a real mainnet workflow.",
+            "A live UI gives the marketplace a concrete reference implementation that is easy to inspect, record, and explain.",
           ],
           callout: {
             tone: "amber",
-            title: "No inflated claims",
+            title: "Correct reading",
             body:
-              "The docs present the current product as mainnet-first and proof-backed, while still being clear about what is a recommendation, what is an on-chain proof, and what is a future execution layer.",
+              "The docs should be read marketplace-first. The dashboard is a flagship showcase, not the full business. Judge Mode is the audit terminal that proves the infrastructure claim.",
           },
         },
         {
@@ -483,10 +489,10 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           table: {
             columns: ["Audience", "What they need", "Where to start", "Best proof surface"],
             rows: [
-              ["DeFi user", "Simple action path and low-friction CTA", "Dashboard", "Proof modal + latest tx"],
-              ["Hackathon judge", "Fast narrative and verifiable artifacts", "Docs overview", "History and explorer link"],
-              ["Developer", "Route-level understanding", "Architecture", "API & Data Flow"],
-              ["Contributor", "Honest current-state map", "Roadmap", "Troubleshooting + architecture"],
+              ["Developer", "Modular integrity infrastructure", "Marketplace", "Judge Mode + API docs"],
+              ["Protocol team", "Trust layer for agent products", "Marketplace", "Judge Mode + showcase flow"],
+              ["Enterprise buyer", "Private execution + proof trail", "Project brief", "Judge Mode + Nitro module"],
+              ["Hackathon judge", "Fast narrative and verifiable artifacts", "Docs overview", "Judge Mode + explorer links"],
             ],
           },
         },
@@ -494,8 +500,8 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           id: "trust-model",
           title: "Trust model",
           paragraphs: [
-            "YieldBoost AI is not a custody layer. Wallet access stays in the browser wallet or a manually entered watch-only address. The app reads wallet state, prepares optimization output, and stores proof records.",
-            "The product is strongest when it is explicit about verification. Optimization output is treated as a proposal, checked by Integrity Auditor, persisted through the proof flow, and only then presented as a reviewable strategy artifact.",
+            "YieldBoost AI is not trying to own the user wallet. It is trying to own the integrity layer around AI-agent execution, storage, policy, and proof.",
+            "The product is strongest when it is explicit about verification. TITAN PROTOCOL treats output as a proposal, checks it with Integrity Auditor, persists it through the proof flow, and then exposes the result through a read-only audit surface.",
           ],
           bullets: [
             "Connected wallets can switch networks and broadcast the selected address into the app state.",
@@ -514,7 +520,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
       description:
         "How to enter the app, connect a wallet, and understand the first meaningful screens.",
       summary: [
-        { label: "Recommended Start", value: "Dashboard for fastest first impression", tone: "teal" },
+        { label: "Recommended Start", value: "Marketplace first, dashboard second", tone: "teal" },
         { label: "Wallet Mode", value: "Connected or watch-only", tone: "white" },
         { label: "Proof Path", value: storageStatus, tone: defaultNetwork.storageConfigured ? "green" : "amber" },
       ],
@@ -527,7 +533,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             {
               title: "Open the app and review the sidebar",
               body:
-                "The sidebar is the product spine. Dashboard is the shortest route to value, Boost is the most explicit execution surface, and Docs is the fastest way to brief a teammate or judge.",
+                "The sidebar is the product spine. Marketplace is the business entry, Dashboard is the flagship showcase, and Docs is the fastest way to brief a teammate, buyer, or judge.",
             },
             {
               title: "Choose a wallet mode",
@@ -554,7 +560,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             tone: "teal",
             title: "Best demo order",
             body:
-              "For a short demo, connect or paste an address, show the dashboard state, then run optimization from either the dashboard CTA or the Boost page. Finish by opening History or the proof modal.",
+              "For a short demo, start in the marketplace, move to the dashboard or Boost page to show the flagship showcase, then finish in Judge Mode or the proof modal.",
           },
         },
         {
@@ -565,8 +571,8 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             rows: [
               ["/docs", "Docs landing page", "Orientation", "Best place to hand someone a map"],
               ["/judge", "Read-only review surface", "Judges", "Best place to verify latest proof without wallet setup"],
-              ["/", "Dashboard", "Fast demo", "Contains `Boost My Yield Now`"],
-              ["/agent", "Boost page", "Execution walkthrough", "Contains `Execute Optimization` and prompt box"],
+              ["/", "Dashboard", "Flagship showcase", "Contains `Boost My Yield Now`"],
+              ["/agent", "Boost page", "Reference implementation walkthrough", "Contains `Execute Optimization` and prompt box"],
               ["/agents", "Agent NFT gallery", "NFT proof review", "Shows minted Strategy NFTs"],
               ["/marketplace", "Strategy marketplace", "Adoption review", "Shows listed proof-backed Strategy NFTs"],
               ["/history", "Proof history", "Verification", "Useful immediately after a run"],
@@ -579,13 +585,13 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
     {
       slug: "how-1-click-works",
       href: "/docs/how-1-click-works",
-      label: "How 1-Click Works",
+      label: "How the Flagship Showcase Works",
       category: "Optimization Flow",
       description:
-        "The full meaning of the dashboard CTA `Boost My Yield Now` and what the product does after that click.",
+        "The full meaning of the dashboard CTA `Boost My Yield Now` and how the flagship showcase proves TITAN PROTOCOL in a live product shell.",
       summary: [
         { label: "CTA", value: "Boost My Yield Now", tone: "teal" },
-        { label: "Intent", value: "Fastest low-friction optimization run", tone: "white" },
+        { label: "Intent", value: "Fastest proof of the live product shell", tone: "white" },
         { label: "Output", value: "Recommendation + proof receipt", tone: "green" },
       ],
       quickLinks: pageQuickLinks("execute-optimization", "proof-and-verification", "architecture"),
@@ -594,13 +600,13 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           id: "cta-meaning",
           title: "What `Boost My Yield Now` means",
           paragraphs: [
-            "This button is the dashboard shortcut for the default optimization request: optimize the current portfolio for better yield with low risk.",
-            "It intentionally hides most of the prompt complexity so the user can see the full system loop without visiting the more detailed Boost page.",
+            "This button is the dashboard shortcut for the default flagship flow: show how TITAN PROTOCOL turns wallet state into a proof-backed mainnet output inside a usable application shell.",
+            "It intentionally hides most of the prompt complexity so a developer, buyer, or judge can see the full loop quickly before going deeper into the more explicit Boost page.",
           ],
         },
         {
           id: "pipeline",
-          title: "The 1-click pipeline",
+          title: "The flagship showcase pipeline",
           steps: [
             {
               title: "Read the current wallet snapshot",
@@ -610,7 +616,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             {
               title: "Generate the optimization snapshot",
               body:
-                `The optimization engine uses ${status.computeMode.toLowerCase()}. It returns projected APY, gain estimate, recommendation, and supporting reasoning text.`,
+                `The showcase engine uses ${status.computeMode.toLowerCase()}. It returns projected APY, gain estimate, recommendation, and supporting reasoning text as a visible proof of the underlying stack.`,
             },
             {
               title: "Audit the recommendation",
@@ -630,7 +636,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             {
               title: "Surface proof everywhere",
               body:
-                "The latest result card, proof modal, and History page all read the stored record so the same run can be inspected in multiple places.",
+                "The latest result card, proof modal, History page, and Judge Mode all read the stored record so the same run can be inspected as infrastructure evidence, not only as UI state.",
             },
           ],
         },

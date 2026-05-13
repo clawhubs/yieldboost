@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "YieldBoost AI Developer Portal",
   description:
-    "Developer docs and founder console for the YieldBoost AI Integrity API and 10-layer TITAN X PROTOCOL stack.",
+    "Developer docs and founder console for the YieldBoost AI Integrity API and the live 10-layer TITAN PROTOCOL stack.",
   metadataBase: new URL("https://dev.yieldboostai.xyz"),
   alternates: {
     canonical: "https://dev.yieldboostai.xyz",
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "YieldBoost AI Developer Portal",
     description:
-      "Developer docs and founder console for the YieldBoost AI Integrity API and 10-layer TITAN X PROTOCOL stack.",
+      "Developer docs and founder console for the YieldBoost AI Integrity API and the live 10-layer TITAN PROTOCOL stack.",
     url: "https://dev.yieldboostai.xyz",
     siteName: "YieldBoost AI Developer Portal",
     type: "website",

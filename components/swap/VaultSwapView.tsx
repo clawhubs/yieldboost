@@ -21,7 +21,7 @@ const securityLogs = [
   "Running Alibaba Anti-Sybil Fingerprinting... [PASSED]",
   "Verifying Zero-Knowledge Proofs... [PASSED]",
   "TEE Secure Compute Enclave... [LOCKED]",
-  "9-Layer Integrity Stack... [100% SECURED]",
+  "10-Layer Integrity Stack... [100% SECURED]",
   "Routing to 0G Mainnet Liquidity...",
 ];
 
@@ -154,7 +154,7 @@ export default function VaultSwapView() {
                     </div>
                   </div>
                   <div className="mt-4 flex flex-wrap gap-2">
-                    {["9-layer guarded", "0G mainnet route", "slippage shield"].map((badge) => (
+                    {["10-layer guarded", "0G mainnet route", "slippage shield"].map((badge) => (
                       <span
                         key={badge}
                         className="rounded-full border border-[rgba(143,255,198,0.16)] bg-[rgba(143,255,198,0.07)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[#aaffd9]"
@@ -193,7 +193,7 @@ export default function VaultSwapView() {
               <InfoPanel
                 icon={Radar}
                 title="Security Radar"
-                body="A visual-only preview of how Vault Swap will present the 9-layer integrity stack before execution."
+                body="A visual-only preview of how Vault Swap will present the 10-layer integrity stack before execution."
               />
               <InfoPanel
                 icon={TerminalSquare}
@@ -218,7 +218,7 @@ export default function VaultSwapView() {
                   Vault Swap is the Phase 2 liquidity layer.
                 </h3>
                 <p className="mt-2 max-w-2xl text-[13px] leading-6 text-[#c6d8c8]">
-                  Phase 1 (Core Fortress) is live with 1-click optimize, the 9-layer stack, and 0G anchoring.
+                  Phase 1 is live with the flagship product MVP, the 10-layer stack, and 0G anchoring.
                   Vault Swap previews protected YA liquidity routing on top of the same security core.
                 </p>
               </div>
@@ -240,14 +240,14 @@ export default function VaultSwapView() {
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
               <Link
-                href="/judge"
+                href="/dev/audit"
                 className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(143,255,198,0.24)] bg-[rgba(143,255,198,0.08)] px-3 py-1.5 text-[11px] font-bold text-[#9dffd4] transition hover:bg-[rgba(143,255,198,0.16)] hover:text-white"
               >
-                Judge Mode
+                Verification Console
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
               <Link
-                href="/judge/roadmap"
+                href="/dev/roadmap"
                 className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(143,255,198,0.24)] bg-[rgba(143,255,198,0.08)] px-3 py-1.5 text-[11px] font-bold text-[#9dffd4] transition hover:bg-[rgba(143,255,198,0.16)] hover:text-white"
               >
                 Roadmap
@@ -326,7 +326,7 @@ function TerminalLog({ logs }: { logs: string[] }) {
       <div className="flex items-center justify-between border-b border-[rgba(88,255,141,0.12)] bg-[rgba(88,255,141,0.06)] px-4 py-3">
         <div className="flex items-center gap-2 text-[12px] font-black uppercase tracking-[0.16em] text-[#9dffd4]">
           <TerminalSquare className="h-4 w-4" />
-          9-layer security radar
+          10-layer security radar
         </div>
         <div className="h-2.5 w-2.5 animate-pulse rounded-full bg-[#58ff8d] shadow-[0_0_18px_rgba(88,255,141,0.8)]" />
       </div>

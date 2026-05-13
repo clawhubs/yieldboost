@@ -18,7 +18,7 @@ export async function GET() {
       package: "veilsolver-sdk",
       version: "0.1.1",
       upstream_path: "/solve",
-      note: "VeilSolver is a partner integration example wrapped by YieldBoost; the standalone YieldBoost 9-layer stack remains independent.",
+      note: "VeilSolver is a partner integration example wrapped by YieldBoost; the standalone YieldBoost 10-layer TITAN PROTOCOL stack remains independent.",
     },
   });
 }
