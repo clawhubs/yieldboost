@@ -51,6 +51,7 @@
   <a href="#0g-integration-upgrade">0G integration upgrade</a> •
   <a href="#10-layer-independence-and-partner-sdk-scope">10-layer independence</a> •
   <a href="#agent-nft-layer">Agent NFT layer</a> •
+  <a href="#early-signals">Early Signals</a> •
   <a href="#readme-stats">Stats</a> •
   <a href="#local-installation">Local setup</a> •
   <a href="#license">License</a> •
@@ -151,6 +152,16 @@ VeilSolver Secure Proxy is a partner SDK example inside the store: YieldBoost wr
 | AI safety | A- | Integrity Auditor blocks impossible outputs and indexes rejections into the hallucination blacklist. |
 | Demo clarity | A | The Verification Console shows proof, memory, blacklist, stress report, and verification links without wallet setup. |
 | Production honesty | A | 0G Compute, Storage, Registry, KV, and contract paths all expose fallback states instead of faking success. |
+
+## Early Signals
+
+- **9 unique wallets** recorded in the live proof history.
+- **51 proof-backed compute jobs** processed through the flagship execution path.
+- **$671 tracked portfolio value** passed through the live showcase flow.
+- **93 blocked public challenge attempts** recorded on the vault challenge surface.
+- **2 protocol routes** observed in the current proof-backed recommendation set.
+
+These are early, real usage signals captured from the live public surfaces of YieldBoost AI as of **May 14, 2026**. They reflect the current commercial MVP, flagship product MVP, and public challenge flows, not fabricated growth claims.
 
 ## The Problem
 
