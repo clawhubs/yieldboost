@@ -159,11 +159,11 @@ These are early, real usage signals captured from the live public surfaces of Yi
 
 | Signal | Snapshot | Evidence |
 | --- | --- | --- |
-| Unique wallets observed | **9 wallets** | [`/api/stats/global`](https://yieldboostai.xyz/api/stats/global) returns `users: 9` |
-| Proof-backed execution jobs | **51 jobs** | [`/api/stats/global`](https://yieldboostai.xyz/api/stats/global) returns `computeJobs: 51` |
-| Tracked portfolio value processed | **$671** | [`/api/stats/global`](https://yieldboostai.xyz/api/stats/global) returns `tvl: 671.39` |
+| Unique wallets observed | **8 wallets** | [`/api/stats/global`](https://yieldboostai.xyz/api/stats/global) returns `users: 8` |
+| Proof-backed execution jobs | **50 jobs** | [`/api/stats/global`](https://yieldboostai.xyz/api/stats/global) returns `computeJobs: 50` |
+| Tracked portfolio value processed | **$737** | [`/api/stats/global`](https://yieldboostai.xyz/api/stats/global) returns `tvl: 736.72` |
 | Blocked public challenge attempts | **93 deflected attempts** | [`/v1/admin/public-stats`](https://api.yieldboostai.xyz/v1/admin/public-stats) returns `total_deflected_attacks: 93` |
-| Proof-backed recommendation routes visible | **2 routes** | [`/api/stats/global`](https://yieldboostai.xyz/api/stats/global) returns `protocols: 2` |
+| Proof-backed recommendation routes visible | **1 route** | [`/api/stats/global`](https://yieldboostai.xyz/api/stats/global) returns `protocols: 1` |
 
 Supporting live surfaces:
 
