@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
+import DevAuditLinkPatch from "@/components/dev/DevAuditLinkPatch";
 import JudgePage, {
   dynamic,
   revalidate,
@@ -11,6 +12,7 @@ export { dynamic, revalidate };
 export default async function DeveloperAuditPage() {
   return (
     <>
+      <DevAuditLinkPatch />
       <div className="px-[10px] pt-[10px] md:px-[10px] md:pt-[10px]">
         <Link
           href="/dev"

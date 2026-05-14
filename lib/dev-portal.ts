@@ -257,6 +257,12 @@ export async function revokeManagedApiKey(keyId: string): Promise<void> {
   });
 }
 
+export async function deleteManagedApiKey(keyId: string): Promise<void> {
+  await portalFetch(`/v1/admin/api-keys/${keyId}`, {
+    method: "DELETE",
+  });
+}
+
 export function formatDateTime(value: string | null | undefined): string {
   if (!value) {
     return "Never";

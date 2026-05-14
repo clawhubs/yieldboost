@@ -1,10 +1,12 @@
 import { KeyRound, Shield } from "lucide-react";
 
 import { revokeApiKeyAction } from "@/app/dev/actions";
+import DevPortalLogoutButton from "@/components/dev/DevPortalLogoutButton";
 import DeveloperPortalShell from "@/components/dev/DeveloperPortalShell";
 import ManagedApiKeyCreateForm from "@/components/dev/ManagedApiKeyCreateForm";
 import type { DevDashboardResponse, ManagedApiKey, SetupState } from "@/lib/dev-portal";
 import { formatDateTime, shortenHash } from "@/lib/dev-portal";
+import { O_G_MAINNET_EXPLORER_URL } from "@/lib/ya-api-plans";
 
 interface DeveloperConsoleViewProps {
   session: {
@@ -22,6 +24,9 @@ export default function DeveloperConsoleView({
   dashboard,
   apiKeys,
 }: DeveloperConsoleViewProps) {
+  const latestCheckoutProof =
+    apiKeys.find((item) => Boolean(item.checkout_tx_hash || item.checkout_integrity_hash)) ?? null;
+
   if (!session || session.role !== "owner") {
     return (
       <DeveloperPortalShell
@@ -69,8 +74,18 @@ export default function DeveloperConsoleView({
         </section>
       ) : (
         <>
+          <section className="fade-in-up fade-in-up-1 flex flex-col gap-3 rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] px-4 py-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#c0d4e2]">Portal session</p>
+              <p className="mt-1 text-[14px] leading-6 text-[#d0e0ec]">
+                Signed in as <span className="font-semibold text-white">{shortenHash(session.walletAddress, 6, 4)}</span> on the owner console.
+              </p>
+            </div>
+            <DevPortalLogoutButton />
+          </section>
+
           {/* ── Stats row ────────────────────────────────────── */}
-          <section className="fade-in-up fade-in-up-1 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+          <section className="fade-in-up fade-in-up-2 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
             <StatCard label="Managed keys" value={String(dashboard?.total_api_keys ?? 0)} tone="white" />
             <StatCard label="Active" value={String(dashboard?.active_api_keys ?? 0)} tone="green" />
             <StatCard label="Requests" value={String(dashboard?.total_requests ?? 0)} tone="white" />
@@ -79,14 +94,71 @@ export default function DeveloperConsoleView({
             <StatCard label="API base" value={setup.apiBaseUrl.replace("https://", "")} tone="white" />
           </section>
 
+          <section className="fade-in-up fade-in-up-3 yb-card rounded-2xl p-4">
+            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+              <div>
+                <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#9ff7f0]">
+                  Latest Purchase Proof
+                </p>
+                {latestCheckoutProof ? (
+                  <>
+                    <p className="mt-1 text-[15px] font-semibold text-white">
+                      {latestCheckoutProof.plan_name || latestCheckoutProof.app_name}
+                    </p>
+                    <p className="mt-1 text-[12px] text-[#c8dae6]">
+                      Recorded {formatDateTime(latestCheckoutProof.created_at)}
+                    </p>
+                  </>
+                ) : (
+                  <p className="mt-1 text-[13px] leading-6 text-[#c8dae6]">
+                    No checkout proof has been recorded on this console yet.
+                  </p>
+                )}
+              </div>
+              {latestCheckoutProof ? (
+                <div className="grid gap-2 md:min-w-[320px]">
+                  {latestCheckoutProof.checkout_tx_hash ? (
+                    <a
+                      href={`${O_G_MAINNET_EXPLORER_URL}/tx/${latestCheckoutProof.checkout_tx_hash}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-xl border border-[rgba(0,201,177,0.16)] bg-[rgba(0,201,177,0.05)] px-3 py-2 text-[12px] text-[#d0e0ec]"
+                    >
+                      <span className="block text-[10px] uppercase tracking-[0.14em] text-[#9ff7f0]">
+                        Checkout Tx
+                      </span>
+                      <span className="mt-1 block font-mono text-white">
+                        {shortenHash(latestCheckoutProof.checkout_tx_hash, 12, 10)}
+                      </span>
+                    </a>
+                  ) : null}
+                  {latestCheckoutProof.checkout_integrity_hash ? (
+                    <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] px-3 py-2 text-[12px] text-[#d0e0ec]">
+                      <span className="block text-[10px] uppercase tracking-[0.14em] text-[#9ff7f0]">
+                        Integrity Proof
+                      </span>
+                      <span className="mt-1 block font-mono text-white">
+                        {shortenHash(latestCheckoutProof.checkout_integrity_hash, 12, 10)}
+                      </span>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          </section>
+
           {/* ── Create key + key list ────────────────────────── */}
-          <section className="fade-in-up fade-in-up-2 grid gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+          <section className="fade-in-up fade-in-up-4 grid gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
             <div className="yb-card rounded-2xl p-6">
               <h2 className="text-[20px] font-semibold text-white">Create managed API key</h2>
               <p className="mt-2 text-[13px] leading-6 text-[#c8dae6]">
-                Give each developer app its own key. Ownership stays at the wallet layer.
+                Give each developer app its own key. Owner console now follows the same package checkout flow so demo purchases and proof receipts stay visible here.
               </p>
-              <ManagedApiKeyCreateForm paymentMode="admin" submitLabel="Generate API key" />
+              <ManagedApiKeyCreateForm
+                ownerWalletAddress={session.walletAddress}
+                paymentMode="required"
+                submitLabel="Generate API key"
+              />
             </div>
 
             <div className="yb-card rounded-2xl p-6">
@@ -145,7 +217,7 @@ export default function DeveloperConsoleView({
                             type="submit"
                             className="revoke-btn w-full rounded-lg border border-[rgba(255,112,112,0.18)] bg-[rgba(255,112,112,0.06)] px-3 py-2 text-[12px] font-semibold text-[#ff9090]"
                           >
-                        Delete API key
+                            Revoke API key
                           </button>
                         </form>
                       ) : (
@@ -170,7 +242,7 @@ export default function DeveloperConsoleView({
           </section>
 
           {/* ── Top apps + stance ─────────────────────────── */}
-          <section className="fade-in-up fade-in-up-3 grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(300px,0.8fr)]">
+          <section className="fade-in-up fade-in-up-5 grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(300px,0.8fr)]">
             <div className="yb-card rounded-2xl p-6">
               <h2 className="text-[18px] font-semibold text-white">Top apps</h2>
               <div className="mt-4 space-y-2">
@@ -203,7 +275,7 @@ export default function DeveloperConsoleView({
           </section>
 
           {/* ── Usage + security logs ────────────────────── */}
-          <section className="fade-in-up fade-in-up-4 grid gap-4 xl:grid-cols-2">
+          <section className="fade-in-up fade-in-up-6 grid gap-4 xl:grid-cols-2">
             <div className="yb-card rounded-2xl p-6">
               <h2 className="text-[18px] font-semibold text-white">Recent usage</h2>
               <div className="mt-4 space-y-2">

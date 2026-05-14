@@ -244,6 +244,19 @@ class MetadataStore:
                 return item
             return None
 
+    async def delete_api_key(self, key_id: str) -> dict[str, Any] | None:
+        async with self._lock:
+            payload = await self._read()
+            items = payload.get("developer_api_keys", [])
+            for index, item in enumerate(items):
+                if item.get("key_id") != key_id:
+                    continue
+                removed = items.pop(index)
+                payload["developer_api_keys"] = items
+                await self._write(payload)
+                return removed
+            return None
+
     async def append_api_usage(self, event: dict[str, Any]) -> None:
         async with self._lock:
             payload = await self._read()

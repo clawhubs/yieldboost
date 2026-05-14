@@ -76,6 +76,7 @@ const serviceAttestationCache = new Map<
   }
 >();
 const DEFAULT_INFERENCE_SUBACCOUNT_FUND = ethers.parseEther("1.0");
+const DEFAULT_INFERENCE_SUBACCOUNT_TOP_UP = ethers.parseEther("0.05");
 const COMPUTE_REQUEST_TIMEOUT_MS = 15_000;
 const TEE_SIGNATURE_RETRY_COUNT = 8;
 const TEE_SIGNATURE_RETRY_DELAY_MS = 2_000;
@@ -173,6 +174,88 @@ function canAutoFundInferenceSubAccount(networkKey: WalletNetworkKey) {
     networkKey !== "mainnet" ||
     process.env.YB_ALLOW_MAINNET_COMPUTE_FUNDING === "true"
   );
+}
+
+function getInferenceSubAccountTopUpAmount() {
+  const configuredAmount = process.env.YB_COMPUTE_SUBACCOUNT_TOP_UP_OG?.trim();
+  if (!configuredAmount) {
+    return DEFAULT_INFERENCE_SUBACCOUNT_TOP_UP;
+  }
+
+  try {
+    const amount = ethers.parseEther(configuredAmount);
+    return amount > BigInt(0) ? amount : DEFAULT_INFERENCE_SUBACCOUNT_TOP_UP;
+  } catch {
+    console.warn(
+      `0G Compute: Invalid YB_COMPUTE_SUBACCOUNT_TOP_UP_OG=${configuredAmount}; using 0.05 0G.`,
+    );
+    return DEFAULT_INFERENCE_SUBACCOUNT_TOP_UP;
+  }
+}
+
+function parseRequiredLockedBalanceFromResponse(responseBody: string) {
+  const match = responseBody.match(/required minimum is\s+([0-9.]+)\s+0G/i);
+  if (!match) {
+    return null;
+  }
+
+  try {
+    return ethers.parseEther(match[1]);
+  } catch {
+    return null;
+  }
+}
+
+function parseCurrentLockedBalanceFromResponse(responseBody: string) {
+  const match = responseBody.match(/locked balance is\s+([0-9.]+)\s+0G/i);
+  if (!match) {
+    return null;
+  }
+
+  try {
+    return ethers.parseEther(match[1]);
+  } catch {
+    return null;
+  }
+}
+
+async function topUpInferenceProviderBalance(
+  broker: ZGBroker,
+  providerAddress: string,
+  networkKey: WalletNetworkKey,
+  responseBody: string,
+) {
+  if (!canAutoFundInferenceSubAccount(networkKey)) {
+    return false;
+  }
+
+  const requiredLockedBalance = parseRequiredLockedBalanceFromResponse(responseBody);
+  const currentLockedBalance = parseCurrentLockedBalanceFromResponse(responseBody);
+  const configuredTopUp = getInferenceSubAccountTopUpAmount();
+
+  let amountToTransfer = configuredTopUp;
+  if (
+    requiredLockedBalance !== null &&
+    currentLockedBalance !== null &&
+    requiredLockedBalance > currentLockedBalance
+  ) {
+    amountToTransfer =
+      requiredLockedBalance - currentLockedBalance + configuredTopUp;
+  }
+
+  if (amountToTransfer <= BigInt(0)) {
+    amountToTransfer = configuredTopUp;
+  }
+
+  console.log(
+    `0G Compute: Topping up provider ${providerAddress} by ${ethers.formatEther(amountToTransfer)} 0G to satisfy broker reserve requirements.`,
+  );
+  await broker.ledger.transferFund(
+    providerAddress,
+    "inference",
+    amountToTransfer,
+  );
+  return true;
 }
 
 async function verifyServiceAttestation(
@@ -510,7 +593,7 @@ export async function runTEEInference(
         );
 
         console.log(`0G Compute: Making inference request via ${providerAddress}`);
-        const response = await fetch(`${endpoint}/chat/completions`, {
+        let response = await fetch(`${endpoint}/chat/completions`, {
           method: "POST",
           signal: AbortSignal.timeout(COMPUTE_REQUEST_TIMEOUT_MS),
           headers: {
@@ -521,13 +604,51 @@ export async function runTEEInference(
         });
 
         if (!response.ok) {
-          const responseBody = await response.text();
-          lastInferenceError = `Inference HTTP ${response.status}: ${responseBody.slice(0, 240)}`;
-          console.error(
-            `0G Compute: Inference request failed for provider ${providerAddress} with status ${response.status}`,
-            responseBody,
-          );
-          continue;
+          let responseBody = await response.text();
+          const shouldRetryWithTopUp =
+            response.status === 400 &&
+            /insufficient balance/i.test(responseBody);
+
+          if (shouldRetryWithTopUp) {
+            try {
+              const toppedUp = await topUpInferenceProviderBalance(
+                broker,
+                providerAddress,
+                networkKey,
+                responseBody,
+              );
+
+              if (toppedUp) {
+                response = await fetch(`${endpoint}/chat/completions`, {
+                  method: "POST",
+                  signal: AbortSignal.timeout(COMPUTE_REQUEST_TIMEOUT_MS),
+                  headers: {
+                    "Content-Type": "application/json",
+                    ...headers,
+                  },
+                  body: requestBody,
+                });
+
+                if (!response.ok) {
+                  responseBody = await response.text();
+                }
+              }
+            } catch (topUpError) {
+              console.warn(
+                `0G Compute: Provider top-up retry failed for ${providerAddress}`,
+                topUpError,
+              );
+            }
+          }
+
+          if (!response.ok) {
+            lastInferenceError = `Inference HTTP ${response.status}: ${responseBody.slice(0, 240)}`;
+            console.error(
+              `0G Compute: Inference request failed for provider ${providerAddress} with status ${response.status}`,
+              responseBody,
+            );
+            continue;
+          }
         }
 
         const data = await response.json();

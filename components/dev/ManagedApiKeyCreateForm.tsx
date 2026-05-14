@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BrowserProvider } from "ethers";
+import { BrowserProvider, formatEther, parseEther } from "ethers";
 import { Copy, ExternalLink, Wallet2 } from "lucide-react";
 
 import {
@@ -20,7 +20,7 @@ import {
   YA_API_PLANS,
   type YaApiPlan,
 } from "@/lib/ya-api-plans";
-import { buildPlanActivationMessage, DEV_PLAN_ACTIVATION_TTL_MS } from "@/lib/dev-plan-activation";
+import { DEFAULT_WALLET_ADDRESS } from "@/lib/wallet";
 import { getWalletNetworkConfig } from "@/lib/wallet";
 
 const initialCreateApiKeyActionState: CreateApiKeyActionState = {
@@ -35,6 +35,8 @@ interface ManagedApiKeyCreateFormProps {
   paymentMode?: "required" | "admin";
   submitLabel?: string;
   initialPlanId?: YaApiPlan["id"];
+  selectedPlanId?: YaApiPlan["id"];
+  onSelectedPlanIdChange?: (planId: YaApiPlan["id"]) => void;
 }
 
 const CHECKOUT_LAYERS = [
@@ -55,21 +57,34 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function formatOgAmount(value: bigint) {
+  const asNumber = Number(formatEther(value));
+  if (!Number.isFinite(asNumber)) {
+    return formatEther(value);
+  }
+  return asNumber.toLocaleString("en-US", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 6,
+  });
+}
+
 export default function ManagedApiKeyCreateForm({
   ownerWalletAddress,
   paymentMode = "required",
   submitLabel = "Generate API key",
   initialPlanId = "builder",
+  selectedPlanId: controlledSelectedPlanId,
+  onSelectedPlanIdChange,
 }: ManagedApiKeyCreateFormProps) {
   const router = useRouter();
   const createdCardRef = useRef<HTMLDivElement | null>(null);
   const [acknowledged, setAcknowledged] = useState(false);
-  const [selectedPlanId, setSelectedPlanId] = useState<YaApiPlan["id"]>(initialPlanId);
+  const [uncontrolledSelectedPlanId, setUncontrolledSelectedPlanId] =
+    useState<YaApiPlan["id"]>(initialPlanId);
   const [checkoutReviewReady, setCheckoutReviewReady] = useState(false);
-  const [activationSignature, setActivationSignature] = useState("");
-  const [activationExpiresAt, setActivationExpiresAt] = useState("");
-  const [activationStatus, setActivationStatus] = useState("");
-  const [activationError, setActivationError] = useState("");
+  const [paymentTxHash, setPaymentTxHash] = useState("");
+  const [paymentStatus, setPaymentStatus] = useState("");
+  const [paymentError, setPaymentError] = useState("");
   const [activeLayerIndex, setActiveLayerIndex] = useState(-1);
   const [checkoutGuardComplete, setCheckoutGuardComplete] = useState(false);
   const [walletHelperStatus, setWalletHelperStatus] = useState("");
@@ -78,10 +93,20 @@ export default function ManagedApiKeyCreateForm({
     createApiKeyAction,
     initialCreateApiKeyActionState,
   );
+  const selectedPlanId = controlledSelectedPlanId ?? uncontrolledSelectedPlanId;
   const selectedPlan = YA_API_PLANS.find((plan) => plan.id === selectedPlanId) ?? YA_API_PLANS[0];
   const paymentRequired = paymentMode !== "admin" && selectedPlan.checkoutPrice0g !== "0";
+  const isDemoWalletSession = Boolean(
+    ownerWalletAddress &&
+      ownerWalletAddress.toLowerCase() === DEFAULT_WALLET_ADDRESS.toLowerCase(),
+  );
+  const effectiveCheckoutAmount = paymentRequired
+    ? isDemoWalletSession
+      ? "0"
+      : selectedPlan.checkoutPrice0g
+    : "0";
   const canSubmit =
-    acknowledged && !pending && (!paymentRequired || (Boolean(activationSignature) && checkoutGuardComplete));
+    acknowledged && !pending && (!paymentRequired || (Boolean(paymentTxHash) && checkoutGuardComplete));
 
   useEffect(() => {
     if (state.success) {
@@ -91,18 +116,26 @@ export default function ManagedApiKeyCreateForm({
   }, [router, state.success]);
 
   useEffect(() => {
-    setActivationSignature("");
-    setActivationExpiresAt("");
-    setActivationStatus("");
-    setActivationError("");
+    setPaymentTxHash("");
+    setPaymentStatus("");
+    setPaymentError("");
     setActiveLayerIndex(-1);
     setCheckoutGuardComplete(false);
     setCheckoutReviewReady(false);
   }, [selectedPlanId]);
 
   useEffect(() => {
-    setSelectedPlanId(initialPlanId);
-  }, [initialPlanId]);
+    if (controlledSelectedPlanId === undefined) {
+      setUncontrolledSelectedPlanId(initialPlanId);
+    }
+  }, [controlledSelectedPlanId, initialPlanId]);
+
+  function handleSelectPlan(planId: YaApiPlan["id"]) {
+    if (controlledSelectedPlanId === undefined) {
+      setUncontrolledSelectedPlanId(planId);
+    }
+    onSelectedPlanIdChange?.(planId);
+  }
 
   async function runCheckoutLayerPreview() {
     setCheckoutGuardComplete(false);
@@ -113,15 +146,16 @@ export default function ManagedApiKeyCreateForm({
     setCheckoutGuardComplete(true);
   }
 
-  async function signPackageActivation() {
-    setActivationError("");
-    setActivationStatus("Opening wallet...");
+  async function payWith0G() {
+    setPaymentError("");
+    setPaymentStatus("Opening wallet...");
     try {
       if (!window.ethereum) {
         throw new Error("Wallet extension not detected. Install MetaMask or another EVM wallet first.");
       }
 
       await window.ethereum.request({ method: "eth_requestAccounts" });
+      await add0GMainnetToWallet();
 
       const provider = new BrowserProvider(window.ethereum as InjectedProvider);
       const signer = await provider.getSigner();
@@ -132,25 +166,55 @@ export default function ManagedApiKeyCreateForm({
       ) {
         throw new Error("The paying wallet must match the wallet signed into the developer portal.");
       }
-      const expiresAt = Date.now() + DEV_PLAN_ACTIVATION_TTL_MS;
-      const message = buildPlanActivationMessage({
-        walletAddress: payerAddress,
-        planId: selectedPlan.id,
-        planName: selectedPlan.name,
-        priceLabel: selectedPlan.priceLabel,
-        expiresAt,
-      });
+      const treasuryAddress = get0GTreasuryAddress();
+      const amount = parseEther(effectiveCheckoutAmount);
+      const [payerBalance, feeData] = await Promise.all([
+        provider.getBalance(payerAddress),
+        provider.getFeeData(),
+      ]);
+      const gasPrice = feeData.maxFeePerGas ?? feeData.gasPrice ?? BigInt(0);
+      const estimatedGasCost = gasPrice > BigInt(0) ? gasPrice * BigInt(21000) : BigInt(0);
+      const minimumNeeded = amount + estimatedGasCost;
 
-      setActivationStatus("Waiting for wallet signature...");
-      const signature = await signer.signMessage(message);
-      setActivationSignature(signature);
-      setActivationExpiresAt(String(expiresAt));
-      setActivationStatus("Running 10-layer checkout guard...");
+      if (payerBalance === BigInt(0)) {
+        throw new Error(
+          `This wallet has 0 0G on 0G Mainnet, so the wallet cannot open a checkout confirmation yet. Fund it first, then retry. Package: ${selectedPlan.priceLabel}. Estimated gas floor: ${formatOgAmount(estimatedGasCost)} 0G.`,
+        );
+      }
+
+      if (payerBalance < minimumNeeded) {
+        throw new Error(
+          `Insufficient 0G balance for checkout. Wallet balance: ${formatOgAmount(payerBalance)} 0G. Required package: ${effectiveCheckoutAmount} 0G. Estimated gas floor: ${formatOgAmount(estimatedGasCost)} 0G.`,
+        );
+      }
+
+      setPaymentStatus(
+        effectiveCheckoutAmount === "0"
+          ? "Sending demo wallet gas-only activation transaction..."
+          : `Sending ${selectedPlan.priceLabel}...`,
+      );
+      const transaction = await signer.sendTransaction({
+        to: treasuryAddress,
+        value: amount,
+      });
+      setPaymentStatus("Waiting for 0G confirmation...");
+      const receipt = await transaction.wait();
+      const receiptHash = receipt?.hash || transaction.hash;
+      if (!receiptHash) {
+        throw new Error("Payment transaction did not return a receipt hash.");
+      }
+
+      setPaymentTxHash(receiptHash);
+      setPaymentStatus("Running 10-layer checkout guard...");
       await runCheckoutLayerPreview();
-      setActivationStatus("Package activation signed and verified.");
+      setPaymentStatus(
+        effectiveCheckoutAmount === "0"
+          ? `Demo wallet activation confirmed: ${receiptHash.slice(0, 10)}...${receiptHash.slice(-6)}`
+          : `Payment confirmed: ${receiptHash.slice(0, 10)}...${receiptHash.slice(-6)}`,
+      );
     } catch (error) {
-      setActivationStatus("");
-      setActivationError(error instanceof Error ? error.message : "Package activation failed.");
+      setPaymentStatus("");
+      setPaymentError(error instanceof Error ? error.message : "0G payment failed.");
     }
   }
 
@@ -183,8 +247,8 @@ export default function ManagedApiKeyCreateForm({
   }
 
   function beginCheckoutReview() {
-    setActivationError("");
-    setActivationStatus("");
+    setPaymentError("");
+    setPaymentStatus("");
     setCheckoutReviewReady(true);
   }
 
@@ -200,9 +264,9 @@ export default function ManagedApiKeyCreateForm({
         {ownerWalletAddress ? (
           <input type="hidden" name="owner_wallet_address" value={ownerWalletAddress} />
         ) : null}
+        <input type="hidden" name="payment_mode" value={paymentMode} />
         <input type="hidden" name="plan_id" value={selectedPlan.id} />
-        <input type="hidden" name="activation_signature" value={activationSignature} />
-        <input type="hidden" name="activation_expires_at" value={activationExpiresAt} />
+        <input type="hidden" name="payment_tx_hash" value={paymentTxHash} />
 
         <div className="grid gap-3">
           <div>
@@ -210,7 +274,7 @@ export default function ManagedApiKeyCreateForm({
               API package
             </span>
             <p className="mt-1.5 text-[14px] leading-6 text-[#e0eaf2]">
-              Developer packages are activated by a wallet signature tied to the connected portal identity.
+              Free stays instant. Builder, Pro, and Protocol activate through a native 0G mainnet payment receipt.
             </p>
           </div>
           <div className="rounded-xl border border-[rgba(0,201,177,0.18)] bg-[rgba(0,201,177,0.05)] px-4 py-4">
@@ -285,7 +349,7 @@ export default function ManagedApiKeyCreateForm({
                   name="plan_picker"
                   value={plan.id}
                   checked={selectedPlan.id === plan.id}
-                  onChange={() => setSelectedPlanId(plan.id)}
+                  onChange={() => handleSelectPlan(plan.id)}
                   className="sr-only"
                 />
                 <div className="flex items-center justify-between gap-2">
@@ -324,15 +388,20 @@ export default function ManagedApiKeyCreateForm({
                   Package activation
                 </p>
                 <p className="mt-1.5 text-[14px] font-medium leading-6 text-[#d4f6f1]">
-                  Activate the {selectedPlan.name} API package with a wallet signature.
+                  Activate the {selectedPlan.name} API package with a native 0G mainnet transaction.
                 </p>
                 <p className="mt-1.5 text-[12px] leading-5 text-[#b8ece5]">
-                  The signing wallet must match the wallet signed into this developer portal, so a
-                  package activation cannot be reused by another account.
+                  The paying wallet must match the wallet signed into this developer portal, so a
+                  checkout receipt cannot be reused by another account.
                 </p>
                 <p className="mt-1.5 text-[12px] leading-5 text-[#9cf3e8]">
-                  Step 1 reviews the package and wallet match. Step 2 opens a wallet signature confirmation for package activation.
+                  Step 1 reviews the package and wallet match. Step 2 opens the 0G transaction confirmation in your wallet.
                 </p>
+                {isDemoWalletSession ? (
+                  <p className="mt-1.5 text-[12px] leading-5 text-[#9cf3e8]">
+                    Demo wallet override: this wallet sends a 0-value 0G transaction, so it only pays network gas and does not pay the package price.
+                  </p>
+                ) : null}
                 {selectedPlan.listPrice0g ? (
                   <p className="mt-1 text-[12px] leading-5 text-[#9cf3e8]">
                     List price <span className="line-through">{selectedPlan.listPrice0g} 0G</span>
@@ -343,11 +412,11 @@ export default function ManagedApiKeyCreateForm({
               {checkoutReviewReady ? (
                 <button
                   type="button"
-                  onClick={signPackageActivation}
-                  disabled={pending || Boolean(activationStatus && !activationSignature)}
+                  onClick={payWith0G}
+                  disabled={pending || Boolean(paymentStatus && !paymentTxHash)}
                   className="yb-teal-button shrink-0 rounded-xl px-5 py-2.5 text-[13px] font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  {activationSignature ? "Signed" : "Open wallet signature"}
+                  {paymentTxHash ? "Paid" : effectiveCheckoutAmount === "0" ? "Send gas-only tx" : "Pay with 0G"}
                 </button>
               ) : (
                 <button
@@ -356,30 +425,30 @@ export default function ManagedApiKeyCreateForm({
                   disabled={pending}
                   className="yb-teal-button shrink-0 rounded-xl px-5 py-2.5 text-[13px] font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  Review package
+                  Start checkout
                 </button>
               )}
             </div>
-            {checkoutReviewReady && !activationSignature ? (
+            {checkoutReviewReady && !paymentTxHash ? (
               <div className="mt-3 rounded-xl border border-[rgba(255,255,255,0.1)] bg-[rgba(2,10,18,0.48)] px-4 py-4 text-[13px] leading-6 text-[#d7e7f2]">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#72f3c7]">
                   Checkout review
                 </p>
                 <div className="mt-2 grid gap-1">
                   <p>Package: <span className="font-semibold text-white">{selectedPlan.name}</span></p>
-                  <p>Reference price: <span className="font-semibold text-white">{selectedPlan.priceLabel}</span></p>
-                  <p>Action: <span className="font-semibold text-white">Wallet signature</span></p>
+                  <p>Required checkout: <span className="font-semibold text-white">{effectiveCheckoutAmount} 0G</span></p>
+                  <p>Action: <span className="font-semibold text-white">Native 0G transfer</span></p>
                   {ownerWalletAddress ? (
                     <p>Signed-in wallet: <span className="break-all font-mono text-[12px] text-[#9cf3e8]">{ownerWalletAddress}</span></p>
                   ) : null}
                 </div>
                 <p className="mt-2 text-[12px] leading-5 text-[#a9c9d7]">
-                  The next button will open the wallet popup. The app will not activate the package before that signature step.
+                  The next button will open the wallet popup. The app will not activate the package before the on-chain 0G transaction is confirmed.
                 </p>
               </div>
             ) : null}
-            {activationStatus ? (
-              <p className="mt-3 break-all font-mono text-[12px] leading-6 text-[#9cf3e8]">{activationStatus}</p>
+            {paymentStatus ? (
+              <p className="mt-3 break-all font-mono text-[12px] leading-6 text-[#9cf3e8]">{paymentStatus}</p>
             ) : null}
             {paymentRequired ? (
               <div className="mt-3 grid gap-1.5 sm:grid-cols-3">
@@ -406,8 +475,8 @@ export default function ManagedApiKeyCreateForm({
                 })}
               </div>
             ) : null}
-            {activationError ? (
-              <p className="mt-3 break-words text-[13px] leading-6 text-[#ffb3b3]">{activationError}</p>
+            {paymentError ? (
+              <p className="mt-3 break-words text-[13px] leading-6 text-[#ffb3b3]">{paymentError}</p>
             ) : null}
           </div>
         ) : paymentMode === "admin" ? (
@@ -482,6 +551,11 @@ export default function ManagedApiKeyCreateForm({
             preview, not the full key. Once you close or refresh this page, or revoke the key,
             the raw key cannot be recovered.
           </p>
+          {paymentRequired ? (
+            <p className="mt-3 text-[13px] leading-6 text-[#ffe6b8]">
+              For paid packages, complete checkout above first. The final button stays locked until the 0G transaction is confirmed.
+            </p>
+          ) : null}
           <label className="mt-4 flex items-start gap-3 text-[14px] leading-6 text-[#fff4e0]">
             <input
               type="checkbox"
@@ -507,7 +581,7 @@ export default function ManagedApiKeyCreateForm({
           disabled={!canSubmit}
           className="yb-teal-button mt-1 w-full rounded-xl px-5 py-3.5 text-[15px] font-bold text-slate-950 disabled:cursor-not-allowed disabled:opacity-70"
         >
-          {pending ? "Generating..." : submitLabel}
+          {pending ? "Generating..." : paymentRequired ? "Generate API key after checkout" : submitLabel}
         </button>
       </form>
     </>

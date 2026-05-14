@@ -53,6 +53,10 @@ class Settings(BaseSettings):
         alias="INTEGRITY_API_CORS_ORIGINS",
     )
     founder_wallet_address: str | None = Field(default=None, alias="FOUNDER_WALLET_ADDRESS")
+    demo_wallet_address: str = Field(
+        default="0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D",
+        alias="NEXT_PUBLIC_DEMO_WALLET_ADDRESS",
+    )
     security_logs_database_url: str | None = Field(default=None, alias="SECURITY_LOGS_DATABASE_URL")
     database_url: str | None = Field(default=None, alias="DATABASE_URL")
 

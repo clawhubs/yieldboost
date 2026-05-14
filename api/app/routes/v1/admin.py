@@ -18,6 +18,16 @@ from ...schemas.vault import AdminStatsResponse
 router = APIRouter(prefix="/v1/admin", tags=["admin"])
 
 
+def _is_demo_wallet(request: Request, wallet_address: str | None) -> bool:
+    if not wallet_address:
+        return False
+    configured = (
+        request.app.state.integrity_pipeline.settings.demo_wallet_address
+        or "0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D"
+    )
+    return wallet_address.lower() == configured.lower()
+
+
 def _api_key_item_from_record(record: dict) -> ApiKeyListItem:
     return ApiKeyListItem(
         key_id=record["key_id"],
@@ -207,7 +217,12 @@ async def create_api_key(
         master_key=x_master_key,
     )
     existing_items = await request.app.state.integrity_pipeline.store.list_api_keys(include_revoked=True)
-    if payload.owner_wallet_address and payload.plan_id and payload.plan_max_keys:
+    if (
+        payload.owner_wallet_address
+        and payload.plan_id
+        and payload.plan_max_keys
+        and not _is_demo_wallet(request, payload.owner_wallet_address)
+    ):
         active_same_plan = [
             item
             for item in existing_items
@@ -258,6 +273,42 @@ async def create_api_key(
         api_key=raw_key,
         item=item,
     )
+
+
+@router.delete(
+    "/api-keys/{key_id}",
+    response_model=RequestStatus,
+    responses={401: {"model": ErrorResponse}, 403: {"model": ErrorResponse}, 404: {"model": ErrorResponse}, 409: {"model": ErrorResponse}},
+    summary="Delete a revoked managed API key",
+    include_in_schema=False,
+)
+async def delete_api_key(
+    key_id: str,
+    request: Request,
+    x_wallet_address: str | None = Header(default=None),
+    x_api_key: str | None = Header(default=None),
+    x_master_key: str | None = Header(default=None),
+) -> RequestStatus:
+    _authorize(
+        request,
+        wallet_address=x_wallet_address,
+        api_key=x_api_key,
+        master_key=x_master_key,
+    )
+    items = await request.app.state.integrity_pipeline.store.list_api_keys(include_revoked=True)
+    record = next((item for item in items if item.get("key_id") == key_id), None)
+    if not record:
+        raise IntegrityError("Managed API key was not found.", status_code=404, layer="admin")
+    if record.get("status") != "revoked":
+        raise IntegrityError(
+            "Only revoked API keys can be deleted permanently.",
+            status_code=409,
+            layer="admin",
+        )
+    deleted = await request.app.state.integrity_pipeline.store.delete_api_key(key_id)
+    if not deleted:
+        raise IntegrityError("Managed API key was not found.", status_code=404, layer="admin")
+    return RequestStatus(request_id=request.state.request_id)
 
 
 @router.post(
