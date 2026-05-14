@@ -65,24 +65,24 @@
   <strong><a href="https://yieldboostai.xyz/faucet">Faucet</a></strong> — Anti-sybil demo surface.
 </p>
 
-> YieldBoost AI is a mainnet-first **B2B infrastructure company** built on 0G. Its commercial platform is **YieldBoost AI Protocol**, and its flagship full-stack product is **TITAN X**: a modular 10-layer integrity business sold through a developer store for Web3 AI agents that need secure execution, anti-hallucination controls, proof storage, policy enforcement, and auditability.
+> YieldBoost AI is a mainnet-first **B2B infrastructure company** built on 0G. Its commercial platform is **YieldBoost AI Protocol**, and its flagship product is **TITAN X**: a 10-layer integrity system sold through a developer store, where what looks like one click to the user is actually protected by ten security layers underneath.
 
 YieldBoost AI should be read in this order:
 
 1. **The Platform:** **YieldBoost AI Protocol**, the commercial trust layer and product family.
-2. **The Store:** the **developer store**, where builders buy the full stack, selected layers, or specialized fortress modules.
-3. **The Flagship Product:** **TITAN X**, the full 10-layer product shell sold beside the security modules.
+2. **The Store:** the **developer store**, where builders buy TITAN X, selected layers, or specialized fortress modules.
+3. **The Flagship Product:** **TITAN X**, the flagship 10-layer product sold beside the security modules.
 4. **The Proof Surface:** the **Verification Console**, a live audit terminal showing the stack is verifiable on-chain.
 
 ## Quick FAQ
 
 ### Why did YieldBoost AI build YieldBoost AI Protocol?
 
-Because the bigger problem is not one dashboard. The bigger problem is that Web3 AI agents still lack modular, verifiable, and sellable trust infrastructure. **YieldBoost AI Protocol** is the commercial platform that solves that problem, and **TITAN X** is its flagship full-stack product.
+Because the bigger problem is not one dashboard. The bigger problem is that Web3 AI agents still lack modular, verifiable, and sellable trust infrastructure. **YieldBoost AI Protocol** is the commercial platform that solves that problem, and **TITAN X** is its flagship 10-layer product.
 
 ### Why is 1-Click Optimize still here?
 
-Because it is the **flagship product MVP**. It proves that YieldBoost AI Protocol can become a real secure application on **0G Mainnet**, not just a slide deck or an SDK claim.
+Because it is the **flagship product MVP**. It proves that YieldBoost AI Protocol can compress ten security layers into one live 1-click trust path on **0G Mainnet**, not just into a slide deck or an SDK claim.
 
 ### Why is there a verification console?
 
@@ -199,7 +199,7 @@ That is why the real opportunity is not “another consumer-facing yield shell.�
 
 YieldBoost AI turns that trust problem into a sellable **10-layer modular infrastructure stack** on 0G.
 
-The core of the repository is **not** the optimizer UI. The commercial platform is **YieldBoost AI Protocol**, and its flagship full-stack product is **TITAN X**:
+The core of the repository is **not** the optimizer UI. The commercial platform is **YieldBoost AI Protocol**. Its core product is **TITAN X**, a 10-layer product MVP where what looks like one click to the user is protected by ten security layers underneath:
 
 - Hallucination Blacklist
 - Integrity Auditor
@@ -214,15 +214,17 @@ The core of the repository is **not** the optimizer UI. The commercial platform 
 
 That same stack is exposed through four product surfaces:
 
-- **Developer Store:** the primary business surface, where developers and enterprises buy the full stack, single layers, anti-sybil modules, fortress modules, or partner wrappers.
-- **Flagship Showcase:** **1-Click Optimize**, a polished shell that proves the stack can power a complete mainnet product with one user action.
+- **Developer Store:** the primary business surface, where developers and enterprises buy TITAN X, single layers, anti-sybil modules, fortress modules, or partner wrappers.
+- **Flagship Showcase:** **1-Click Optimize**, a polished shell that proves ten security layers can operate together in one complete mainnet product flow.
 - **Verification Console:** a live audit terminal showing the latest proof, storage path, policy evidence, and continuity rail on-chain.
 - **Public challenge surfaces:** Vault and faucet, which stress-test selected modules in public.
+
+Outside the TITAN X core, the store also sells **Anti-Sybil + ZK + Alibaba Fingerprinting** as a dedicated security module for wallet screening, throttling, abuse resistance, and repeated public challenge pressure.
 
 The product story is now simple and deliberate:
 
 - **Developers buy** the integrity stack.
-- **The 1-click dashboard proves** that the stack can be wrapped into a usable business.
+- **The 1-click dashboard proves** that ten security layers can move together inside one usable business flow.
 - **The Verification Console proves** that the stack is live, auditable, and on-chain.
 - **Public challenge surfaces prove** that selected modules survive hostile traffic.
 

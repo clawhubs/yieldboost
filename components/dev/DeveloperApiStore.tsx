@@ -13,6 +13,19 @@ function categoryLabel(category: string, layerId?: string) {
   return `Layer ${layerId}`;
 }
 
+function commercialRole(category: string) {
+  if (category === "full-stack") {
+    return "Buys the full TITAN X core: ten security layers inside one live trust path.";
+  }
+  if (category === "security-module") {
+    return "Buys one dedicated security module sold beside TITAN X, not the whole core stack.";
+  }
+  if (category === "partner-sdk") {
+    return "Buys a wrapped partner path with selected protections, not the TITAN X core itself.";
+  }
+  return "Buys one callable layer from the broader TITAN X verification family.";
+}
+
 const veilSolverPath = [
   "Isolated secure execution",
   "Partner solver response",
@@ -65,12 +78,22 @@ export default function DeveloperApiStore() {
                   {product.name}
                 </h3>
                 <p className="mt-1 text-[12px] text-[#96b0c2]">{product.partner}</p>
+                <p className="mt-1 text-[12px] font-medium text-[#d9ecea]">{product.tagline}</p>
               </div>
             </div>
 
             <p className="mt-4 text-[13px] leading-6 text-[#c8dae6]">
               {product.description}
             </p>
+
+            <div className="mt-4 rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] px-3 py-3">
+              <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#96b0c2]">
+                What the buyer gets
+              </div>
+              <p className="mt-2 text-[12px] leading-5 text-[#d9e5ec]">
+                {commercialRole(product.category)}
+              </p>
+            </div>
 
             <div className="mt-4 rounded-xl border border-[rgba(0,201,177,0.12)] bg-black/20 p-3">
               <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#72f3c7]">

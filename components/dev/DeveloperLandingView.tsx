@@ -334,6 +334,11 @@ export default function DeveloperLandingView({
           <p className="mt-2 max-w-2xl text-[14px] leading-6 text-[#b8d0de]">
             A short guide to the protocol, the TITAN X package, the 1-Click showcase, and the live verification console.
           </p>
+          <div className="mt-4 rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] px-4 py-4">
+            <p className="text-[14px] font-semibold leading-7 text-white">
+              Most teams buy security one layer at a time. TITAN X makes ten layers move together in one live trust path.
+            </p>
+          </div>
           <div className="mt-5">
             <FaqAccordion
               items={[
@@ -363,6 +368,11 @@ export default function DeveloperLandingView({
                 },
               ]}
             />
+          </div>
+          <div className="mt-5 rounded-2xl border border-[rgba(0,201,177,0.16)] bg-[rgba(0,201,177,0.05)] px-4 py-4">
+            <p className="text-[14px] font-semibold leading-7 text-white">
+              What the buyer is paying for is not another dashboard. It is a 10-layer trust system that can already be sold, proven, and inspected live.
+            </p>
           </div>
         </div>
 
