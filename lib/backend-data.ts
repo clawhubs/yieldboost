@@ -287,6 +287,7 @@ export interface SentinelAgentIdentityProof {
 
 export interface StoredProofRecord {
   cid: string;
+  rootHash?: string;
   txHash: string;
   blockNumber: number;
   timestamp: string;
@@ -609,6 +610,7 @@ function createOptimizationResultFromProof(
     confidence: proof.decision.confidence ?? 0,
     reasoning: proof.decision.reasoning,
     storageProof: proof.cid,
+    proofRootHash: proof.rootHash,
     txHash: proof.txHash,
     blockNumber: proof.blockNumber,
     timestamp: proof.timestamp,

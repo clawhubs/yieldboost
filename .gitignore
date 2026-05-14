@@ -66,5 +66,6 @@ playwright.config.ts
 !tests/
 /tests/*
 !/tests/sentinel-agent-identity.spec.ts
+!/tests/judge-wallet-cleanup.spec.ts
 api/tests/
 RUNBOOK_MAINNET.md

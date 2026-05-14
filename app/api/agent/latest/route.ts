@@ -82,6 +82,7 @@ export async function GET(req: NextRequest) {
       storedProof.decision.reasoning ??
       createDecisionSummary(storedProof.decision),
     storageProof: storedProof.cid,
+    proofRootHash: storedProof.rootHash,
     txHash: storedProof.txHash,
     blockNumber: storedProof.blockNumber,
     timestamp: storedProof.timestamp,

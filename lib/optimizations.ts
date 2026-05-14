@@ -25,6 +25,7 @@ export interface OptimizationResult {
   confidence: number;
   reasoning?: string;
   storageProof?: string;
+  proofRootHash?: string;
   txHash?: string;
   blockNumber?: number;
   timestamp: string;

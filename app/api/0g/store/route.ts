@@ -286,6 +286,7 @@ export async function POST(req: NextRequest) {
 
     const proof: StoredProofRecord = {
       cid: upload.cid,
+      rootHash: upload.rootHash,
       txHash: upload.txHash ?? "",
       blockNumber: upload.blockNumber ?? 0,
       timestamp,

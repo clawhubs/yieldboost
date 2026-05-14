@@ -835,6 +835,7 @@ export default function Sidebar() {
   function activateJudgeReviewMode() {
     setWalletModalOpen(false);
     setErrorText(null);
+    setEditing(false);
     rememberPreJudgeWalletState({
       walletAddress:
         walletAddrRef.current ?? localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY),
@@ -842,6 +843,15 @@ export default function Sidebar() {
         providerIdRef.current ?? localStorage.getItem(WALLET_PROVIDER_STORAGE_KEY),
       networkKey: selectedNetworkRef.current,
     });
+    cleanupProviderListeners();
+    providerRef.current = null;
+    providerIdRef.current = null;
+    walletAddrRef.current = null;
+    localStorage.removeItem(WALLET_PROVIDER_STORAGE_KEY);
+    localStorage.removeItem(WALLET_OVERRIDE_STORAGE_KEY);
+    clearCookie(WALLET_COOKIE_KEY);
+    setConnected(false);
+    setWalletAddr(null);
     enterJudgeMode();
     broadcastWalletChange(
       DEFAULT_WALLET_ADDRESS,

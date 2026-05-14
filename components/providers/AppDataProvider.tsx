@@ -247,6 +247,7 @@ interface PendingRegistryAnchor {
   scopeKey: string;
   storageData: {
     cid: string;
+    rootHash?: string;
     txHash: string;
     proofRegistryAddress?: string;
   };
@@ -320,6 +321,7 @@ async function anchorProofWithConnectedWallet({
   optimizedApy: number;
   storageData: {
     cid: string;
+    rootHash?: string;
     txHash: string;
     proofRegistryAddress?: string;
   };
@@ -346,7 +348,7 @@ async function anchorProofWithConnectedWallet({
 
   await switchOrAddNetwork(selectedWallet.provider, networkConfig);
 
-  const { BrowserProvider, Contract, JsonRpcProvider } = await import("ethers");
+  const { BrowserProvider, Contract } = await import("ethers");
   const provider = new BrowserProvider(
     selectedWallet.provider as {
       request: (request: {
@@ -376,21 +378,16 @@ async function anchorProofWithConnectedWallet({
     proofRegistryAbi,
     signer,
   );
-  const rpcProvider = networkConfig.rpcUrl
-    ? new JsonRpcProvider(networkConfig.rpcUrl)
-    : provider;
+  const rootHash = storageData.rootHash ?? storageData.cid;
 
-  const sendRecordProof = async () => {
-    const nonce = await rpcProvider.getTransactionCount(signerAddress, "pending");
-    return proofRegistry.recordProof(
+  const sendRecordProof = async () =>
+    proofRegistry.recordProof(
       storageData.cid,
-      storageData.cid,
+      rootHash,
       storageData.txHash,
       toBasisPoints(currentApy),
       toBasisPoints(optimizedApy),
-      { nonce },
     );
-  };
 
   let tx;
   try {
@@ -452,6 +449,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const latestRequestIdRef = useRef(0);
   const latestResultRef = useRef<OptimizationResult | null>(null);
   const networkKeyRef = useRef(networkKey);
+  const pendingRegistryAnchorRef = useRef<PendingRegistryAnchor | null>(null);
 
   useEffect(() => {
     latestResultRef.current = latestResult;
@@ -460,6 +458,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     networkKeyRef.current = networkKey;
   }, [networkKey]);
+
+  useEffect(() => {
+    pendingRegistryAnchorRef.current = pendingRegistryAnchor;
+  }, [pendingRegistryAnchor]);
 
   async function syncProofRecord({
     activeWalletAddress,
@@ -498,6 +500,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     let storageData:
       | {
           cid: string;
+          rootHash?: string;
           txHash: string;
           blockNumber?: number;
           explorerUrl?: string;
@@ -613,6 +616,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       } else {
         storageData = (await storageResponse.json()) as {
           cid: string;
+          rootHash?: string;
           txHash: string;
           blockNumber?: number;
           explorerUrl?: string;
@@ -669,15 +673,25 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         storageData.proofRegistryAddress &&
         !storageData.proofRegistryTxHash,
     );
+    const backendAnchorUsedForReadOnlyWallet = Boolean(
+      storageData?.cid &&
+        storageData.proofRegistryMode === "backend" &&
+        storageData.proofRegistryTxHash &&
+        resolvedWalletAddress &&
+        !canUseConnectedWalletSigner(resolvedWalletAddress),
+    );
     const proofStatusDetail =
       proofRegistryAnchorMissing
         ? "Storage proof is saved. Confirm wallet step 2/2 to finish the ProofRegistry anchor."
+        : backendAnchorUsedForReadOnlyWallet
+          ? "This session is using a demo/watch wallet, so the ProofRegistry anchor was completed by the backend signer without a second wallet popup."
         : storageErrorMessage ?? storageData?.note;
     const nextResult: OptimizationResult = {
       ...fallbackResult,
       ...optimizationData,
       reasoning: fullText || optimizationData.reasoning || fallbackResult.reasoning,
       storageProof: storageData?.cid,
+      proofRootHash: storageData?.rootHash,
       txHash: storageData?.txHash,
       blockNumber: storageData?.blockNumber,
       proofUrl: storageData?.explorerUrl,
@@ -773,6 +787,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setJudgeMode(true);
     if (typeof window !== "undefined") {
       window.localStorage.setItem(JUDGE_MODE_STORAGE_KEY, "true");
+      window.localStorage.removeItem(WALLET_OVERRIDE_STORAGE_KEY);
+      window.localStorage.removeItem(WALLET_PROVIDER_STORAGE_KEY);
       document.cookie = `${JUDGE_MODE_COOKIE_KEY}=true; path=/; max-age=31536000; SameSite=Lax`;
       document.cookie = clearCookieString(WALLET_COOKIE_KEY);
     }
@@ -1056,15 +1072,24 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       const nextWalletAddress = judgeModeActive
         ? DEFAULT_WALLET_ADDRESS
         : detail?.walletAddress;
+      const pendingAnchor = pendingRegistryAnchorRef.current;
+      const preservePendingAnchor = Boolean(
+        pendingAnchor &&
+          nextWalletAddress &&
+          sameWalletAddress(pendingAnchor.walletAddress, nextWalletAddress) &&
+          pendingAnchor.networkKey === nextNetwork,
+      );
       activeScopeRef.current = buildWalletScopeKey(nextWalletAddress, nextNetwork);
       setNetworkKey(nextNetwork);
       if (nextWalletAddress) {
         if (detail.connected && !judgeModeActive) {
           exitJudgeMode();
         }
-        setPendingRegistryAnchor(null);
-        setPendingRegistryAnchorBusy(false);
-        setPendingRegistryAnchorError(null);
+        if (!preservePendingAnchor) {
+          setPendingRegistryAnchor(null);
+          setPendingRegistryAnchorBusy(false);
+          setPendingRegistryAnchorError(null);
+        }
         const cachedResult = readScopedLatestResult(
           activeScopeRef.current,
           nextWalletAddress,
@@ -1232,6 +1257,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           scopeKey: optimisticScopeKey,
           storageData: {
             cid: proofBackedResult.storageProof!,
+            rootHash: proofBackedResult.proofRootHash,
             txHash: proofBackedResult.txHash!,
             proofRegistryAddress: proofBackedResult.proofRegistryAddress,
           },
