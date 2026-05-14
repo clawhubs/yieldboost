@@ -125,7 +125,7 @@ const ENDPOINT_GUIDE_ITEMS: EndpointGuideItem[] = [
     id: "military-grade-full",
     method: "POST",
     path: "/api/dev/store/military-grade",
-    summary: "Run the full 10-layer TITAN PROTOCOL API in one request.",
+    summary: "Run the full 10-layer TITAN X API in one request.",
     area: "Advanced Modules",
     minPlanId: "protocol",
   },

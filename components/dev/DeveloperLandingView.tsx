@@ -330,7 +330,7 @@ export default function DeveloperLandingView({
       <section className="fade-in-up fade-in-up-5 grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
         <div className="glow-card p-6 md:px-7">
           <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#72f3c7]">Store &amp; Product FAQ</p>
-            <h2 className="mt-3 text-[22px] font-extrabold tracking-tight text-white md:text-[24px]">What buyers are actually getting</h2>
+            <h2 className="mt-3 text-[22px] font-extrabold tracking-tight text-white md:text-[24px]">What the buyer is actually paying for</h2>
           <p className="mt-2 max-w-2xl text-[14px] leading-6 text-[#b8d0de]">
             A short guide to the protocol, the TITAN X package, the 1-Click showcase, and the live verification console.
           </p>
@@ -350,8 +350,8 @@ export default function DeveloperLandingView({
                   a: "Free is for non-AI verification modules and proof preview. Builder adds deterministic verification and anti-sybil screening. Pro adds extended verification modules and Alibaba fingerprinting without full TEE or partner SDK access.",
                 },
                 {
-                  q: "Why did YieldBoost AI build a protocol instead of only a DeFi app?",
-                  a: "Because the bigger problem is not one dashboard. Web3 AI agents still lack modular, verifiable, and sellable trust infrastructure. YieldBoost AI Protocol is the platform that solves that problem.",
+                  q: "Why did YieldBoost AI build a protocol instead of only one app?",
+                  a: "Because the bigger problem is not one interface. Web3 AI agents still lack modular, verifiable, and sellable trust infrastructure. YieldBoost AI Protocol is the platform that solves that problem.",
                 },
                 {
                   q: "Why is 1-Click Optimize still here?",
@@ -368,31 +368,50 @@ export default function DeveloperLandingView({
 
         <div className="glow-card p-6 md:px-7">
           <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#72f3c7]">Showcase Logic</p>
-            <h2 className="mt-3 text-[22px] font-extrabold tracking-tight text-white md:text-[24px]">How the surfaces fit together</h2>
+            <h2 className="mt-3 text-[22px] font-extrabold tracking-tight text-white md:text-[24px]">Why this becomes a business</h2>
+          <p className="mt-2 max-w-2xl text-[14px] leading-6 text-[#b8d0de]">
+            The commercial story is simple: sell the protocol, prove it with TITAN X, remove trust ambiguity with the proof surface, and stress selected protections in public.
+          </p>
           <div className="mt-5 space-y-3">
             {[
-              "The store is the commercial surface where YieldBoost AI Protocol is packaged and sold as API / SDK infrastructure.",
-              "1-Click Optimize is the flagship showcase that proves the engine can power a secure mainnet product.",
-              "Vault and faucet are public challenge surfaces that show how the same engine behaves under screening, attack, and claim pressure.",
-              "The verification console is the proof surface where buyers inspect the stack before they adopt it.",
-            ].map((line) => (
-              <div key={line} className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] px-4 py-4">
-                <p className="text-[14px] leading-7 text-[#d6e4ee]">{line}</p>
+              {
+                label: "01 · Store",
+                body: "YieldBoost AI Protocol is sold as modular API / SDK infrastructure through one commercial store.",
+              },
+              {
+                label: "02 · TITAN X",
+                body: "The flagship product proves the full stack can become a secure mainnet application instead of staying as a backend claim.",
+              },
+              {
+                label: "03 · Verification",
+                body: "The proof console lets buyers inspect storage, policy, proof, and continuity receipts before they adopt the stack.",
+              },
+              {
+                label: "04 · Public pressure",
+                body: "Vault and faucet force selected protections to face hostile retries, screening pressure, and public challenge traffic.",
+              },
+            ].map((item) => (
+              <div key={item.label} className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] px-4 py-4">
+                <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#72f3c7]">{item.label}</p>
+                <p className="mt-2 text-[14px] leading-7 text-[#d6e4ee]">{item.body}</p>
               </div>
             ))}
           </div>
+          <div className="mt-5 rounded-2xl border border-[rgba(0,201,177,0.16)] bg-[rgba(0,201,177,0.05)] px-4 py-4">
+            <p className="text-[14px] font-semibold text-white">One protocol. Four surfaces. One commercial trust story.</p>
+          </div>
           <div className="mt-5 flex flex-wrap gap-3">
+            <Link href="/dev/marketplace" className="yb-teal-button inline-flex items-center gap-2 rounded-xl px-5 py-3 text-[14px] font-bold text-slate-950">
+              Open store
+              <ArrowRight className="h-4 w-4" />
+            </Link>
             <Link
               href="https://yieldboostai.xyz/"
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-2 rounded-xl border border-[rgba(0,201,177,0.22)] bg-[rgba(0,201,177,0.06)] px-5 py-3 text-[14px] font-bold text-white transition hover:border-[rgba(0,201,177,0.32)] hover:bg-[rgba(0,201,177,0.10)]"
             >
-              Open 1-Click App
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link href="/dev/marketplace" className="inline-flex items-center gap-2 rounded-xl border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.05)] px-5 py-3 text-[14px] font-bold text-white transition hover:border-[rgba(0,201,177,0.25)] hover:bg-[rgba(0,201,177,0.06)]">
-              Open store
+              Open TITAN X
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>

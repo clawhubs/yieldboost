@@ -7,7 +7,7 @@ import DeveloperPortalShell from "@/components/dev/DeveloperPortalShell";
 
 export const metadata: Metadata = {
   title: "Modular Immunity Armory - YieldBoost Developer Portal",
-  description: "Developer API marketplace for the YieldBoost 10-layer TITAN X PROTOCOL stack, single-layer APIs, fortress modules, and selected partner SDK wrappers.",
+  description: "Developer API store for YieldBoost AI Protocol: TITAN X, single-layer APIs, fortress modules, and selected partner SDK wrappers.",
 };
 
 export default function DevMarketplacePage() {

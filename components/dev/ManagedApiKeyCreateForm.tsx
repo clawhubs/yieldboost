@@ -49,6 +49,7 @@ const CHECKOUT_LAYERS = [
   "L7 ProofRegistry Anchor",
   "L8 Programmable Governance",
   "L9 Cross-Agent Neural Handshake",
+  "L10 AWS Nitro Enclaves",
 ];
 const mainnetNetwork = getWalletNetworkConfig("mainnet");
 const fundingAddress = get0GTreasuryAddress();
@@ -66,6 +67,52 @@ function formatOgAmount(value: bigint) {
     minimumFractionDigits: 0,
     maximumFractionDigits: 6,
   });
+}
+
+function normalizeWalletError(
+  error: unknown,
+  fallbackMessage: string,
+  cancelledMessage: string,
+) {
+  const candidate = error as
+    | {
+        code?: number | string;
+        shortMessage?: string;
+        message?: string;
+        info?: { error?: { code?: number | string; message?: string } };
+      }
+    | undefined;
+  const code = candidate?.code ?? candidate?.info?.error?.code;
+  const rawMessage =
+    candidate?.shortMessage ||
+    candidate?.message ||
+    candidate?.info?.error?.message ||
+    "";
+  const normalizedMessage = rawMessage.toLowerCase();
+
+  if (
+    code === 4001 ||
+    code === "ACTION_REJECTED" ||
+    normalizedMessage.includes("user rejected") ||
+    normalizedMessage.includes("user denied") ||
+    normalizedMessage.includes("action_rejected")
+  ) {
+    return cancelledMessage;
+  }
+
+  if (normalizedMessage.includes("insufficient funds")) {
+    return "This wallet does not have enough 0G for the package amount plus gas.";
+  }
+
+  if (
+    normalizedMessage.includes("missing revert data") ||
+    normalizedMessage.includes("call_exception") ||
+    normalizedMessage.includes("estimategas")
+  ) {
+    return "The wallet could not prepare this 0G transaction. Check the wallet balance, selected network, and recipient, then retry.";
+  }
+
+  return rawMessage || fallbackMessage;
 }
 
 export default function ManagedApiKeyCreateForm({
@@ -214,7 +261,13 @@ export default function ManagedApiKeyCreateForm({
       );
     } catch (error) {
       setPaymentStatus("");
-      setPaymentError(error instanceof Error ? error.message : "0G payment failed.");
+      setPaymentError(
+        normalizeWalletError(
+          error,
+          "0G payment failed.",
+          "Transaction was cancelled in your wallet. No package was activated.",
+        ),
+      );
     }
   }
 
@@ -231,7 +284,11 @@ export default function ManagedApiKeyCreateForm({
     } catch (error) {
       setWalletHelperStatus("");
       setWalletHelperError(
-        error instanceof Error ? error.message : "Unable to add 0G Mainnet to wallet.",
+        normalizeWalletError(
+          error,
+          "Unable to add 0G Mainnet to wallet.",
+          "Wallet network setup was cancelled in your wallet.",
+        ),
       );
     }
   }

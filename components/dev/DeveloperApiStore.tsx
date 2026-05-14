@@ -33,7 +33,7 @@ export default function DeveloperApiStore() {
             API products for every verification path.
           </h2>
           <p className="mt-2 max-w-3xl text-[14px] leading-6 text-[#c8dae6]">
-            A developer store with the full TITAN X PROTOCOL stack, a dedicated anti-sybil mainnet module, an AWS Nitro fortress SDK, single-layer verification APIs, and secure proxy products ready for playground testing and API-key integration.
+            A developer store with the full TITAN X package, a dedicated anti-sybil mainnet module, an AWS Nitro fortress SDK, single-layer verification APIs, and secure proxy products ready for playground testing and API-key integration.
           </p>
         </div>
         <div className="rounded-xl border border-[rgba(0,201,177,0.18)] bg-[rgba(0,201,177,0.06)] px-4 py-3 text-[13px] font-bold text-[#dfffe4]">

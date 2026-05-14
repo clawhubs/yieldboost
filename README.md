@@ -172,17 +172,28 @@ Supporting live surfaces:
 
 ## The Problem
 
-The next wave of AI x Web3 will not be won by prettier dashboards. It will be won by teams that can package **trust, execution integrity, and auditability** as infrastructure.
+The next wave of AI x Web3 will not be won by prettier dashboards. It will be won by teams that can package **trust, execution integrity, and auditability** as infrastructure before the next failure happens.
 
-Web3 AI agents are starting to recommend trades, move liquidity, operate wallets, wrap partner models, and sell autonomous services. Most stacks still fail at the exact moment they need to become **economic infrastructure**:
+Web3 is already full of point solutions that secure only one part of the stack:
 
-- They generate outputs without a proof trail that ties wallet state, model output, policy checks, and storage evidence together.
+- one vendor blocks bots,
+- another adds wallet screening,
+- another adds monitoring after the fact,
+- and the rest of the execution path stays exposed.
+
+That gap matters more when AI agents start recommending trades, moving liquidity, handling wallet context, wrapping partner models, and selling autonomous services. The market now has **more automation than trust**.
+
+Most teams still fail at the exact moment they need to become **economic infrastructure**:
+
+- They generate outputs without a proof trail tying wallet state, model output, policy checks, and storage evidence together.
 - They expose private intent too early, creating front-running, MEV, copy-trading, and operator-trust risk.
 - They store agent state in opaque application databases instead of sovereign, reviewable memory.
-- They treat security as a feature bolted onto the app, not as a modular product other builders can buy.
-- They cannot show a live audit surface that proves the stack is running on-chain and not only in slides.
+- They bolt security on after launch, often only after a hack, exploit, or abuse event makes the weakness obvious.
+- They cannot show a live audit surface proving the stack is running on-chain instead of existing only in screenshots and decks.
 
-That is why the real opportunity is not “another consumer-facing yield shell.” The opportunity is a **developer-facing integrity layer** that can be embedded into many products, many agents, and many businesses.
+Wallet compromise, bot abuse, unsafe signatures, hallucinated outputs, and weak post-launch controls are not edge cases in Web3. They are the daily operating environment.
+
+That is why the real opportunity is not “another consumer-facing yield shell.” The opportunity is a **developer-facing integrity layer** that can be embedded into many products, many agents, and many businesses — with more than one or two security layers protecting it.
 
 ## The Solution
 

@@ -23,19 +23,19 @@ const scanFlow = [
   {
     num: "01",
     title: "Developers buy",
-    body: "YieldBoost AI Protocol is sold as modular APIs, SDK wrappers, and fortress modules through one store.",
+    body: "The store sells the full stack, selected layers, anti-sybil APIs, fortress modules, and partner wrappers.",
     accent: "text-[#72f3c7]",
   },
   {
     num: "02",
     title: "Showcase proves",
-    body: "1-Click Optimize is the flagship shell proving the stack works on 0G Mainnet as a real product surface.",
+    body: "The 1-Click app proves the same engine can become a real secure mainnet product.",
     accent: "text-[#68ff7a]",
   },
   {
     num: "03",
     title: "Verification closes trust",
-    body: "The verification console exposes the live on-chain proof trail for buyers, reviewers, and integration teams.",
+    body: "The verification console lets buyers inspect the proof trail before they adopt the protocol.",
     accent: "text-[#f6c166]",
   },
 ];
@@ -51,7 +51,7 @@ const productSurfaces = [
     label: "Open TITAN X",
   },
   {
-    title: "1-Click Optimize Showcase",
+    title: "TITAN X Showcase App",
     icon: Wallet,
     network: "Mainnet live",
     body: "A flagship shell that wraps the same engine into a working mainnet product with one wallet action.",
@@ -97,8 +97,8 @@ export default function DevBriefView() {
   return (
     <DeveloperPortalShell
       eyebrow="YieldBoost AI Protocol Brief"
-      title="Why YieldBoost AI Protocol exists beyond one dashboard."
-      description="This brief keeps the product story inside the store shell: YieldBoost AI is the company, YieldBoost AI Protocol is the platform, and TITAN X is the flagship full-stack product."
+      title="The store sells it. TITAN X proves it. Verification closes trust."
+      description="YieldBoost AI is the company. YieldBoost AI Protocol is the platform. TITAN X is the flagship full-stack product sold through the store."
     >
       <section className="glow-card fade-in-up fade-in-up-1 p-6 md:p-8">
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(300px,0.9fr)]">
@@ -112,14 +112,22 @@ export default function DevBriefView() {
             </Link>
             <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(0,201,177,0.24)] bg-[rgba(0,201,177,0.08)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-[#8ff7ea]">
               <Rocket className="h-3.5 w-3.5" />
-              Infrastructure first
+              30-second read
             </div>
             <h2 className="mt-4 text-[30px] font-extrabold tracking-tight text-white md:text-[38px]">
-              One protocol business, one flagship showcase, one live proof path.
+              One protocol business. One flagship product. One proof path.
             </h2>
             <p className="mt-3 max-w-3xl text-[15px] leading-7 text-[#d0dde8]">
-              YieldBoost AI is a B2B infrastructure company on 0G. Its core platform is YieldBoost AI Protocol. TITAN X is the flagship full-stack product sold through the developer store. The 1-Click dashboard proves commercial usability. The verification console proves the claims are real.
+              YieldBoost AI is a B2B infrastructure company on 0G. YieldBoost AI Protocol is the commercial platform. TITAN X is the flagship full-stack product. The 1-Click app proves commercial usability. The verification console proves the claims are real.
             </p>
+            <div className="mt-5 rounded-2xl border border-[rgba(0,201,177,0.14)] bg-[rgba(0,201,177,0.04)] px-4 py-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#72f3c7]">Read this in 30 seconds</p>
+              <div className="mt-3 space-y-2 text-[14px] leading-7 text-[#dce5ec]">
+                <p><strong className="text-white">What is being sold?</strong> YieldBoost AI Protocol as modular API / SDK infrastructure.</p>
+                <p><strong className="text-white">What proves it works?</strong> TITAN X, the live flagship product running on the same engine.</p>
+                <p><strong className="text-white">What proves it is real?</strong> The verification console, with proof, storage, policy, and continuity evidence.</p>
+              </div>
+            </div>
             <div className="mt-5 flex flex-wrap gap-3">
               <Link href="/dev/marketplace" className="yb-teal-button inline-flex items-center gap-2 rounded-xl px-5 py-3 text-[14px] font-bold text-slate-950">
                 Open store
@@ -164,14 +172,35 @@ export default function DevBriefView() {
         ))}
       </section>
 
-      <section className="fade-in-up fade-in-up-3">
+      <section className="fade-in-up fade-in-up-3 grid gap-4 lg:grid-cols-2">
+        <article className="glow-card p-6">
+          <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#f6c166]">The Market Gap</p>
+          <h3 className="mt-2 text-[24px] font-extrabold tracking-tight text-white">
+            Most Web3 security products still cover only one or two layers.
+          </h3>
+          <p className="mt-3 text-[14px] leading-7 text-[#dce5ec]">
+            One product may block bots. Another may add wallet screening. Another may monitor after launch. But AI hallucination, proof integrity, sovereign memory, storage continuity, secure execution, and auditability still end up split across too many weak pieces.
+          </p>
+        </article>
+        <article className="glow-card p-6">
+          <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#72f3c7]">Why Now</p>
+          <h3 className="mt-2 text-[24px] font-extrabold tracking-tight text-white">
+            Most teams invest in security after the exploit, not before the product scales.
+          </h3>
+          <p className="mt-3 text-[14px] leading-7 text-[#dce5ec]">
+            Wallet abuse, unsafe signatures, hostile traffic, and hallucinated agent outputs are already part of the daily Web3 operating environment. YieldBoost AI Protocol exists because trust cannot stay a post-launch patch while AI agents become economic actors.
+          </p>
+        </article>
+      </section>
+
+      <section className="fade-in-up fade-in-up-4">
         <div className="mb-5 max-w-3xl">
           <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#72f3c7]">Product surfaces</p>
           <h2 className="mt-2 text-[28px] font-extrabold tracking-tight text-white md:text-[34px]">
-            The same engine reaches buyers through four visible surfaces.
+            Four visible surfaces. One commercial story.
           </h2>
           <p className="mt-2 text-[14px] leading-7 text-[#c8dae6]">
-            The store is the commercial surface. YieldBoost AI Protocol is the platform. TITAN X is the flagship SKU. 1-Click is the proof shell. The verification console closes trust.
+            The store is the business surface. TITAN X is the flagship SKU. The 1-Click app is the proof shell. The verification console removes trust ambiguity.
           </p>
         </div>
 
@@ -209,7 +238,7 @@ export default function DevBriefView() {
         </div>
       </section>
 
-      <section className="fade-in-up fade-in-up-4 grid gap-4 lg:grid-cols-2">
+      <section className="fade-in-up fade-in-up-5 grid gap-4 lg:grid-cols-2">
         {buyerSegments.map((segment) => (
           <article key={segment.title} className="glow-card p-6">
             <div className="flex items-center gap-3">
@@ -226,7 +255,7 @@ export default function DevBriefView() {
         ))}
       </section>
 
-      <section className="glow-card fade-in-up fade-in-up-5 p-6 text-center md:p-8">
+      <section className="glow-card fade-in-up fade-in-up-6 p-6 text-center md:p-8">
         <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(0,201,177,0.24)] bg-[rgba(0,201,177,0.08)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-[#8ff7ea]">
           <ShieldCheck className="h-3.5 w-3.5" />
           Remember
@@ -235,7 +264,7 @@ export default function DevBriefView() {
           The dashboard is proof. The store is the business.
         </h2>
         <p className="mx-auto mt-3 max-w-3xl text-[14px] leading-7 text-[#dce5ec]">
-          YieldBoost AI Protocol exists to turn AI-agent trust into modular infrastructure. TITAN X is the flagship full-stack product. 1-Click Optimize is the easiest way to watch YieldBoost AI Protocol work live on mainnet before a buyer adopts it.
+          YieldBoost AI Protocol exists to turn AI-agent trust into modular infrastructure. TITAN X is the flagship full-stack product. The 1-Click app is the easiest way to watch YieldBoost AI Protocol work live on mainnet before a buyer adopts it.
         </p>
       </section>
     </DeveloperPortalShell>

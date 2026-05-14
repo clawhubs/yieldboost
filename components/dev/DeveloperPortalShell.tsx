@@ -13,7 +13,7 @@ const navigation = [
   { href: "/dev/marketplace", label: "Modular Immunity Armory", sublabel: "Store catalog", icon: Layers3 },
   { href: "/dev/docs", label: "Docs", sublabel: "Integration guide", icon: Code2 },
   { href: "/dev/apps", label: "Dashboard", sublabel: "Connect wallet / app keys", icon: KeyRound },
-  { href: "/dev/audit", label: "Audit", sublabel: "Proof console", icon: ShieldCheck },
+  { href: "/dev/audit", label: "Verification", sublabel: "Proof console", icon: ShieldCheck },
   { href: "https://api.yieldboostai.xyz/docs", label: "OpenAPI", sublabel: "Live API ref", icon: TerminalSquare },
 ];
 

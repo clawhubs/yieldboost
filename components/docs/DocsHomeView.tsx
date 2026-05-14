@@ -91,8 +91,8 @@ export default function DocsHomeView() {
               icon: ShieldCheck,
             },
             {
-              title: "Open 1-Click Optimize",
-              body: "Best path to show the live user story: wallet in, better route out, proof attached.",
+              title: "Open TITAN X",
+              body: "Best path to show the flagship product MVP: wallet in, secure route out, proof attached.",
               href: "/agent",
               icon: Wallet,
             },

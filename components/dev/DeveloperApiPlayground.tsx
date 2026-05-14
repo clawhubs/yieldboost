@@ -207,7 +207,7 @@ export default function DeveloperApiPlayground({
                     : product.id === "anti-sybil-zk-fingerprint"
                       ? "Anti-Sybil Verification Path"
                       : product.category === "full-stack"
-                        ? "10-Layer TITAN X PROTOCOL"
+                        ? "10-Layer TITAN X"
                         : `${product.layers.length}-Layer Coverage`}
                 </span>
               </div>
@@ -230,7 +230,7 @@ export default function DeveloperApiPlayground({
             {product.category === "full-stack" ? (
               <div className="mt-4 rounded-[18px] border border-[rgba(34,221,208,0.14)] bg-black/20 p-4">
                 <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#9ff7f0]">
-                  TITAN X PROTOCOL
+                  TITAN X
                 </div>
                 <p className="mt-2 text-[12px] leading-6 text-[#c8dae6]">
                   Full-stack calls return the complete 10-layer proof family, ending with the Layer 10 AWS Nitro Enclaves continuity witness.

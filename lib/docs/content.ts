@@ -126,7 +126,7 @@ const sidebarGroups: Array<{
       {
         slug: "why-yieldboost-ai",
         label: "Why YieldBoost AI",
-        description: "The bot problem, the trust gap, and why the 10-layer TITAN PROTOCOL matters.",
+        description: "The bot problem, the trust gap, and why YieldBoost AI Protocol and TITAN X matter.",
       },
       {
         slug: "getting-started",
@@ -377,17 +377,17 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           id: "what-is-yieldboost-ai",
           title: "What YieldBoost AI is",
           intro:
-            "YieldBoost AI is a mainnet-first B2B infrastructure platform that sells TITAN PROTOCOL, a 10-layer modular integrity stack for Web3 AI agents on 0G.",
+            "YieldBoost AI is a mainnet-first B2B infrastructure platform that sells YieldBoost AI Protocol, a modular trust platform for Web3 AI agents on 0G, with TITAN X as the flagship 10-layer product.",
           paragraphs: [
-            "The primary product is the API / SDK marketplace. Developers and enterprise buyers can consume TITAN PROTOCOL as a full 10-layer package, as individual integrity modules, or as selected wrapper and fortress products.",
-            "The visible 1-click dashboard is a flagship showcase, not the entire company. It exists to prove that the stack can be wrapped into a real mainnet product shell with wallet input, proof storage, policy checks, and an auditable result.",
-            "Judge Mode is the live audit terminal. It is designed to remove ambiguity for developers, buyers, and reviewers by exposing the latest proof-backed snapshot, storage path, registry anchor, and control-plane evidence in one read-only surface.",
+            "The primary product is the API / SDK store. Developers and enterprise buyers can consume YieldBoost AI Protocol through TITAN X, individual integrity modules, or selected wrapper and fortress products.",
+            "The visible 1-click dashboard is a flagship showcase, not the entire company. It exists to prove that TITAN X can be wrapped into a real mainnet product shell with wallet input, proof storage, policy checks, and an auditable result.",
+            "The verification console is the live audit surface. It is designed to remove ambiguity for developers, buyers, and reviewers by exposing the latest proof-backed snapshot, storage path, registry anchor, and control-plane evidence in one read-only surface.",
           ],
           callout: {
             tone: "teal",
             title: "Current truth",
             body:
-              "The live public story is now marketplace-first: TITAN PROTOCOL is the engine, the 1-click dashboard is the flagship showcase, and Judge Mode is the proof terminal that helps developers trust what they are buying.",
+              "The live public story is now store-first: YieldBoost AI Protocol is the platform, TITAN X is the flagship product, and the verification console is the proof surface that helps developers trust what they are buying.",
           },
         },
         {
@@ -395,19 +395,19 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           title: "How the workspace flows",
           steps: [
             {
-              title: "Marketplace",
+              title: "Store",
               body:
-                "The developer marketplace is the commercial core. It shows the full TITAN PROTOCOL package, single layers, anti-sybil modules, fortress modules, and selected partner wrappers.",
+                "The developer store is the commercial core. It shows TITAN X, selected layers, anti-sybil modules, fortress modules, and selected partner wrappers.",
             },
             {
               title: "Flagship showcase",
               body:
-                "The dashboard and Boost pages show the fastest way to demonstrate TITAN PROTOCOL inside a user-facing shell without hiding the proof path.",
+                "The dashboard and Boost pages show the fastest way to demonstrate TITAN X inside a user-facing shell without hiding the proof path.",
             },
             {
-              title: "Judge terminal",
+              title: "Verification console",
               body:
-                "Judge Mode, the proof modal, and History reveal the tx hash, storage identifier, ProofRegistry transaction, control-plane artifacts, and explorer links.",
+                "The verification console, proof modal, and History reveal the tx hash, storage identifier, ProofRegistry transaction, control-plane artifacts, and explorer links.",
             },
             {
               title: "Challenge surfaces",
@@ -419,7 +419,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             caption: "Narrative guide",
             columns: ["Menu", "Primary job", "Who uses it most", "Reality check"],
             rows: [
-              ["Dashboard", "Flagship showcase shell", "Judges and first-time viewers", "Best place to show TITAN PROTOCOL inside a usable product"],
+              ["Dashboard", "Flagship showcase shell", "Judges and first-time viewers", "Best place to show TITAN X inside a usable product"],
               ["Boost", "Detailed showcase flow", "Power users and reviewers", "Best place to explain `Execute Optimization` as a reference implementation"],
               ["Portfolio", "Current wallet state summary", "Users", "Reflects wallet/RPC availability"],
               ["Strategies", "Strategy framing and ranking", "Users and judges", "Derived from current app state"],
@@ -440,8 +440,8 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           bullets: [
             "Start on `/dev/marketplace` when the reviewer needs to understand the real product surface and package structure.",
             "Use `/judge` when the reviewer wants the fastest proof-backed view without wallet connection.",
-            "Open the dashboard or `/agent`, run 1-click optimization, then show the proof modal as evidence that TITAN PROTOCOL can secure a real mainnet shell.",
-            "Return to the marketplace and docs to show that the same stack is sold as infrastructure, not only demonstrated through one app screen.",
+            "Open the dashboard or `/agent`, run the 1-click app, then show the proof modal as evidence that TITAN X can secure a real mainnet shell.",
+            "Return to the store and docs to show that the same stack is sold as infrastructure, not only demonstrated through one app screen.",
           ],
         },
       ],
@@ -465,7 +465,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           title: "Problem statement",
           paragraphs: [
             "Most Web3 AI stacks still sell an interface before they solve the trust layer underneath it. They can generate recommendations, but they cannot package secure execution, memory, policy enforcement, and proof as reusable infrastructure.",
-            "YieldBoost AI exists to close that gap. TITAN PROTOCOL turns trust, execution integrity, and auditability into modular infrastructure that can be bought through APIs and SDKs instead of rebuilt from scratch by every team.",
+            "YieldBoost AI exists to close that gap. YieldBoost AI Protocol turns trust, execution integrity, and auditability into modular infrastructure that can be bought through APIs and SDKs instead of rebuilt from scratch by every team.",
           ],
         },
         {
@@ -473,14 +473,14 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           title: "Why the product still includes a dashboard",
           bullets: [
             "A developer or judge should be able to understand the product in under a minute.",
-            "A flagship showcase proves that TITAN PROTOCOL is not only abstract middleware but can secure a real mainnet workflow.",
-            "A live UI gives the marketplace a concrete reference implementation that is easy to inspect, record, and explain.",
+            "A flagship showcase proves that TITAN X is not only abstract middleware but can secure a real mainnet workflow.",
+            "A live UI gives the store a concrete reference implementation that is easy to inspect, record, and explain.",
           ],
           callout: {
             tone: "amber",
             title: "Correct reading",
             body:
-              "The docs should be read marketplace-first. The dashboard is a flagship showcase, not the full business. Judge Mode is the audit terminal that proves the infrastructure claim.",
+              "The docs should be read store-first. The dashboard is a flagship showcase, not the full business. The verification console is the audit surface that proves the infrastructure claim.",
           },
         },
         {
@@ -489,10 +489,10 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           table: {
             columns: ["Audience", "What they need", "Where to start", "Best proof surface"],
             rows: [
-              ["Developer", "Modular integrity infrastructure", "Marketplace", "Judge Mode + API docs"],
-              ["Protocol team", "Trust layer for agent products", "Marketplace", "Judge Mode + showcase flow"],
-              ["Enterprise buyer", "Private execution + proof trail", "Project brief", "Judge Mode + Nitro module"],
-              ["Hackathon judge", "Fast narrative and verifiable artifacts", "Docs overview", "Judge Mode + explorer links"],
+              ["Developer", "Modular integrity infrastructure", "Store", "Verification console + API docs"],
+              ["Protocol team", "Trust layer for agent products", "Store", "Verification console + showcase flow"],
+              ["Enterprise buyer", "Private execution + proof trail", "Project brief", "Verification console + Nitro module"],
+              ["Hackathon judge", "Fast narrative and verifiable artifacts", "Docs overview", "Verification console + explorer links"],
             ],
           },
         },
@@ -501,7 +501,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           title: "Trust model",
           paragraphs: [
             "YieldBoost AI is not trying to own the user wallet. It is trying to own the integrity layer around AI-agent execution, storage, policy, and proof.",
-            "The product is strongest when it is explicit about verification. TITAN PROTOCOL treats output as a proposal, checks it with Integrity Auditor, persists it through the proof flow, and then exposes the result through a read-only audit surface.",
+            "The product is strongest when it is explicit about verification. YieldBoost AI Protocol treats output as a proposal, checks it with Integrity Auditor, persists it through the proof flow, and then exposes the result through a read-only audit surface.",
           ],
           bullets: [
             "Connected wallets can switch networks and broadcast the selected address into the app state.",
@@ -560,7 +560,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             tone: "teal",
             title: "Best demo order",
             body:
-              "For a short demo, start in the marketplace, move to the dashboard or Boost page to show the flagship showcase, then finish in Judge Mode or the proof modal.",
+              "For a short demo, start in the store, move to the dashboard or Boost page to show the flagship showcase, then finish in the verification console or the proof modal.",
           },
         },
         {
@@ -588,7 +588,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
       label: "How the Flagship Showcase Works",
       category: "Optimization Flow",
       description:
-        "The full meaning of the dashboard CTA `Boost My Yield Now` and how the flagship showcase proves TITAN PROTOCOL in a live product shell.",
+        "The full meaning of the dashboard CTA `Boost My Yield Now` and how the flagship showcase proves TITAN X in a live product shell.",
       summary: [
         { label: "CTA", value: "Boost My Yield Now", tone: "teal" },
         { label: "Intent", value: "Fastest proof of the live product shell", tone: "white" },
@@ -600,7 +600,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           id: "cta-meaning",
           title: "What `Boost My Yield Now` means",
           paragraphs: [
-            "This button is the dashboard shortcut for the default flagship flow: show how TITAN PROTOCOL turns wallet state into a proof-backed mainnet output inside a usable application shell.",
+            "This button is the dashboard shortcut for the default flagship flow: show how TITAN X turns wallet state into a proof-backed mainnet output inside a usable application shell.",
             "It intentionally hides most of the prompt complexity so a developer, buyer, or judge can see the full loop quickly before going deeper into the more explicit Boost page.",
           ],
         },
@@ -636,7 +636,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             {
               title: "Surface proof everywhere",
               body:
-                "The latest result card, proof modal, History page, and Judge Mode all read the stored record so the same run can be inspected as infrastructure evidence, not only as UI state.",
+                "The latest result card, proof modal, History page, and verification console all read the stored record so the same run can be inspected as infrastructure evidence, not only as UI state.",
             },
           ],
         },
@@ -786,7 +786,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             rows: [
               ["Tx hash", "Proof modal, dashboard proof row, latest result", "Primary storage write transaction", "Fastest external verification handle"],
               ["CID / storage ID", "Proof modal and result cards", "User-facing storage identifier returned by the proof flow", "Connects the run to stored content"],
-              ["Integrity Auditor", "Proof modal, Judge Mode, stored payload", "APPROVED or REJECTED guardrail result", "Shows the AI output was checked before proof/mint"],
+              ["Integrity Auditor", "Proof modal, verification console, stored payload", "APPROVED or REJECTED guardrail result", "Shows the AI output was checked before proof/mint"],
               ["Explorer link", "Proof modal and result cards", "Direct link into the configured 0G explorer", "Lets a reviewer verify outside the app"],
               ["ProofRegistry tx", "Result card or proof modal", "Separate contract write for registry anchoring", "Shows on-chain indexing layer"],
             ],
@@ -1006,7 +1006,7 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
             "Owners can list Strategy NFTs from the marketplace UI.",
             "Listings expose price, owner, APY, ROI lift, accuracy, and proof links.",
             "Buyers can inspect proof metadata before trusting the artifact.",
-            "The current mainnet marketplace address is surfaced in Judge Mode and the docs.",
+            "The current mainnet marketplace address is surfaced in the verification console and the docs.",
           ],
         },
         {
@@ -1154,10 +1154,10 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
           id: "judge-questions",
           title: "Questions judges usually ask",
           bullets: [
-            `What part is live? Answer: the ${defaultNetwork.label} proof flow, wallet context, proof storage route, ProofRegistry links, Agent NFT minting, marketplace reading, and Judge Mode are live code paths.`,
+            `What part is live? Answer: the ${defaultNetwork.label} proof flow, wallet context, proof storage route, ProofRegistry links, Agent NFT minting, marketplace reading, and the verification console are live code paths.`,
             `Is this testnet? Answer: no, the public submission path is mainnet-first. ${secondaryNetwork.label} is still available for comparison and testing.`,
             "How do I verify it? Answer: open `/judge`, History, or the proof modal, then follow the ChainScan links and compare them with the stored identifiers.",
-            "What makes it different from a dashboard mock? Answer: the app stores runtime proof records, anchors them, mints strategy artifacts, and exposes the same trail across Judge Mode, Agents, Marketplace, and Docs.",
+            "What makes it different from a dashboard mock? Answer: the app stores runtime proof records, anchors them, mints strategy artifacts, and exposes the same trail across the verification console, Agents, Marketplace, and Docs.",
           ],
         },
         {
@@ -1170,9 +1170,9 @@ export function getAllDocPages(status: DocsRuntimeStatus): DocPage[] {
               ["Tx hash", "Blockchain transaction identifier", "Proof modal and result surfaces", "Fastest verification handle"],
               ["CID / storage ID", "Proof storage identifier", "Proof modal and latest result", "Used to reference the stored record"],
               ["ProofRegistry", "Optional on-chain registry contract", "Proof modal and result card", "Adds an extra verification layer"],
-              ["Integrity Auditor", "Deterministic anti-hallucination guardrail", "Proof modal and Judge Mode", "Rejects unsafe or unrealistic recommendations before proof/mint"],
+              ["Integrity Auditor", "Deterministic anti-hallucination guardrail", "Proof modal and verification console", "Rejects unsafe or unrealistic recommendations before proof/mint"],
               ["Agent NFT", "On-chain strategy artifact", "Agents page and proof modal", "Turns a proof-backed strategy into an ownable artifact"],
-              ["Marketplace", "Strategy adoption surface", "Marketplace page and Judge Mode", "Lets listed Strategy NFTs be inspected before adoption"],
+              ["Marketplace", "Strategy adoption surface", "Marketplace page and verification console", "Lets listed Strategy NFTs be inspected before adoption"],
               ["Watch mode", "Tracking an address without wallet connection", "Sidebar", "Useful for demos and read-only review"],
               ["0G explorer", "External verification site", "Proof links", "Lets reviewers inspect transactions outside the app"],
             ],
@@ -1294,7 +1294,7 @@ Integrity Auditor checks recommendation
 runtime-store (KV or local file)
         |
         v
-History / proof modal / Judge Mode / /api/agent/latest / /api/0g/proof
+History / proof modal / verification console / /api/agent/latest / /api/0g/proof
         |
         v
 Mint as Agent -> YieldStrategyINFT -> Agents / Marketplace`,
@@ -1423,7 +1423,7 @@ Mint as Agent -> YieldStrategyINFT -> Agents / Marketplace`,
       description:
         "What is already real, what still falls back, and the next logical production steps for the project.",
       summary: [
-        { label: "Live Now", value: "Mainnet proof, Judge Mode, Agent NFTs, marketplace", tone: "teal" },
+        { label: "Live Now", value: "Mainnet proof, verification console, Agent NFTs, marketplace", tone: "teal" },
         { label: "Current Boundary", value: "Recommendation and proof, not autonomous fund execution", tone: "amber" },
         { label: "Next Frontier", value: "Deeper execution safety and Proof-of-Optimization", tone: "green" },
       ],
@@ -1437,7 +1437,7 @@ Mint as Agent -> YieldStrategyINFT -> Agents / Marketplace`,
             "Wallet connection and watch mode flow inside the sidebar.",
             "Optimization requests with Integrity Auditor and stored result hydration.",
             "0G Storage upload path plus ProofRegistry contract anchoring on the configured default network.",
-            "Judge Mode with mainnet/testnet switching and ChainScan links.",
+            "The verification console with mainnet/testnet switching and ChainScan links.",
             "Strategy Agent NFT minting through YieldStrategyINFT.",
             "Marketplace listing/adoption view for proof-backed Strategy NFTs.",
           ],

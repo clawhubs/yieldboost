@@ -23,9 +23,9 @@ const metrics = [
 ];
 
 const scanFlow = [
-  { num: "01", title: "Developers buy", body: "TITAN PROTOCOL is sold as modular APIs, SDK wrappers, and fortress modules.", accent: "text-[#22ddd0]" },
-  { num: "02", title: "Showcase proves", body: "1-click Optimize is the flagship shell proving the stack works on 0G Mainnet.", accent: "text-[#68ff7a]" },
-  { num: "03", title: "Judge audits", body: "Interactive Judge Menu exposes the live on-chain proof trail for buyers and reviewers.", accent: "text-[#f6c166]" },
+  { num: "01", title: "Developers buy", body: "The store sells the full stack, selected layers, and fortress modules.", accent: "text-[#22ddd0]" },
+  { num: "02", title: "Showcase proves", body: "1-click Optimize proves the same engine can become a real mainnet product.", accent: "text-[#68ff7a]" },
+  { num: "03", title: "Audit closes trust", body: "The live proof console lets buyers inspect the stack before adoption.", accent: "text-[#f6c166]" },
 ];
 
 const archFlow = [
@@ -109,11 +109,19 @@ export default function JudgeProjectBriefPage() {
             </span>
           </div>
           <h1 className="mt-5 max-w-4xl text-[28px] font-semibold leading-[1.12] text-white md:text-[44px]">
-            TITAN PROTOCOL → flagship showcase → live audit terminal.
+            The store sells it. TITAN X proves it. Audit closes trust.
           </h1>
           <p className="mt-3 max-w-3xl text-[15px] leading-7 text-[#d8e5ed] md:text-[16px]">
-            YieldBoost AI is a B2B infrastructure company on 0G. Its core product is TITAN PROTOCOL, a 10-layer modular integrity stack sold through an API / SDK marketplace. The 1-click dashboard is the flagship showcase. Judge Mode is the live audit terminal.
+            YieldBoost AI is a B2B infrastructure company on 0G. Its core product is TITAN PROTOCOL, a 10-layer modular integrity stack sold through an API / SDK marketplace. TITAN X is the flagship product shell. The audit console proves the claims are real.
           </p>
+          <div className="mt-5 rounded-[18px] border border-[rgba(34,221,208,0.14)] bg-[rgba(34,221,208,0.05)] px-4 py-4 md:max-w-3xl">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#9ff7f0]">Read this in 30 seconds</p>
+            <div className="mt-3 space-y-2 text-[14px] leading-7 text-[#dce5ec]">
+              <p><strong className="text-white">What is the business?</strong> A store that sells a 10-layer integrity stack as modular API / SDK infrastructure.</p>
+              <p><strong className="text-white">What is TITAN X?</strong> The flagship full-stack product proving the engine works as a real secure application.</p>
+              <p><strong className="text-white">Why keep audit live?</strong> Because infrastructure buyers adopt faster when proof is inspectable instead of promised.</p>
+            </div>
+          </div>
           <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
             {metrics.map((m) => (
               <div key={m.label} className="rounded-[14px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] px-3 py-3 text-center md:px-4">
@@ -162,13 +170,13 @@ export default function JudgeProjectBriefPage() {
           <article className="rounded-[22px] border border-[rgba(246,193,102,0.16)] bg-[rgba(246,193,102,0.04)] px-5 py-5">
             <div className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[#f6c166]">The Problem</div>
             <p className="mt-3 text-[14px] leading-7 text-[#dce5ec]">
-              Web3 AI agents are getting better at generating actions, but not at proving that those actions are trustworthy, policy-safe, and enterprise-ready. Most teams still stitch trust together from too many weak components.
+              Web3 AI agents are getting better at generating actions, but the market still secures them with too few layers. One tool blocks bots. Another screens wallets. Another audits after launch. The rest of the stack stays exposed to hallucinations, hostile traffic, weak proof paths, and post-hack regret.
             </p>
           </article>
           <article className="rounded-[22px] border border-[rgba(104,255,122,0.16)] bg-[rgba(104,255,122,0.04)] px-5 py-5">
             <div className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[#68ff7a]">The Solution</div>
             <p className="mt-3 text-[14px] leading-7 text-[#dce5ec]">
-              YieldBoost AI solves that by selling TITAN PROTOCOL: a 10-layer modular integrity stack on 0G with secure execution, proof storage, governance, sovereign memory, and AWS Nitro Enclaves continuity. The 1-click dashboard exists to prove the stack works as a real product shell.
+              YieldBoost AI solves that by selling TITAN PROTOCOL: a 10-layer modular integrity stack on 0G with secure execution, proof storage, governance, sovereign memory, and AWS Nitro Enclaves continuity. The 1-click dashboard exists to prove the stack works as a real product shell before buyers embed it into their own products.
             </p>
           </article>
         </section>

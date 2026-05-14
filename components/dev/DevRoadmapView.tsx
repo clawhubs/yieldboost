@@ -107,7 +107,7 @@ const livePillars = [
   {
     label: "TITAN X showcase",
     icon: Rocket,
-    text: "1-Click Optimize proves the stack works as a complete mainnet product shell.",
+    text: "The 1-Click app proves the stack works as a complete mainnet product shell.",
   },
   {
     label: "10-layer core",
@@ -213,7 +213,7 @@ export default function DevRoadmapView() {
             href="/dev/audit"
             className="inline-flex items-center gap-2 rounded-xl border border-[rgba(0,201,177,0.22)] bg-[rgba(0,201,177,0.06)] px-4 py-2.5 text-[13px] font-semibold text-white transition hover:border-[rgba(0,201,177,0.32)] hover:bg-[rgba(0,201,177,0.10)]"
           >
-            Open audit proof
+            Open verification proof
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
