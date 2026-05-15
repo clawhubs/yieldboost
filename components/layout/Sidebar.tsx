@@ -47,6 +47,7 @@ import {
   DEFAULT_WALLET_ADDRESS,
   getAvailableWalletNetworks,
   getDefaultWalletNetworkKey,
+  getPublicAppNetworkKey,
   isWalletAddress,
   JUDGE_NETWORK_COOKIE_KEY,
   JUDGE_NETWORK_STORAGE_KEY,
@@ -93,6 +94,7 @@ const navigation: NavigationItem[] = [
 
 const socialIcons = [Globe, MessageCircleMore, GitBranch, Grid2X2, Image];
 const availableNetworks = getAvailableWalletNetworks();
+const PUBLIC_NETWORK_KEY = getPublicAppNetworkKey();
 
 function shortAddr(addr: string) {
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
@@ -204,43 +206,6 @@ function isStaleDemoWalletState(input: {
   );
 }
 
-function hasNative0GBalance(portfolio: unknown) {
-  if (!portfolio || typeof portfolio !== "object") {
-    return false;
-  }
-
-  const value = (portfolio as { displayTotal?: unknown }).displayTotal;
-  return typeof value === "number" && value > 0;
-}
-
-async function resolveFundedNetworkForWallet(
-  walletAddress: string,
-  preferredNetwork: WalletNetworkKey,
-) {
-  const networksToTry: WalletNetworkKey[] = [
-    preferredNetwork,
-    preferredNetwork === "testnet" ? "mainnet" : "testnet",
-  ];
-
-  for (const network of networksToTry) {
-    try {
-      const response = await fetch(
-        `/api/portfolio?wallet=${encodeURIComponent(walletAddress)}&network=${network}`,
-        { cache: "no-store" },
-      );
-      if (!response.ok) continue;
-      const portfolio = await response.json();
-      if (hasNative0GBalance(portfolio)) {
-        return network;
-      }
-    } catch {
-      // Keep the selected network when the balance probe fails.
-    }
-  }
-
-  return preferredNetwork;
-}
-
 export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
@@ -259,14 +224,14 @@ export default function Sidebar() {
   const [walletOptions, setWalletOptions] = useState<WalletOption[]>([]);
   const [walletModalOpen, setWalletModalOpen] = useState(false);
   const [connectingId, setConnectingId] = useState<string | null>(null);
-  const [selectedNetwork, setSelectedNetwork] = useState<WalletNetworkKey>(getDefaultWalletNetworkKey);
+  const [selectedNetwork, setSelectedNetwork] = useState<WalletNetworkKey>(PUBLIC_NETWORK_KEY);
   const [connected, setConnected] = useState(false);
   const [errorText, setErrorText] = useState<string | null>(null);
 
   const providerRef = useRef<InjectedProvider | null>(null);
   const providerIdRef = useRef<string | null>(null);
   const walletAddrRef = useRef<string | null>(null);
-  const selectedNetworkRef = useRef<WalletNetworkKey>(getDefaultWalletNetworkKey());
+  const selectedNetworkRef = useRef<WalletNetworkKey>(PUBLIC_NETWORK_KEY);
   const listenersRef = useRef<{
     accountsChanged: (...args: unknown[]) => void;
     chainChanged: (...args: unknown[]) => void;
@@ -438,32 +403,27 @@ export default function Sidebar() {
         return;
       }
 
-      void (async () => {
-        const fundedNetwork = await resolveFundedNetworkForWallet(
-          nextAccount,
-          selectedNetworkRef.current,
-        );
+      const fundedNetwork = judgeModeActive ? selectedNetworkRef.current : PUBLIC_NETWORK_KEY;
 
-        if (fundedNetwork !== selectedNetworkRef.current) {
-          setSelectedNetwork(fundedNetwork);
-          selectedNetworkRef.current = fundedNetwork;
-          localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, fundedNetwork);
-          setCookie(WALLET_NETWORK_COOKIE_KEY, fundedNetwork);
-        }
+      setWalletAddr(nextAccount);
+      setErrorText(null);
+      localStorage.setItem(WALLET_OVERRIDE_STORAGE_KEY, nextAccount);
+      localStorage.setItem(WALLET_PROVIDER_STORAGE_KEY, providerId);
 
-        setWalletAddr(nextAccount);
-        setErrorText(null);
-        localStorage.setItem(WALLET_OVERRIDE_STORAGE_KEY, nextAccount);
-        localStorage.setItem(WALLET_PROVIDER_STORAGE_KEY, providerId);
+      if (judgeModeActive) {
+        walletAddrRef.current = nextAccount;
+        return;
+      }
 
-        if (judgeModeActive) {
-          walletAddrRef.current = nextAccount;
-          return;
-        }
+      if (fundedNetwork !== selectedNetworkRef.current) {
+        setSelectedNetwork(fundedNetwork);
+        selectedNetworkRef.current = fundedNetwork;
+        localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, fundedNetwork);
+        setCookie(WALLET_NETWORK_COOKIE_KEY, fundedNetwork);
+      }
 
-        setConnected(true);
-        broadcastWalletChange(nextAccount, fundedNetwork, providerName, true);
-      })();
+      setConnected(true);
+      broadcastWalletChange(nextAccount, fundedNetwork, providerName, true);
     };
 
     const chainChanged = (chainIdValue: unknown) => {
@@ -520,18 +480,20 @@ export default function Sidebar() {
     nextNetwork: WalletNetworkKey,
     attemptWalletSwitch = false,
   ) => {
-    setSelectedNetwork(nextNetwork);
-    selectedNetworkRef.current = nextNetwork;
-
     const judgeModeActive =
       typeof window !== "undefined" &&
       window.localStorage.getItem(JUDGE_MODE_STORAGE_KEY) === "true";
+    const resolvedNetwork = judgeModeActive ? nextNetwork : PUBLIC_NETWORK_KEY;
+
+    setSelectedNetwork(resolvedNetwork);
+    selectedNetworkRef.current = resolvedNetwork;
+
     if (judgeModeActive) {
-      localStorage.setItem(JUDGE_NETWORK_STORAGE_KEY, nextNetwork);
-      setCookie(JUDGE_NETWORK_COOKIE_KEY, nextNetwork);
+      localStorage.setItem(JUDGE_NETWORK_STORAGE_KEY, resolvedNetwork);
+      setCookie(JUDGE_NETWORK_COOKIE_KEY, resolvedNetwork);
     } else {
-      localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, nextNetwork);
-      setCookie(WALLET_NETWORK_COOKIE_KEY, nextNetwork);
+      localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, resolvedNetwork);
+      setCookie(WALLET_NETWORK_COOKIE_KEY, resolvedNetwork);
     }
     const activeWallet =
       judgeModeActive
@@ -563,7 +525,7 @@ export default function Sidebar() {
     if (activeWallet && isWalletAddress(activeWallet)) {
       broadcastWalletChange(
         activeWallet,
-        nextNetwork,
+        resolvedNetwork,
         judgeModeActive ? "Judge demo wallet" : providerName,
         connected && !judgeModeActive,
         !judgeModeActive,
@@ -592,13 +554,17 @@ export default function Sidebar() {
         getCookieValue(WALLET_NETWORK_COOKIE_KEY)
       : localStorage.getItem(WALLET_NETWORK_STORAGE_KEY) ??
         getCookieValue(WALLET_NETWORK_COOKIE_KEY);
-    const savedNetwork = savedNetworkValue
-      ? resolveWalletNetworkKey(savedNetworkValue)
-      : getDefaultWalletNetworkKey();
+    const savedNetwork = judgeModeActive
+      ? savedNetworkValue
+        ? resolveWalletNetworkKey(savedNetworkValue)
+        : getDefaultWalletNetworkKey()
+      : PUBLIC_NETWORK_KEY;
     setSelectedNetwork(savedNetwork);
     if (judgeModeActive) {
+      localStorage.setItem(JUDGE_NETWORK_STORAGE_KEY, savedNetwork);
       setCookie(JUDGE_NETWORK_COOKIE_KEY, savedNetwork);
     } else {
+      localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, savedNetwork);
       setCookie(WALLET_NETWORK_COOKIE_KEY, savedNetwork);
     }
 
@@ -687,7 +653,7 @@ export default function Sidebar() {
       const detail = (event as CustomEvent<{ networkKey?: WalletNetworkKey }>).detail;
       const nextNetwork = detail?.networkKey
         ? resolveWalletNetworkKey(detail.networkKey)
-        : selectedNetworkRef.current;
+        : PUBLIC_NETWORK_KEY;
       setSelectedNetwork(nextNetwork);
       localStorage.setItem(WALLET_NETWORK_STORAGE_KEY, nextNetwork);
       setCookie(WALLET_NETWORK_COOKIE_KEY, nextNetwork);
@@ -757,15 +723,7 @@ export default function Sidebar() {
         throw new Error(`No account returned by ${option.name}.`);
       }
 
-      const fundedNetwork = await resolveFundedNetworkForWallet(nextAccount, selectedNetwork);
-      const fundedNetworkConfig =
-        availableNetworks.find((network) => network.key === fundedNetwork) ??
-        selectedNetworkConfig;
-
-      if (fundedNetwork !== selectedNetwork && fundedNetworkConfig?.enabled) {
-        await switchOrAddNetwork(option.provider, fundedNetworkConfig);
-      }
-
+      const fundedNetwork = PUBLIC_NETWORK_KEY;
       setSelectedNetwork(fundedNetwork);
       selectedNetworkRef.current = fundedNetwork;
       setWalletAddr(nextAccount);
@@ -865,7 +823,7 @@ export default function Sidebar() {
   function handleExitJudgeMode() {
     const snapshot = readPreJudgeWalletState();
     exitJudgeMode();
-    const restoredNetwork = snapshot.networkKey ?? selectedNetworkRef.current;
+    const restoredNetwork = PUBLIC_NETWORK_KEY;
     const currentWallet = getRestorablePreJudgeWallet(
       walletAddrRef.current,
       providerIdRef.current,

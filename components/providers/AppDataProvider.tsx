@@ -25,6 +25,7 @@ import {
   DEFAULT_WALLET_ADDRESS,
   type WalletChangeDetail,
   getDefaultWalletNetworkKey,
+  getPublicAppNetworkKey,
   getWalletNetworkConfig,
   JUDGE_NETWORK_STORAGE_KEY,
   JUDGE_MODE_COOKIE_KEY,
@@ -433,7 +434,7 @@ async function anchorProofWithConnectedWallet({
 export function AppDataProvider({ children }: { children: ReactNode }) {
   const [portfolio, setPortfolio] = useState<PortfolioResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [networkKey, setNetworkKey] = useState<WalletNetworkKey>(getDefaultWalletNetworkKey);
+  const [networkKey, setNetworkKey] = useState<WalletNetworkKey>(getPublicAppNetworkKey);
   const [judgeMode, setJudgeMode] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizations, setOptimizations] = useState<OptimizationResult[]>([]);
@@ -444,12 +445,14 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const [pendingRegistryAnchor, setPendingRegistryAnchor] = useState<PendingRegistryAnchor | null>(null);
   const [pendingRegistryAnchorBusy, setPendingRegistryAnchorBusy] = useState(false);
   const [pendingRegistryAnchorError, setPendingRegistryAnchorError] = useState<string | null>(null);
-  const activeScopeRef = useRef(buildWalletScopeKey(undefined, getDefaultWalletNetworkKey()));
+  const activeScopeRef = useRef(buildWalletScopeKey(undefined, getPublicAppNetworkKey()));
   const portfolioRequestIdRef = useRef(0);
   const latestRequestIdRef = useRef(0);
   const latestResultRef = useRef<OptimizationResult | null>(null);
   const networkKeyRef = useRef(networkKey);
   const pendingRegistryAnchorRef = useRef<PendingRegistryAnchor | null>(null);
+  const optimizeInFlightRef = useRef(false);
+  const anchorInFlightRef = useRef(false);
 
   useEffect(() => {
     latestResultRef.current = latestResult;
@@ -920,10 +923,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const completePendingRegistryAnchor = useCallback(async () => {
-    if (!pendingRegistryAnchor) {
+    if (!pendingRegistryAnchor || anchorInFlightRef.current) {
       return;
     }
-
+    anchorInFlightRef.current = true;
     setPendingRegistryAnchorBusy(true);
     setPendingRegistryAnchorError(null);
     setProgress("anchoring");
@@ -993,6 +996,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       setPendingRegistryAnchorError(message);
       setProgress("anchoring");
     } finally {
+      anchorInFlightRef.current = false;
       setPendingRegistryAnchorBusy(false);
       setIsOptimizing(false);
     }
@@ -1028,7 +1032,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     if (typeof window !== "undefined" && staleDemoTrackedWallet) {
       window.localStorage.removeItem(WALLET_OVERRIDE_STORAGE_KEY);
     }
-    const initialNetwork = savedNetwork ?? getDefaultWalletNetworkKey();
+    const initialNetwork = initialJudgeMode
+      ? savedNetwork ?? getDefaultWalletNetworkKey()
+      : getPublicAppNetworkKey();
     const initialWallet = initialJudgeMode
       ? DEFAULT_WALLET_ADDRESS
       : isWalletAddress(savedWallet) && !staleDemoTrackedWallet
@@ -1066,9 +1072,11 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       const judgeModeActive =
         typeof window !== "undefined" &&
         window.localStorage.getItem(JUDGE_MODE_STORAGE_KEY) === "true";
-      const nextNetwork = detail?.networkKey
-        ? resolveWalletNetworkKey(detail.networkKey)
-        : networkKeyRef.current;
+      const nextNetwork = judgeModeActive
+        ? detail?.networkKey
+          ? resolveWalletNetworkKey(detail.networkKey)
+          : networkKeyRef.current
+        : getPublicAppNetworkKey();
       const nextWalletAddress = judgeModeActive
         ? DEFAULT_WALLET_ADDRESS
         : detail?.walletAddress;
@@ -1123,6 +1131,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     portfolioInput: Record<string, number>,
     prompt = "Optimize my portfolio for best yield with low risk",
   ) {
+    if (optimizeInFlightRef.current) {
+      return latestResultRef.current ?? buildOptimizationSnapshot(portfolioInput, prompt);
+    }
+    optimizeInFlightRef.current = true;
     setIsOptimizing(true);
     setStreamingText("");
     setProgress("analyzing");
@@ -1306,6 +1318,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       setProgress("analyzing");
       throw error;
     } finally {
+      optimizeInFlightRef.current = false;
       setIsOptimizing(false);
     }
   }

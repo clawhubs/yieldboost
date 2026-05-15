@@ -124,13 +124,22 @@ export async function getAuthorizedAccounts(provider: InjectedProvider) {
 
 export async function requestWalletAccounts(provider: InjectedProvider) {
   try {
-    await provider.request({
-      method: "wallet_revokePermissions",
-      params: [{ eth_accounts: {} }],
-    });
-  } catch {
-    // Some injected wallets do not support revocation. Continue with a fresh
-    // account request so MetaMask and compatible wallets can still re-prompt.
+    const accounts = (await provider.request({
+      method: "eth_requestAccounts",
+    })) as string[];
+
+    return Array.isArray(accounts) ? accounts : [];
+  } catch (error) {
+    const code =
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error
+        ? (error as { code?: unknown }).code
+        : undefined;
+
+    if (code === 4001) {
+      throw error;
+    }
   }
 
   try {
@@ -152,7 +161,7 @@ export async function requestWalletAccounts(provider: InjectedProvider) {
   }
 
   const accounts = (await provider.request({
-    method: "eth_requestAccounts",
+    method: "eth_accounts",
   })) as string[];
 
   return Array.isArray(accounts) ? accounts : [];

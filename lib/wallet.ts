@@ -217,6 +217,11 @@ export function getDefaultWalletNetworkKey(): WalletNetworkKey {
   return configs.mainnet.enabled ? "mainnet" : "testnet";
 }
 
+export function getPublicAppNetworkKey(): WalletNetworkKey {
+  const configs = getNetworkConfigs();
+  return configs.mainnet.enabled ? "mainnet" : getDefaultWalletNetworkKey();
+}
+
 export function getWalletNetworkConfig(
   networkKey: WalletNetworkKey,
 ): WalletNetworkConfig {
@@ -225,6 +230,19 @@ export function getWalletNetworkConfig(
 
 export function getAvailableWalletNetworks() {
   return Object.values(getNetworkConfigs()) as Server0GNetworkConfig[];
+}
+
+export function getPublicWalletNetworks() {
+  const networks = getAvailableWalletNetworks();
+  const mainnet = networks.find(
+    (network) => network.key === "mainnet" && network.enabled,
+  );
+
+  if (mainnet) {
+    return [mainnet];
+  }
+
+  return networks.filter((network) => network.enabled);
 }
 
 export function getServer0GNetworkConfig(

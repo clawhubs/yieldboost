@@ -131,7 +131,7 @@ export default function OptimizationLoadingModal({
           message:
             "The 0G Storage proof is already saved. YieldBoost now needs the second wallet transaction to finish the ProofRegistry anchor.",
           helper:
-            "Approve the next wallet popup to complete the on-chain anchor and clear the pending status.",
+            "If your wallet is not already on 0G Mainnet, one network switch prompt may appear before the final transaction confirmation.",
         }
       : progressCopy[progress];
   const canClose = progress === "done";

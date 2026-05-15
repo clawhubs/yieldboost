@@ -140,7 +140,7 @@ test("entering judge from a connected testnet wallet fully clears the active wal
 
   expect(stateBeforeJudge.walletOverride?.toLowerCase()).toBe(walletAddress.toLowerCase());
   expect(stateBeforeJudge.walletProvider).toBe("metamask");
-  expect(stateBeforeJudge.walletNetwork).toBe("testnet");
+  expect(stateBeforeJudge.walletNetwork).toBe("mainnet");
 
   await page.getByTestId("nav-audit").click();
   await page.waitForFunction(() => window.localStorage.getItem("yb_judge_mode") === "true");
@@ -159,7 +159,7 @@ test("entering judge from a connected testnet wallet fully clears the active wal
   expect(stateAfterJudge.judgeMode).toBe("true");
   expect(stateAfterJudge.previousWallet?.toLowerCase()).toBe(walletAddress.toLowerCase());
   expect(stateAfterJudge.previousProvider).toBe("metamask");
-  expect(stateAfterJudge.previousNetwork).toBe("testnet");
+  expect(stateAfterJudge.previousNetwork).toBe("mainnet");
 
   const cookiesAfterJudge = await context.cookies(origin);
   expect(cookiesAfterJudge.find((cookie) => cookie.name === "yb_wallet")).toBeUndefined();
@@ -201,7 +201,7 @@ test("entering judge from a connected testnet wallet fully clears the active wal
   expect(stateAfterStaleProviderEvents.judgeMode).toBe("true");
 });
 
-test("connected testnet wallet restores cleanly after entering and exiting judge mode", async ({
+test("connected testnet wallet restores cleanly after entering and exiting judge mode back to public mainnet", async ({
   page,
 }) => {
   const walletAddress = loadFirstTestWalletAddress();
@@ -237,7 +237,7 @@ test("connected testnet wallet restores cleanly after entering and exiting judge
   expect(restoredState.judgeMode).toBeNull();
   expect(restoredState.walletOverride?.toLowerCase()).toBe(walletAddress.toLowerCase());
   expect(restoredState.walletProvider).toBe("metamask");
-  expect(restoredState.walletNetwork).toBe("testnet");
+  expect(restoredState.walletNetwork).toBe("mainnet");
   expect(restoredState.previousWallet).toBeNull();
   expect(restoredState.previousProvider).toBeNull();
   expect(restoredState.previousNetwork).toBeNull();

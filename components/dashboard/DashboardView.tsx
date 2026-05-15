@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useMemo, useEffect, useRef, lazy, Suspense, useCallback } from "react";
 import {
   Activity,
@@ -9,7 +10,6 @@ import {
   Box,
   Check,
   CheckCheck,
-  ChevronDown,
   CircleDashed,
   Clock3,
   Cpu,
@@ -41,7 +41,8 @@ import { useYieldOptimizer } from "@/hooks/useYieldOptimizer";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import {
   DEFAULT_WALLET_ADDRESS,
-  getAvailableWalletNetworks,
+  getPublicAppNetworkKey,
+  getPublicWalletNetworks,
   getWalletNetworkConfig,
   isWalletAddress,
   JUDGE_NETWORK_COOKIE_KEY,
@@ -51,18 +52,15 @@ import {
   JUDGE_PREVIOUS_WALLET_STORAGE_KEY,
   JUDGE_MODE_COOKIE_KEY,
   JUDGE_MODE_STORAGE_KEY,
-  resolveWalletNetworkKey,
   sameWalletAddress,
   WALLET_COOKIE_KEY,
   WALLET_CONNECT_REQUEST_EVENT,
   WALLET_CHANGE_EVENT,
-  WALLET_NETWORK_CHANGE_REQUEST_EVENT,
   WALLET_NETWORK_COOKIE_KEY,
   WALLET_NETWORK_STORAGE_KEY,
   WALLET_OVERRIDE_STORAGE_KEY,
   WALLET_PROVIDER_STORAGE_KEY,
   type WalletChangeDetail,
-  type WalletNetworkKey,
 } from "@/lib/wallet";
 import { buildStrategyPlan } from "@/components/dashboard/strategy-plan";
 
@@ -102,7 +100,8 @@ const footerItems = [
   { icon: Sparkles, label: "AI-Powered" },
 ] as const;
 
-const walletNetworks = getAvailableWalletNetworks();
+const walletNetworks = getPublicWalletNetworks();
+const PUBLIC_NETWORK_KEY = getPublicAppNetworkKey();
 const ENTRY_MODE_STORAGE_KEY = "yb_entry_mode_selected";
 const OPTIMIZATION_AUTO_DISMISS_PREFIX = "yb_optimization_auto_dismissed";
 
@@ -148,7 +147,6 @@ export default function DashboardView() {
   const [optimizationModalDismissed, setOptimizationModalDismissed] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [alertsOpen, setAlertsOpen] = useState(false);
-  const [walletMenuOpen, setWalletMenuOpen] = useState(false);
   const {
     latestResult: rawLatestResult,
     optimize,
@@ -160,9 +158,9 @@ export default function DashboardView() {
     pendingRegistryAnchorError,
     completePendingRegistryAnchor,
   } = useYieldOptimizer();
-  const { portfolio, networkKey, loading, judgeMode } = usePortfolio();
+  const { portfolio, networkKey, loading, judgeMode, exitJudgeMode } = usePortfolio();
+  const router = useRouter();
   const alertsRef = useRef<HTMLDivElement | null>(null);
-  const walletMenuRef = useRef<HTMLDivElement | null>(null);
   const [globalStats, setGlobalStats] = useState<{
     hasData: boolean;
     formatted: { users: string; computeJobs: string; tvl: string; recentJobs24h: string; protocols: string };
@@ -227,6 +225,10 @@ export default function DashboardView() {
       clearCookie(JUDGE_MODE_COOKIE_KEY);
       clearCookie(JUDGE_NETWORK_COOKIE_KEY);
 
+      if (judgeMode) {
+        exitJudgeMode();
+      }
+
       const savedWallet = getDashboardRestorableWallet(
         window.localStorage.getItem(JUDGE_PREVIOUS_WALLET_STORAGE_KEY),
         window.localStorage.getItem(JUDGE_PREVIOUS_PROVIDER_STORAGE_KEY),
@@ -234,12 +236,7 @@ export default function DashboardView() {
       const savedProvider = savedWallet
         ? window.localStorage.getItem(JUDGE_PREVIOUS_PROVIDER_STORAGE_KEY)
         : null;
-      const savedNetworkValue = window.localStorage.getItem(
-        JUDGE_PREVIOUS_NETWORK_STORAGE_KEY,
-      );
-      const restoredNetwork = savedNetworkValue
-        ? resolveWalletNetworkKey(savedNetworkValue)
-        : networkKey;
+      const restoredNetwork = PUBLIC_NETWORK_KEY;
 
       window.localStorage.removeItem(JUDGE_PREVIOUS_WALLET_STORAGE_KEY);
       window.localStorage.removeItem(JUDGE_PREVIOUS_PROVIDER_STORAGE_KEY);
@@ -256,12 +253,9 @@ export default function DashboardView() {
         }
         setCookie(WALLET_COOKIE_KEY, savedWallet);
       } else {
-        const storedWallet = window.localStorage.getItem(WALLET_OVERRIDE_STORAGE_KEY);
-        const storedProvider = window.localStorage.getItem(WALLET_PROVIDER_STORAGE_KEY);
-        if (!storedProvider && sameWalletAddress(storedWallet, DEFAULT_WALLET_ADDRESS)) {
-          window.localStorage.removeItem(WALLET_OVERRIDE_STORAGE_KEY);
-          clearCookie(WALLET_COOKIE_KEY);
-        }
+        window.localStorage.removeItem(WALLET_OVERRIDE_STORAGE_KEY);
+        window.localStorage.removeItem(WALLET_PROVIDER_STORAGE_KEY);
+        clearCookie(WALLET_COOKIE_KEY);
       }
 
       window.dispatchEvent(
@@ -276,6 +270,7 @@ export default function DashboardView() {
       );
     }
     setEntryModeOpen(false);
+    router.replace("/");
   }
 
   function markJudgeModeSelected() {
@@ -303,21 +298,17 @@ export default function DashboardView() {
   }, [latestResult]);
 
   useEffect(() => {
-    if (!alertsOpen && !walletMenuOpen) return;
+    if (!alertsOpen) return;
 
     function handlePointerDown(event: MouseEvent) {
       if (!alertsRef.current?.contains(event.target as Node)) {
         setAlertsOpen(false);
-      }
-      if (!walletMenuRef.current?.contains(event.target as Node)) {
-        setWalletMenuOpen(false);
       }
     }
 
     function handleEscape(event: KeyboardEvent) {
       if (event.key === "Escape") {
         setAlertsOpen(false);
-        setWalletMenuOpen(false);
       }
     }
 
@@ -328,7 +319,7 @@ export default function DashboardView() {
       document.removeEventListener("mousedown", handlePointerDown);
       document.removeEventListener("keydown", handleEscape);
     };
-  }, [alertsOpen, walletMenuOpen]);
+  }, [alertsOpen]);
 
   async function copyToClipboard(value: string, field: string) {
     await navigator.clipboard.writeText(value);
@@ -383,13 +374,10 @@ export default function DashboardView() {
     if (!walletConnected && !judgeMode) {
       window.dispatchEvent(
         new CustomEvent(WALLET_CONNECT_REQUEST_EVENT, {
-          detail: { networkKey },
+          detail: { networkKey: PUBLIC_NETWORK_KEY },
         }),
       );
-      return;
     }
-
-    setWalletMenuOpen((open) => !open);
   }
 
   async function runDashboardOptimization() {
@@ -417,7 +405,7 @@ export default function DashboardView() {
   );
   const portfolioMetricLabel =
     portfolio?.displayUnit === "0G" ? "TOTAL 0G BALANCE" : "TOTAL PORTFOLIO VALUE";
-  const activeNetwork = walletNetworks.find((item) => item.key === networkKey) ?? walletNetworks[0];
+  const activeNetwork = walletNetworks.find((item) => item.key === networkKey) ?? walletNetworks[0] ?? getWalletNetworkConfig(PUBLIC_NETWORK_KEY);
   const activeExplorerBase = getWalletNetworkConfig(networkKey).explorerBase;
   const latestExplorerLink = latestResult?.proofRegistryExplorerUrl ?? latestResult?.proofUrl ?? activeExplorerBase;
   const latestExplorerLabel = latestResult?.proofRegistryExplorerUrl
@@ -569,63 +557,35 @@ export default function DashboardView() {
               </div>
 
               <div className="flex w-full flex-wrap items-center gap-2 md:w-auto">
-                <div ref={walletMenuRef} className="relative flex-1 sm:flex-none">
+                <div className="flex flex-1 flex-wrap items-center gap-2 sm:flex-none">
+                  <div className="flex h-[46px] min-w-[144px] items-center gap-3 rounded-[12px] border border-[rgba(42,215,200,0.2)] bg-[rgba(8,17,23,0.92)] px-4 text-left">
+                    <Globe className="h-4 w-4 text-[#22ddd0]" />
+                    <div>
+                      <div className="text-[11px] text-[#d9e1e8]">Network</div>
+                      <div className="mt-0.5 text-[12px] font-medium text-[#22ddd0]">
+                        {activeNetwork?.chainName ?? "0G Mainnet"}
+                      </div>
+                    </div>
+                  </div>
                   <button
                     type="button"
                     onClick={handleWalletButtonClick}
-                    className="flex h-[46px] w-full min-w-0 items-center gap-3 rounded-[12px] border border-[#1b242d] bg-[#0a1117] px-4 text-left transition hover:border-[#2ad7c8]/40 sm:w-auto sm:min-w-[220px]"
+                    className={`flex h-[46px] min-w-0 items-center gap-3 rounded-[12px] border border-[#1b242d] bg-[#0a1117] px-4 text-left transition sm:min-w-[220px] ${
+                      walletConnected || judgeMode
+                        ? "cursor-default"
+                        : "hover:border-[#2ad7c8]/40"
+                    }`}
                   >
                     <Wallet2 className="h-4 w-4 text-[#d9e1e8]" />
                     <div>
-                      <div className="text-[11px] text-[#d9e1e8]">Wallet</div>
+                      <div className="text-[11px] text-[#d9e1e8]">
+                        {walletConnected || judgeMode ? "Wallet" : "Connect"}
+                      </div>
                       <div className="mt-0.5 text-[12px] font-medium text-[#2ad7c8]">
                         {portfolio?.walletAddress ? portfolioWalletLabel : "Connect Wallet"}
                       </div>
                     </div>
-                    <ChevronDown className="h-4 w-4 text-[#d9e1e8]" />
                   </button>
-
-                  {walletMenuOpen ? (
-                    <div className="absolute right-0 top-[54px] z-20 w-full min-w-[220px] rounded-[16px] border border-[#17313a] bg-[#081117] p-2 shadow-[0_18px_44px_rgba(0,0,0,0.45)] sm:w-[220px]">
-                      <div className="px-2 pb-2 pt-1 text-[11px] uppercase tracking-[0.12em] text-[#87a0ad]">
-                        Choose Network
-                      </div>
-                      <div className="space-y-2">
-                        {walletNetworks.map((network) => (
-                          <button
-                            key={network.key}
-                            type="button"
-                            disabled={!network.enabled}
-                            onClick={() => {
-                              window.dispatchEvent(
-                                new CustomEvent(WALLET_NETWORK_CHANGE_REQUEST_EVENT, {
-                                  detail: { networkKey: network.key as WalletNetworkKey },
-                                }),
-                              );
-                              setWalletMenuOpen(false);
-                            }}
-                            className={`flex w-full items-start justify-between rounded-[12px] border px-3 py-3 text-left transition ${
-                              network.key === networkKey
-                                ? "border-[rgba(0,201,177,0.35)] bg-[rgba(0,201,177,0.08)]"
-                                : "border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] hover:border-[rgba(0,201,177,0.25)]"
-                            } ${!network.enabled ? "cursor-not-allowed opacity-50" : ""}`}
-                          >
-                            <div>
-                              <div className="text-[13px] font-semibold text-white">
-                                {network.key === "testnet" ? "Testnet" : "Mainnet"}
-                              </div>
-                              <div className="mt-1 text-[11px] text-[#8ea1af]">
-                                {network.enabled ? network.chainName : "Set env first"}
-                              </div>
-                            </div>
-                            <div className="rounded-full border border-[#21453f] px-2 py-1 text-[10px] font-semibold text-[#2ad7c8]">
-                              {network.key === activeNetwork.key ? "Current" : "Open"}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ) : null}
                 </div>
                 <div ref={alertsRef} className="relative">
                   <button

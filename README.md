@@ -1,5 +1,11 @@
 <p align="center">
-  <img src="./public/readme/branding/banner.png" alt="YieldBoost AI Protocol banner" width="100%" />
+  <a href="https://www.youtube.com/watch?v=jJhnGKr1VnU" target="_blank" rel="noreferrer">
+    <img src="https://img.youtube.com/vi/jJhnGKr1VnU/maxresdefault.jpg" alt="Watch the YieldBoost AI Protocol demo video on YouTube" width="100%" />
+  </a>
+</p>
+
+<p align="center">
+  <strong><a href="https://www.youtube.com/watch?v=jJhnGKr1VnU">Watch the full demo video on YouTube</a></strong>
 </p>
 
 <h1 align="center">YieldBoost AI</h1>
@@ -155,15 +161,15 @@ VeilSolver Secure Proxy is a partner SDK example inside the store: YieldBoost wr
 
 ## Early Signals
 
-These are early, real usage signals captured from the live public surfaces of YieldBoost AI as of **May 14, 2026**. They reflect the current commercial MVP, flagship product MVP, and public challenge flows, not fabricated growth claims.
+These are early, real usage signals captured from the live public surfaces of YieldBoost AI as of **May 15, 2026**. They reflect the current commercial MVP, flagship product MVP, and public challenge flows, not fabricated growth claims.
 
 | Signal | Snapshot | Evidence |
 | --- | --- | --- |
-| Unique wallets observed | **8 wallets** | [`/api/stats/global`](https://yieldboostai.xyz/api/stats/global) returns `users: 8` |
-| Proof-backed execution jobs | **50 jobs** | [`/api/stats/global`](https://yieldboostai.xyz/api/stats/global) returns `computeJobs: 50` |
-| Tracked portfolio value processed | **$737** | [`/api/stats/global`](https://yieldboostai.xyz/api/stats/global) returns `tvl: 736.72` |
+| Unique wallets observed | **7 wallets** | [`/api/stats/global`](https://yieldboostai.xyz/api/stats/global) returns `users: 7` |
+| Proof-backed execution jobs | **80 jobs** | [`/api/stats/global`](https://yieldboostai.xyz/api/stats/global) returns `computeJobs: 80` |
+| Tracked portfolio value processed | **$686** | [`/api/stats/global`](https://yieldboostai.xyz/api/stats/global) returns `tvl: 686.27` |
 | Blocked public challenge attempts | **93 deflected attempts** | [`/v1/admin/public-stats`](https://api.yieldboostai.xyz/v1/admin/public-stats) returns `total_deflected_attacks: 93` |
-| Proof-backed recommendation routes visible | **1 route** | [`/api/stats/global`](https://yieldboostai.xyz/api/stats/global) returns `protocols: 1` |
+| Proof-backed recommendation routes visible | **2 routes** | [`/api/stats/global`](https://yieldboostai.xyz/api/stats/global) returns `protocols: 2` |
 
 Supporting live surfaces:
 
