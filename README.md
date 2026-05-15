@@ -45,6 +45,8 @@
 
 <p align="center">
   <a href="#why-this-matters">Why it matters</a> •
+  <a href="#why-0g">Why 0G</a> •
+  <a href="#why-yieldboost-ai">Why us</a> •
   <a href="#mainnet-live-verification">Mainnet verification</a> •
   <a href="#founder-grade-snapshot">Founder grade</a> •
   <a href="#the-problem">Problem</a> •
@@ -79,6 +81,28 @@ YieldBoost AI should be read in this order:
 2. **The Store:** the **developer store**, where builders buy TITAN X, selected layers, or specialized fortress modules.
 3. **The Flagship Product:** **TITAN X**, the flagship 10-layer product sold beside the security modules.
 4. **The Proof Surface:** the **Verification Console**, a live audit terminal showing the stack is verifiable on-chain.
+
+## Why 0G
+
+YieldBoost AI Protocol is not just using 0G as branding or RPC infrastructure. The product needs a chain and data stack that can support **verifiable agent execution**, **persistent proof artifacts**, and **mainnet-grade modular infrastructure**.
+
+- **0G Compute** gives us a path for broker-aware inference with verifiable TEE evidence instead of opaque AI output.
+- **0G Storage** lets us persist proof payloads, reasoning envelopes, and memory artifacts as first-class review data.
+- **ProofRegistry anchoring on 0G** turns those artifacts into auditable receipts instead of dashboard-only claims.
+- **Mainnet-first 0G product surfaces** fit the business model: this is infrastructure meant to be sold, embedded, and reviewed, not just demoed on testnet forever.
+
+In short: 0G is the backbone that makes YieldBoost AI Protocol credible as trust infrastructure, because the stack needs compute, storage, and proof anchoring to live in the same product story.
+
+## Why YieldBoost AI
+
+Many teams can build an AI dashboard. Fewer teams turn that into a **sellable trust product** with a live proof surface, modular store, and mainnet operating path. That is the gap YieldBoost AI is targeting.
+
+- We package the stack as a **commercial platform** instead of one closed showcase, so developers can buy the full flagship product or selected protection layers.
+- We keep a **live verification console** so claims can be inspected instead of narrated.
+- We ship a **real flagship product MVP** on mainnet, so the infrastructure is proven through usage rather than left as backend theory.
+- We keep the architecture **modular and extensible**, which is important for partner wrappers, fortress modules, and future B2B adoption.
+
+In short: 0G gives the rails, but YieldBoost AI turns those rails into a product business with proof, packaging, and adoption surfaces.
 
 ## Quick FAQ
 
