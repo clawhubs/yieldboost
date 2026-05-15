@@ -26,7 +26,7 @@
   <img src="https://img.shields.io/badge/Proof%20Layer-0G%20Storage%20%2B%20ProofRegistry-0f172a?style=for-the-badge" alt="Proof Layer" />
   <img src="https://img.shields.io/badge/Agent%20NFT-YieldStrategyINFT-00a86b?style=for-the-badge" alt="Agent NFT YieldStrategyINFT" />
   <img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge" alt="Next.js 15" />
-  <img src="https://img.shields.io/badge/License-MIT-white?style=for-the-badge" alt="MIT License" />
+  <img src="https://img.shields.io/badge/License-3.0-white?style=for-the-badge" alt="3.0 License" />
 </p>
 
 <p align="center">
@@ -1093,7 +1093,7 @@ That is a much more compelling hackathon story than a generic AI dashboard, beca
 
 ## License
 
-This project is released under the [MIT License](LICENSE).
+This project is released under the [3.0 License](LICENSE).
 
 ## Contributing
 
