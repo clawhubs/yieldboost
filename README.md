@@ -91,6 +91,19 @@ YieldBoost AI Protocol is not just using 0G as branding or RPC infrastructure. T
 - **ProofRegistry anchoring on 0G** turns those artifacts into auditable receipts instead of dashboard-only claims.
 - **Mainnet-first 0G product surfaces** fit the business model: this is infrastructure meant to be sold, embedded, and reviewed, not just demoed on testnet forever.
 
+<p align="center">
+  <a href="public/readme/evidence/mainnet-proof-overview.png">
+    <img src="public/readme/evidence/mainnet-proof-overview.png" alt="0G mainnet transaction overview proof" width="49%" />
+  </a>
+  <a href="public/readme/evidence/mainnet-proof-logs.png">
+    <img src="public/readme/evidence/mainnet-proof-logs.png" alt="0G mainnet transaction logs proof" width="49%" />
+  </a>
+</p>
+
+<p align="center">
+  <sub>Left: mainnet transaction overview. Right: emitted ProofRecorded log. Click either screenshot to enlarge.</sub>
+</p>
+
 In short: 0G is the backbone that makes YieldBoost AI Protocol credible as trust infrastructure, because the stack needs compute, storage, and proof anchoring to live in the same product story.
 
 ## Why YieldBoost AI
