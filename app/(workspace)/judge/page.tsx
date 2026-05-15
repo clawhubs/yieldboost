@@ -373,7 +373,7 @@ export default async function JudgePage() {
             </p>
             <div className="mt-5 flex flex-wrap items-center justify-center gap-5">
               {[
-                { v: "9", l: "Layers", c: "text-[#22ddd0]" },
+                { v: "10", l: "Layers", c: "text-[#22ddd0]" },
                 { v: String(data.proofCount || (data.latestProof ? 1 : 0)), l: "Proofs", c: "text-[#68ff7a]" },
                 { v: reviewingMainnet ? "MAINNET" : "TESTNET", l: "Network", c: "text-[#f6c166]" },
                 { v: "0G", l: "Native", c: "text-[#63d8ff]" },
@@ -741,7 +741,7 @@ export default async function JudgePage() {
               </div>
             </div>
             <Link href="/marketplace" className={linkPillNeutralClass}>
-              Open marketplace
+              Open store
               <ArrowUpRight className="h-3.5 w-3.5" />
             </Link>
           </div>
@@ -793,7 +793,7 @@ export default async function JudgePage() {
               <div>
                 <h2 className={sectionTitleClass}>Military-grade integrity pipeline</h2>
                 <p className={sectionHelperClass}>
-                  Ten ordered layers use the same YieldBoost names across 1-click optimize, Vault, and the developer marketplace: blacklist, auditor, secure compute, memory, storage proof, ZK proof, registry anchor, governance, cross-agent handshake, and AWS Nitro Enclaves.
+                  Ten ordered layers use the same YieldBoost names across 1-click optimize, Vault, and the developer store: blacklist, auditor, secure compute, memory, storage proof, ZK proof, registry anchor, governance, cross-agent handshake, and AWS Nitro Enclaves.
                 </p>
               </div>
             </div>

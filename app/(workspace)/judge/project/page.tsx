@@ -54,16 +54,16 @@ const surfaces = [
     title: "API / SDK Security Store",
     icon: Boxes,
     network: "Mainnet live",
-    body: "Full TITAN PROTOCOL, single layers, fortress modules, and partner wrappers — sold as modular infrastructure products.",
+    body: "TITAN X, selected verification layers, fortress modules, and partner wrappers — sold as modular infrastructure products through the YieldBoost AI Protocol store.",
     why: "This is the engine and revenue core: the stack is bought by developers, not hidden behind one app.",
     href: "/dev/marketplace",
-    label: "Open marketplace",
+    label: "Open store",
   },
   {
     title: "1-Click Optimize Showcase",
     icon: Wallet,
     network: "Mainnet live",
-    body: "A flagship shell that wraps TITAN PROTOCOL into a working mainnet product with one wallet action.",
+    body: "A flagship shell that wraps the TITAN X 10-layer core into a working mainnet product with one wallet action.",
     why: "It proves the SDK can become a usable business surface, not just a backend promise.",
     href: "/agent",
     label: "Open flagship showcase",
@@ -112,13 +112,13 @@ export default function JudgeProjectBriefPage() {
             The store sells it. TITAN X proves it. Audit closes trust.
           </h1>
           <p className="mt-3 max-w-3xl text-[15px] leading-7 text-[#d8e5ed] md:text-[16px]">
-            YieldBoost AI is a B2B infrastructure company on 0G. Its core product is TITAN PROTOCOL, a 10-layer modular integrity stack sold through an API / SDK marketplace. TITAN X is the flagship product shell. The audit console proves the claims are real.
+            YieldBoost AI is a B2B infrastructure company on 0G. YieldBoost AI Protocol is the platform and commercial store. TITAN X is the flagship 10-layer product. The audit console proves the claims are real.
           </p>
           <div className="mt-5 rounded-[18px] border border-[rgba(34,221,208,0.14)] bg-[rgba(34,221,208,0.05)] px-4 py-4 md:max-w-3xl">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#9ff7f0]">Read this in 30 seconds</p>
             <div className="mt-3 space-y-2 text-[14px] leading-7 text-[#dce5ec]">
               <p><strong className="text-white">What is the business?</strong> A store that sells a 10-layer integrity stack as modular API / SDK infrastructure.</p>
-              <p><strong className="text-white">What is TITAN X?</strong> The flagship full-stack product proving the engine works as a real secure application.</p>
+              <p><strong className="text-white">What is TITAN X?</strong> The flagship 10-layer product proving the engine works as a real secure application.</p>
               <p><strong className="text-white">Why keep audit live?</strong> Because infrastructure buyers adopt faster when proof is inspectable instead of promised.</p>
             </div>
           </div>
@@ -176,7 +176,7 @@ export default function JudgeProjectBriefPage() {
           <article className="rounded-[22px] border border-[rgba(104,255,122,0.16)] bg-[rgba(104,255,122,0.04)] px-5 py-5">
             <div className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[#68ff7a]">The Solution</div>
             <p className="mt-3 text-[14px] leading-7 text-[#dce5ec]">
-              YieldBoost AI solves that by selling TITAN PROTOCOL: a 10-layer modular integrity stack on 0G with secure execution, proof storage, governance, sovereign memory, and AWS Nitro Enclaves continuity. The 1-click dashboard exists to prove the stack works as a real product shell before buyers embed it into their own products.
+              YieldBoost AI solves that by selling YieldBoost AI Protocol: a 10-layer modular integrity platform on 0G with secure execution, proof storage, governance, sovereign memory, and AWS Nitro Enclaves continuity. TITAN X exists to prove the stack works as a real product shell before buyers embed it into their own products.
             </p>
           </article>
         </section>
@@ -246,7 +246,7 @@ export default function JudgeProjectBriefPage() {
           <div className="mt-5 rounded-[18px] border border-[rgba(246,193,102,0.18)] bg-[rgba(246,193,102,0.05)] px-4 py-4">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#f6c166]">Network honesty</p>
             <p className="mt-2 text-[14px] leading-7 text-[#dce5ec]">
-              The marketplace, flagship showcase, and judge terminal are the real mainnet product story. Public challenge surfaces stay testnet so outside testers can attack the system without distorting the B2B infrastructure narrative.
+              The store, flagship showcase, and judge terminal are the real mainnet product story. Public challenge surfaces stay testnet so outside testers can attack the system without distorting the B2B infrastructure narrative.
             </p>
           </div>
         </section>
@@ -261,7 +261,7 @@ export default function JudgeProjectBriefPage() {
             Infrastructure first. Showcase second. Audit always on.
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-[14px] leading-7 text-[#dce5ec]">
-            0G gives TITAN PROTOCOL its compute, storage, and proof anchor spine — turning AI-agent trust into a modular B2B product that can be sold, audited, and embedded across many businesses.
+            0G gives YieldBoost AI Protocol its compute, storage, and proof anchor spine — turning AI-agent trust into a modular B2B product that can be sold, audited, and embedded across many businesses.
           </p>
           <div className="mt-5 flex flex-wrap justify-center gap-3">
             <Link href="/judge" className={linkPill}>

@@ -37,11 +37,11 @@ const phaseCards = [
     status: "LIVE",
     window: "Now / Q2 2026",
     title: "Infrastructure Core",
-    focus: "The product is already live as a B2B infrastructure stack: TITAN PROTOCOL marketplace, flagship showcase, interactive judge terminal, and selected public challenge surfaces.",
+    focus: "The product is already live as a B2B infrastructure stack: YieldBoost AI Protocol store, TITAN X flagship showcase, interactive judge terminal, and selected public challenge surfaces.",
     icon: ShieldCheck,
     color: "teal",
     checkpoints: [
-      "Mainnet TITAN PROTOCOL marketplace",
+      "Mainnet YieldBoost AI Protocol store",
       "Flagship 1-click showcase on 0G Mainnet",
       "Interactive judge terminal with live audit trail",
       "0G Storage + ProofRegistry anchor path",
@@ -62,11 +62,11 @@ const phaseCards = [
     color: "green",
     checkpoints: [
       "High-performance AI gateway with protected access",
-      "Reference implementations built on TITAN PROTOCOL",
+      "Reference implementations built on YieldBoost AI Protocol",
       "Multi-agent planner, actor, and critic loop",
       "More partner modules added to the armory",
     ],
-    money: "Next scale comes from turning TITAN PROTOCOL into the default trust layer for more teams, more wrappers, and more protected agent products.",
+    money: "Next scale comes from turning YieldBoost AI Protocol into the default trust layer for more teams, more wrappers, and more protected agent products.",
   },
   {
     id: "03",
@@ -90,7 +90,7 @@ const phaseCards = [
     status: "NEXT",
     window: "Beyond 2027",
     title: "Multi-Chain Integrity Standard",
-    focus: "Make TITAN PROTOCOL portable across the wider AI economy as a reusable integrity standard.",
+    focus: "Make YieldBoost AI Protocol portable across the wider AI economy as a reusable integrity standard.",
     icon: Globe2,
     color: "blue",
     checkpoints: [
@@ -106,7 +106,7 @@ const phaseCards = [
 
 const livePillars = [
   {
-    label: "TITAN PROTOCOL marketplace",
+    label: "YieldBoost AI Protocol store",
     icon: Store,
     text: "The 10-layer stack is sold as modular APIs, SDKs, and fortress modules.",
   },
@@ -136,7 +136,7 @@ const productLines = [
   {
     label: "Developer revenue",
     icon: Database,
-    text: "Modular Immunity Armory sells TITAN PROTOCOL as reusable developer infrastructure instead of one closed application.",
+    text: "Modular Immunity Armory sells YieldBoost AI Protocol as reusable developer infrastructure instead of one closed application.",
   },
   {
     label: "Proof-led sales",
@@ -215,13 +215,13 @@ export default async function JudgeRoadmapPage() {
 
             <div className="mt-7 inline-flex items-center gap-2 rounded-full border border-[rgba(34,221,208,0.22)] bg-[rgba(34,221,208,0.08)] px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-[#22ddd0]">
               <Rocket className="h-3.5 w-3.5" />
-              TITAN PROTOCOL first. Showcase second. Proof always on.
+              YieldBoost AI Protocol first. Showcase second. Proof always on.
             </div>
             <h1 className="mt-4 font-[family-name:var(--font-display)] text-[34px] font-semibold leading-[1.04] text-white md:text-[52px]">
               A 10-layer B2B integrity business with a live mainnet showcase.
             </h1>
             <p className="mt-4 max-w-3xl text-[15px] leading-7 text-[#d9e7ec]">
-              YieldBoost sells TITAN PROTOCOL as modular infrastructure for Web3 AI agents. The 1-click dashboard is the flagship showcase proving the stack works on 0G Mainnet. The judge menu is the live audit terminal that turns trust into something buyers can verify.
+              YieldBoost sells YieldBoost AI Protocol as modular infrastructure for Web3 AI agents. TITAN X is the flagship showcase proving the stack works on 0G Mainnet. The judge menu is the live audit terminal that turns trust into something buyers can verify.
             </p>
             <div className="mt-5 flex flex-wrap gap-4">
               {[
@@ -478,7 +478,7 @@ export default async function JudgeRoadmapPage() {
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
             <Link href="/dev/marketplace" className={linkPillClass}>
-              API marketplace
+              Protocol store
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
             <Link href="/judge/project" className={linkPillClass}>

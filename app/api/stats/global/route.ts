@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 
-import { DEFAULT_WALLET_ADDRESS, isWalletAddress } from "@/lib/wallet";
+import { DEFAULT_WALLET_ADDRESS } from "@/lib/wallet";
 import { type StoredProofRecord } from "@/lib/backend-data";
-import { resolveProofHistoryForWalletAcrossNetworks } from "@/lib/server/proof-resolution";
-import { getStoredProofs } from "@/lib/server/runtime-store";
+import { resolveProofHistoryForWallet } from "@/lib/server/proof-resolution";
+import {
+  getStoredProofs,
+  mergeGlobalStatsLedgerFromProofs,
+} from "@/lib/server/runtime-store";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -66,36 +69,38 @@ function mergeProofSets(...groups: StoredProofRecord[][]) {
 }
 
 export async function GET() {
-  const [storedProofs, demoWalletProofs] = await Promise.all([
+  const [storedProofs, demoWalletMainnetProofs, demoWalletTestnetProofs] = await Promise.all([
     getStoredProofs(),
-    resolveProofHistoryForWalletAcrossNetworks(DEFAULT_WALLET_ADDRESS),
+    resolveProofHistoryForWallet(DEFAULT_WALLET_ADDRESS, "mainnet"),
+    resolveProofHistoryForWallet(DEFAULT_WALLET_ADDRESS, "testnet"),
   ]);
-  const proofs = mergeProofSets(storedProofs, demoWalletProofs);
+  const proofs = mergeProofSets(
+    storedProofs,
+    demoWalletMainnetProofs,
+    demoWalletTestnetProofs,
+  );
+  const ledger = await mergeGlobalStatsLedgerFromProofs(proofs);
   const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
 
-  const totalTvl = proofs.reduce((sum, p) => sum + (p.decision.totalPortfolio ?? 0), 0);
   const last24h = proofs.filter((p) => {
     const t = Date.parse(p.timestamp);
     return Number.isFinite(t) && t >= dayAgo;
   }).length;
-  const protocols = new Set(proofs.map((p) => p.decision.recommended)).size;
-  const uniqueWallets = new Set(
-    proofs
-      .map((proof) => proof.walletAddress)
-      .filter((wallet): wallet is string => isWalletAddress(wallet))
-      .map((wallet) => wallet.toLowerCase()),
-  ).size;
+  const uniqueWallets = ledger.walletsSeen.length;
+  const totalTvl = ledger.totalTvlProcessed;
+  const protocols = ledger.protocolsSeen.length;
+  const totalProofJobs = ledger.totalProofJobs;
 
   return NextResponse.json({
-    hasData: proofs.length > 0,
+    hasData: totalProofJobs > 0,
     users: uniqueWallets,
-    computeJobs: proofs.length,
+    computeJobs: totalProofJobs,
     tvl: totalTvl,
     recentJobs24h: last24h,
     protocols,
     formatted: {
       users: formatCompactNumber(uniqueWallets),
-      computeJobs: formatCompactNumber(proofs.length),
+      computeJobs: formatCompactNumber(totalProofJobs),
       tvl: formatCompactUsd(totalTvl),
       recentJobs24h: formatCompactNumber(last24h),
       protocols: formatCompactNumber(protocols),

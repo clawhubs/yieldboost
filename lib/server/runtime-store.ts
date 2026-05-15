@@ -19,9 +19,10 @@ import {
   getDefaultSettingsState,
 } from "@/lib/backend-data";
 import type { WalletNetworkKey } from "@/lib/wallet";
-import { sameWalletAddress } from "@/lib/wallet";
+import { isWalletAddress, sameWalletAddress } from "@/lib/wallet";
 
 const PROOFS_KEY = "yieldboost:proofs";
+const GLOBAL_STATS_LEDGER_KEY = "yieldboost:global-stats-ledger";
 const MEMORIES_KEY = "yieldboost:agent-memories";
 const BLACKLIST_KEY = "yieldboost:blacklist";
 const STRESS_REPORTS_KEY = "yieldboost:stress-reports";
@@ -42,6 +43,20 @@ const MAX_ZK_COMPLIANCE_PROOFS = 60;
 const MAX_AGENT_NFT_METADATA = 100;
 const LOCAL_STORE_PATH = path.join(process.cwd(), ".artifacts", "runtime-store.local.json");
 const LEGACY_LOCAL_STORE_PATH = path.join(process.cwd(), ".artifacts", "runtime-store.json");
+const GLOBAL_STATS_LEDGER_LOCAL_PATH = path.join(
+  process.cwd(),
+  ".artifacts",
+  "global-stats-ledger.local.json",
+);
+
+export interface GlobalStatsLedger {
+  proofKeys: string[];
+  walletsSeen: string[];
+  protocolsSeen: string[];
+  totalTvlProcessed: number;
+  totalProofJobs: number;
+  updatedAt: string | null;
+}
 
 export interface StoredAgentNftMetadata {
   networkKey: WalletNetworkKey;
@@ -116,6 +131,90 @@ function parseProofTimestamp(value: string | undefined) {
   if (!value) return 0;
   const parsed = Date.parse(value);
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function createEmptyGlobalStatsLedger(): GlobalStatsLedger {
+  return {
+    proofKeys: [],
+    walletsSeen: [],
+    protocolsSeen: [],
+    totalTvlProcessed: 0,
+    totalProofJobs: 0,
+    updatedAt: null,
+  };
+}
+
+function normalizeGlobalStatsLedger(
+  payload: Partial<GlobalStatsLedger> | null | undefined,
+): GlobalStatsLedger {
+  const proofKeys = Array.isArray(payload?.proofKeys)
+    ? payload.proofKeys
+        .filter((value): value is string => typeof value === "string" && value.length > 0)
+        .map((value) => value.toLowerCase())
+    : [];
+  const walletsSeen = Array.isArray(payload?.walletsSeen)
+    ? payload.walletsSeen
+        .filter((value): value is string => typeof value === "string" && value.length > 0)
+        .map((value) => value.toLowerCase())
+    : [];
+  const protocolsSeen = Array.isArray(payload?.protocolsSeen)
+    ? payload.protocolsSeen.filter(
+        (value): value is string => typeof value === "string" && value.length > 0,
+      )
+    : [];
+
+  return {
+    proofKeys: [...new Set(proofKeys)],
+    walletsSeen: [...new Set(walletsSeen)],
+    protocolsSeen: [...new Set(protocolsSeen)],
+    totalTvlProcessed:
+      typeof payload?.totalTvlProcessed === "number" && Number.isFinite(payload.totalTvlProcessed)
+        ? payload.totalTvlProcessed
+        : 0,
+    totalProofJobs:
+      typeof payload?.totalProofJobs === "number" && Number.isFinite(payload.totalProofJobs)
+        ? payload.totalProofJobs
+        : 0,
+    updatedAt: typeof payload?.updatedAt === "string" ? payload.updatedAt : null,
+  };
+}
+
+function buildGlobalStatsProofKey(proof: StoredProofRecord) {
+  return (
+    proof.proofRegistryTxHash ||
+    proof.txHash ||
+    proof.cid
+  ).toLowerCase();
+}
+
+function mergeGlobalStatsLedgerRecord(
+  ledger: GlobalStatsLedger,
+  proof: StoredProofRecord,
+): boolean {
+  const proofKey = buildGlobalStatsProofKey(proof);
+  if (ledger.proofKeys.includes(proofKey)) {
+    return false;
+  }
+
+  ledger.proofKeys.push(proofKey);
+  ledger.totalProofJobs += 1;
+  ledger.totalTvlProcessed += proof.decision.totalPortfolio ?? 0;
+
+  const walletAddress = proof.walletAddress;
+  if (walletAddress && isWalletAddress(walletAddress)) {
+    const normalizedWallet = walletAddress.toLowerCase();
+    if (!ledger.walletsSeen.includes(normalizedWallet)) {
+      ledger.walletsSeen.push(normalizedWallet);
+    }
+  }
+
+  const protocol = proof.decision.recommended?.trim();
+  if (protocol && !ledger.protocolsSeen.includes(protocol)) {
+    ledger.protocolsSeen.push(protocol);
+  }
+
+  ledger.updatedAt = new Date().toISOString();
+  return true;
 }
 
 function sortProofsNewestFirst(proofs: StoredProofRecord[]) {
@@ -247,6 +346,28 @@ async function writeLocalStoreFile(store: RuntimeStore) {
   }
 }
 
+async function readGlobalStatsLedgerLocalFile(): Promise<GlobalStatsLedger | null> {
+  try {
+    const raw = await fs.readFile(GLOBAL_STATS_LEDGER_LOCAL_PATH, "utf8");
+    return normalizeGlobalStatsLedger(JSON.parse(raw) as Partial<GlobalStatsLedger>);
+  } catch {
+    return null;
+  }
+}
+
+async function writeGlobalStatsLedgerLocalFile(ledger: GlobalStatsLedger) {
+  try {
+    await fs.mkdir(path.dirname(GLOBAL_STATS_LEDGER_LOCAL_PATH), { recursive: true });
+    await fs.writeFile(
+      GLOBAL_STATS_LEDGER_LOCAL_PATH,
+      JSON.stringify(ledger, null, 2),
+      "utf8",
+    );
+  } catch (error) {
+    console.warn("[runtime-store] Global stats ledger write failed:", error);
+  }
+}
+
 async function loadLocalStore(): Promise<RuntimeStore> {
   const cached = getLocalStore();
   const fromDisk = await readLocalStoreFile();
@@ -257,6 +378,37 @@ async function loadLocalStore(): Promise<RuntimeStore> {
   }
 
   return cached;
+}
+
+async function loadGlobalStatsLedger(): Promise<GlobalStatsLedger> {
+  if (isRuntimeStoreKvConfigured()) {
+    try {
+      const payload = await kv.get<GlobalStatsLedger>(GLOBAL_STATS_LEDGER_KEY);
+      if (payload) {
+        return normalizeGlobalStatsLedger(payload);
+      }
+    } catch (error) {
+      console.warn("[runtime-store] Global stats ledger KV read failed:", error);
+    }
+  }
+
+  return (await readGlobalStatsLedgerLocalFile()) ?? createEmptyGlobalStatsLedger();
+}
+
+async function persistGlobalStatsLedger(ledger: GlobalStatsLedger) {
+  const normalized = normalizeGlobalStatsLedger(ledger);
+
+  if (isRuntimeStoreKvConfigured()) {
+    try {
+      await kv.set(GLOBAL_STATS_LEDGER_KEY, normalized);
+      return normalized;
+    } catch (error) {
+      console.warn("[runtime-store] Global stats ledger KV write failed:", error);
+    }
+  }
+
+  await writeGlobalStatsLedgerLocalFile(normalized);
+  return normalized;
 }
 
 // --- Public API (async) ---
@@ -273,6 +425,10 @@ export async function recordStoredProof(
         // lpush accepts variadic; push in reverse so head = newest
         await kv.lpush(PROOFS_KEY, ...next.slice().reverse());
       }
+      const statsLedger = await loadGlobalStatsLedger();
+      if (mergeGlobalStatsLedgerRecord(statsLedger, record)) {
+        await persistGlobalStatsLedger(statsLedger);
+      }
       return record;
     } catch (error) {
       console.warn("[runtime-store] KV write failed, using local fallback:", error);
@@ -285,7 +441,32 @@ export async function recordStoredProof(
   ]).slice(0, MAX_PROOFS);
   globalStore.__yieldboostRuntimeStore = store;
   await writeLocalStoreFile(store);
+  const statsLedger = await loadGlobalStatsLedger();
+  if (mergeGlobalStatsLedgerRecord(statsLedger, record)) {
+    await persistGlobalStatsLedger(statsLedger);
+  }
   return record;
+}
+
+export async function getGlobalStatsLedger(): Promise<GlobalStatsLedger> {
+  return loadGlobalStatsLedger();
+}
+
+export async function mergeGlobalStatsLedgerFromProofs(
+  proofs: StoredProofRecord[],
+): Promise<GlobalStatsLedger> {
+  const ledger = await loadGlobalStatsLedger();
+  let changed = false;
+
+  for (const proof of proofs) {
+    changed = mergeGlobalStatsLedgerRecord(ledger, proof) || changed;
+  }
+
+  if (!changed) {
+    return ledger;
+  }
+
+  return persistGlobalStatsLedger(ledger);
 }
 
 export async function getStoredProofs(): Promise<StoredProofRecord[]> {
