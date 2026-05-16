@@ -336,8 +336,8 @@ These entries were refreshed from the live mainnet review wallet and runtime pro
 | Recorded `ProofRegistry` proof ID | `56` |
 | Recorded proof snapshot model + provider | `deepseek/deepseek-chat-v3-0324` via `0x1B3AAef3ae5050EEE04ea38cD4B087472BD85EB0` |
 | Recorded ZK `agent_identity` proof digest | `0x35fd1618f3d7c5ee0d96e769d3ede071cf18eec7dd3f85472ac3a60dd05a801f` |
-| Recorded Agent NFT token | `No current Agent NFT recorded in the May 16, 2026 review snapshot.` |
-| Recorded Agent NFT mint tx | `No current Agent NFT mint tx is attached to this dated review snapshot.` |
+| Review wallet Agent NFT (chain state checked May 16, 2026) | `Token #7` |
+| Review wallet Agent NFT mint tx | [`0x06c74427be145405f93f97742278ecb7c2150ed48011060f674478915698ad30`](https://chainscan.0g.ai/tx/0x06c74427be145405f93f97742278ecb7c2150ed48011060f674478915698ad30) |
 
 ### Recorded Integrity Stack Evidence (May 16, 2026)
 
