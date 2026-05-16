@@ -1,0 +1,14 @@
+{
+  "id": "zero-g-storage-proof-layer",
+  "name": "0G Storage Proof Layer",
+  "partner": "YieldBoost 0G",
+  "endpoint": "/api/dev/store/layers/zero-g-storage-proof-layer",
+  "playground": "/dev/marketplace/zero-g-storage-proof-layer",
+  "docs": "/dev/marketplace/zero-g-storage-proof-layer/docs",
+  "security": "Layer 05 Endpoint",
+  "pricing": ["Free", "Builder", "Pro", "Protocol"],
+  "notes": [
+    "Proof payloads are stored on 0G Storage with receipt metadata for audit.",
+    "Buys one callable layer from the broader TITAN X verification family."
+  ]
+}

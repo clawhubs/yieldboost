@@ -1,0 +1,14 @@
+{
+  "id": "cross-agent-neural-handshake",
+  "name": "Cross-Agent Neural Handshake",
+  "partner": "YieldBoost 0G",
+  "endpoint": "/api/dev/store/layers/cross-agent-neural-handshake",
+  "playground": "/dev/marketplace/cross-agent-neural-handshake",
+  "docs": "/dev/marketplace/cross-agent-neural-handshake/docs",
+  "security": "Layer 09 Endpoint",
+  "pricing": ["Free", "Builder", "Pro", "Protocol"],
+  "notes": [
+    "Cross-agent transcript confirms the optimizer and auditor agreed.",
+    "Buys one callable layer from the broader TITAN X verification family."
+  ]
+}

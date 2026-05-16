@@ -1,0 +1,15 @@
+{
+  "id": "anti-sybil-zk-fingerprint",
+  "name": "Anti-Sybil + ZK + Alibaba Fingerprinting",
+  "partner": "YieldBoost 0G",
+  "endpoint": "/api/dev/store/anti-sybil-zk-fingerprint",
+  "playground": "/dev/marketplace/anti-sybil-zk-fingerprint",
+  "docs": "/dev/marketplace/anti-sybil-zk-fingerprint/docs",
+  "security": "Dedicated Security Module",
+  "pricing": ["Builder", "Pro", "Protocol"],
+  "notes": [
+    "Wallet-bound screening before key or session issuance",
+    "Deterministic anti-sybil throttles for hostile traffic",
+    "Alibaba behavior fingerprinting plus ZK envelope"
+  ]
+}

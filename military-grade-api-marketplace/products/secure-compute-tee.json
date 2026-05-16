@@ -1,0 +1,14 @@
+{
+  "id": "secure-compute-tee",
+  "name": "Secure Compute / TEE",
+  "partner": "YieldBoost 0G",
+  "endpoint": "/api/dev/store/layers/secure-compute-tee",
+  "playground": "/dev/marketplace/secure-compute-tee",
+  "docs": "/dev/marketplace/secure-compute-tee/docs",
+  "security": "Layer 03 Endpoint",
+  "pricing": ["Protocol"],
+  "notes": [
+    "Sensitive execution uses the secure compute path and records TEE response evidence.",
+    "Buys one callable layer from the broader TITAN X verification family."
+  ]
+}

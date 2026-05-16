@@ -1,0 +1,14 @@
+{
+  "id": "hallucination-blacklist",
+  "name": "Hallucination Blacklist",
+  "partner": "YieldBoost 0G",
+  "endpoint": "/api/dev/store/layers/hallucination-blacklist",
+  "playground": "/dev/marketplace/hallucination-blacklist",
+  "docs": "/dev/marketplace/hallucination-blacklist/docs",
+  "security": "Layer 01 Endpoint",
+  "pricing": ["Free", "Builder", "Pro", "Protocol"],
+  "notes": [
+    "Known bad prompts, unsafe patterns, and rejected decisions are blocked before inference.",
+    "Buys one callable layer from the broader TITAN X verification family."
+  ]
+}

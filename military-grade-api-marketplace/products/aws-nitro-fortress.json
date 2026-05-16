@@ -1,0 +1,15 @@
+{
+  "id": "aws-nitro-fortress",
+  "name": "AWS Nitro Fortress SDK",
+  "partner": "YieldBoost 0G",
+  "endpoint": "/api/dev/store/aws-nitro-fortress",
+  "playground": "/dev/marketplace/aws-nitro-fortress",
+  "docs": "/dev/marketplace/aws-nitro-fortress/docs",
+  "security": "Layer 10 Continuity",
+  "pricing": ["Protocol"],
+  "notes": [
+    "Layer 10 continuity sold as a standalone fortress module",
+    "Nitro enclave framing plus 0G TEE badge summary",
+    "0G Storage incident journal and recovery replay path"
+  ]
+}

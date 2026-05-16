@@ -1,12 +1,23 @@
 # YieldBoost AI SDK
 
-Official TypeScript client scaffold for the YieldBoost AI 9-Layer Integrity API.
+Official TypeScript client scaffold for the YieldBoost AI Protocol 10-Layer Integrity API.
 
 Current status:
 
 - source-ready in this repository
 - not yet published to npm
 - safe to vendor into partner apps or publish as `yieldboost-ai-sdk`
+
+This is the broader first-party SDK source. The marketplace-facing package
+wrappers for TITAN X, AWS Nitro Fortress, Anti-Sybil + ZK + Alibaba
+Fingerprinting now also have their own internal package at
+[`../yieldboost-native-sdk`](../yieldboost-native-sdk).
+
+Marketplace-local wrappers and partner-oriented examples such as VeilSolver
+still live under [`../../military-grade-api-marketplace`](../../military-grade-api-marketplace).
+
+If you started from the root `sdk/` folder and want the directory map first,
+see [`../README.md`](../README.md).
 
 ## What it covers
 

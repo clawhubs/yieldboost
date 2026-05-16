@@ -1,0 +1,14 @@
+{
+  "id": "sovereign-memory",
+  "name": "Sovereign Memory",
+  "partner": "YieldBoost 0G",
+  "endpoint": "/api/dev/store/layers/sovereign-memory",
+  "playground": "/dev/marketplace/sovereign-memory",
+  "docs": "/dev/marketplace/sovereign-memory/docs",
+  "security": "Layer 04 Endpoint",
+  "pricing": ["Free", "Builder", "Pro", "Protocol"],
+  "notes": [
+    "Decision state is packaged as a memory artifact with a 0G receipt.",
+    "Buys one callable layer from the broader TITAN X verification family."
+  ]
+}

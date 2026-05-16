@@ -1,0 +1,14 @@
+{
+  "id": "integrity-auditor",
+  "name": "Integrity Auditor",
+  "partner": "YieldBoost 0G",
+  "endpoint": "/api/dev/store/layers/integrity-auditor",
+  "playground": "/dev/marketplace/integrity-auditor",
+  "docs": "/dev/marketplace/integrity-auditor/docs",
+  "security": "Layer 02 Endpoint",
+  "pricing": ["Free", "Builder", "Pro", "Protocol"],
+  "notes": [
+    "Deterministic guardrails verify the payload, ownership scope, and risk bounds.",
+    "Buys one callable layer from the broader TITAN X verification family."
+  ]
+}

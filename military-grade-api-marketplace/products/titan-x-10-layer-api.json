@@ -1,0 +1,15 @@
+{
+  "id": "military-grade-full",
+  "name": "TITAN X 10-Layer API",
+  "partner": "YieldBoost 0G",
+  "endpoint": "/api/dev/store/military-grade",
+  "playground": "/dev/marketplace/military-grade-full",
+  "docs": "/dev/marketplace/military-grade-full/docs",
+  "security": "10-Layer Core",
+  "pricing": ["Protocol"],
+  "notes": [
+    "Flagship YieldBoost-native product",
+    "One live trust path backed by ten security layers",
+    "What looks like one click to the user is protected by ten layers underneath"
+  ]
+}

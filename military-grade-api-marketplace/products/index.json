@@ -1,0 +1,76 @@
+{
+  "packages": [
+    {
+      "id": "military-grade-full",
+      "file": "./titan-x-10-layer-api.json",
+      "category": "full-package",
+      "sdk": "../sdk/titan-x-client.ts"
+    },
+    {
+      "id": "aws-nitro-fortress",
+      "file": "./aws-nitro-fortress.json",
+      "category": "split-package",
+      "sdk": "../sdk/aws-nitro-fortress-client.ts"
+    },
+    {
+      "id": "anti-sybil-zk-fingerprint",
+      "file": "./anti-sybil-zk-fingerprint.json",
+      "category": "split-package",
+      "sdk": "../sdk/anti-sybil-zk-fingerprint-client.ts"
+    }
+  ],
+  "split_layers": [
+    {
+      "id": "hallucination-blacklist",
+      "file": "./hallucination-blacklist.json",
+      "sdk": "../sdk/hallucination-blacklist-client.ts"
+    },
+    {
+      "id": "integrity-auditor",
+      "file": "./integrity-auditor.json",
+      "sdk": "../sdk/integrity-auditor-client.ts"
+    },
+    {
+      "id": "secure-compute-tee",
+      "file": "./secure-compute-tee.json",
+      "sdk": "../sdk/secure-compute-tee-client.ts"
+    },
+    {
+      "id": "sovereign-memory",
+      "file": "./sovereign-memory.json",
+      "sdk": "../sdk/sovereign-memory-client.ts"
+    },
+    {
+      "id": "zero-g-storage-proof-layer",
+      "file": "./zero-g-storage-proof-layer.json",
+      "sdk": "../sdk/zero-g-storage-proof-layer-client.ts"
+    },
+    {
+      "id": "zero-knowledge-proof-layer",
+      "file": "./zero-knowledge-proof-layer.json",
+      "sdk": "../sdk/zero-knowledge-proof-layer-client.ts"
+    },
+    {
+      "id": "proofregistry-anchor",
+      "file": "./proofregistry-anchor.json",
+      "sdk": "../sdk/proofregistry-anchor-client.ts"
+    },
+    {
+      "id": "programmable-governance",
+      "file": "./programmable-governance.json",
+      "sdk": "../sdk/programmable-governance-client.ts"
+    },
+    {
+      "id": "cross-agent-neural-handshake",
+      "file": "./cross-agent-neural-handshake.json",
+      "sdk": "../sdk/cross-agent-neural-handshake-client.ts"
+    }
+  ],
+  "partner_wrappers": [
+    {
+      "id": "veilsolver",
+      "file": "./veilsolver.json",
+      "sdk": "../sdk/veilsolver-client.ts"
+    }
+  ]
+}

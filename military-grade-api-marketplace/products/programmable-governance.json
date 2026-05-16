@@ -1,0 +1,14 @@
+{
+  "id": "programmable-governance",
+  "name": "Programmable Governance",
+  "partner": "YieldBoost 0G",
+  "endpoint": "/api/dev/store/layers/programmable-governance",
+  "playground": "/dev/marketplace/programmable-governance",
+  "docs": "/dev/marketplace/programmable-governance/docs",
+  "security": "Layer 08 Endpoint",
+  "pricing": ["Free", "Builder", "Pro", "Protocol"],
+  "notes": [
+    "Policy scoring, kill-switch checks, and ZK policy seal status are produced.",
+    "Buys one callable layer from the broader TITAN X verification family."
+  ]
+}

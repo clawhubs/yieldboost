@@ -1,0 +1,14 @@
+{
+  "id": "zero-knowledge-proof-layer",
+  "name": "Zero-Knowledge Proof Layer",
+  "partner": "YieldBoost 0G",
+  "endpoint": "/api/dev/store/layers/zero-knowledge-proof-layer",
+  "playground": "/dev/marketplace/zero-knowledge-proof-layer",
+  "docs": "/dev/marketplace/zero-knowledge-proof-layer/docs",
+  "security": "Layer 06 Endpoint",
+  "pricing": ["Free", "Builder", "Pro", "Protocol"],
+  "notes": [
+    "ZK proof envelope verifies the committed inputs, output, and summary without exposing private witness data.",
+    "Buys one callable layer from the broader TITAN X verification family."
+  ]
+}

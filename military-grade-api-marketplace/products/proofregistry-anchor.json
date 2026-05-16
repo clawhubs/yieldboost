@@ -1,0 +1,14 @@
+{
+  "id": "proofregistry-anchor",
+  "name": "ProofRegistry Anchor",
+  "partner": "YieldBoost 0G",
+  "endpoint": "/api/dev/store/layers/proofregistry-anchor",
+  "playground": "/dev/marketplace/proofregistry-anchor",
+  "docs": "/dev/marketplace/proofregistry-anchor/docs",
+  "security": "Layer 07 Endpoint",
+  "pricing": ["Free", "Builder", "Pro", "Protocol"],
+  "notes": [
+    "Storage commitments are anchored on-chain through ProofRegistry.",
+    "Buys one callable layer from the broader TITAN X verification family."
+  ]
+}

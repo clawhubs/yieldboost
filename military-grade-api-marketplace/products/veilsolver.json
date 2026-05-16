@@ -7,6 +7,11 @@
   "upstream": "https://veilresolver.onrender.com",
   "contractAddress": "0x4181c06901Ee172c169fFDf44c6C192c22265aF",
   "solverPublicKey": "0x039a5b81f4b2bc0c181b1292f3aeb55721de43dc7e3d07c6c44ba3aa087ecaae04",
-  "security": "9-Layer Verified",
-  "pricing": ["Free Tier", "88 YA Builder", "888 YA Pro"]
+  "security": "Selected YieldBoost Protections",
+  "pricing": ["Protocol"],
+  "notes": [
+    "Partner wrapper, not the TITAN X core",
+    "Wrapped with isolated execution, ZK envelope, and 0G anchor semantics",
+    "The full 10-layer YieldBoost-native path is a separate first-party product"
+  ]
 }
