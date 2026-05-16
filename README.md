@@ -303,9 +303,11 @@ The live product is now **mainnet-first**.
 
 <p align="center"><em>The main proof path shows the 10-layer YieldBoost AI Protocol operating together: blacklist, auditor, TEE, sovereign memory, 0G storage, ZK proof, ProofRegistry anchor, governance, cross-agent handshake, and AWS Nitro Enclaves.</em></p>
 
-### Mainnet Contract and Proof Evidence
+### Mainnet Contracts, Review Wallet, and Proof Evidence
 
-| Artifact | Value |
+#### Mainnet Deployed Contracts
+
+| Contract | Address |
 | --- | --- |
 | Mainnet `ProofRegistry` | [`0x8e63e117E71A80Cfc10fDF375F079e2e29cd7D7D`](https://chainscan.0g.ai/address/0x8e63e117E71A80Cfc10fDF375F079e2e29cd7D7D) |
 | Mainnet `YieldStrategyINFT` | [`0xb264D861264B0e4f8fb98A61B7694BA8a3B6BBe3`](https://chainscan.0g.ai/address/0xb264D861264B0e4f8fb98A61B7694BA8a3B6BBe3) |
@@ -313,14 +315,27 @@ The live product is now **mainnet-first**.
 | Mainnet strategy marketplace | [`0x48F989C7f41056509980731C1b4D59164C0C1A40`](https://chainscan.0g.ai/address/0x48F989C7f41056509980731C1b4D59164C0C1A40) |
 | Mainnet `GlobalBlacklistRegistry` | [`0xbc576EA5a68ED9d217299c107C801445e9A5a7BE`](https://chainscan.0g.ai/address/0xbc576EA5a68ED9d217299c107C801445e9A5a7BE) |
 | Mainnet `ValidationRegistry` | [`0x62aa83b0A610BE298dF08004d764229B8f2aC219`](https://chainscan.0g.ai/address/0x62aa83b0A610BE298dF08004d764229B8f2aC219) |
+
+#### Mainnet Public Review Wallet
+
+| Wallet | Address |
+| --- | --- |
+| Mainnet public review wallet | [`0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D`](https://storagescan.0g.ai/address/0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D) |
+
+`Mainnet public review wallet` is the live wallet/account used for the public flagship review flow and related 0G Storage evidence. It is not a deployed contract and it is not a testnet demo address.
+
+#### Mainnet Proof Evidence
+
+| Artifact | Value |
+| --- | --- |
 | Latest proof CID | `0x34591917c809c3c0d00a7c9134b9c7f48bb0be4befba9f59c355499c96fd0b58` |
 | Latest 0G Storage tx | [`0xbd25bad750df808237525b9f5f84200b10bcbbf1cc1b8687c071b291e331a121`](https://chainscan.0g.ai/tx/0xbd25bad750df808237525b9f5f84200b10bcbbf1cc1b8687c071b291e331a121) |
 | Latest `ProofRegistry` anchor tx | [`0x11ca104543d7c6705b4f14d336a2581aa69bfdb819a5c76b7f6e1f71b29eb823`](https://chainscan.0g.ai/tx/0x11ca104543d7c6705b4f14d336a2581aa69bfdb819a5c76b7f6e1f71b29eb823) |
 | Latest `ProofRegistry` proof ID | `36` |
 | Latest TEE model + provider | `openai/gpt-5.4-mini` via `0x25F8f01cA76060ea40895472b1b79f76613Ca497` |
 | Latest ZK `agent_identity` proof digest | `0xe3dda0d378f18d3f47024fb47cd129b82956c9fffe3e6b76e8940608b7c668d8` |
-| Latest Agent NFT | `Token #5` |
-| Latest Agent NFT mint tx | [`0xb113f436944ebb8c50a2b432818673059ddd8f69a497b7fd80407047e8fb1e67`](https://chainscan.0g.ai/tx/0xb113f436944ebb8c50a2b432818673059ddd8f69a497b7fd80407047e8fb1e67) |
+| Latest Agent NFT | `Token #7` |
+| Latest Agent NFT mint tx | [`0x06c74427be145405f93f97742278ecb7c2150ed48011060f674478915698ad30`](https://chainscan.0g.ai/tx/0x06c74427be145405f93f97742278ecb7c2150ed48011060f674478915698ad30) |
 
 ### Latest Integrity Stack Evidence
 

@@ -23,6 +23,7 @@ import JudgeNetworkSwitcher from "@/components/judge/JudgeNetworkSwitcher";
 import JudgeSnapshotAutoRefresh from "@/components/judge/JudgeSnapshotAutoRefresh";
 import BrowserTimeLabel from "@/components/judge/BrowserTimeLabel";
 import { getJudgePageData } from "@/lib/server/review-mode";
+import { DEFAULT_WALLET_ADDRESS } from "@/lib/wallet";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -83,6 +84,7 @@ export default async function JudgePage() {
   const latestExplorerLabel = data.latestProof?.proofRegistryExplorerUrl
     ? "Open ProofRegistry tx"
     : "Open latest tx";
+  const mainnetStorageScanUrl = `https://storagescan.0g.ai/address/${DEFAULT_WALLET_ADDRESS}`;
   const integrityAudit = data.latestProof?.integrityAudit;
   const integrityApproved = integrityAudit?.status === "APPROVED";
   const sentinelProof = data.latestProof?.sentinelProof;
@@ -722,6 +724,26 @@ export default async function JudgePage() {
                 <div className="mt-2 text-[12px] leading-6 text-[#d6e2ea]">
                   {data.reviewNetworkLabel} Agent NFT contract address used by the app.
                 </div>
+              </div>
+            ) : null}
+            {reviewingMainnet ? (
+              <div className={subCardClass}>
+                <div className={eyebrowClass}>Mainnet StorageScan wallet</div>
+                <div className={`mt-2 ${monoValueClass} text-[13px] text-white`}>
+                  {DEFAULT_WALLET_ADDRESS}
+                </div>
+                <div className="mt-2 text-[12px] leading-6 text-[#d6e2ea]">
+                  Public mainnet review wallet for the flagship proof flow and related 0G Storage evidence.
+                </div>
+                <a
+                  href={mainnetStorageScanUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={`mt-3 ${linkPillClass}`}
+                >
+                  Open StorageScan
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
               </div>
             ) : null}
           </div>
