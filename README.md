@@ -324,29 +324,31 @@ The live product is now **mainnet-first**.
 
 `Mainnet public review wallet` is the live wallet/account used for the public flagship review flow and related 0G Storage evidence. It is not a deployed contract and it is not a testnet demo address.
 
-#### Mainnet Proof Evidence
+#### Mainnet Proof Snapshot (Recorded May 16, 2026)
+
+These entries were refreshed from the live mainnet review wallet and runtime proof state on May 16, 2026. They should be read as a dated proof snapshot, not as a permanent real-time feed.
 
 | Artifact | Value |
 | --- | --- |
-| Latest proof CID | `0x34591917c809c3c0d00a7c9134b9c7f48bb0be4befba9f59c355499c96fd0b58` |
-| Latest 0G Storage tx | [`0xbd25bad750df808237525b9f5f84200b10bcbbf1cc1b8687c071b291e331a121`](https://chainscan.0g.ai/tx/0xbd25bad750df808237525b9f5f84200b10bcbbf1cc1b8687c071b291e331a121) |
-| Latest `ProofRegistry` anchor tx | [`0x11ca104543d7c6705b4f14d336a2581aa69bfdb819a5c76b7f6e1f71b29eb823`](https://chainscan.0g.ai/tx/0x11ca104543d7c6705b4f14d336a2581aa69bfdb819a5c76b7f6e1f71b29eb823) |
-| Latest `ProofRegistry` proof ID | `36` |
-| Latest TEE model + provider | `openai/gpt-5.4-mini` via `0x25F8f01cA76060ea40895472b1b79f76613Ca497` |
-| Latest ZK `agent_identity` proof digest | `0xe3dda0d378f18d3f47024fb47cd129b82956c9fffe3e6b76e8940608b7c668d8` |
-| Latest Agent NFT | `Token #7` |
-| Latest Agent NFT mint tx | [`0x06c74427be145405f93f97742278ecb7c2150ed48011060f674478915698ad30`](https://chainscan.0g.ai/tx/0x06c74427be145405f93f97742278ecb7c2150ed48011060f674478915698ad30) |
+| Recorded proof snapshot CID | `0x0cf0fb737a56dd93b60680ff29161ce6710c38664a4c4f80e37c49291ecf5a6d` |
+| Recorded 0G Storage tx | [`0xbd71a229d435b4ef8d1597e736ffcdfc720835427090ebfbdd6355964275b575`](https://chainscan.0g.ai/tx/0xbd71a229d435b4ef8d1597e736ffcdfc720835427090ebfbdd6355964275b575) |
+| Recorded `ProofRegistry` anchor tx | [`0xda2adb52da452401c94e18bdc6b5a1f05c01dde64c4d2cddd468c4a787e07449`](https://chainscan.0g.ai/tx/0xda2adb52da452401c94e18bdc6b5a1f05c01dde64c4d2cddd468c4a787e07449) |
+| Recorded `ProofRegistry` proof ID | `56` |
+| Recorded proof snapshot model + provider | `deepseek/deepseek-chat-v3-0324` via `0x1B3AAef3ae5050EEE04ea38cD4B087472BD85EB0` |
+| Recorded ZK `agent_identity` proof digest | `0x35fd1618f3d7c5ee0d96e769d3ede071cf18eec7dd3f85472ac3a60dd05a801f` |
+| Recorded Agent NFT token | `No current Agent NFT recorded in the May 16, 2026 review snapshot.` |
+| Recorded Agent NFT mint tx | `No current Agent NFT mint tx is attached to this dated review snapshot.` |
 
-### Latest Integrity Stack Evidence
+### Recorded Integrity Stack Evidence (May 16, 2026)
 
-These mainnet artifacts prove the newly added agent memory, blacklist, and stress-test layers are operational in the same codebase:
+These mainnet artifacts document the recorded state of the newly added agent memory, blacklist, and stress-test layers in the same codebase:
 
 | Artifact | CID / tx |
 | --- | --- |
-| Sovereign Memory CID | `0x49d2577755db2f4300ba490c9c825dc0cc1b6d56b97c2f7d589307c31c4770f4` |
-| Sovereign Memory tx | [`0x2c30318e259de1e8abbddc338107a89401200b03a2fa450cd990661e08e69939`](https://chainscan.0g.ai/tx/0x2c30318e259de1e8abbddc338107a89401200b03a2fa450cd990661e08e69939) |
-| Hallucination Blacklist CID | `0xd660cdb9aec29214736fcb5763ba80fe6a5d2dcfd6cc35d68d7a178372b21625` |
-| Hallucination Blacklist tx | [`0x4eaee2337e0ffbec64b43e85c4619768071a0ff11c6a0b6c7a6c65a6a4521cb3`](https://chainscan.0g.ai/tx/0x4eaee2337e0ffbec64b43e85c4619768071a0ff11c6a0b6c7a6c65a6a4521cb3) |
+| Sovereign Memory CID | `0x61674c8cd1a1ff937686e8e0b976e40cdcfc041365c2e7b9ae5de0862aa725b3` |
+| Sovereign Memory tx | [`0x66b9bcf73f39d5f6b141a42ff62fb04e469a2b82f1bcbcb5df5f924661f09d60`](https://chainscan.0g.ai/tx/0x66b9bcf73f39d5f6b141a42ff62fb04e469a2b82f1bcbcb5df5f924661f09d60) |
+| Hallucination Blacklist CID | `0xd9c1059da11fc367f499e8b3533bda9b8b8459fe7c2f9e728a202499558216cb` |
+| Hallucination Blacklist tx | [`0x989505d362857748a55c570542b3751d45c5151747c528f685ff877e91f43d47`](https://chainscan.0g.ai/tx/0x989505d362857748a55c570542b3751d45c5151747c528f685ff877e91f43d47) |
 | Multiverse Stress Report CID | `0x6901002bf56949a56fbc97305622e2023db5b833348ed995d7e9b3b2c3f141b9` |
 | Multiverse Stress Report tx | [`0xe76ff5180612b78c6a153b2fc323fbb064237a9050cd20aedb7fbeddb1aa410c`](https://chainscan.0g.ai/tx/0xe76ff5180612b78c6a153b2fc323fbb064237a9050cd20aedb7fbeddb1aa410c) |
 
@@ -357,22 +359,22 @@ What this means in practice:
 - testnet remains available for iteration and fallback, but it is no longer the primary submission narrative.
 - the same live stack also exposes a mainnet `YieldStrategyINFT` contract for strategy-agent minting.
 
-### Additional Control Plane Evidence
+### Recorded Additional Control Plane Evidence (May 16, 2026)
 
-These newer artifacts extend the original integrity stack without replacing it. They document how reasoning, governance, and agent-to-agent coordination are now persisted as first-class backend outputs:
+These newer artifacts extend the original integrity stack without replacing it. They document the recorded state of reasoning, governance, and agent-to-agent coordination as first-class backend outputs:
 
 | Artifact | CID / tx |
 | --- | --- |
-| Zero-Knowledge Proof Layer CID | `0xe84d0aed1bd1a023ebfa80f75397c1d03f047e4ecd0a90b7b9d729d1b18aaedf` |
-| Zero-Knowledge Proof Layer storage tx | [`0x1039013ad1403ac6d9f69525a9862e4cfab987e0808f53e452dabcaec5c450f2`](https://chainscan.0g.ai/tx/0x1039013ad1403ac6d9f69525a9862e4cfab987e0808f53e452dabcaec5c450f2) |
-| Zero-Knowledge Proof Layer `ProofRegistry` anchor tx | [`0xfc5e71ae4467c4564481556e184c925865d61b2942abace27228e0d285123cdd`](https://chainscan.0g.ai/tx/0xfc5e71ae4467c4564481556e184c925865d61b2942abace27228e0d285123cdd) |
-| Governance artifact CID | `0x3ccf7e94cf5e929035c2f05b26075f68d47dc24069c01c514364168caca4708c` |
-| Governance tx | [`0xa3e4d93c997f1e76747e1787f769c2b1e26351752f5ee48311a02857c4c4e7f3`](https://chainscan.0g.ai/tx/0xa3e4d93c997f1e76747e1787f769c2b1e26351752f5ee48311a02857c4c4e7f3) |
-| Cross-Agent Neural Handshake CID | `0xd1b41c5cca8504b242e55c4c7e032aee69debef5fabe887f759d427c423963d3` |
-| Cross-Agent Neural Handshake tx | [`0x499a6f73c7b9ce0b7f7312713be8daf1dd3324a46129f946cec7d4fb8397a694`](https://chainscan.0g.ai/tx/0x499a6f73c7b9ce0b7f7312713be8daf1dd3324a46129f946cec7d4fb8397a694) |
-| ZK Policy Seal CID | `0x34591917c809c3c0d00a7c9134b9c7f48bb0be4befba9f59c355499c96fd0b58` |
-| ZK Policy Seal tx | [`0xbd25bad750df808237525b9f5f84200b10bcbbf1cc1b8687c071b291e331a121`](https://chainscan.0g.ai/tx/0xbd25bad750df808237525b9f5f84200b10bcbbf1cc1b8687c071b291e331a121) |
-| ZK Policy Seal `ProofRegistry` anchor tx | [`0x11ca104543d7c6705b4f14d336a2581aa69bfdb819a5c76b7f6e1f71b29eb823`](https://chainscan.0g.ai/tx/0x11ca104543d7c6705b4f14d336a2581aa69bfdb819a5c76b7f6e1f71b29eb823) |
+| Zero-Knowledge Proof Layer CID | `0xe4ec2bea490ce0db51668ac97f585d90c91f7708e5bcb8f5427839a4d94ad47c` |
+| Zero-Knowledge Proof Layer storage tx | [`0x60aa59ec0ce9c0b1a852c52fa986df251f7bbbffd3252c508378d9bd2d35565b`](https://chainscan.0g.ai/tx/0x60aa59ec0ce9c0b1a852c52fa986df251f7bbbffd3252c508378d9bd2d35565b) |
+| Zero-Knowledge Proof Layer `ProofRegistry` anchor tx | [`0x1167c69dd7e1b8e0a51cd9ab46e3c7e628755723716b9332dd649a6caed9e10e`](https://chainscan.0g.ai/tx/0x1167c69dd7e1b8e0a51cd9ab46e3c7e628755723716b9332dd649a6caed9e10e) |
+| Governance artifact CID | `0xd6ce67ac1b38b4fcfdcdfa728ff754a2ab655f42ab9d0444e9db32ad0d36ed50` |
+| Governance tx | [`0x3efd7ad33b426fb46710c36d956ae1bdbc1cd0edc52fa9e12249c7eda5cd9fd8`](https://chainscan.0g.ai/tx/0x3efd7ad33b426fb46710c36d956ae1bdbc1cd0edc52fa9e12249c7eda5cd9fd8) |
+| Cross-Agent Neural Handshake CID | `0xeeaaf7e3c2eb76259a5623e04d501adf3e0240cf08350b3c78a0893bc4e793aa` |
+| Cross-Agent Neural Handshake tx | [`0xd80fb6eb9331813a36099f4f9ee543e49cb02cd7ee82f9e535e1cfcc15ecb294`](https://chainscan.0g.ai/tx/0xd80fb6eb9331813a36099f4f9ee543e49cb02cd7ee82f9e535e1cfcc15ecb294) |
+| ZK Policy Seal CID | `0x323e412d1122788ad2be6119b8cfa27ac4992a1d0a4bfa25ef8c4a3546b3a40c` |
+| ZK Policy Seal tx | [`0x015332ed5e8725e03d80f77d6b37802cf57e7b632ae30ddbed8d8cbdd958b9fd`](https://chainscan.0g.ai/tx/0x015332ed5e8725e03d80f77d6b37802cf57e7b632ae30ddbed8d8cbdd958b9fd) |
+| ZK Policy Seal `ProofRegistry` anchor tx | [`0x9705487d3831dc264f4ddaa6e24216bcfa67da4fe0a59567d80eaec1db49c322`](https://chainscan.0g.ai/tx/0x9705487d3831dc264f4ddaa6e24216bcfa67da4fe0a59567d80eaec1db49c322) |
 
 ### Zero-Knowledge Proof Layer, Programmable Governance, and Cross-Agent Neural Handshake
 
